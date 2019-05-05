@@ -1,0 +1,91 @@
+{
+    "code": "0", 
+    "message": "", 
+    "data": null, 
+    "reportTableInfo": {
+        "reportName": "R01 影院营业收入报表", 
+        "colArr": [
+            {
+                "prop": "SALE_TYPE", 
+                "label": "收入类型", 
+                "seq": 1, 
+                "width": true
+            }, 
+            {
+                "prop": "PAY_TYPE", 
+                "label": "支付方式", 
+                "seq": 2, 
+                "width": true
+            }, 
+            {
+                "prop": "SALE_TIME", 
+                "label": "交易日斯", 
+                "seq": 3, 
+                "width": true
+            }, 
+            {
+                "prop": "SALE_AMOUNT", 
+                "label": "销售金额", 
+                "seq": 4, 
+                "width": true
+            }, 
+            {
+                "prop": "REJECT_AMOUNT", 
+                "label": "退货金额", 
+                "seq": 5, 
+                "width": false
+            }
+        ], 
+        "styleColArr": null, 
+        "baseQueryArr": [
+            {
+                "queryControlKey": "SALE_TIME", 
+                "controlType": "DATE", 
+                "queryName": "交易时间", 
+                "seq": 1
+            }, 
+            {
+                "queryControlKey": "CHANNEL", 
+                "controlType": "SELECT", 
+                "queryName": "交易渠道", 
+                "seq": 3
+            }
+        ], 
+        "extQueryArr": [
+            {
+                "queryControlKey": "SHOW_TIME", 
+                "controlType": "DATE", 
+                "queryName": "放映时间", 
+                "seq": 2
+            }
+        ], 
+        "styleExtQueryArr": [
+            {
+                "queryControlKey": "SHOW_TIME", 
+                "controlType": "DATE", 
+                "queryName": "放映时间", 
+                "seq": 1
+            }
+        ], 
+        "groupArr": [
+            {
+                "groupColKey": "SALE_TYPE", 
+                "groupColName": "收入类型", 
+                "seq": 1
+            }, 
+            {
+                "groupColKey": "PAY_TYPE", 
+                "groupColName": "支付方式", 
+                "seq": 2
+            }
+        ], 
+        "styleGroupArr": [
+            {
+                "groupColKey": "SALE_TYPE", 
+                "groupColName": "收入类型", 
+                "seq": 1
+            }
+        ], 
+        "styleArr": null
+    }
+}

@@ -1,0 +1,67 @@
+//
+.reset-bread {
+    line-height: 42px;
+    font-size: 14px;
+}
+
+.reset-radios-group {
+    .el-radio__label {
+        font-size: 12px;
+    }
+
+}
+
+// 表格
+.reset-table {
+    .el-table th.is-leaf {
+        background-color: #E7EBFF;
+        border-right: 1px solid #DCDADA;
+        color: #333;
+        font-size: 12px;
+    }
+}
+
+//
+.reset-page {
+    margin: 30px auto;
+    text-align: center;
+
+    .el-input__inner {
+        height: 30px;
+    }
+
+    .el-input__icon {
+        line-height: 30px
+    }
+}
+
+// reset-select
+.auto-radio-button-wrap {
+    .reset-select {
+        display: inline-block;
+        width: 120px;
+        height: 30px;
+
+        .el-input__inner {
+            height: 34px;
+            line-height: 34px;
+            font-size:12px;
+        }
+    }
+}
+// reset-target
+.reset-target-dialog{
+    .el-checkbox{
+        display:block;
+    }
+}
+//
+
+.el-button--primary.reset-cancle{
+    background-color: #fff;
+    color:#3B74FF;
+    &:hover{
+        background-color: #fff;
+        color:#3B74FF;
+    }
+}
