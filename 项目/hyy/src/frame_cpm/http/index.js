@@ -8,6 +8,8 @@ import camList from 'cam/http/interface'
 import rptList from 'rpt/http/interface'
 import cimList from 'cim/http/interface'
 import csmList from 'csm/http/interface'
+import cwfList from 'cwf/http/interface'
+
 
 const install = (Vue) => {
     if (install.installed) {
@@ -62,7 +64,12 @@ const install = (Vue) => {
                 return csmList;
             }
         },
-        
+        $cwfList: {
+            get() {
+                return cwfList;
+            }
+        }
+
     });
 };
 

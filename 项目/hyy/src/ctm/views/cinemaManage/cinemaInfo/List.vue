@@ -26,9 +26,9 @@
 				<div class="search-warp">
 					<span>状态:</span>
 					<el-select v-model="searchAdition.status">
-						<el-option label="全部" value="">全部</el-option>
-						<el-option label="营业" value="1">营业</el-option>
-						<el-option label="测试" value="2">测试</el-option>
+						<el-option label="全部" value=""> <span style="font-size:12px">全部</span> </el-option>
+						<el-option label="营业" value="1"> <span style="font-size:12px">营业</span> </el-option>
+						<el-option label="测试" value="2"> <span style="font-size:12px">测试</span> </el-option>
 					</el-select>
 				</div>
 				<el-button type="primary" @click="search" icon="el-icon-search" >查询</el-button>
@@ -227,6 +227,7 @@
 				font-size: 0px;
 				span{font-size: 12px;}
 				.el-input{
+					font-size: 12px;
 					display: inline-block;
 					width: 200px;
 					margin-left: 16px;

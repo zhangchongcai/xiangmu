@@ -32,7 +32,7 @@
                 <div class="information">
                     <div style="margin-left:80px;color:#666">
                         <span class="num">{{jsonData.seatnum}}</span> <span >(系统自动计算)</span>
-                        <el-button type="primary" >座位图设计</el-button>
+                        <el-button type="primary" @click="seatDesign" v-if="hallUid">座位图设计</el-button>
                     </div>
                 </div>
             </el-form-item>
@@ -44,7 +44,7 @@
             <el-form-item label="状态： ">
                 <el-radio-group v-model="jsonData.status">
                 <el-radio :label="1">有效</el-radio>
-                <el-radio :label="0" :disabled="jsonData.monopoly==1?true:false">无效</el-radio>
+                <el-radio :label="0">无效</el-radio>
                 </el-radio-group>
             </el-form-item>
             <div style="text-align:center;paading-right:20px;">
@@ -61,14 +61,12 @@
 import axios from 'axios';
 import qs from 'qs';
 export default {
-    name:"MotaiKuan",
     data(){
         //表单正则规则
         let wallName=(rule,value,callback)=>{
             let reg=/[0-9a-zA-Z]{4,9}/
             if(!value){
-                callback(new Error('不能为空！'))
-                return
+                return callback(new Error('不能为空！'))
             }
             var data = {
                 uid :this.$route.query.uid,
@@ -181,14 +179,23 @@ export default {
     methods:{
         //返回
         toBack() {
-            this.$router.go(-1)
+            this.$router.push({
+                path:'/ticket/cinema/edit',
+                query:{uid:this.cinemaUid}
+            })
         },
         //取消
         out() {
-            this.$router.go(-1);
+            this.$router.push({
+                path:'/ticket/cinema/edit',
+                query:{uid:this.cinemaUid}
+            })
         },
         //修改提交
         submitForm(formName) {
+            if(this.jsonData.status==0&&this.jsonData.monopoly==0){
+                return this.$message.error('存在放映计划，不能修改无效')
+            }
             this.$refs[formName].validate((valid) => {
                 console.log(valid)
             if (valid) {
@@ -263,7 +270,16 @@ export default {
             }).catch( err => {
                 console.log(err)
             })
-      }
+      },
+        seatDesign(uid) {
+            this.$router.push({
+                path: '/ticket/cinemawall/seatdesign',
+                query:{
+                    hallUid:this.hallUid,
+                    cinemaUid:this.cinemaUid
+                }
+            });
+        },
     
         
     },

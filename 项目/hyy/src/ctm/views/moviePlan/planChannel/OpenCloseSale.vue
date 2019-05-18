@@ -565,7 +565,7 @@
 
             getChannelList() {
                 // 渠道枚举值
-                this.$ctmList.getChannelList({cinemaUid: this.formData.cinemaUid}).then( res => {
+                this.$ctmList.getChannelList({cinemaUid: this.formData.cinemaUid, type: 1}).then( res => {
                     console.log(res)
                     if(res.code === 200) {
                         this.channelUidOptions = res.data

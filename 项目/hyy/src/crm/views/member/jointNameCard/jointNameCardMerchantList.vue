@@ -57,8 +57,8 @@
     </div>
     <!-- 分页 start -->
     <div class="page-wrap">
-      <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="searchData.current"
-        :page-size="searchData.size" layout="prev, pager, next, jumper, sizes" :page-sizes="[20 , 50 , 100]" :total="total-0"></el-pagination>
+      <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="searchData.current-0"
+        :page-size="searchData.size-0" layout="prev, pager, next, jumper, sizes" :page-sizes="[20 , 50 , 100]" :total="total-0"></el-pagination>
     </div>
     <!-- 分页 end -->
   </div>

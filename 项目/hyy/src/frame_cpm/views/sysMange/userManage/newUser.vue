@@ -1,5 +1,5 @@
 <template>
-    <div class="contentCenter">
+    <div class="content-wrapper">
         <div class="breadcrumb">
             <el-breadcrumb separator-class="el-icon-arrow-right">
                 <el-breadcrumb-item>系统设置</el-breadcrumb-item>
@@ -72,10 +72,17 @@
                     @node-click="handleNodeClick"
                     node-key="id"
                     default-expand-all
-                    expand-on-click-node
+                    :expand-on-click-node="false"
                     :highlight-current="true"
                     :props="defaultProps"
             >
+                 <span class="custom-tree-node" slot-scope="{ node, data }">
+                  <span class="org-button">
+                    <i class="el-icon-menu" v-if="data.isCinema==0||data.isCinema==null"></i>
+                    <i class="el-icon-document" v-else></i>
+                    {{data.text}}
+                  </span>
+                </span>
             </el-tree>
             <!-- footer 分页条 -->
             <div class="page-wrap" v-if="treeFlag">
@@ -107,9 +114,17 @@
                     node-key="id"
                     default-expand-all
                     show-checkbox
+                    :expand-on-click-node="false"
                     :highlight-current="true"
                     :props="defaultProps"
             >
+                <span class="custom-tree-node" slot-scope="{ node, data }">
+                  <span class="org-button">
+                    <i class="el-icon-menu" v-if="data.isCinema==0||data.isCinema==null"></i>
+                    <i class="el-icon-document" v-else></i>
+                    {{data.text}}
+                  </span>
+                </span>
             </el-tree>
             <div slot="footer" class="dialog-footer">
                 <el-button @click="cancel">取 消</el-button>
@@ -223,11 +238,16 @@
                                         type: 'success'
                                     });
                                     this.$router.push('index')
-                                }else{
+                                }else if(ret.code==-200){
                                     _this.$message({
-                                        message: ret.msg,
+                                        message: '用户账号已存在',
                                         type: 'info'
                                     });
+                                }else{
+                                  _this.$message({
+                                    message: ret.msg,
+                                    type: 'info'
+                                  });
                                 }
                             }).catch( err => {
 
@@ -252,7 +272,6 @@
                 }
             },
             ok2() {
-                this.dialogVisible2 = false
                 let arr = this.$refs.tree2.getCheckedNodes()
                 let resultArr = []
                 let newArr = []
@@ -276,6 +295,7 @@
                 }else{
                   this.deptIds = resultArr
                   this.ruleForm.deptName = newArr.join('，')
+                  this.dialogVisible2 = false
                 }
             },
             cancel() {
@@ -366,7 +386,7 @@
 
 </style>
 <style lang="scss" scoped>
-    .contentCenter {
+    .content-wrapper {
         height: 100%;
 
         .breadcrumb {

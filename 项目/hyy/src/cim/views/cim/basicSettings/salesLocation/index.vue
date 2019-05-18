@@ -357,7 +357,7 @@ export default {
     queryStoreEvent(data){
       // debugger
       console.log(data)
-      this.$api.queryPage(data).then( data => {
+      this.$cimList.queryPage(data).then( data => {
         let _self = this
           if (data && data.code === 200) {
             let newdata = data.data
@@ -372,7 +372,7 @@ export default {
     },
     // 查询终端
     queryTerminalEvent(data){
-      this.$api.terminalQueryPage(data).then( data => {
+      this.$cimList.terminalQueryPage(data).then( data => {
         let _self = this
           if (data && data.code === 200) {
             let newdata = data.data
@@ -388,7 +388,7 @@ export default {
     // 新增
     saveStoreEvent(data){
       // debugger
-      this.$api.salePlaceSave(data).then( data => {
+      this.$cimList.salePlaceSave(data).then( data => {
         let _self = this
           if (data && data.code === 200) {
             // debugger
@@ -401,7 +401,7 @@ export default {
           })
     },// 修改
     updateStoreEvent(data){
-      this.$api.salePlaceUpdate(data).then( data => {
+      this.$cimList.salePlaceUpdate(data).then( data => {
         let _self = this
           if (data && data.code === 200) {
             _self.queryStoreEvent(_self.queryData)
@@ -414,7 +414,7 @@ export default {
     },
     // 查看接口
     CheckStoreEvent(data){
-      this.$api.salePlaceCheck(data).then( data => {
+      this.$cimList.salePlaceCheck(data).then( data => {
         let _self = this
           if (data && data.code === 200) {
             let newdata = data.data
@@ -471,7 +471,7 @@ export default {
     },
     // 删除操作
     handleeDlete(index, row) {
-      this.$api.salePlaceDelete(row.uid).then( data => {
+      this.$cimList.salePlaceDelete(row.uid).then( data => {
         let _self = this
           if (data && data.code === 200) {
             _self.queryStoreEvent(_self.queryData)
@@ -500,7 +500,7 @@ export default {
         }else{
           row.status = 0
         }
-        this.$api.salePlaceStatus(row.status,row.uid).then( data => {
+        this.$cimList.salePlaceStatus(row.status,row.uid).then( data => {
         let _self = this
           if (data && data.code === 200) {
             _self.queryStoreEvent(_self.queryData)

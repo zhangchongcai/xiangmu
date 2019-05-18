@@ -1,5 +1,5 @@
 <template>
-    <div class="contentCenter">
+    <div class="content-wrapper">
         <div class="breadcrumb">
             <el-breadcrumb separator-class="el-icon-arrow-right">
                 <el-breadcrumb-item>系统设置</el-breadcrumb-item>
@@ -112,7 +112,7 @@
     }
 </script>
 <style lang="scss" scoped>
-    .contentCenter {
+    .content-wrapper {
         height: 100%;
 
         .breadcrumb {

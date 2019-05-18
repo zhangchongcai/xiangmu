@@ -115,7 +115,7 @@ export default function $axios(options) {
                 //根据返回的code值来做不同的处理(和后端约定)
                 switch (data.code) {
                     case 200:
-                        return data.data;
+                        return data;
                         break;
                     case 514:
                         return Promise.reject();

@@ -8,6 +8,7 @@
 </template>
 
 <script>
+  import {getUrl} from 'frame_cpm/http/interface.js'
     export default {
         data(){
             return{
@@ -15,16 +16,14 @@
             }
         },
         created(){
-
+            this. redictFun()
         },
         methods:{
             redictFun(){
                 let userResult = JSON.parse(localStorage.getItem('user'))
                 if(!userResult){
                     this.$router.push("/login");
-                     console.log('hhh',userResult)
                 }
-                   
 
             }
         }
@@ -42,7 +41,6 @@
         align-items: center;
         background-color:#f5f5f5;
         color:#bcbcbc;
-
         height: 100%;
     }
 </style>

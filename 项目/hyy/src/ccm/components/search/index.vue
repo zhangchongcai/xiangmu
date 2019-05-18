@@ -9,7 +9,7 @@
                         <el-input class="input-type-166" v-if="!item.alertButton" :clearable="item.clearable" @clear="clearInputVal(item.keyName,item.alertButton)" :readonly="item.readonly" v-model="baseConfig.form[`${item.keyName}`]" :placeholder="item.placeholider"></el-input>
                         <template v-if="item.alertButton">
                             <el-input class="input-type-166" :clearable="item.clearable" @clear="clearInputVal(item.keyName,item.alertButton)" :readonly="item.readonly" v-model="baseConfig.form[`${item.keyName}`].text" :placeholder="item.placeholider"></el-input>
-                            <el-button type="primary callWindowBtn" plain @click="callWindow(item.alertSrc,item.keyName,item.isNeedReturn)">{{item.alertButtonText ? item.alertButtonText : '选择'}}</el-button>
+                            <el-button type="primary callWindowBtn" plain @click="callWindow(item.alertCompontsName,item.keyName,item.isNeedReturn)">{{item.alertButtonText ? item.alertButtonText : '选择'}}</el-button>
                         </template>
                     </el-row>
                 </template>
@@ -46,25 +46,26 @@
         </el-form-item>
     </el-form>
     <!-- 弹窗 -->
-    <section v-if="isShowAlert">
-        <alertWindow :config="alertConfig" @alertCallBack="changeInputValue"></alertWindow>
+    <section class="alert-group">
+        <!-- 选择支付 -->
+        <payType @getData="handlePayTypeBack" ref="payType"></payType>
     </section>
 </div>
 </template>
 
 <script>
-import alertWindow from '../alertWindow/index.vue';
+// 弹窗混入回调方法，注册弹窗和设置回调都在此处
+import searchAlertHandle from 'ccm/mixins/marketing/searchAlertHandle.js';
+
 export default {
-    components: {
-        alertWindow
-    },
+    components: {},
+    mixins: [searchAlertHandle],
     props: {
         config: {
             required: true,
             type: Array
         },
         modelName: {
-            required: true,
             type: String
         },
         searchLevelButton: {
@@ -77,9 +78,7 @@ export default {
             /* 基本配置 */
             isShowForm: false,
             baseConfig: {
-                form: {
-
-                },
+                form: {},
                 system: [{
                     name: '',
                     keyName: '',
@@ -88,13 +87,6 @@ export default {
                     placeholder: '',
                     rules: []
                 }]
-            },
-            /* 弹窗 */
-            isShowAlert: false,
-            alertConfig: {
-                src: '',
-                param: {},
-                callFnName: ''
             },
             /* 唤起弹窗后,需填入输入框的名 */
             currentInputName: '',
@@ -108,27 +100,30 @@ export default {
         /* 根据输入config 构建form */
         let form = {};
         let system = JSON.parse(JSON.stringify(this.config));
-
-        for (let i = 0; i < system.length; i++) {
-            let item = system[i];
-            let isMore = item.type == 'input-more' ? true : false;
-            if (isMore) {
-                let options = item.options;
-                for (let j = 0; j < options.length; j++) {
-                    let jtem = options[j];
-                    if (!form[`${jtem.keyName}`]) {
-                        form[`${jtem.keyName}`] = jtem.value ? jtem.value : '';
+        try {
+            for (let i = 0; i < system.length; i++) {
+                let item = system[i];
+                let isMore = item.type == 'input-more' ? true : false;
+                if (isMore) {
+                    let options = item.options;
+                    for (let j = 0; j < options.length; j++) {
+                        let jtem = options[j];
+                        if (!form[`${jtem.keyName}`]) {
+                            form[`${jtem.keyName}`] = jtem.value ? jtem.value : '';
+                        } else {
+                            throw new Error('在传入config渲染搜索框时,请确保keyName的值为唯一');
+                        }
+                    }
+                } else {
+                    if (!form[`${item.keyName}`]) {
+                        form[`${item.keyName}`] = item.value ? item.value : '';
                     } else {
-                        return new Error('在传入config渲染搜索框时,请确保keyName的值为唯一');
+                        throw new Error('在传入config渲染搜索框时,请确保keyName的值为唯一');
                     }
                 }
-            } else {
-                if (!form[`${item.keyName}`]) {
-                    form[`${item.keyName}`] = item.value ? item.value : '';
-                } else {
-                    return new Error('在传入config渲染搜索框时,请确保keyName的值为唯一');
-                }
             }
+        } catch (msg) {
+            console.log(msg);
         }
 
         // 实时将数据变化返回
@@ -143,23 +138,38 @@ export default {
             system
         }
         this.isShowForm = true;
-        this.alertConfig.callFnName = 'changeInputValue_' + this.modelName;
     },
     methods: {
         /**
          * @function callWindow - 唤起弹窗
          * @param {Boolean} isNeedReturn - 是否需要回传参数给弹窗
          */
-        callWindow(alertSrc, keyName, isNeedReturn) {
+        callWindow(alertCompontsName, keyName, isNeedReturn) {
             this.currentInputName = keyName;
-
             let param = {}
             if (isNeedReturn) {
                 param[`data`] = this.baseConfig.form[`${keyName}`];
             }
-            this.alertConfig.src = alertSrc;
-            this.alertConfig.param = param;
-            this.isShowAlert = true;
+            // 触发弹窗
+            try {
+                if (typeof alertCompontsName != 'string' || alertCompontsName == '') {
+                    throw new TypeError(`请在alertCompontsName传入非空字符串`);
+                }
+
+                let fnName = this.altertKeysFn[`${alertCompontsName}`];
+                if (fnName) {
+                    let fn = this[`${fnName}`];
+                    if (typeof fn == 'function') {
+                        fn();
+                    } else {
+                        throw new TypeError(`mixin:searchAlertHandle方法中不存在${alertCompontsName}所对应的方法，无法执行`);
+                    }
+                } else {
+                    throw new TypeError(`mixin:searchAlertHandle方法中不存在${alertCompontsName}所对应的配置方法，无法执行`);
+                }
+            } catch (msg) {
+                console.log(msg);
+            }
         },
         /**
          * @function changeInputValue - 弹窗回调 修改对应输入框
@@ -168,9 +178,6 @@ export default {
             let isCancle = param.isCancle;
             if (isCancle) {
                 this.currentInputName = '';
-                this.isShowAlert = false;
-                this.alertConfig.src = '';
-                this.alertConfig.param = {};
                 return;
             }
 
@@ -180,9 +187,18 @@ export default {
                 text: param.data,
                 value: param.data
             };
-            this.isShowAlert = false;
-            this.alertConfig.src = '';
-            this.alertConfig.param = {};
+            let inputItem = this.baseConfig.form[`${currentInputName}`];
+            if (typeof inputItem == 'object') {
+                inputItem = {
+                    text: param.text,
+                    value: param.data
+                }
+            } else {
+                inputItem = {
+                    value: param.data
+                };
+            }
+
             this.currentInputName = '';
         },
         /**
@@ -227,7 +243,7 @@ export default {
                         this.baseConfig.form[`${keyName}`] = '';
                     }
                 } else {
-                    new Error(`搜索栏中不存在${keyName}`);
+                    throw new Error(`搜索栏中不存在${keyName}`);
                 }
             } catch (msg) {
                 console.log(msg);

@@ -25,22 +25,16 @@
                 ></el-input>
             </div>
         </template>
-        
+
       </div>
-      <!-- <div class="addOrg-wrap">
-        <el-button type="text" @click='addOrgInforFun'>
-        <i class="iconfont icon-neiye-tianjia"></i>
-        添加
-        </el-button>
-     </div> -->
     </div>
-   
+
     <div class="confirm-cancel">
 	    <el-button @click="cancel(false)">取 消</el-button>
 	    <el-button type="primary" @click="editOrgFun()">确 定</el-button>
     </div>
-   
-    
+
+
   </div>
 </template>
 <script>
@@ -65,13 +59,12 @@ export default {
   watch: {
   },
   components:{
-     
   },
   methods: {
     cancel(){
         this.$emit('dialogVisible_editNextOrgChange',false)
     },
-   
+
     //刷新数据
     getDatas(val) {
       let self = this;
@@ -87,6 +80,10 @@ export default {
     editOrgFun(){
       let self = this;
       let item={}
+      if (self.lastOrgData.text == "") {
+        this.error("请输入组织名称");
+        return false;
+      }
       item.name = self.lastOrgData.text
       item.remark = self.lastOrgData.remark
       item.uid =  self.lastOrgData.id
@@ -110,19 +107,11 @@ export default {
           .catch((err) => {
             self.$message('服务器繁忙，稍等再试');
           });
-    
+
     },
-    addOrgInforFun(){
-        let item={name:"",remark:''}
-       if(this.formData.length>2){
-           return
-       }else{
-            this.formData.push(item)
-       }
-    }
   },
   created() {
-     
+    console.log(this.lastOrgData)
   }
 };
 </script>
@@ -193,7 +182,6 @@ export default {
   }
   .confirm-cancel{
     width: 100%;
-    background: #f5f5f5;
     text-align: center;
       .el-button--default{
         display: inline-block;

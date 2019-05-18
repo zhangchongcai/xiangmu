@@ -7,7 +7,9 @@ import ccmRoutes from 'ccm/router/'
 import camRoutes from 'cam/router/'
 import cimRoutes from 'cim/router/'
 import csmRoutes from 'csm/router/'
-const routerView = {template: '<router-view></router-view>'};
+import cwfRoutes from 'cwf/router/'
+
+const routerView = { template: '<router-view></router-view>' };
 let routes = [{
         path: '/login',
         meta: {
@@ -28,10 +30,10 @@ let routes = [{
             {
                 path: 'home',
                 meta: {
-                      title: '主页'
-                    },
+                    title: '主页'
+                },
                 component: (resolve) => require(['../views/Home.vue'], resolve),
-                name: '主页'
+                name: '主页',
             },
             // 基础平台系统路由
             {
@@ -103,29 +105,40 @@ let routes = [{
                 name: '经营决策系统',
                 children: camRoutes
             },
-             //卖品系统路由
-             {
+            //卖品系统路由
+            {
                 path: 'retail',
                 meta: {
                     title: "卖品系统"
                 },
                 component: routerView,
                 name: '卖品系统',
-                redirect:'retail/index',
+                redirect: 'retail/index',
                 children: cimRoutes
             },
             //交易系统路由
             {
-            path: 'trade',
-            meta: {
-                title: "交易系統"
+                path: 'trade',
+                meta: {
+                    title: "交易系統"
+                },
+                component: routerView,
+                name: '交易系統',
+                redirect: 'trade/index',
+                children: csmRoutes
             },
-            component: routerView,
-            name: '交易系統',
-            redirect:'trade/index',
-            children: csmRoutes
-        },
-        ],
+            // 审批工作流
+            {
+                path: 'workflow',
+                meta: {
+                    title: "交易系統"
+                },
+                component: (resolve) => require(['cwf/views/index.vue'], resolve),
+                name: '交易系統',
+                redirect: 'workflow/index',
+                children: cwfRoutes
+            }
+        ]
     }
 
 ]

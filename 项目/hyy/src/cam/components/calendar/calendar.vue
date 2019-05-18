@@ -33,7 +33,7 @@ export default {
         } , 
         dateType: {
             type: Array  , 
-            default:['天', '周', '月', '年','自定义'], 
+            default:['天', '周', '月', '年'], 
         } , 
         placeholder:{
             default: '' , 
@@ -116,9 +116,6 @@ export default {
                 case '年': 
                     this.currentComponent = 'year-component' ; 
                     break;
-                case '自定义': 
-                    this.currentComponent = 'custom-component' ; 
-                    break;   
                 default:
                     break;
             }
@@ -155,9 +152,6 @@ export default {
                     break;
                 case '年': 
                     returnVal = "year";
-                    break;
-                case '自定义':
-                    returnVal = "custom";
                     break;
                 default:
                     returnVal = "day";

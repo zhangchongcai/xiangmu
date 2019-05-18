@@ -1,20 +1,20 @@
 <template>
   <div class="apply-stores">
     <el-select
-      v-model="type"
+      v-model="defaultSelected"
       placeholder="请选择"
       class="apply-select"
-      @change="handleApplyChange(type)"
+      @change="handleApplyChange(defaultSelected)"
     >
       <el-option v-for="item in radios" :key="item.type" :label="item.label" :value="item.type"></el-option>
     </el-select>
-    <span class="apply-tag" v-if="type!=0">
+    <span class="apply-tag" v-if="defaultSelected!='1'">
       <el-input
         class="input apply-stores-input"
         v-model="currentChecked.name"
         :disabled="currentChecked.name ?true:false"
         placeholder="请选择"
-        @focus="setCheckedKeys(type)"
+        @focus="setCheckedKeys(defaultSelected)"
       >
         <i
           slot="suffix"
@@ -23,7 +23,7 @@
           @click.stop="handleDelete"
         ></i>
       </el-input>
-      <el-button v-if="currentChecked.name" @click.stop="setCheckedKeys(type)">编辑</el-button>
+      <el-button v-if="currentChecked.name" @click.stop="setCheckedKeys(defaultSelected)">编辑</el-button>
     </span>
     <!-- 选择门店 -->
     <el-dialog :visible.sync="applyDialog">
@@ -78,7 +78,7 @@ export default {
   },
   data() {
     return {
-      type: this.defaultSelected,
+      // type: this.defaultSelected,
       currentChecked: {},
       applyInput: "",
       filterQueryValue: "", //筛选值
@@ -149,7 +149,7 @@ export default {
       });
       this.currentChecked = tempArr[0];
       this.$emit("onCheckedNodes", {
-        type: this.type,
+        type: this.defaultSelected,
         value: this.currentChecked.value || []
       });
     },
@@ -166,7 +166,7 @@ export default {
       this.currentChecked.value = [];
       this.currentChecked.checkedKys = [];
       let tempObj = {
-        type: this.type,
+        type: this.defaultSelected,
         value: []
       };
       this.$emit("onCheckedNodes", tempObj);
@@ -185,7 +185,7 @@ export default {
     handleApplySubmit(value) {
       let checkedNodes = this.$refs.applyTree.getCheckedNodes(true);
       let tempObj = {
-        type: this.type,
+        type: this.defaultSelected,
         value: checkedNodes
       };
       this.$emit("onCheckedNodes", tempObj);

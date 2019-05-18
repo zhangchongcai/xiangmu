@@ -1,4 +1,110 @@
-let routes = [
+let routes = [{
+    path: "test",
+    meta: {
+      title: "会员测试页面"
+    },
+    component: resolve => require(["../views/member/Index.vue"], resolve),
+    name: "会员测试页面",
+    children: [{
+      path: "test",
+      meta: {
+        title: "会员测试页面"
+      },
+      component: resolve =>
+        require([
+          "../components/crmCardType.vue"
+          // "../views/member/test/test.vue"
+        ], resolve),
+      name: "会员测试页面"
+    }]
+  },
+  {
+    path: "differentIndustryGoods",
+    meta: {
+      title: "异业商品管理"
+    },
+    component: resolve => require(["../views/member/Index.vue"], resolve),
+    name: "异业商品管理",
+    redirect: "differentIndustryGoods/list",
+    children: [{
+        path: "list",
+        meta: {
+          title: "异业商品列表"
+        },
+        component: resolve =>
+          require([
+            "../views/member/differentIndustryGoods/differentIndustryGoodsList.vue"
+          ], resolve),
+        name: "异业商品列表"
+      },
+      {
+        path: "detail",
+        meta: {
+          title: "异业商品详情"
+        },
+        component: resolve =>
+          require([
+            "../views/member/differentIndustryGoods/differentIndustryGoodsDetail.vue"
+          ], resolve),
+        name: "异业商品详情"
+      },
+      {
+        path: "add",
+        meta: {
+          title: "添加异业商品"
+        },
+        component: resolve =>
+          require([
+            "../views/member/differentIndustryGoods/addDifferentIndustryGoods.vue"
+          ], resolve),
+        name: "添加异业商品"
+      },
+      {
+        path: "edit",
+        meta: {
+          title: "编辑异业商品"
+        },
+        component: resolve =>
+          require([
+            "../views/member/differentIndustryGoods/addDifferentIndustryGoods.vue"
+          ], resolve),
+        name: "编辑异业商品"
+      }
+    ]
+  },
+  ,
+  {
+    path: "commodityReportForm",
+    meta: {
+      title: "异业商品统计"
+    },
+    component: resolve => require(["../views/member/Index.vue"], resolve),
+    name: "异业商品统计",
+    redirect: "commodityReportForm/commodityReport",
+    children: [{
+        path: "commodityReport",
+        meta: {
+          title: "异业商品统计"
+        },
+        component: resolve =>
+          require([
+            "../views/member/commodityReportForm/commodityReport.vue"
+          ], resolve),
+        name: "异业商品统计"
+      },
+      {
+        path: "commodityReportDetail",
+        meta: {
+          title: "异业商品明细"
+        },
+        component: resolve =>
+          require([
+            "../views/member/commodityReportForm/commodityReportDetail.vue"
+          ], resolve),
+        name: "异业商品明细"
+      }
+    ]
+  },
   {
     path: "membershipLevel",
     meta: {
@@ -7,8 +113,7 @@ let routes = [
     component: resolve => require(["../views/member/Index.vue"], resolve),
     name: "会员等级管理",
     redirect: "membershipLevel/detail",
-    children: [
-      {
+    children: [{
         path: "detail",
         meta: {
           title: "会员等级详情"
@@ -40,8 +145,7 @@ let routes = [
     component: resolve => require(["../views/member/Index.vue"], resolve),
     name: "异业商品",
     redirect: "otherCommodity/commodityList",
-    children: [
-      {
+    children: [{
         path: "creatCommodityType",
         meta: {
           title: "创建商品类型"
@@ -62,6 +166,52 @@ let routes = [
     ]
   },
   {
+    path: "otherRights",
+    meta: {
+      title: "异业权益"
+    },
+    component: resolve => require(["../views/member/Index.vue"], resolve),
+    name: "异业权益",
+    redirect: "otherRights/otherRightsList",
+    children: [{
+        path: "otherRightsList",
+        meta: {
+          title: "异业权益列表"
+        },
+        component: resolve =>
+          require(["../views/member/otherRights/otherRightsList.vue"], resolve),
+        name: "异业权益列表"
+      },
+      {
+        path: "addOtherRights",
+        meta: {
+          title: "创建异业权益"
+        },
+        component: resolve =>
+          require(["../views/member/otherRights/addOtherRights.vue"], resolve),
+        name: "创建异业权益"
+      },
+      {
+        path: "editOtherRights",
+        meta: {
+          title: "修改异业权益"
+        },
+        component: resolve =>
+          require(["../views/member/otherRights/addOtherRights.vue"], resolve),
+        name: "修改异业权益"
+      },
+      {
+        path: "otherRightsDetail",
+        meta: {
+          title: "异业权益详情"
+        },
+        component: resolve =>
+          require(["../views/member/otherRights/otherRightsDetail.vue"], resolve),
+        name: "异业权益详情"
+      }
+    ]
+  },
+  {
     path: "ownRights",
     meta: {
       title: "自有卡权益"
@@ -69,8 +219,7 @@ let routes = [
     component: resolve => require(["../views/member/Index.vue"], resolve),
     name: "会员",
     redirect: "ownRights/list",
-    children: [
-      {
+    children: [{
         path: "addOwnRights",
         meta: {
           title: "创建自有卡权益"
@@ -107,8 +256,7 @@ let routes = [
     component: resolve => require(["../views/member/Index.vue"], resolve),
     name: "会员",
     redirect: "member/list",
-    children: [
-      {
+    children: [{
         path: "list",
         meta: {
           title: "会员列表"
@@ -135,8 +283,7 @@ let routes = [
     },
     component: resolve => require(["../views/member/Index.vue"], resolve),
     name: "会员卡",
-    children: [
-      {
+    children: [{
         path: "list",
         meta: {
           title: "会员卡列表"
@@ -189,8 +336,7 @@ let routes = [
     },
     component: resolve => require(["../views/member/Index.vue"], resolve),
     name: "卡政策管理",
-    children: [
-      {
+    children: [{
         path: "list",
         meta: {
           title: "会员卡政策列表"
@@ -244,8 +390,7 @@ let routes = [
     },
     component: resolve => require(["../views/member/Index.vue"], resolve),
     name: "联名卡商户管理",
-    children: [
-      {
+    children: [{
         path: "list",
         meta: {
           title: "联名卡商户列表"

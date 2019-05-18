@@ -22,3 +22,6 @@
 [submodule "src/csm"]
 	path = src/csm
 	url = http://git.tech.nanhaicorp.com/oristarcloud/csm.git
+[submodule "src/cwf"]
+	path = src/cwf
+	url = http://git.tech.nanhaicorp.com/oristarcloud/cwf.git

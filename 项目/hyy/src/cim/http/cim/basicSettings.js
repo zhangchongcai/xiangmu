@@ -1,8 +1,11 @@
-import axios from '../api';
+import axios from 'frame_cpm/http/api';
+let cimRegion = '/cim'
+let csmRegion = '/csm'
+// let cimRegion = ''
 // 销售终端-查询
 export const terminalQueryPage = data => {
     return axios({
-        url: '/terminal/queryPage',
+        url: csmRegion + '/terminal/queryPage',
         method: 'post',
         data
     })
@@ -10,7 +13,7 @@ export const terminalQueryPage = data => {
 // 销售终端-修改
 export const terminalUpdate = data => {
     return axios({
-        url: '/terminal/update',
+        url: cimRegion +'/terminal/update',
         method: 'post',
         data
     })
@@ -18,7 +21,7 @@ export const terminalUpdate = data => {
 // 销售终端-查询销售地址
 export const salePlaceAll = data => {
     return axios({
-        url: '/salePlace/all',
+        url:cimRegion + '/salePlace/all',
         method: 'post',
         data
     })
@@ -26,7 +29,7 @@ export const salePlaceAll = data => {
 // 销售终端-查询货架和仓库
 export const terminalRackAll = data => {
     return axios({
-        url: '/terminal/rackAll',
+        url: cimRegion + '/terminal/rackAll',
         method: 'post',
         data
     })
@@ -34,7 +37,7 @@ export const terminalRackAll = data => {
 // 单位管理--查询
 export const queryUnit = data => {
     return axios({
-        url: '/goods/queryUnit',
+        url: cimRegion + '/class/unit/query',
         method: 'post',
         data
     })
@@ -42,7 +45,7 @@ export const queryUnit = data => {
 // 单位管理--新建
 export const saveUnit = data => {
     return axios({
-        url: '/goods/saveUnit',
+        url: cimRegion + '/goods/saveUnit',
         method: 'post',
         data
     })
@@ -50,7 +53,7 @@ export const saveUnit = data => {
 // 单位管理--新建接口生成单位编码
 export const generateUnitCode = data => {
     return axios({
-        url: '/goods/generateUnitCode',
+        url: cimRegion + '/goods/generateUnitCode',
         method: 'post',
         data
     })
@@ -58,7 +61,7 @@ export const generateUnitCode = data => {
 // 单位管理--修改
 export const updateUnit = data => {
     return axios({
-        url: '/goods/updateUnit',
+        url: cimRegion + '/goods/updateUnit',
         method: 'post',
         data
     })
@@ -66,7 +69,7 @@ export const updateUnit = data => {
 // 单位管理--删除
 export const deleteUnit = data => {
     return axios({
-        url: '/goods/deleteUnit',
+        url: cimRegion + '/goods/deleteUnit',
         method: 'post',
         data
     })
@@ -74,7 +77,7 @@ export const deleteUnit = data => {
 // 单位管理--回选
 export const seletUnitByuid = data => {
     return axios({
-        url: '/goods/seletUnitByuid',
+        url: cimRegion + '/goods/seletUnitByuid',
         method: 'post',
         data
     })
@@ -83,7 +86,7 @@ export const seletUnitByuid = data => {
 // 品牌管理--查询
 export const findBrandList = data => {
     return axios({
-        url: '/brand/findBrandList',
+        url: cimRegion + '/class/brand/query',
         method: 'post',
         data
     })
@@ -91,7 +94,7 @@ export const findBrandList = data => {
 // 品牌管理--新增
 export const saveBrand = data => {
     return axios({
-        url: '/brand/saveBrand',
+        url: cimRegion + '/brand/saveBrand',
         method: 'post',
         data
     })
@@ -99,7 +102,7 @@ export const saveBrand = data => {
 // 品牌管理--回选
 export const getBrand = data => {
     return axios({
-        url: '/brand/getBrand',
+        url: cimRegion + '/brand/getBrand',
         method: 'post',
         data
     })
@@ -107,7 +110,7 @@ export const getBrand = data => {
 // 品牌管理--修改
 export const updateBrand = data => {
     return axios({
-        url: '/brand/updateBrand',
+        url: cimRegion + '/brand/updateBrand',
         method: 'post',
         data
     })
@@ -115,7 +118,7 @@ export const updateBrand = data => {
 // 品牌管理--删除
 export const delBrand = data => {
     return axios({
-        url: '/brand/delBrand',
+        url: cimRegion + '/brand/delBrand',
         method: 'post',
         data
     })
@@ -123,7 +126,7 @@ export const delBrand = data => {
 // 销售大类管理--查询
 export const queryBigClass = data => {
     return axios({
-        url: '/bigclass/queryBigClass',
+        url: cimRegion + '/bigclass/queryBigClass',
         method: 'post',
         data
     })
@@ -131,7 +134,7 @@ export const queryBigClass = data => {
 // 销售大类管理--回选
 export const getBigClass = data => {
     return axios({
-        url: '/bigclass/getBigClass',
+        url: cimRegion + '/bigclass/getBigClass',
         method: 'post',
         data
     })
@@ -139,7 +142,7 @@ export const getBigClass = data => {
 // 销售大类管理--新建
 export const insertBigClass = data => {
     return axios({
-        url: '/bigclass/insertBigClass',
+        url: cimRegion + '/bigclass/insertBigClass',
         method: 'post',
         data
     })
@@ -147,7 +150,7 @@ export const insertBigClass = data => {
 // 销售大类管理--修改
 export const updateBigClass = data => {
     return axios({
-        url: '/bigclass/updateBigClass',
+        url: cimRegion + '/bigclass/updateBigClass',
         method: 'post',
         data
     })
@@ -155,7 +158,7 @@ export const updateBigClass = data => {
 // 销售大类管理--停止
 export const stopBigClass = data => {
     return axios({
-        url: '/bigclass/stopBigClass',
+        url: cimRegion + '/bigclass/stopBigClass',
         method: 'post',
         data
     })
@@ -163,7 +166,7 @@ export const stopBigClass = data => {
 // 销售大类管理--删除
 export const deleteBigClass = data => {
     return axios({
-        url: '/bigclass/deleteBigClass',
+        url: cimRegion + '/bigclass/deleteBigClass',
         method: 'post',
         data
     })
@@ -171,7 +174,7 @@ export const deleteBigClass = data => {
 // 类别管理--获取大类
 export const getBigClassList = data => {
     return axios({
-        url: '/class/bigClass/list',
+        url: cimRegion + '/class/bigClass/list',
         method: 'post',
         data
     })
@@ -179,7 +182,7 @@ export const getBigClassList = data => {
 // 类别管理--类别树查询
 export const getClassTree = data => {
     return axios({
-        url: '/class/get/classTree',
+        url: cimRegion + '/class/classTrees/query',
         method: 'post',
         data
     })
@@ -187,7 +190,7 @@ export const getClassTree = data => {
 // 类别管理--列表查询
 export const classList = data => {
     return axios({
-        url: '/class/list',
+        url: cimRegion + '/class/queryClass',
         method: 'post',
         data
     })
@@ -195,7 +198,7 @@ export const classList = data => {
 // 类别管理--新增
 export const classAdd = data => {
     return axios({
-        url: '/class/add',
+        url: cimRegion + '/class/add',
         method: 'post',
         data
     })
@@ -203,7 +206,7 @@ export const classAdd = data => {
 // 类别管理--更改
 export const classUpdate = data => {
     return axios({
-        url: '/class/update',
+        url: cimRegion + '/class/update',
         method: 'post',
         data
     })
@@ -211,7 +214,7 @@ export const classUpdate = data => {
 // 类别管理--删除
 export const classDelete = data => {
     return axios({
-        url: '/class/delete',
+        url: cimRegion + '/class/delete',
         method: 'post',
         data
     })
@@ -219,7 +222,7 @@ export const classDelete = data => {
 // 类别管理--上移
 export const classUp = data => {
     return axios({
-        url: '/class/up',
+        url: cimRegion + '/class/up',
         method: 'post',
         data
     })
@@ -227,7 +230,7 @@ export const classUp = data => {
 // 类别管理--下移
 export const classDown = data => {
     return axios({
-        url: '/class/down',
+        url: cimRegion + '/class/down',
         method: 'post',
         data
     })
@@ -235,7 +238,7 @@ export const classDown = data => {
 // 类别管理--回选 新建时匹配code
 export const classDetail = data => {
     return axios({
-        url: '/class/detail',
+        url: cimRegion + '/class/detail',
         method: 'post',
         data
     })
@@ -243,7 +246,7 @@ export const classDetail = data => {
 // 销售属性--查询
 export const selectSalesAttribute = data => {
     return axios({
-        url: '/salesAttribute/selectAttribute',
+        url: cimRegion + '/class/attribute/query',
         method: 'post',
         data
     })
@@ -251,7 +254,7 @@ export const selectSalesAttribute = data => {
 // 销售属性--新增
 export const saveSlesAttribute = data => {
     return axios({
-        url: '/salesAttribute/saveAttribute',
+        url: cimRegion + '/salesAttribute/saveAttribute',
         method: 'post',
         data
     })
@@ -259,7 +262,7 @@ export const saveSlesAttribute = data => {
 // 销售属性--修改
 export const updateSalesAttribute = data => {
     return axios({
-        url: '/salesAttribute/updateAttribute',
+        url: cimRegion + '/salesAttribute/updateAttribute',
         method: 'post',
         data
     })
@@ -267,7 +270,7 @@ export const updateSalesAttribute = data => {
 // 销售属性--删除
 export const deleteSalesAttribute = data => {
     return axios({
-        url: '/salesAttribute/deleteAttribute',
+        url: cimRegion + '/salesAttribute/deleteAttribute',
         method: 'post',
         data
     })
@@ -275,7 +278,7 @@ export const deleteSalesAttribute = data => {
 // 仓库管理--查询
 export const queryStorehouse = data => {
     return axios({
-        url: '/storehouse/queryStorehouse',
+        url: cimRegion + '/storehouse/queryStorehouse',
         method: 'post',
         data
     })
@@ -283,7 +286,7 @@ export const queryStorehouse = data => {
 // 仓库管理--新建
 export const saveStorehouse = data => {
     return axios({
-        url: '/storehouse/saveStorehouse',
+        url: cimRegion + '/storehouse/saveStorehouse',
         method: 'post',
         data
     })
@@ -291,14 +294,14 @@ export const saveStorehouse = data => {
 // 仓库管理--删除
 export const delStorehouse = data => {
     return axios({
-        url: '/storehouse/delStorehouse/?id=' + data,
+        url: cimRegion + '/storehouse/delStorehouse/?id=' + data,
         method: 'get'
     })
 }
 // 仓库管理--修改
 export const updateStorehouse = data => {
     return axios({
-        url: '/storehouse/updateStorehouse',
+        url: cimRegion + '/storehouse/updateStorehouse',
         method: 'put',
         data
     })
@@ -307,7 +310,7 @@ export const updateStorehouse = data => {
 // 货架管理--查询
 export const findStorageRackList = data => {
     return axios({
-        url: '/storage/rack/findStorageRackList',
+        url: cimRegion + '/storage/rack/findStorageRackList',
         method: 'post',
         data
     })
@@ -315,14 +318,14 @@ export const findStorageRackList = data => {
 // 货架管理--删除
 export const delStorageRack = data => {
     return axios({
-        url: '/storage/rack/delStorageRack/' + data,
+        url: cimRegion + '/storage/rack/delStorageRack/' + data,
         method: 'post'
     })
 }
 // 货架管理--修改
 export const updateStorageRack = data => {
     return axios({
-        url: '/storage/rack/updateStorageRack',
+        url: cimRegion + '/storage/rack/updateStorageRack',
         method: 'post',
         data
     })
@@ -330,7 +333,7 @@ export const updateStorageRack = data => {
 // 货架管理--新增
 export const saveStorageRack = data => {
     return axios({
-        url: '/storage/rack/saveStorageRack',
+        url: cimRegion + '/storage/rack/saveStorageRack',
         method: 'post',
         data
     })
@@ -338,7 +341,7 @@ export const saveStorageRack = data => {
 // 销售地址--查询
 export const queryPage = data => {
     return axios({
-        url: '/salePlace/queryPage',
+        url: csmRegion + '/salePlace/queryPage',
         method: 'post',
         data
     })
@@ -346,7 +349,7 @@ export const queryPage = data => {
 // 销售地址--新增
 export const salePlaceSave = data => {
     return axios({
-        url: '/salePlace/save',
+        url: csmRegion + '/salePlace/save',
         method: 'post',
         data
     })
@@ -354,7 +357,7 @@ export const salePlaceSave = data => {
 // 销售地址--修改
 export const salePlaceUpdate = data => {
     return axios({
-        url: '/salePlace/update',
+        url: csmRegion + '/salePlace/update',
         method: 'post',
         data
     })
@@ -362,24 +365,74 @@ export const salePlaceUpdate = data => {
 // 销售地址--删除
 export const salePlaceDelete = data => {
     return axios({
-        url: '/salePlace/delete/' + data,
+        url: csmRegion + '/salePlace/delete/' + data,
         method: 'delete'
     })
 }
 // 销售地址--查看
 export const salePlaceCheck = data => {
     return axios({
-        url: '/salePlace/get/' + data,
+        url: csmRegion + '/salePlace/get/' + data,
         method: 'get'
     })
 }
 // 销售地址--启用停用
 export const salePlaceStatus = (params, data) => {
     return axios({
-        url: '/salePlace/status?status=' + params + '&uid=' + data,
+        url: csmRegion + '/salePlace/status?status=' + params + '&uid=' + data,
         method: 'post'
     })
 }
+// 测试
+export const goodsDataQueryGoodsList = data => {
+    return axios({
+        url: cimRegion + '/cim/goodsData/queryGoodsList',
+        method: 'get',
+        data
+    })
+}
+// 商品分类管理
+//获取分类树
+export const getCategoryTrees = data => {
+    return axios({
+        url: cimRegion + '/category/trees',
+        method: 'post',
+        data
+    })
+}
+// 商品分类新增与修改保存
+export const categorySave = data => {
+    return axios({
+        url: cimRegion +'/category/save',
+        method: 'post',
+        data
+    })
+}
+//查询列表
+export const categoryList = data => {
+    return axios({
+        url: cimRegion +'/category/list',
+        method: 'post',
+        data
+    })
+}
+//分类新建或者修改回选数据
+export const categoryToPage = data => {
+    return axios({
+        url: cimRegion +'/category/toPage',
+        method: 'post',
+        data
+    })
+}
+// 商品分类删除
+export const categoryDelete = data => {
+    return axios({
+        url: cimRegion +'/category/delete',
+        method: 'post',
+        data
+    })
+}
+
 export default {
     // 销售终端接口
     terminalQueryPage,
@@ -438,5 +491,13 @@ export default {
     salePlaceDelete,
     salePlaceStatus,
     salePlaceUpdate,
-    salePlaceCheck
+    salePlaceCheck,
+
+    goodsDataQueryGoodsList,
+    // 商品分类管理
+    getCategoryTrees,
+    categorySave,
+    categoryDelete,
+    categoryToPage,
+    categoryList,
 }

@@ -8,7 +8,7 @@
         label-width="100px"
         label-suffix=":"
       >
-        <el-form-item label="销售大类">
+        <!-- <el-form-item label="销售大类">
           <el-select v-model="queryData.uid" @change="handleBigClassChange">
             <el-option
               v-for="item in bigClassList"
@@ -17,12 +17,12 @@
               :key="item.id"
             ></el-option>
           </el-select>
-        </el-form-item>
+        </el-form-item>-->
       </el-form>
     </div>
-    <div class="common-new-built">
+    <!-- <div class="common-new-built">
       <el-button type="primary" size="small" plain @click="handleNewBuilt">新建</el-button>
-    </div>
+    </div>-->
     <div>
       <el-row>
         <el-col :lg="4">
@@ -46,8 +46,9 @@
                 :key="item.key"
                 :prop="item.key"
                 :label="item.label"
+                :formatter="item.formatter"
               ></el-table-column>
-              <el-table-column label="操作">
+              <!-- <el-table-column label="操作">
                 <template slot-scope="{row,$index}">
                   <el-button
                     type="text"
@@ -77,7 +78,7 @@
                     <i class="iconfont icon-neiye-shanchu"></i>
                   </el-button>
                 </template>
-              </el-table-column>
+              </el-table-column> -->
             </el-table>
             <div class="page-wrap">
               <el-pagination
@@ -158,6 +159,7 @@
 <script>
 import qs from "qs";
 import mixin from "cim/mixins/cim/paginationConfig.js";
+import { letterAndNumReg } from "cim/util/reg.js";
 
 export default {
   mixins: [mixin],
@@ -178,16 +180,44 @@ export default {
       },
       tableColumn: [
         {
+          label: "类目名称",
+          key: "name"
+        },
+        {
           label: "编码",
-          key: "classCode"
+          key: "code"
         },
         {
-          label: "名称",
-          key: "className"
+          label: "是否末级",
+          key: "isLeaf",
+          formatter(row, column, cellValue) {
+            let result = "";
+            switch (row.isLeaf) {
+              case 0:
+                result = "否";
+                break;
+              case 1:
+                result = "是";
+                break;
+            }
+            return result;
+          }
         },
         {
-          label: "备注",
-          key: "remark"
+          label: "状态",
+          key: "status",
+          formatter(row, column, cellValue) {
+            let result = "";
+            switch (row.status) {
+              case 0:
+                result = "停用";
+                break;
+              case 1:
+                result = "启用";
+                break;
+            }
+            return result;
+          }
         }
       ],
 
@@ -212,7 +242,7 @@ export default {
         classCode: [
           { required: true, message: "请输入类别编码", trigger: "blur" },
           {
-            pattern: this.$reg.letterAndNumReg,
+            pattern: letterAndNumReg,
             message: "请输入英文或数字!"
           }
         ],
@@ -227,8 +257,10 @@ export default {
   },
   methods: {
     init() {
-      this.getBigClassList();
-      this.onQuery();
+      this.getClassTree({});
+
+      // this.getBigClassList();
+      // this.onQuery();
     },
     // 查询
     onQuery() {
@@ -254,7 +286,7 @@ export default {
     },
     // 获取大类列表
     getBigClassList(param) {
-      this.$api.getBigClassList(param).then(resData => {
+      this.$cimList.getBigClassList(param).then(resData => {
         if (resData.code == 200) {
           this.bigClassList = resData.data;
           if (this.bigClassList.length == 0) {
@@ -262,16 +294,16 @@ export default {
         }
       });
     },
-    // 根据销售大类获取类别树
+    // 获取类别树
     getClassTree(param, type) {
-      this.treeLoding = true;
-      this.$api.getClassTree(param).then(resData => {
+      // this.treeLoding = true;
+      this.$cimList.getClassTree(param).then(resData => {
         if (resData.code == 200) {
-          if (type == "build") {
-            this.buildBigClassTeeData = resData.data;
-          } else {
-            this.bigClassTeeData = resData.data;
-          }
+          // if (type == "build") {
+          //   this.buildBigClassTeeData = resData.data;
+          // } else {
+          this.bigClassTeeData = resData.data.children;
+          // }
         }
         this.treeLoding = false;
       });
@@ -279,7 +311,7 @@ export default {
     // 获取类别管理列表
     getClassList(param) {
       this.tableLoding = true;
-      this.$api
+      this.$cimList
         .classList(param)
         .then(resData => {
           if (resData.code == 200) {
@@ -294,7 +326,7 @@ export default {
     },
     // 新增
     classAdd(param) {
-      this.$api.classAdd(param).then(resData => {
+      this.$cimList.classAdd(param).then(resData => {
         if (resData.code == 200) {
           this.getClassTree({
             uid: this.currentSelectedBigClassUid
@@ -307,7 +339,7 @@ export default {
     },
     // 修改
     classUpdate(param) {
-      this.$api.classUpdate(param).then(resData => {
+      this.$cimList.classUpdate(param).then(resData => {
         if (resData.code == 200) {
           this.getClassList({
             uid: this.currentSelectedUid
@@ -317,7 +349,7 @@ export default {
     },
     // 删除
     classDelete(param) {
-      this.$api.classDelete(param).then(resData => {
+      this.$cimList.classDelete(param).then(resData => {
         if (resData.code == 200) {
           this.getClassList({
             uid: this.currentSelectedUid
@@ -327,7 +359,7 @@ export default {
     },
     // 上移
     classUp(param) {
-      this.$api.classUp(param).then(resData => {
+      this.$cimList.classUp(param).then(resData => {
         if (resData.code == 200) {
           this.getClassList({
             uid: this.currentSelectedUid
@@ -337,7 +369,7 @@ export default {
     },
     // 下移
     classDown(param) {
-      this.$api.classDown(param).then(resData => {
+      this.$cimList.classDown(param).then(resData => {
         if (resData.code == 200) {
           this.getClassList({
             uid: this.currentSelectedUid
@@ -347,7 +379,7 @@ export default {
     },
     // 回选
     classDetail(param) {
-      this.$api.classDetail(param).then(resData => {
+      this.$cimList.classDetail(param).then(resData => {
         if (resData.code == 200) {
           this.changeData.classCode = resData.data.classCode;
         }
@@ -423,7 +455,8 @@ export default {
     },
     // 查询树
     handleTreeNodeClick(data) {
-      this.currentSelectedUid = data.id;
+      this.queryData.uid = data.uid;
+      this.currentSelectedUid = data.uid;
       this.getClassList({
         uid: this.currentSelectedUid
       });

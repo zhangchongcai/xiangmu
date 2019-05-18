@@ -199,8 +199,7 @@
                     <el-time-picker
                       v-model="item.startTm"
                       placeholder="请输入时间"
-                     
-                    >
+                     @change="findTime($event,index)"                    >
                     </el-time-picker>
                     <span class="time-padding">至</span>
                     <el-time-picker
@@ -327,6 +326,7 @@
 
                     <el-table
                       :data="ttVoList"
+                      ref="multipleTable1"
                       @selection-change="handleSelectionTtVoListChange"
                     >
                       <el-table-column
@@ -421,6 +421,7 @@
 
                   <el-table
                     class="edit-cichannel-table"
+                    ref="multipleTable2"
                     :data="priceNetSale"
                      @selection-change="handleSelectionPriceNetSaleChange"
                   >
@@ -535,6 +536,7 @@ export default {
     return {
       flagWeekArr:[],
       flagWeekendArr:[],
+      cinemaUids:'',//影院uid集合
       //交互部分****************
       selectCinemaStatus:false,
       getCinemaTreeList:[],
@@ -628,14 +630,13 @@ export default {
           // }
         ],
         schBashHallTypeList: [],
-        // tmList: [{ startTm: "", endTm: "" }],
         tmList: [  {
                 // id: 1,
                 uid: "",
                 tenantId: "",
                 programUid: "",
-                startTm: "",
-                endTm: "",
+                startTm: null,
+                endTm: null,
                 monday: "0",
                 tuesday: "0",
                 wednesday: "0",
@@ -697,6 +698,26 @@ export default {
   mounted() {},
   updated: function() {},
   methods: {
+     toggleSelection1(rows) {
+       let self =this
+        if (rows) {
+          rows.forEach(row => {
+            self.$refs.multipleTable1.toggleRowSelection(row);
+          });
+        } else {
+          self.$refs.multipleTable1.clearSelection();
+        }
+      },
+       toggleSelection2(rows) {
+       let self =this
+        if (rows) {
+          rows.forEach(row => {
+            self.$refs.multipleTable2.toggleRowSelection(row);
+          });
+        } else {
+          self.$refs.multipleTable2.clearSelection();
+        }
+      },
     selectCinemaClose(val){
       console.log('val8888888888888888888',val)
       this.selectCinemaStatus = val
@@ -726,7 +747,13 @@ export default {
     getSelectedCinema(val){
       let self =this
       self.sizeForm.ciCinemaList =val
-      console.log('valllllllllllllllllllllllll',val)
+      let UidArr =[]
+      self.sizeForm.ciCinemaList.forEach((item,index)=>{
+        UidArr.push(item.uid)
+      })
+      self.cinemaUids=UidArr.join(',')
+      self.getTickettypeList()
+      self.ttVoList=[]
     },
     tableFixed(scope){
       console.log('scope',scope)
@@ -747,8 +774,6 @@ export default {
       // console.log("val", item);
       if (self.sizeForm.tmList.length > 0) {
             resultTime = self.sizeForm.tmList.map((item, index) => {
-              // let itemArr = {};
-              console.log('jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj',item.startTm.getHours())
               item.startTm =
                 item.startTm.getHours() + ":" + item.startTm.getMinutes();
               item.endTm =
@@ -790,8 +815,8 @@ export default {
                 uid: "",
                 tenantId: "",
                 programUid: "",
-                startTm: "",
-                endTm: "",
+                startTm: null,
+                endTm: null,
                 monday: "0",
                 tuesday: "0",
                 wednesday: "0",
@@ -867,7 +892,6 @@ export default {
       }
       let checkedCount = self.sizeForm.tmList[index].flagWeekArr.length;
       // debugger
-      console.log(' self.sizeForm.tmList[index].weekDay_checkAll', self.sizeForm.tmList[index].weekDay_checkAll)
       self.sizeForm.tmList[index].weekDay_checkAll = checkedCount === this.cities1.length;
       
 
@@ -882,6 +906,7 @@ export default {
         self.sizeForm.tmList[index].wednesday = "1"
         self.sizeForm.tmList[index].thursday = "1"
         self.sizeForm.tmList[index].friday = "1"
+        self.sizeForm.tmList[index].flagWeekArr.push(1)
         
       }else{
        self.sizeForm.tmList[index].monday ="0";
@@ -889,6 +914,7 @@ export default {
         self.sizeForm.tmList[index].wednesday ="0"
         self.sizeForm.tmList[index].thursday ="0"
         self.sizeForm.tmList[index].friday ="0"
+        self.sizeForm.tmList[index].flagWeekArr.pop()
       }
       self.sizeForm.tmList[index].isIndeterminate_week = false;
       
@@ -913,10 +939,12 @@ export default {
         self.sizeForm.tmList[index].saturday = "1"
         self.sizeForm.tmList[index].sunday = "1"
         self.isIndeterminate_week = true;
+         self.sizeForm.tmList[index].flagWeekendArr.push(1)
       }else{
         self.sizeForm.tmList[index].saturday = "0"
         self.sizeForm.tmList[index].sunday = "0"
         self.isIndeterminate_week = false;
+        self.sizeForm.tmList[index].flagWeekendArr.pop()
        
       }
       self.sizeForm.tmList[index].isIndeterminate_weekend = false;
@@ -971,6 +999,12 @@ export default {
         }
       });
       self.ttVoList = resultArr;
+      if(resultArr.length>0){
+        self.$nextTick(()=>{
+               self.toggleSelection1(resultArr)
+             })
+        
+      }
     },
     // 线上售票方法********************************************************************************************
     handleCheckedDisVersion_Change_2(value) {
@@ -1040,6 +1074,12 @@ export default {
         resultArr.push(resultItem);
       });
       self.priceNetSale = resultArr;
+      if(resultArr.length>0){
+        self.$nextTick(()=>{
+          self.toggleSelection2(resultArr)
+        })
+        
+      }
     },
   //价格不能为负数
   priceChange1(val,index){
@@ -1080,7 +1120,8 @@ export default {
     getTickettypeList() {
       let self = this;
       let data = {
-        type:0
+        type:0,
+        cinemaUids:self.cinemaUids,
       };
       self.$ctmList
         .getTickettypeList(data)
@@ -1090,6 +1131,7 @@ export default {
             self.tickettypeList.forEach((item,index)=>{
               let result 
               if(item.name=='成人票'){
+                self.price_tickettype= []
                 self.price_tickettype.push(item.uid+','+item.name)
               }
             })
@@ -1199,6 +1241,9 @@ export default {
         self.sizeForm.schBashHallTypeList = resultHallTypeList;
       }
     },
+    findTime($event,index){
+      console.log("event:",$event)
+    },
     // *************************************************************************************************
     // 保存价格方案
     priceprogramSave(rulesSizeForm) {
@@ -1220,7 +1265,6 @@ export default {
           } else {
             ciPriceProgram.permitDiscount = 0;
           }
-          // let tiemStart_end= []
            let tiemStart_end=self.sizeForm.ciPriceProgram.tiemStart_end.map((item,index)=>{
             if(item.length<=10){
              
@@ -1228,7 +1272,6 @@ export default {
             }
             return item
           })
-          //  console.log('进去了吗',tiemStart_end)
           ciPriceProgram.name = self.sizeForm.ciPriceProgram.name;
           ciPriceProgram.status = self.sizeForm.ciPriceProgram.status;
           ciPriceProgram.priority = self.sizeForm.ciPriceProgram.priority*1;
@@ -1242,13 +1285,12 @@ export default {
           let resultTime =JSON.parse(JSON.stringify(self.sizeForm.tmList))
           if (self.sizeForm.tmList.length > 0) {
             resultTime = resultTime.map((item, index) => {
-              item.startTm =
-                new Date(item.startTm).getHours() + ":" + new Date(item.startTm).getMinutes();
-              item.endTm =
-               new Date(item.endTm).getHours() + ":" + new Date(item.endTm).getMinutes();
+              if(item.startTm && item.endTm){
+                  item.startTm = new Date(item.startTm).getHours() + ":" + new Date(item.startTm).getMinutes();
+                  item.endTm = new Date(item.endTm).getHours() + ":" + new Date(item.endTm).getMinutes();
+              }
               return item;
             });
-            console.log('resultTime',resultTime)
           }
           //影院uidList处理
           let ciCinemaList = []
@@ -1267,14 +1309,22 @@ export default {
                   ttVoList: self.formTtVoList,
                   ciPriceSaleChannelVoList: ciPriceSaleChannelVoList
               };
-              //判断渠道是否选择
-              if(ciPriceSaleChannelVoList.length <= 0){
-                 self.$message({
-                  message: '请选择渠道',
+          //判断适用时段是否选择
+          if(!self.sizeForm.tmList.some((item,index)=>{ return (item.flagWeekArr.length>0 || item.flagWeekendArr.length>0)&&(item.startTm !=null&& item.endTm !=null)})){
+             self.$message({
+                  message: '请选择适用时段',
                   type: 'warning'
                 }); 
                 return
-              }
+          }
+          //判断渠道是否选择
+          if(ciPriceSaleChannelVoList.length <= 0){
+              self.$message({
+              message: '请选择渠道',
+              type: 'warning'
+            }); 
+            return
+          }
           //判断表格选择
           if(self.formPriceNetSale.length <= 0 && self.formTtVoList.length <= 0){
              self.$message({
@@ -1283,6 +1333,21 @@ export default {
                 }); 
                 return
           }
+         //判断价格不能为0
+         if(self.formPriceNetSale.some((item,index)=>{return(item.price==0)})){
+           self.$message({
+                  message: '票类价格必须大于0',
+                  type: 'warning'
+                }); 
+                return
+         }
+          if(self.formTtVoList.some((item,index)=>{return(item.price==0)})){
+           self.$message({
+                  message: '票类价格必须大于0',
+                  type: 'warning'
+                }); 
+                return
+         }
           self.$ctmList
                 .priceprogramSave(params)
                 .then(ret => {
@@ -1862,7 +1927,7 @@ export default {
     z-index: 999;
     bottom: 0;
     right: 0;
-    background-color: #f5f5f5;
+    // background-color: #f5f5f5;
     .btn-area {
       width: 500px;
       margin: 0 auto;

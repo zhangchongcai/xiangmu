@@ -9,8 +9,8 @@
     >
     </ve-gauge>
     <ul class="ulContainer">
-        <li>月至今达成 : {{BoxRate}}元</li>
-        <li>KPI值 : {{BoxKPItotal}}元</li>
+        <li>月至今达成 : {{BoxRate | capitalizeOne}}{{BoxRate | foo}}</li>
+        <li>KPI值 : {{BoxKPItotal | capitalizeOne}}{{BoxKPItotal | foo}}</li>
     </ul>
   </div>
 </template>
@@ -159,8 +159,127 @@ export default {
               }
             }
           }
+        },
+        tooltip: {
+          //在这里设置
+          formatter: '{a0} : {c0}%'
         }
       }
+    }
+  },
+  filters: {
+    capitalizeOne(value) {
+      if (!value) return ""
+      let newValue = value.toString();
+
+     //判断逻辑
+      if(newValue.indexOf('.') != -1){
+        if(newValue.length < 8){
+          return newValue
+        }
+        else if(newValue.length >= 8 && newValue.length <= 11){
+
+          return (newValue / 10000)
+        }
+        else if(newValue.length >= 12){
+          return ((newValue / 10000) / 10000).toFixed(2)
+        }
+      }
+      else
+      {
+        if(newValue.length < 5){
+          return newValue
+        }
+        else if(newValue.length >= 5 && newValue.length <= 8){
+          return (newValue / 10000).toFixed(2)
+        }
+        else if(newValue.length >= 9){
+          return ((newValue / 10000) / 10000).toFixed(2)
+        }
+      }
+    },
+    //处理万人计算保留两位小数
+    capitalizePerson(value) {
+      if (!value) return ""
+      let newValue = value.toString();
+
+      if(newValue.length < 5){
+        return newValue
+      }
+      else if(newValue.length >= 5 && newValue.length <= 8){
+
+        return (newValue / 10000).toFixed(2)
+      }
+      else if(newValue.length >= 9){
+        return ((newValue / 10000) / 10000).toFixed(2)
+      }
+    },
+    //处理万元计算
+    foo(value){
+      if (!value) return ""
+
+      let newValue = value.toString();
+      let foo = ''
+
+      if(newValue.indexOf('.') != -1){
+  
+        if(newValue.length < 8){
+          foo = '元'
+          return foo
+        }
+        else if(newValue.length >= 8 && newValue.length <= 11){
+          foo = '万元'
+          return foo
+        }
+        else if(newValue.length >= 12){
+          foo = '亿元'
+          return foo
+        }
+      }
+      else{
+
+        if(newValue.length < 5){
+          foo = '元'
+          return foo
+        }
+        else if(newValue.length >= 5 && newValue.length <= 8){
+          foo = '万元'
+          return foo
+        }
+        else if(newValue.length >= 9){
+          foo = '亿元'
+          return foo
+        }
+      }
+    },
+    //处理万人单位计算
+    too(value){
+      if (!value) return ""
+
+      let newValue = value.toString();
+      let too = ''
+
+      if(newValue.length < 5){
+        too = '人'
+        return too
+      }
+      else if(newValue.length >= 5 && newValue.length <= 8){
+        too = '万人'
+        return too
+      }
+      else if(newValue.length >= 9){
+        too = '亿人'
+        return too
+      }
+    },
+    capitalizeTwo(value) {
+      if (!value) return "";
+      value = value * 100;
+      return value.toFixed(2);
+    },
+    capitalizeFloor(value) {
+      if (!value) return "";
+      return value.toFixed(2);
     }
   },
   watch: {
@@ -175,7 +294,7 @@ export default {
     //票房KPI
     getBoxKpiData(BoxKPIvalue){
       //取到时间进度
-      let tool1 = BoxKPIvalue.timeRate, tool2 = BoxKPIvalue.boxOfficeRate
+      let tool1 = BoxKPIvalue.timeRate, tool2 = (BoxKPIvalue.boxOfficeRate / 10000).toFixed(2)
       
       //取值title
       this.BoxRate = BoxKPIvalue.boxOfficeTarget
@@ -184,36 +303,11 @@ export default {
       this.gaugeData = {
         columns: ["name", "value"],
         rows: [
-          { name: "实际完成率", value: tool1},
-          { name: "时间进度", value: tool2}
+          { name: "实际完成率", value: tool2},
+          { name: "时间进度", value: tool1}
         ]
       }
 
-      let gaugeSettings = JSON.parse(JSON.stringify(this.gaugeSettings))
-
-      gaugeSettings.seriesMap.实际完成率.axisLine.lineStyle.color = [
-        [tool2/(tool2*1 + tool1*1), "#3B74FF"],[1,'#F5F5F5']
-      ]
-      gaugeSettings.seriesMap.时间进度.axisLine.lineStyle.color = [
-        [tool2/(tool2*1 + tool1*1), "#3B74FF"],[1,'#F5F5F5']
-      ]
-      this.gaugeSettings = gaugeSettings
-    },
-    //卖品KPI
-    getMemKpiData(MemberKPIvalue){
-      //取到时间进度
-      let tool1 = MemberKPIvalue.timeRate, tool2 = MemberKPIvalue.boxOfficeRate
-      //取值title
-      this.BoxRate = MemberKPIvalue.boxOfficeTarget
-      this.BoxKPItotal = MemberKPIvalue.boxOfficeCurrent
-      //从新复制
-      this.gaugeData = {
-        columns: ["name", "value"],
-        rows: [
-          { name: "实际完成率", value: tool1},
-          { name: "时间进度", value: tool2}
-        ]
-      }
       let gaugeSettings = JSON.parse(JSON.stringify(this.gaugeSettings))
 
       gaugeSettings.seriesMap.实际完成率.axisLine.lineStyle.color = [

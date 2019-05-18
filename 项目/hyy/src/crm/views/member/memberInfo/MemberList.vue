@@ -43,12 +43,15 @@
         <el-table-column prop="mobileNum" label="手机号" min-width="120" :formatter="formateEmpty" show-overflow-tooltip></el-table-column>
         <el-table-column prop="sex" label="性别" min-width="80" :formatter="formateEmpty"></el-table-column>
         <el-table-column prop="birthday" label="生日" min-width="100" :formatter="formateEmpty" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="levelId" label="会员等级" min-width="100" :formatter="formateEmpty" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="levelName" label="会员等级" min-width="100" :formatter="formateEmpty" show-overflow-tooltip></el-table-column>
         <el-table-column prop="openDate" label="注册时间" min-width="100" :formatter="formateEmpty" show-overflow-tooltip></el-table-column>
         <el-table-column prop="channelName" label="全部来源" min-width="100" :formatter="formateEmpty"
           show-overflow-tooltip></el-table-column>
-        <el-table-column fixed="right" label="操作" min-width="100">
-          <span slot-scope="scope" @click="handleMemberDetail(scope.row)" style="color:#3B74FF;cursor: pointer;fontSize:12px;">详情</span>
+        <el-table-column fixed="right" label="操作" min-width="120">
+          <template slot-scope="scope">
+            <span @click="handleMemberDetail(scope.row)" style="color:#3B74FF;cursor: pointer;fontSize:12px;">详情</span>
+            <span @click="handleChangeHistory(scope.row)" style="color:#3B74FF;cursor: pointer;fontSize:12px;margin-left:10px;">变更历史</span>
+          </template>
         </el-table-column>
       </el-table>
     </div>
@@ -58,6 +61,41 @@
         :page-size="formData.size - 0" layout="prev, pager, next, jumper, sizes" :page-sizes="[20, 50, 100]" :total="formData.total-0"></el-pagination>
     </div>
     <!-- 分页 end -->
+    <!-- 变更历史dialog -->
+    <el-dialog title="变更历史" :visible.sync="historyVisible">
+      <div class="_mbmber-history-visible">
+        <div class="_m-member-table-custom">
+          <el-table :data="logList" stripe style="width: 100%" :empty-text="tipMessage">
+            <el-table-column prop="operateTime" label="操作时间" min-width="100" :formatter="formateEmpty"
+              show-overflow-tooltip></el-table-column>
+            <el-table-column prop="operateTypeName" label="操作类型" min-width="100" :formatter="formateEmpty"
+              show-overflow-tooltip></el-table-column>
+            <el-table-column prop="oldMemberInfo" label="操作前" min-width="120" :formatter="formateEmpty"
+              show-overflow-tooltip>
+              <template slot-scope="scope">
+                {{scope.row.oldMemberInfo | formatMemberInfo}}
+              </template>
+            </el-table-column>
+            <el-table-column prop="memberInfo" label="操作后" min-width="120" :formatter="formateEmpty"
+              show-overflow-tooltip>
+              <template slot-scope="scope">
+                {{scope.row.memberInfo | formatMemberInfo}}
+              </template>
+            </el-table-column>
+            <el-table-column prop="channelName" label="操作渠道" min-width="100" :formatter="formateEmpty"></el-table-column>
+            <el-table-column prop="operator" label="操作人" min-width="100" :formatter="formateEmpty"
+              show-overflow-tooltip></el-table-column>
+          </el-table>
+        </div>
+        <!-- 分页 start -->
+        <div class="page-wrap">
+          <el-pagination background @size-change="handleDialogSizeChange" @current-change="handleDialogCurrentChange"
+            :current-page="currentPage-0" :page-size="formData.size - 0" layout="prev, pager, next, jumper, sizes"
+            :page-sizes="[20, 50, 100]" :total="formData.total-0"></el-pagination>
+        </div>
+        <!-- 分页 end -->
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -66,8 +104,18 @@ export default {
   name: "MemberList",
   data() {
     return {
+      historyVisible: false, //变更历史
+      logList: [], //变更历史、操作日志数组
+      historyTotal: 0, //变更历史总数据
+      logData: {
+        tenantId: this.$store.state.loginUser.consumerId,
+        current: 1,
+        size: 20,
+        cardNo: "",
+        memberId: ""
+      },
       tipMessage: "暂无数据",
-      tenantId:  this.$store.state.loginUser.consumerId,
+      tenantId: this.$store.state.loginUser.consumerId,
       currentPage: 1,
       records: [],
       pickerOptions: {
@@ -137,13 +185,48 @@ export default {
     this.channelList();
     this.search();
   },
+  filters: {
+    formatMemberInfo(value) {
+      // var value = { sex: "男", name: "张三", email: null };
+      value = JSON.parse(JSON.stringify(value))
+      console.log('value-----',value)
+      if(value == null) {return '-'}
+      var result = [];
+      for (var key in value) {
+        var lable = "";
+        switch (key) {
+          case "sex":
+            lable = "性别：";
+            break;
+          case "name":
+            lable = "姓名：";
+            break;
+          case "birthday":
+            lable = "生日：";
+            break;
+          case "email":
+            lable = "邮箱：";
+            break;
+          case "mobileNum":
+            lable = "手机号：";
+            break;
+          case "creditNum":
+            lable = "身份证号：";
+            break;
+        }
+        if (value[key] != null) {
+          result.push(lable + value[key]);
+        }
+      }
+      return result.join(" , ");
+    }
+  },
   methods: {
     channelList() {
       //会员来源
       let _this = this;
       _this.$crmList.channelList({ tenantId: _this.tenantId }).then(ret => {
         _this.sourceOptions = ret;
-        console.log(ret);
       });
     },
     search() {
@@ -175,7 +258,6 @@ export default {
           // console.log(ret.total)
         })
         .catch(err => {
-          console.log("err===", err);
           _this.tipMessage = err.message;
         });
     },
@@ -196,6 +278,15 @@ export default {
       this.currentPage = val;
       this.search();
     },
+    handleDialogSizeChange(val) {
+      // console.log(`每页 ${val} 条`);
+      this.logData.size = val;
+      this.historysearch();
+    },
+    handleDialogCurrentChange(val) {
+      this.logData.current = val;
+      this.historysearch();
+    },
     // 查看会员详情
     handleMemberDetail(scope) {
       // console.log("scope=", scope);
@@ -209,6 +300,34 @@ export default {
           tenantId: this.tenantId
         }
       });
+    },
+    // 变更历史查询
+    historysearch() {
+      this.historyVisible = true;
+      this.tipMessage = "数据加载中...";
+      this.$crmList
+        .memberLogListPage(this.logData)
+        .then(res => {
+          if (res.total == 0) {
+            this.tipMessage = "暂无数据";
+          }
+          this.logList = res.records;
+          this.historyTotal = res.total;
+        })
+        .catch(err => {
+          this.tipMessage = err.message;
+        });
+    },
+    // 变更历史
+    handleChangeHistory(scope) {
+      this.logData = {
+        tenantId: this.tenantId,
+        current: 1,
+        size: 20,
+        cardNo: scope.cardNum,
+        memberId: scope.id
+      };
+      this.historysearch();
     },
     formateEmpty(row, column, cellValue, index) {
       return cellValue ? cellValue : "-";
@@ -255,5 +374,8 @@ export default {
     color: #b1b1b1;
     padding: 8px 0;
   }
+}
+// 变更历史dialog
+._mbmber-history-visible {
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-    <div class="movie-plan_default">
+    <div class="movie-plan_detail">
         <el-collapse
             v-model="activeNames">
             <!-- 基础信息 -->
@@ -488,10 +488,11 @@
                                             sortable
                                             label="竞对平均票价">
                                             
-                                        </el-table-column
-                                        v-for="cinema in vieCinemaList" 
-                                        :key="cinema.cinemaCode"
-                                        sortable>
+                                        </el-table-column>
+                                        <el-table-column
+                                            v-for="cinema in vieCinemaList" 
+                                            :key="cinema.cinemaCode"    
+                                            sortable>
                                             <template slot="header" slot-scope="scope">
                                                 <p>{{cinema.cinemaCode}}</p>
                                                 <p>{{cinema.lang}}</p>
@@ -821,7 +822,7 @@
 <script>
 import FixStepTool from "ctm/components/fix-step-tool/fix-step-tool"
 import fixStepMixin from "ctm/mixins/fixStepTool"
-import { getSchPlanLang, getPriceSystem, savePlanAll, importPricePlan, hallTypeList, priceprogramScan, getmoviePlanDetail, initTimeLine } from 'ctm/http/interface'
+import { getSchPlanLang, getPriceSystem, savePlanAll, importPricePlan, hallTypeList, priceprogramScan, getmoviePlanDetail, initTimeLine, datePlanList  } from 'ctm/http/interface'
 export default {
     data() {
 
@@ -844,6 +845,8 @@ export default {
 
         return {
             planUid: '',
+            curPlanDate: '',
+            nextPlanDate: '',
             year: '',
             month: '',
             day: '',
@@ -883,7 +886,7 @@ export default {
             },
             //  电影信息
             movieData: {},
-            hallData: [],
+            hallData: null,
             showPlanDate: '',
             showPlanTime: '',
             // {
@@ -917,18 +920,10 @@ export default {
             total: 0,
             importPlanData: [],
             // 票类数据
-            // ticketData: {
-            //     CiChannels: [],
-            //     ciTickettypes: [],
-            //     movieVersions: []
-            // },
             ticketData: [],
             channelData: [],
-            ticketTypeSel: [],
-            ticketTypeShow: [],
             // 渠道选中值
             channelSel: [],
-            channelTableShow: [],
             // 包厢单卖
             checked: true,
             // 允许营销活动折扣, 会员折扣
@@ -941,8 +936,6 @@ export default {
             movieTypeCheckList: [],
             // 适用渠道
             ticketChannelList: [],
-            //  票类  checkList
-            ticketTypeList: [],
             //  beforeLeave 指示器
             leaveFlag: true,
             ruleForm: {
@@ -991,17 +984,6 @@ export default {
         dataInit() {
             this.isEditMode = this.$route.query.mode ? this.$route.query.mode == 'edit' ? true : false : false
             this.planUid = this.$route.query.uid ? this.$route.query.uid : ''
-            if (this.isEditMode) {
-                if (!this.$store.state.moviePlan.current_row) {
-                    this.warning('获取不到当前影厅影片信息, 即将返回排片页, 请重新操作')
-                    this.leaveFlag = false
-                    setTimeout(() => {
-                        this.$router.push({path: 'layout'})
-                    }, 1000)
-                    return
-                }
-            }
-            this.hallData = this.$store.state.moviePlan ? this.$store.state.moviePlan.current_row : []                 //
             // 获取导入价格方案里的两个list
             if (this.isEditMode) {
                 hallTypeList({name: 'SCH_MOVIE_DIS_VERSION'}).then(res => {
@@ -1021,6 +1003,14 @@ export default {
             }
             this.getmoviePlanDetail()
         },
+        getPlanList() {
+            datePlanList({
+                planDate: `${this.year}-${this.month}-${this.day}`,
+                cinemaUid: this.movieData.cinemaUid
+            }).then(res => {
+                this.hallData = res.data.filter(item => item.hallUid == this.movieData.hallUid && item.planUid != this.planUid)
+            })
+        },
         getmoviePlanDetail() {
             getmoviePlanDetail({
                 'id': this.planUid
@@ -1028,18 +1018,21 @@ export default {
                 if (res.code == 200 && res.data) {
                     let {dateShowFirst, dateShowOff, disVersion, hallName, minPrice, movieLanguage, movieName, mustRightSeat, planTime, priceProgramName, publisherRate, timeLong, approveStatus, permitDiscount, permitSaleBox, movieUid, cinemaUid, hallUid, joinFlag, movieCode, priceProgramUid, planTimeEnd, hallTypeCode} = res.data
                     this.movieData = {dateShowFirst, dateShowOff, disVersion, hallName, minPrice, movieLanguage, movieName, mustRightSeat, planTime, priceProgramName, publisherRate, timeLong, approveStatus, permitDiscount, permitSaleBox, movieUid, priceProgramUid, planTimeEnd, cinemaUid, hallUid, joinFlag, movieCode, hallTypeCode}
-                    this.getTimeLine()
+                    
                     this.year = planTime.includes('T') ? planTime.split('T')[0].split('-')[0] : planTime.split(' ')[0].split('-')[0]
                     this.month = planTime.includes('T') ? planTime.split('T')[0].split('-')[1] : planTime.split(' ')[0].split('-')[1]
                     this.day = planTime.includes('T') ? planTime.split('T')[0].split('-')[2] : planTime.split(' ')[0].split('-')[2]
                     this.planHour = planTime.includes('T') ? planTime.split('T')[1].split(':')[0] : planTime.split(' ')[1].split(':')[0]
+                    this.curPlanDate = this.planHour < 6 ? this.formatDateTime(new Date(planTime).getTime() - 1000 * 24 * 60 * 60, 1) : this.formatDateTime(new Date(planTime).getTime(), 1)
+                    this.nextPlanDate = this.formatDateTime(new Date(this.curPlanDate).getTime() + 1000 * 24 * 60 * 60, 1)
                     this.planMinute = planTime.includes('T') ? planTime.split('T')[1].split(':')[1] : planTime.split(' ')[1].split(':')[1]
                     this.copyMinute = this.planMinute
 
                     this.mustRightSeat = !!mustRightSeat
                     this.permitDiscount = !!permitDiscount
                     this.permitSaleBox = !!permitSaleBox
-                    this.curDate = planTime.includes('T') ? planTime.split('T')[0] : planTime.split(' ')[0]
+                    this.getTimeLine()
+                    this.getPlanList()
                     // this.playTime = `${planTime.split(' ')[1].split(':')[0]}${planTime.split(' ')[1].split(':')[1]}00`
                     // this.copyPlayTime = this.playTime
                     // this.timeRange.selectableRange = `${planTime.split(' ')[1].split(':')[0]}:00:00 - ${planTime.split(' ')[1].split(':')[0]}:59:59`
@@ -1193,7 +1186,7 @@ export default {
         // // 选择时间事件
         // timePickerChange(val) {
         //     let formatVal = `${val.slice(0,4)}00`
-        //     let hours = val.slice(0, 2), minute = val.slice(2, 4), tmpTimeStart = new Date(`${this.curDate} ${hours}:${minute}`).getTime(),
+        //     let hours = val.slice(0, 2), minute = val.slice(2, 4), tmpTimeStart = new Date(`${this.curPlanDate} ${hours}:${minute}`).getTime(),
         //     tmpTimeEnd = tmpTimeStart + this.movieData.timeLong * 60 * 1000
         //     // 判断调整完成之后的时间是否与同影厅其他场次冲突
         //     if (this.hallData.some(item => (tmpTimeStart < new Date(item.showTimeEnd).getTime() && tmpTimeEnd > new Date(item.showTimeEnd).getTime()) || (tmpTimeEnd > new Date(item.showTimeStart).getTime() && tmpTimeStart < new Date(item.showTimeStart).getTime()))) {
@@ -1215,6 +1208,10 @@ export default {
                 this.planMinute = this.copyMinute
                 return this.error('暂未获取到排片时间间隔,请稍后再试')
             }
+            if (!this.hallData) {
+                    this.planMinute = this.copyMinute
+                    return this.error('暂未获取到当前影厅排片数据,请稍后再试')
+                }
             if (val < 0 || val >= 60 || !/^\+?[0-9][0-9]*$/.test(val)) {
                 this.planMinute = this.copyMinute
                 return this.error('必须为0-59之间的整数')
@@ -1227,9 +1224,10 @@ export default {
                 this.planMinute = this.copyMinute
                 return this.error('放映时间区间无法容纳该放映计划，请重新设置放映时间!')
             }
-            if (this.planHours < 6 && this.formatDateTime(tmpTimeEnd, 0).split(' ')[1].split(':')[0] >= 6) {
+            if (this.curPlanDate != this.formatDateTime(tmpTimeEnd, 1) && 
+                        tmpTimeEnd > new Date(this.formatDateTime(`${this.nextPlanDate} 06:00`, 0)).getTime()) {
                 this.planMinute = this.copyMinute
-                return this.error('放映结束时间不能超过早上6点!')
+                return this.error('放映结束时间不能超过次日早上6点!')
             }
             this.movieData.planTime = this.formatDateTime(tmpTimeStart, 0)
             this.movieData.planTimeEnd = this.formatDateTime(tmpTimeEnd, 0)
@@ -1377,7 +1375,7 @@ export default {
                 .catch(action => {
                     if (action != 'cancel') return
                     this.leaveFlag = false
-                    this.$router.push({path: 'layout', query: {date: this.curDate}})
+                    this.$router.push({path: 'layout', query: {date: this.curPlanDate}})
                 })
         },
         savePlan() {
@@ -1432,7 +1430,7 @@ export default {
         },
         submitPlan() {
             let {cinemaUid, hallUid, joinFlag, movieCode, planTimeEnd} = this.movieData
-            let planDate = this.curDate, planTimeStart = this.movieData.planTime, minPrice = this.ruleForm.price, rate = this.ruleForm.rate, permitSaleBox = this.permitSaleBox ? 1 : 0, mustRightSeat = this.mustRightSeat ? 1 : 0, permitDiscount = this.permitDiscount ? 1 : 0, movieLanguage = this.langValue, planUid = this.planUid, priceProgramName = this.selectPlanData.isShow ? this.selectPlanData.programName : this.movieData.priceProgramName, priceProgramUid = this.selectPlanData.isShow ? this.selectPlanData.programUid: this.movieData.priceProgramUid,
+            let planDate = this.curPlanDate, planTimeStart = this.movieData.planTime, minPrice = this.ruleForm.price, rate = this.ruleForm.rate, permitSaleBox = this.permitSaleBox ? 1 : 0, mustRightSeat = this.mustRightSeat ? 1 : 0, permitDiscount = this.permitDiscount ? 1 : 0, movieLanguage = this.langValue, planUid = this.planUid, priceProgramName = this.selectPlanData.isShow ? this.selectPlanData.programName : this.movieData.priceProgramName, priceProgramUid = this.selectPlanData.isShow ? this.selectPlanData.programUid: this.movieData.priceProgramUid,
             schPlanBaseTicketVoList = this.ticketData.filter(item => item.price > 0).map(item => {
                 return {
                     addFee: item.addFee,
@@ -1473,7 +1471,7 @@ export default {
                     setTimeout(() => {
                         this.$router.push({path: 'layout'})
                         // TODO 跳转至上个页面
-                        // this.$router.push({path: 'layout', query: {date: this.curDate}})
+                        // this.$router.push({path: 'layout', query: {date: this.curPlanDate}})
                     }, 1000)
                 }
             }).catch(res => {})
@@ -1485,7 +1483,7 @@ export default {
             //     title: this.$route.meta.titlexxxxx
             // })
             // this.$router.push({path: this.$store.state.tagNav.openedPageList[this.$store.state.tagNav.openedPageList.length-1].path, query: this.$store.state.tagNav.openedPageList[this.$store.state.tagNav.openedPageList.length-1].query})   
-            this.$router.push({path: 'layout', query: {date: this.curDate}})
+            this.$router.push({path: 'layout', query: {date: this.curPlanDate}})
         }
     },
     components: {
@@ -1518,7 +1516,7 @@ export default {
 </script>
 
 <style lang="scss">
-.movie-plan_default {
+.movie-plan_detail {
     padding-bottom: 30px;
     .basic-info {
 		margin-left: 30px;
@@ -1614,7 +1612,7 @@ export default {
             }
             .el-form-item {
                 float: left;
-                width: 50%;
+                width: 40%;
                 height: 34px;
             }
             .el-date-editor {
@@ -1975,7 +1973,7 @@ export default {
             }
 			.el-form-item {
                 float: left;
-                width: 50%;
+                width: 40%;
                 min-height: 50px;
                 // height: 32px;
 				// margin-bottom: 8px;

@@ -69,7 +69,7 @@ module.exports = {
                 {
                     from: 'param',
                     to: 'baseInfo',
-                    name: 'couponTypeCode'
+                    name: 'couponTypeId'
                 }, {
                     from: 'param',
                     to: 'baseInfo',
@@ -103,7 +103,7 @@ module.exports = {
                 }
             });
 
-            // 票券分类 couponTypeCode
+            // 票券分类 couponTypeId
 
             // 入账影院 incomeCinemaId
 

@@ -32,7 +32,7 @@
           <el-option label="全部" value></el-option>
         </el-select>
       </div>
-      <div class="button-wrap">
+      <div class="button-wrap" style="margin-left:16px">
         <el-button type="primary" size="small" @click="getDatas">查询</el-button>
       </div>
       <div class="button-wrap">
@@ -303,18 +303,20 @@ export default {
 <style lang="scss">
 .ticket-price-plan-header {
   width: 100%;
-  padding-top: 25px;
-  padding-bottom: 25px;
+  padding-top: 24px;
+  padding-bottom: 24px;
   padding-left: 24px;
   background: #f5f5f5;
   box-sizing: border-box;
+  
   .search-wrap {
     display: inline-block;
     height: 32px;
-    margin-left: 32px;
+    // margin-left: 32px;
 
     .el-input {
       width: 264px;
+      font-size: 12px;
     }
     span {
       color: #666666;
@@ -327,9 +329,12 @@ export default {
     }
   }
   .button-wrap {
-    margin-left: 50px;
+    margin-left: 8px;
     display: inline-block;
     margin-top: 15px;
+    span{
+      font-size: 12px;
+    }
   }
 }
 .ticket-price-plan-table {
@@ -342,6 +347,7 @@ export default {
       margin-right: 22px;
       float: right;
       display: inline-block;
+      margin-bottom: 12px;
     }
   }
   //   margin-left: 174px;

@@ -6,7 +6,7 @@
           <span class="text-gray">进销存</span>
         </el-breadcrumb-item>
         <el-breadcrumb-item>
-          <span class="text-blue">缺货明细</span>
+          <span class="text-blue">智能补货</span>
         </el-breadcrumb-item>
       </el-breadcrumb>
       <div class="time-wrap">
@@ -57,30 +57,20 @@
       </div>
       <div class="section-content" >
         <div style="overflow:hidden;zoom:1">
-          <!-- 跳转卖品 -->
-           
             <el-button class="right" size="mini" @click="getOut" style="margin-left:20px">导出</el-button>
             <el-button class="right" size="mini" @click="goOrder" >生成采购单</el-button>
+             <!-- 跳转卖品 -->
         </div>
         <div class="reset-table mt20">
           <el-table border :data="tableData">
-            <el-table-column prop="goodSku" label="SKU编码" align="center" min-width="110"></el-table-column>
-            <el-table-column prop="goodName" label="卖品名称" align="center" min-width="90"></el-table-column>
-            <el-table-column prop="parentCategoryName" label="一级品类" align="center" min-width="90"></el-table-column>
-            <el-table-column prop="categoryName" label="二级品类" align="center" min-width="90"></el-table-column>
-            <!-- <el-table-column prop="brandName" label="品牌" align="center" min-width="90"></el-table-column> -->
-            <el-table-column prop="supplyName" label="所属供应商" align="center" min-width="90"></el-table-column>
-            <!-- <el-table-column prop="startInventory" label="期初库存数量" align="center" min-width="110px"></el-table-column> -->
-            <!-- <el-table-column prop="startAmount" label="期初库存成本额" align="center" min-width="110px"></el-table-column> -->
-            <!-- <el-table-column prop="purchCount" label="采购数量" align="center" min-width="110px"></el-table-column> -->
-            <!-- <el-table-column prop="purchCount" label="采购成本额" align="center" min-width="110px"></el-table-column> -->
-            <!-- <el-table-column prop="saleCount" label="销售数量" align="center" min-width="120px"></el-table-column> -->
-            <!-- <el-table-column prop="saleAmount" label="销售成本额" align="center" min-width="120px"></el-table-column> -->
-            <el-table-column prop="endInventory" label="期末库存数量" align="center" min-width="120px"></el-table-column>
-            <!-- <el-table-column prop="endAmount" label="期末库存成本额" align="center" min-width="120px"></el-table-column> -->
-            <el-table-column prop="inventoryTurnoverDaysDay" label="库存数量周转天" align="center" min-width="120px"></el-table-column>
-            <!-- <el-table-column prop="inventoryTurnoverDaysAmount" label="库存金额周转天" align="center" min-width="120px"></el-table-column> -->
-            <el-table-column prop="sugPurchCount" label="建议采购量" align="center" min-width="120px"></el-table-column>
+            <el-table-column prop="goodSku" label="SKU编码"  min-width="110"></el-table-column>
+            <el-table-column prop="goodName" label="卖品名称"  min-width="90"></el-table-column>
+            <el-table-column prop="parentCategoryName" label="一级品类"  min-width="90"></el-table-column>
+            <el-table-column prop="categoryName" label="二级品类"  min-width="90"></el-table-column>
+            <el-table-column prop="supplyName" label="所属供应商"  min-width="90"></el-table-column>
+            <el-table-column prop="endInventory" label="期末库存数量"  min-width="120px"></el-table-column>
+            <el-table-column prop="inventoryTurnoverDaysDay" label="库存数量周转天"  min-width="120px"></el-table-column>
+            <el-table-column prop="sugPurchCount" label="建议采购量"  min-width="120px"></el-table-column>
           </el-table>
         </div>
         <div class="reset-page">
@@ -100,14 +90,12 @@
   </div>
 </template>
 <script>
-
 export default {
- 
   data() {
     return {
-      cityId:1,
-      cinemaId:1106970,
-        isLine:true,
+        groupId:1,
+        cityId:1,
+        cinemaId:1106970,
         categoryList:[],
         categoryId:null,
         suppliersList:[],
@@ -146,15 +134,16 @@ export default {
   methods: {
     getAllData() {
       this.getTableData();
-      this.getCategoryList(); // 分类
-      this.getSuppliersList() // 供应商
+      this.getCategoryList(); 
+      this.getSuppliersList();
     },
     search(){
        this.getTableData();
     },
-    // 1.获取商品类型
+    // 1.商品类型
     getCategoryList(){
-      this.$camList.categoryList().then(res=>{
+      this.$camList.categoryList().then(response=>{
+        let res = response.data;
         let resData = res.map(item=>{
           return {
             value:item.categoryCode,
@@ -170,10 +159,9 @@ export default {
           }
         })
         this.categoryList = resData;
-        // console.log(resData,'gggg')
       })
     },
-    //2.获取供应商
+    //2.供应商列表
     getSuppliersList(name){
       let params = {
         body:{
@@ -183,29 +171,31 @@ export default {
           supplyName:name?name:null,
         }
       }
-      this.$camList.suppliersList(params).then(res=>{
+      this.$camList.suppliersList(params).then(response=>{
+        let res = response.data;
         if(res.list){
           this.suppliersList = res.list;
         }
       })
     },
-     // 3.表格
+     // 3.滞销列表
     getTableData(){
       let params = {
         body:{
-          groupId:1,
+          groupId:this.groupId,
           cityId:this.cityId,
           cinemaId:this.cinemaId,
-          dataType:'week',
+          dataType:this.timeType,
           categoryCode:this.categoryId,
           level:this.level,
           supplyId:this.supplierId,
           pageNo:this.page,
           pageSize:this.size,
-          psiType:1 // 1.缺货 0 滞销
+          psiType:0 // 0缺货 1滞销
         }
       }
-      this.$camList.inoutTable(params).then(res=>{
+      this.$camList.inoutTable(params).then(response=>{
+        let res = response.data;
         this.tableData = res.list;
         this.total = res.total;
       })
@@ -218,18 +208,12 @@ export default {
     },
     // 前往采购单
     goOrder(){
-      this.$message({type:'warning',message:'跳转卖品页面'})
+      this.$message({type:'warning',message:'跳转卖品采购页面'})
       // this.$router.push({name:"影院智能补货"})
     },
     // 导出
     getOut(){
       this.$message({type:'warning',message:'开发中'})
-    },
-    // 保留小数点
-    formatFloat(num, count) {
-      if (num) {
-        return num.toFixed(count);
-      }
     },
     // 分页/大小
     handleSizeChange(num) {

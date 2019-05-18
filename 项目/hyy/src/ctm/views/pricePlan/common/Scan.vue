@@ -389,7 +389,7 @@
                 z-index: 999;
                 bottom: 0;
                 right: 0;
-                background-color: #f5f5f5;
+                // background-color: #f5f5f5;
                 .btn-area {
                     width: 500px;
                     margin: 0 auto;

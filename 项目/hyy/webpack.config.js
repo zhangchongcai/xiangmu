@@ -111,6 +111,7 @@ module.exports = {
             cam: path.resolve('src/cam'),
             cim: path.resolve('src/cim'),
             csm: path.resolve('src/csm'),
+            cwf: path.resolve('src/cwf'),
             frame_cpm: path.resolve('src/frame_cpm'),
             'jquery': path.resolve('node_modules/jquery/src/jquery')
         },

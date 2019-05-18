@@ -2,9 +2,16 @@
   <div class="ticket-type">
     <div v-if="!dialogShow">
       <!-- 查询块 -->
-      <div style="text-align:right;margin-bottom:16px;">
-          <el-button type="primary" @click="addOrUpdateHandle()">新建</el-button>
-      </div>
+      <header class="header">
+        <div class="item-warp" style="float:left">
+          <span>影院名称:</span>
+          <el-input v-model="cinemaName" @focus="cinemaDialogShow"></el-input>
+        </div>
+        <div class="search-Btn" style="float:left;margin-left:18px">
+          <el-button type="primary" @click="searchCinema">查询</el-button>
+        </div>
+        <el-button type="primary" @click="addOrUpdateHandle()" style="float:right">新建</el-button>
+      </header>
       <!-- 内容块 -->
       <div class="table-warp" ref="warp">
         <el-table
@@ -32,6 +39,10 @@
             </template>
           </el-table-column>
           <el-table-column
+            prop='cinemaName'
+            label='适用影院'>
+          </el-table-column>
+          <el-table-column
             label='是否允许打折'>
             <template slot-scope='scope'>
               <span v-if='scope.row.isDiscount === 1' >否</span>
@@ -51,52 +62,6 @@
             </template>
           </el-table-column>
         </el-table>
-        <!-- <SirTable
-          :data='dataList'
-          v-loading="dataListLoading"
-          stripe
-          :header-cell-style="{background:'#E7EBFF',height:'38px!important'}"
-          :row-style = "rowStyle"
-          style='width: 100%;'>
-          <el-table-column
-            type="index"
-            label='序号'
-            header-align="center"
-            align="center"
-            width="80">
-          </el-table-column>
-          <el-table-column
-            prop='name'
-            label='票类名称'>
-          </el-table-column>
-          <el-table-column
-            label='是否为标准票类'>
-            <template slot-scope='scope'>
-              <span v-if='scope.row.baseFlag === 1' >否</span>
-              <span v-else >是</span>
-            </template>
-          </el-table-column>
-          <el-table-column
-            label='是否允许打折'>
-            <template slot-scope='scope'>
-              <span v-if='scope.row.isDiscount === 1' >否</span>
-              <span v-else >是</span>
-            </template>
-          </el-table-column>
-          <el-table-column
-            prop='seq'
-            label='票类顺序'>
-          </el-table-column>
-          <el-table-column
-            fixed='right'
-            width='200'
-            label='操作'>
-            <template slot-scope='scope'>
-              <el-button size='small' type="text" @click='addOrUpdateHandle(scope.row)'>修改</el-button>
-              <el-button size='small' v-if="scope.row.name!='成人票'&&scope.row.name!='团体票'&&scope.row.name!='学生票'" type="text" @click='deleteHandle(scope.row.uid)'>删除</el-button>
-            </template>
-          </el-table-column>
-        </SirTable> -->
       </div>
 
         <el-pagination
@@ -112,9 +77,24 @@
       
     </div>
     <ticket-type v-else ref="addOrUpdate" @refreshDataList="getDataList"></ticket-type>
+    <!-- 影院复选框 -->
+    <frame-multicinemas 
+      :framedialogVisible="multiCinemaVisible" 
+      :whereUse="whereUse" 
+      :type="cinematype" 
+      :innerCinemaMultiData="innerCinemaMultiData" 
+      :isListprop="true" 
+      @callBack="handleCallBack" ref='frameMultiCinema'
+    >
+        <div slot="footerId">
+            <el-button @click="closeDialogCinemaDialog(false)">取 消</el-button>
+            <el-button type="primary" @click="confirmCinemaDialog()">确 定</el-button>
+        </div>
+    </frame-multicinemas>
   </div>
 </template>
 <script>
+  import frameMulticinemas  from 'frame_cpm/components/frameadmin/cinemaDialog/multiCinema2.vue'
   import TicketType from './ticketType-add-or-update'
   import SirTable from './sirTable'
   import qs from 'qs';
@@ -124,7 +104,8 @@
   export default {
     components: {
       TicketType,
-      SirTable
+      SirTable,
+      frameMulticinemas
     },
     data () {
       return {
@@ -138,7 +119,20 @@
         pageIndex: 1,
         pageSize: 10,
         totalCount: 0,
-        dataListLoading: false
+        dataListLoading: false,
+        // 影院复选
+        cinemaName:null,
+        cinemaUid:[],
+        multiCinemaVisible: false,
+        whereUse:null,
+        cinematype:2, // 传递给 组件的调用的影院类型 属性参数
+        innerCinemaMultiData:[], // 传递给 组件的可选参数 props 参数
+        selectedCinemas:{ //业务定义的 选中的数据1
+          editData:[]
+        },
+        selectedCinemas2:{ //业务定义的 选中的数据2
+          editData:[]
+        },
       }
     },
     created () {
@@ -149,9 +143,9 @@
       let header = getDom("el-table__header-wrapper")[0]
       // console.log(tableWarp)
       let table = getDom("el-table")[0];
-      console.log(table)
+      // console.log(table)
       tableWarp.addEventListener("scroll", () => {
-        console.log(tableWarp.scrollTop)
+        // console.log(tableWarp.scrollTop)
         if(tableWarp.scrollTop<=0){
           header.style.transform = 'translateY(0)'
           header.style.position = 'static'
@@ -173,12 +167,13 @@
       getDataList () {
         this.dataListLoading = true
         this.dialogShow = false
-        let limit = qs.stringify({
+        let limit = {
           'page': this.pageIndex,
           'pageSize': this.pageSize
-        })
+        }
+        let addition = {cinemaUid:this.cinemaUid}
         // console.log(limit)
-        this.$ctmList.tickettypeList(limit).then( data => {
+        this.$ctmList.tickettypeList(limit,addition).then( data => {
             console.log(data)
             if (data && data.code === 200) {
               this.dataList = data.data.list
@@ -246,6 +241,38 @@
             let getDom = className => {
           return document.getElementsByClassName(className);
         };
+      },
+      //弹窗方法
+      handleCallBack (opt) {
+          if(opt.whereUse == 1){
+              this.selectedCinemas.editData = opt.dataList
+          }else if(opt.whereUse == 2){
+              this.selectedCinemas2.editData = opt.dataList
+          }
+          this.multiCinemaVisible = opt.dialogVisible;
+          this.whereUse = opt.whereUse
+          console.log(opt)
+          this.cinemaName = ''
+          this.cinemaUid = []
+          opt.dataList.forEach(item => {
+            this.cinemaName += item.name + ','
+            this.cinemaUid.push(item.id)
+          })
+          this.multiCinemaVisible = false
+      },
+      cinemaDialogShow(){
+        this.multiCinemaVisible = true
+        this.$refs.frameMultiCinema.listAuthCommCinemas()
+      },
+      closeDialogCinemaDialog(){
+          this.multiCinemaVisible = false
+      },
+      confirmCinemaDialog(value){
+          this.$refs.frameMultiCinema.confirmData()
+      },
+      //查询  
+      searchCinema() {
+        this.getDataList(this.cinemaUid)
       }
     }
   }
@@ -257,7 +284,19 @@
   padding-top: 20px;
   float: right;
 }
-
+.header{
+  height: 50px;
+  .item-warp{
+      float: left;
+      display: inline-flex;
+      .el-input{display: inline-block;}
+      span{
+        display:inline-block;
+        width: 80px;line-height: 32px;
+        color:#333;
+      }
+    }
+}
 
 .el-pagination{
   margin-top: 20px;

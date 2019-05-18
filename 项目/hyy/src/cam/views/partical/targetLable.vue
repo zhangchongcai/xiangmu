@@ -7,7 +7,7 @@
       :key="index"
       @click="changeRadio(item.id)"
     >{{item.name}}</div>
-    <div class="reset-select">
+    <div class="reset-select" :class="{selectActive:otherType?true:false}">
       <el-select v-model="otherType" placeholder="其他" @change="changeSelect" clearable>
         <el-option v-for="item in otherLabel" :key="item.value" :label="item.name" :value="item.id"></el-option>
       </el-select>
@@ -16,68 +16,112 @@
 </template>
 <script>
 export default {
-  // fdfd
+  props:{
+    type:String,
+  },
   data() {
     return {
-      targetType: 1,
+      targetType: 'xse',
       otherType: null,
       type: null,
       // 指标
       targetLabel: [
         {
-          id: 1,
+          id: 'xse',
           name: "销售额"
         },
         {
-          id: 2,
+          id: 'xsdl',
           name: "销售单量"
         },
         {
-          id: 3,
+          id: 'xssl',
           name: "销售数量"
         },
         {
-          id: 4,
+          id: 'kdj',
           name: "客单价"
         },
         {
-          id: 5,
+          id: 'jdj',
           name: "件单价"
         },
         {
-          id: 6,
+          id:'kdl',
           name: "客单量"
         }
-      ],
-      // 其他指标
-      otherLabel: [
+      ]
+    };
+  },
+  computed:{
+     // 其他指标
+    otherLabel(){
+      // 品类/渠道没有套餐消费占比
+      if(this.type == 'channel'){
+        return [
+      //     {
+      //   id:'cbj',
+      //   name: "成本价"
+      // },
         {
-          id: 7,
+          id: 'xsml',
           name: "销售毛利"
         },
         {
-          id: 8,
-          name: "销售毛利润"
+          id: 'xsmlr',
+          name: "销售毛利率"
         },
         {
-          id: 9,
+          id: 'xscb',
           name: "销售成本"
         },
         {
-          id: 10,
+          id: 'gml',
           name: "购买率"
         },
         {
-          id: 11,
+          id: 'rjmpje',
           name: "人均卖品金额"
         },
         {
-          id: 12,
+          id: 'hyxfzb',
           name: "会员消费占比"
-        }
-       
-      ]
-    };
+        }]
+      }else{
+        return [
+      //     {
+      //   id:'cbj',
+      //   name: "成本价"
+      // },
+        {
+          id: 'xsml',
+          name: "销售毛利"
+        },
+        {
+          id: 'xsmlr',
+          name: "销售毛利率"
+        },
+        {
+          id: 'xscb',
+          name: "销售成本"
+        },
+        {
+          id: 'gml',
+          name: "购买率"
+        },
+        {
+          id: 'rjmpje',
+          name: "人均卖品金额"
+        },
+        {
+          id: 'hyxfzb',
+          name: "会员消费占比"
+        }, {
+          id: 'tcxfzb',
+          name: "套餐消费占比"
+        }]
+      }
+    }
   },
   methods: {
     changeRadio(id) {
@@ -94,34 +138,30 @@ export default {
 </script>
 <style lang="scss" scoped>
 .auto-radio-button-wrap {
-  .reset-select {
-    display: inline-block;
-    width: 120px;
-    height: 30px;
-    .el-input__inner {
-      height: 34px;
-      line-height: 34px;
-    }
-  }
+  border:1px solid #3b74ff;
+  width:600px;
+  margin:0 auto;
+  display: flex;
   .auto-radio-button {
     cursor: pointer;
     display: inline-block;
     width: 80px;
     height: 32px;
+    box-sizing: border-box;
     line-height: 32px;
     text-align: center;
-    border-left: 1px solid #3b74ff;
-    border-top: 1px solid #3b74ff;
-    border-bottom: 1px solid #3b74ff;
+    border-right:1px solid #3b74ff;
     color: #3b74ff;
     font-size: 12px;
   }
-  .auto-radio-button:first-of-type {
-    border-radius: 4px 0px 0px 4px;
+  .reset-select{
+    width: 120px; 
+    .el-select{
+      left:-5px;
+    }
   }
-  .auto-radio-button:nth-last-of-type(2) {
-    border-right: 1px solid #3b74ff;
-    border-radius: 0px 4px 4px 0px;
+  .reset-select.selectActive{
+    background:#3b74ff
   }
   .active {
     color: #fff;

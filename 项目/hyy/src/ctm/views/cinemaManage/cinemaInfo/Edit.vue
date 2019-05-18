@@ -6,9 +6,9 @@
         </el-breadcrumb>
         <div style="color:#333;font-size:14px">基础信息</div>
         <div class="cinema-editContent">
-            <el-form ref="cinema" :model="cinemaData" :rules="rules" label-width="100px" label-height='60px'>
+            <el-form ref="cinema" :model="cinemaData" :rules="rules" label-width="110px" label-height='60px'>
                 <div class="item item-left">
-                    <el-form-item label="影院编码：" prop="code">
+                    <el-form-item label="影院编码：" >
                         <el-input v-model="cinemaData.code" disabled></el-input>          
                     </el-form-item> 
                     <el-form-item label="影院名称：" prop="name" >
@@ -17,7 +17,7 @@
                         </div>
                     </el-form-item> 
                     <el-form-item label="内部管理编号：" prop="mgCode" >
-                        <el-input v-model.trim="cinemaData.mgCode" disabled></el-input>
+                        <el-input v-model="cinemaData.mgCode" maxlength="6"></el-input>
                     </el-form-item>
                     <el-form-item label="开业时间：">
                         <el-date-picker
@@ -100,7 +100,6 @@
                         
                     <el-form-item label="影院地址：" prop="address">
                         <el-input v-model="cinemaData.address"></el-input>
-                        
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" @click="bingUsbkey(0)">重新绑定Usbkey</el-button>
@@ -123,15 +122,6 @@
             width="30%"
             :close-on-click-modal=false
             >
-            <!-- <el-tree
-            :data="usbArray"
-            show-checkbox
-            node-key="codeid"  
-            :props="defualtUsbcode"
-            check-strictly
-            @check-change="handerUsbkeyItem" 
-            ref="treeForm">           
-            </el-tree> -->
             <el-radio-group v-model="defualtUsbcode">
             <div v-for="(item , ind) in usbArray" :key="ind" class="radiosGroup">
                 <el-radio :label="item.usbKeyCode" @change="handerUsbkeyItem">{{item.usbKeyCode}}</el-radio>
@@ -201,6 +191,14 @@ import HallinfoList from '../hallInfo/List.vue'
             };
             let maxlenght_100=(rule,value,callback)=> {
                 if(value && value.length>100){callback(new Error('字符不能超出100位'))
+                }else{
+                    callback();
+                }
+            };
+            let mgcode_limit=(rule,value,callback)=> {
+                console.log(value.length)
+                this.cinemaData.mgCode = this.cinemaData.mgCode.replace(/[^\w]/g, '')
+                if(this.cinemaData.mgCode.length<4){callback(new Error('请输入四位数字'))
                 }else{
                     callback();
                 }
@@ -285,12 +283,13 @@ import HallinfoList from '../hallInfo/List.vue'
                     cinemas: [
                         { validator:maxlenght_64,trigger: 'blur'}
                     ],
-                    mgCode : [
-                        { validator:maxlenght_4,trigger: 'blur'}
-                    ],
                     intro : [
                         { validator:maxlenght_100,trigger: 'blur'}
                     ],
+                    mgCode : [
+                        {required: true, message:'请输入内部管理编号', trigger:'blur'},
+                        {validator:mgcode_limit,trigger:'blur'}
+                    ]
                     
                 },
             }
@@ -329,7 +328,7 @@ import HallinfoList from '../hallInfo/List.vue'
                                     type: 'success',
                                     duration: 1000,
                                     onClose: () => {
-                                        this.$router.go(-1)
+                                        this.$router.push({path:'/ticket/cinema/list'})
                                     }
                                 })
                             } else {
@@ -355,10 +354,10 @@ import HallinfoList from '../hallInfo/List.vue'
                 this.$ctmList.cinemaGetInfo(this.uid).then((response)=> {
                     //城市名字分割
                     let data = response.data//获得数据
-                    var code = data.areaCode
+                    var code = data.areaCode || "000000:000000"
                     code = code.split(':')
-                    var erea = data.areaName;
-                    erea = erea.split(':')
+                    var erea = data.areaName ||  "北京:北京"
+                    erea = erea.split(':') 
                     data.area = data.area || {}
                     data.area.pcode = code[0]
                     data.area.ccode = code[1]
@@ -369,6 +368,7 @@ import HallinfoList from '../hallInfo/List.vue'
                     this.status = data.status==1?true : false
                     this.cinemaData.status= Number(data.status)
                     getname(code[0]);
+                    console.log(this.cinemaData)
 
                 })
                 .catch(function (error) {
@@ -469,7 +469,6 @@ import HallinfoList from '../hallInfo/List.vue'
 
 <style  lang='scss'>
 .cinema-edit .cinema-editContent{
-    // min-width: 980px;
     overflow: hidden;
     .el-form{
         width: 100%;
@@ -479,6 +478,7 @@ import HallinfoList from '../hallInfo/List.vue'
     .item{flex: 1}
 }
 .cinema-edit{
+    padding-left: 15px;
     .el-form-item__label{font-size: 12px}
     .el-radio__label{font-size: 12px;}
     .form_left{

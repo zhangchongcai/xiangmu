@@ -1,23 +1,25 @@
 <template>
-<div class="table-page">
+<div class="mod-user">
     <div v-if="pageShow=='actList'">
         <!-- 搜索栏 -->
-        <section class="search-section">
+        <section>
             <searchLan :modelName="modelName" :config="searchConfig" @pressSearch="search" @searchValueChange="setSearch"></searchLan>
         </section>
 
         <!-- 按钮组 -->
-        <section class="btnGroup-section flex-base flex-end">
-            <el-button type="primary" @click="addAct">新建</el-button>
+        <section class="flex-base flex-end">
+            <el-row>
+                <el-button type="primary" @click="addAct">新建</el-button>
+            </el-row>
         </section>
 
         <!-- 表格 -->
-        <section class="table-section">
+        <section>
             <commonTable :tableData="tableData" :tableLabels="tableLabels" :tableOptions="tableOptions" @handleButton="handleButton"></commonTable>
         </section>
 
         <!-- 分页 -->
-        <section class="pagination-section flex-base flex-center" v-if="tableData.length != 0">
+        <section class="flex-base flex-center">
             <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="pageConfig.currentPage" :page-sizes="pageConfig.pageSizes" :page-size="pageConfig.pageSize" layout="total, sizes, prev, pager, next, jumper" :total="pageConfig.total">
             </el-pagination>
         </section>
@@ -78,28 +80,28 @@ export default {
                     type: 'input',
                     value: '',
                     alertButton: true,
-                    alertSrc: 'http://192.168.100.148:8080/alertWindow',
+                    alertCompontsName: '',
                 }, {
                     keyName: 'searchCreaterArea',
                     name: '创建单位',
                     type: 'input',
                     value: '',
                     alertButton: true,
-                    alertSrc: 'http://192.168.100.148:8080/alertWindow',
+                    alertCompontsName: '',
                 }, {
                     keyName: 'searchApprovalmanId',
                     name: '审批人',
                     type: 'input',
                     value: '',
                     alertButton: true,
-                    alertSrc: 'http://192.168.100.148:8080/alertWindow',
+                    alertCompontsName: '',
                 }, {
                     keyName: 'businessCode',
                     name: '适用商户',
                     type: 'input',
                     value: '',
                     alertButton: true,
-                    alertSrc: 'http://192.168.100.148:8080/alertWindow',
+                    alertCompontsName: '',
                 }, {
                     keyName: 'executeMode',
                     name: '执行策略',
@@ -555,7 +557,6 @@ export default {
                     this.$cmmList.marketingEnableOrDisabl({
                         "id": this.stopOrStartId,
                         "tenantId": this.tenantId,
-                        "accountId": 1,
                         "remark": this.startOrStopForm.remark
                     }).then(data => {
                         console.log(data)

@@ -86,6 +86,13 @@ const ctmRoutes = [{
 				},
 				component: (resolve) => require(['ctm/views/moviePlan/planEdit/planReference'], resolve),
 				name: '排片参考'
+			},{
+				path: 'consecutivePlan',
+				meta: {
+					title: '连排'
+				},
+				component: (resolve) => require(['ctm/views/moviePlan/planEdit/consecutivePlan'], resolve),
+				name: '连排'
 			}
 		]
 	},
@@ -210,9 +217,11 @@ const ctmRoutes = [{
 		meta: {
 			title: '票类管理',
 		},
-		component: (resolve) => require(['ctm/views/ticketType/ticketType'], resolve),
-
+		component: (resolve) => require(['ctm/views/ticketType/ticketType'], resolve)
 	},
+
+	
+			
 	// 票版编辑
 	{
 		path: 'ticketSampleManage',
@@ -317,7 +326,25 @@ const ctmRoutes = [{
 			},
 
 		]
-	}
+	},
+
+	//门店参数
+	{
+		path: 'sysParam',
+		name: 'sysParam',
+		meta: {
+			title: '门店参数设置',
+		},
+		component: (resolve) => require(['ctm/views/system/systemParam/layout'], resolve),
+	},
+	{
+		path: 'softwareUpgrade',
+		name: 'softwareUpgrade',
+		meta: {
+			title: '软件升级信息',
+		},
+		component: (resolve) => require(['ctm/views/system/softwareUpgrade/layout'], resolve),
+	},
 
 ]
 

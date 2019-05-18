@@ -111,6 +111,7 @@ section {
     & > ul {
         width: 100%;
         position: absolute;
+        min-height: 600px;
         .room-item:nth-of-type(2n-1) {
             background: #E6E6E6;
         }

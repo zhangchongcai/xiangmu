@@ -20,19 +20,19 @@
         <li class="first-li" @click="MeClick('0')" :class="{active:cur==0}">
           <div class="cont">
             <h1>{{BoxofficeTop.boxOffice | capitalizeOne}}</h1>
-            <p>票房收入(万元)</p>
+            <p>票房收入({{BoxofficeTop.boxOffice | foo}})</p>
           </div>
         </li>
         <li @click="MeClick('1')" :class="{active:cur==1}">
           <div>观影人次</div>
           <div>
-            <span>{{BoxofficeTop.audienceCount | capitalizeOne}}</span>万次
+            <span>{{BoxofficeTop.audienceCount | capitalizePerson}}</span>{{BoxofficeTop.audienceCount | too}}
           </div>
         </li>
         <li @click="MeClick('2')" :class="{active:cur==2}">
           <div>平均票价</div>
           <div>
-            <span>{{BoxofficeTop.avgTicketPrice}}</span>元
+            <span>{{BoxofficeTop.avgTicketPrice | capitalizeOne}}</span>{{BoxofficeTop.avgTicketPrice | foo}}
           </div>
         </li>
         <li @click="MeClick('3')" :class="{active:cur==3}">
@@ -48,30 +48,39 @@
           </div>
         </li>
       </ul>
-      <el-tooltip class="item" effect="dark" content="市场份额=本集团票房/竞对总票房" placement="bottom-start">
+      <el-tooltip class="item" effect="dark" content="市场份额=本影院票房收入/（本影院票房收入+竞对影院票房收入）" placement="bottom-start">
         <i class="iconfont icon-danchuang-tishi"></i>
       </el-tooltip>    
     </div>
 
     <!--票房收入Content-->
-    <div class="Boxoffice_Content" v-if="cur==0">
+    <div class="Boxoffice_Content ModuleKPI" v-if="cur==0">
       <!--KPI完成率-->
-      <div class="ModuleTitleLayout">
+      <div class="ModuleTitleLayout" v-if="flag">
         <div class="ModuleTitle">
           <div>
             KPI完成率
-            <i class="iconfont icon-danchuang-tishi"></i>
+            <el-tooltip class="item" effect="dark" placement="right-start">
+              <div slot="content" style="width:300px">
+                <ul id="ulMain">
+                  <li>票房收入当日达成 : <span>{{CurrentBoxKPIDataCine.boxOfficeCurrent | capitalizeOne}}{{CurrentBoxKPIDataCine.boxOfficeCurrent | foo}}</span></li>
+                  <li>环比前一日 : <span :class="[CurrentBoxKPIDataCine.boxOfficeChainDay > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[CurrentBoxKPIDataCine.boxOfficeChainDay > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{CurrentBoxKPIDataCine.boxOfficeChainDay}}%</span></li>
+                  <li>月至今达成 : <span>{{CurrentBoxKPIDataCine.boxOfficeMonthToNow | capitalizeOne}}{{CurrentBoxKPIDataCine.boxOfficeMonthToNow | foo}}</span></li>
+                  <li>环比上月 : <span :class="[CurrentBoxKPIDataCine.boxOfficeChainMonth > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[CurrentBoxKPIDataCine.boxOfficeChainMonth > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{CurrentBoxKPIDataCine.boxOfficeChainMonth}}%</span></li>
+                  <li>本月目标为 : <span>{{CurrentBoxKPIDataCine.boxOfficeTarget | capitalizeOne}}</span>{{CurrentBoxKPIDataCine.boxOfficeTarget | foo}}</li>
+                  <li>达成率 : <span>{{CurrentBoxKPIDataCine.boxOfficeRate}}</span>%</li>
+                  <li>与时间进度差距为 : <span :class="[CurrentBoxKPIDataCine.timeRate > 0? 'green':'red']">{{CurrentBoxKPIDataCine.timeRate}}%</span></li>
+                  <li>按目前进度,预计月底达成率为 : <span>{{CurrentBoxKPIDataCine.boxOfficeExpect}}</span>%</li>
+                  <li>与目标额差距 : <span :class="[CurrentBoxKPIDataCine.timeRate > 0? 'green':'red']">{{CurrentBoxKPIDataCine.boxOfficeGap}}</span>%</li>
+                </ul>
+              </div>
+              <i class="iconfont icon-danchuang-tishi"></i>
+            </el-tooltip>
           </div>
-          <div class="last">截止:2018/02/21</div>
+          <div class="last">截止:{{this.startDate && this.endDate}}</div>
         </div>
         <div class="kip-wrap">
-           <div style="height:200px;">
-             <kip-view></kip-view>
-          </div>
-          <div class="flex" style="color:#666;font-size:12px;margin-top:30px">
-            <div>月至今达成：8456.765元</div>
-            <div>KPI值：9567.8元</div>
-          </div>
+           <box-dash-cine :BoxKPIvalueCine="CurrentBoxKPIDataCine"></box-dash-cine>
         </div>
       </div>
       <!--票房收入占比 -->
@@ -92,7 +101,7 @@
     </div>
 
     <!--观影人次Content-->
-    <div class="Viewing_Content" v-if="cur==1">
+    <div class="Viewing_Content ModuleKPI" v-if="cur==1">
       <!--影片收入占比 -->
       <div class="ModuleTitleLayout">
         <div class="ModuleTitle">
@@ -113,7 +122,7 @@
     </div>
 
     <!--平均票价Content-->
-    <div class="Average_Content" v-if="cur==2">
+    <div class="Average_Content ModuleKPI" v-if="cur==2">
       <!--影片收入占比 -->
       <div class="ModuleTitleLayout">
         <div class="ModuleTitle">
@@ -130,7 +139,7 @@
     </div>
 
     <!--上座率Content-->
-    <div class="Attendance_Content" v-if="cur==3">
+    <div class="Attendance_Content ModuleKPI" v-if="cur==3">
       <!--影片收入占比 -->
       <div class="ModuleTitleLayout">
         <div class="ModuleTitle">
@@ -147,18 +156,30 @@
     </div>
 
     <!--市场份额Content-->
-    <div class="share_Content" v-if="cur==4">
+    <div class="share_Content ModuleKPI" v-if="cur==4">
       <!--KPI完成率-->
       <div class="ModuleTitleLayout">
         <div class="ModuleTitle">
           <div>
             KPI完成率
-            <i class="iconfont icon-danchuang-tishi"></i>
+            <el-tooltip class="item" effect="dark" placement="right-start">
+              <div slot="content" style="width:300px">
+                <ul id="ulMain">
+                  <li>市场份额当日达成 : <span>{{BoxKPIDataShare.marketShareCurrent}}{{BoxKPIDataShare.marketShareCurrent | foo}}</span></li>
+                  <li>环比前一日 : <span :class="[BoxKPIDataShare.marketShareChainDay > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[BoxKPIDataShare.marketShareChainDay > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{BoxKPIDataShare.marketShareChainDay}}%</span></li>
+                  <li>月至今达成 : <span>{{BoxKPIDataShare.marketShareMonthToNow}}{{BoxKPIDataShare.marketShareMonthToNow | foo}}</span></li>
+                  <li>环比上月 : <span :class="[BoxKPIDataShare.marketShareChainMonth > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[BoxKPIDataShare.marketShareChainMonth > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{BoxKPIDataShare.marketShareChainMonth}}%</span></li>
+                  <li>本月目标为 : <span>{{BoxKPIDataShare.marketShareTarget}}</span>{{BoxKPIDataShare.marketShareTarget | foo}}</li>
+                  <li>距目标额差距 : <span>{{BoxKPIDataShare.marketShareGap}}</span>%</li>
+                </ul>
+              </div>
+              <i class="iconfont icon-danchuang-tishi"></i>
+            </el-tooltip>
           </div>
           <div class="last">截止:2018/02/21</div>
         </div>
         <div class="kip-wrap">
-          <img src="../../../assets/img/kpi.png" alt="kip" class="kip">
+          <box-dash-share :BoxKPIvalueShare="BoxKPIDataShare"></box-dash-share>
         </div>
       </div>
       <!--市场份额占比 -->
@@ -182,11 +203,18 @@
 </template>
 
 <script>
-import KipView from '../../partical/kpi'
+import BoxDashCine from './KPI/BoxDashCine'
+import BoxDashShare from './KPI/BoxDashShare'
 export default {
-  components:{KipView},
+  components:{
+    BoxDashCine,
+    BoxDashShare
+  },
   name: "BoxOffice",
   props: {
+    BoxTotal:{
+      type: Number
+    },
     BoxofficeTop: {
       type: Object
     },
@@ -199,14 +227,23 @@ export default {
     lineData: {
       type: Object
     },
-    time:{
-      type:String
-    },
     cityId:{
-      type:String
+      type: Number
     },
     memberId:{
-      type:String
+      type: Number
+    },
+    BoxKPIDataCine:{
+      type: Object
+    },
+    startDate:{
+      type: String
+    },
+    endDate:{
+      type: String
+    },
+    timeType:{
+      type: String
     }
   },
   data() {
@@ -228,6 +265,8 @@ export default {
       "#c4ccd3"
     ];
     return {
+      CurrentBoxKPIDataCine:JSON.parse(JSON.stringify(this.BoxKPIDataCine)),
+      flag:true,
       cur:0,
       currentPage:1,// 当前页码
       pageSize:10,// 每页大小
@@ -239,6 +278,7 @@ export default {
       BoxMemberId:this.memberId,
       BoxTableMain:[],  //票房指标数据
       BoxTablePage:[],  //票房分页数据
+      BoxKPIDataShare:{}, //市场分额KPI
       //观影人次饼图
       ChartViewing:{
         columns: [],
@@ -311,19 +351,128 @@ export default {
             color: "#666",
             fontSize: 12
           }
+        },
+        tooltip:{
+          trigger:'item',
+          formatter: '{b0} : {c0}元 , ({d0}%)'
         }
       },
       //条形图
       barExtend:{
+        legend: {
+          show:false
+        },
         barWidth: 10,
       }
     }
   },
+  watch: {
+    BoxKPIDataCine(val){
+      this.CurrentBoxKPIDataCine = val
+    }
+  },
   filters: {
     capitalizeOne(value) {
-      if (!value) return "";
-      value = value / 10000;
-      return value.toFixed(2);
+      if (!value) return ""
+      let newValue = value.toString();
+
+      //判断逻辑
+      if(newValue.indexOf('.') != -1){
+        if(newValue.length < 8){
+          return newValue
+        }
+        else if(newValue.length >= 8 && newValue.length <= 11){
+
+          return (newValue / 10000).toFixed(2)
+        }
+        else if(newValue.length >= 12){
+          return ((newValue / 10000) / 10000).toFixed(2)
+        }
+      }
+      else
+      {
+        if(newValue.length < 5){
+          return newValue
+        }
+        else if(newValue.length >= 5 && newValue.length <= 8){
+          return (newValue / 10000).toFixed(2)
+        }
+        else if(newValue.length >= 9){
+          return ((newValue / 10000) / 10000).toFixed(2)
+        }
+      }
+    },
+    //处理万人计算保留两位小数
+    capitalizePerson(value) {
+      if (!value) return ""
+      let newValue = value.toString();
+
+      if(newValue.length < 5){
+        return newValue
+      }
+      else if(newValue.length >= 5 && newValue.length <= 8){
+
+        return (newValue / 10000).toFixed(2)
+      }
+      else if(newValue.length >= 9){
+        return ((newValue / 10000) / 10000).toFixed(2)
+      }
+    },
+    //处理万元计算
+    foo(value){
+      if (!value) return ""
+
+      let newValue = value.toString();
+      let foo = ''
+
+      if(newValue.indexOf('.') != -1){
+        if(newValue.length < 8){
+          foo = '元'
+          return foo
+        }
+        else if(newValue.length >= 8 && newValue.length <= 11){
+          foo = '万元'
+          return foo
+        }
+        else if(newValue.length >= 12){
+          foo = '亿元'
+          return foo
+        }
+      }
+      else{
+        if(newValue.length < 5){
+          foo = '元'
+          return foo
+        }
+        else if(newValue.length >= 5 && newValue.length <= 8){
+          foo = '万元'
+          return foo
+        }
+        else if(newValue.length >= 9){
+          foo = '亿元'
+          return foo
+        }
+      }
+    },
+    //处理万人单位计算
+    too(value){
+      if (!value) return ""
+
+      let newValue = value.toString();
+      let too = ''
+
+      if(newValue.length < 5){
+        too = '人'
+        return too
+      }
+      else if(newValue.length >= 5 && newValue.length <= 8){
+        too = '万人'
+        return too
+      }
+      else if(newValue.length >= 9){
+        too = '亿人'
+        return too
+      }
     },
     capitalizeTwo(value) {
       if (!value) return "";
@@ -336,6 +485,9 @@ export default {
     }
   },
   methods: {
+    foo(val){
+      this.flag = val
+    },
     MeClick(val){
       this.cur = val
       if(val === '0'){
@@ -354,7 +506,6 @@ export default {
          if(this.BoxType){
           //调用平均票价指标数据
           this.getBoxOfficeTab('avg_ticket_price');
-         
          }
       }
       else if(val === '3'){
@@ -365,43 +516,74 @@ export default {
       }
       else if(val === '4'){
         if(this.BoxType){
-          //调用上座率票价指标数据
+          //调用市场份额指标数据
           this.getBoxOfficeTab('market_share');
          }
       }
-    },
-    //票房指标切换接口
+    }, 
+    //切换接口
     getBoxOfficeTab (val) {
       this.BoxType = val
-        this.$camList.SwitchBoxOfficeTab({
-          body: {
-            groupId: 1,
-            startDate: this.time,
-            endDate: this.time,
-            chainPerType: "day",
-            columnType:this.BoxType,
-            cityid:this.Boxcityid,
-            cinemaId:this.BoxMemberId
+      this.$camList.SwitchBoxOfficeTab({
+        body: {
+          groupId: 44,
+          startDate: this.startDate,
+          endDate: this.endDate,
+          dateType: this.timeType,
+          columnType:this.BoxType,
+          cityid:this.Boxcityid,
+          cinemaId:this.BoxMemberId,
+          initBoxOffice:this.BoxTotal
+        }
+      })
+      .then(response => {
+        let res = response.data;
+        if(this.BoxType === "box_office"){
+          //获取KPI
+          this.CurrentBoxKPIDataCine = res.boxOfficeKpiInfo;
+        }
+        else if(this.BoxType === "audience_count"){
+          //初始化观影人次玫瑰图数据
+          this.getViewChart(res)
+        } 
+        else if(this.BoxType === "avg_ticket_price"){
+          //初始化平均票价条形图
+          this.getFareChart(res)
+        }
+        else if(this.BoxType === "attendance_rate"){
+          //初始化上座率条形图
+          this.getChartRate(res)
+        }
+        else if(this.BoxType === "market_share"){
+          //选取周月年判断
+          if(this.timeType !== 'day'){
+            //是周月年时候隐藏KPI
+            this.$nextTick(()=>{
+              this.$refs.BoxOffice.foo(false);
+            })
           }
-        })
-        .then(res => {
-          if(this.BoxType === "audience_count"){
-            //初始化观影人次玫瑰图数据
-            this.getViewChart(res)
-          } 
-          else if(this.BoxType === "avg_ticket_price"){
-            //初始化平均票价条形图
-            this.getFareChart(res)
-          }
-          else if(this.BoxType === "attendance_rate"){
-            //初始化上座率条形图
-            this.getChartRate(res)
-          }
-          else if(this.BoxType === "market_share"){
-            //初始化市场份额
-            this.getShareChart(res)
-          }
-        });
+          else{
+            //是天的时候获取KPI
+            if(res.marketKpiInfo !== null || res.marketKpiInfo !== undefined){
+              //初始化市场份额图表
+              this.getShareChart(res)
+              //如果有KPI就赋值给BoxKPIDataShare
+              this.BoxKPIDataShare = res.marketKpiInfo;
+              
+              console.log(this.BoxKPIDataShare)
+              this.$nextTick(()=>{
+                this.$refs.BoxOffice.foo(true);
+              })
+            }
+            else{
+              this.$nextTick(()=>{
+                this.$refs.BoxOffice.foo(false);
+              })
+            }
+          }     
+          
+        }
+      });
     },  
     //票房-观影人次玫瑰图
     getViewChart(res){
@@ -412,10 +594,10 @@ export default {
         let foo = ChartsDataY.map(item => {
           return {
             name: item.movieName,
-            value: item.boxOffice
+            '观影人次': item.boxOffice
           };
         });
-        this.ChartViewing.columns = ["name", "value"];
+        this.ChartViewing.columns = ["name", "观影人次"];
         this.ChartViewing.rows = foo;
       }
     },
@@ -468,7 +650,7 @@ export default {
         let foo = ChartsDataY.map(item => {
           return {
             name: item.cinemaName,
-            value: item.marketPartRate
+            value: item.competeCinemaPer
           };
         });
         this.ChartShare.columns = ["name", "value"];
@@ -599,7 +781,7 @@ export default {
     }
     i {
       position: absolute;
-      right: 177px;
+      right: 165px;
       bottom: 12px;
       color: #3b74ff;
       font-size: 12px;
@@ -663,4 +845,20 @@ export default {
 .icon-neiye-xiajiangjiantou{
   color:red;
 }
+.green{
+  color:green;
+}
+.red{
+  color:red;
+}
+#ulMain{
+  width:250px;
+  list-style-type:none;
+  padding:0px;
+  margin:0px;
+  li{
+    line-height:23px;
+  }
+}
+
 </style>

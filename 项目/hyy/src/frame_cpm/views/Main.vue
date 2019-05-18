@@ -1,39 +1,36 @@
 <template>
-    <el-container class="bigBox">
-            <el-aside :width="this.isCollapse ? '60px' : '136px'">
-                <h1 class="project-title"><i class="el-icon-tickets"></i>慧影云</h1>
-                <el-menu
-                        @open="handleOpen()"
-                        @close="handleClose()"
-                        background-color="#21376B"
-                        text-color="#fff"
-                        active-text-color="#fff"
-                        :default-active="defaultActive"
-                        :defaultOpeneds="defaultOpenedsArr"
-                >
-                    <el-menu-item index="1">
-                        <div class="gongzuo">
-                            <i class="el-icon-menu"></i>
-                            <span slot="title">工作台</span>
-                            <div class="border"></div>
-                        </div>
-                    </el-menu-item>
-                    <div class="xian"></div>
-                    <el-submenu index="2">
-                        <template slot="title">全部功能</template>
+    <el-container>
+        <el-aside :width="this.isCollapse ? '60px' : '136px'">
+            <h1 class="project-title"><i class="el-icon-tickets"></i>慧影云</h1>
+            <el-menu
+                @open="handleOpen()"
+                @close="handleClose()"
+                background-color="#21376B"
+                text-color="#fff"
+                active-text-color="#fff"
+                :defaultOpeneds="defaultOpenedsArr"
+            >
+                <el-menu-item index="1">
+                    <i class="el-icon-setting"></i>
+                    <span slot="title">工作台</span>
+                </el-menu-item>
+                <!--<div class="workSpace">-->
+                    <!--<i class="el-icon-menu"></i>-->
+                    <!--<span slot="title">工作台</span>-->
+                <!--</div>-->
+                <div class="xian"></div>
+                <el-submenu index="2" >
+                    <template slot="title">全部功能</template>
                         <el-menu-item
-                                :index="(2-i)+''"
-                                v-for="(item, i) in list"
-                                class="first"
-                                :key="i"
-                        >
-                            <div
-                                    class="divTitle"
-                            >
+                            :index="(2-i)+''"
+                            v-for="(item, i) in list"
+                            class="first"
+                            :key="i">
+                            <div class="divTitle">
                                 <i class="el-icon-menu" ></i>
                                 <span slot="title" :index='(2-1-i)+""' >
-                                {{item.menuName}}
-                            </span>
+                                    {{item.menuName}}
+                                </span>
                             </div>
                             <ul class="secondMenu">
                                 <template  v-for="(sub, s) in item.submenu">
@@ -45,7 +42,7 @@
                                                     <router-link
                                                             :to="su.resUrl?su.resUrl:su"
                                                             :title="su.menuName"
-                                                    >{{ su.menuName }}
+                                                        >{{ su.menuName }}
                                                     </router-link>
                                                 </li>
                                             </template>
@@ -54,64 +51,62 @@
                                 </template>
                             </ul>
                         </el-menu-item>
-                    </el-submenu>
-                    <div class="xian"></div>
-                    <el-submenu index="3">
-                        <template slot="title">常用功能</template>
-                    </el-submenu>
-                </el-menu>
-                <div class="button">
-                    <router-link to="/sys/add">
-                        <el-button>
-                            <i class="el-icon-plus"></i>添加
-                        </el-button>
-                    </router-link>
+                </el-submenu>
+                <div class="xian"></div>
+                <el-submenu index="3">
+                    <template slot="title">常用功能</template>
+                    <el-menu-item-group>
+                    </el-menu-item-group>
+                </el-submenu>
+            </el-menu>
+            <div class="button">
+                <router-link to="/sys/add">
+                    <el-button>
+                        <i class="el-icon-plus"></i>添加
+                    </el-button>
+                </router-link>
+            </div>
+        </el-aside>
+        <el-container>
+            <el-header >
+            <!-- <div class="head-cinema-info">
+                <span class="el-icon-location-outline"></span>
+                <span class="head-cinema-name">北京自由人影城</span>
+            </div> -->
+                <Tabs :iframResult ="iframResult" :iframeList="iframeList"></Tabs>
+                <div class="header-user">
+                    <div class="user-img"></div>
+                    <el-dropdown trigger="click"  @command="handleCommand">
+                          <span class="el-dropdown-link">
+                            {{user?user:'未登录'}}<i class="el-icon-arrow-down el-icon--right"></i>
+                          </span>
+                        <el-dropdown-menu slot="dropdown">
+                            <el-dropdown-item command="a">修改密码</el-dropdown-item>
+                            <el-dropdown-item command="b">退出</el-dropdown-item>
+                        </el-dropdown-menu>
+                    </el-dropdown>
                 </div>
-            </el-aside>
+            </el-header>
             <el-main>
-                <el-header height="56px">
-                    <!-- <div class="head-cinema-info">
-                        <span class="el-icon-location-outline"></span>
-                        <span class="head-cinema-name">北京自由人影城</span>
-                    </div> -->
-                    <Tabs :iframResult ="iframResult" :iframeList="iframeList"></Tabs>
-                    <div class="header-user">
-                        <div class="user-img"></div>
-                        <el-menu
-                                :default-active="activeIndex"
-                                class="el-menu-demo"
-                                mode="horizontal"
-                                @select="handleSelect"
-                        >
-                            <el-submenu index="1">
-                                <template slot="title" v-if="user">{{user}}</template>
-                                <template slot="title" v-else>未登录</template>
-                                <el-menu-item index="1-1">修改密码</el-menu-item>
-                                <el-menu-item index="1-2">退出</el-menu-item>
-                            </el-submenu>
-                        </el-menu>
-                    </div>
-                </el-header>
                 <div class="content-wrapper">
                     <router-view></router-view>
                 </div>
                 <el-dialog
                         title="修改密码"
                         :visible.sync="dialogVisible"
-                        width="600px"
                         :before-close="closeDialog">
                     <div class="film-top" style="padding:20px;">
                         <el-form ref="resetForm" :model="resetForm" :rules="rules" label-width="148px" size="mini" class="film-search">
-                            <el-form-item label="请输入原密码：" prop="password" style="width:560px;">
+                            <el-form-item label="请输入原密码：" prop="password">
                                 <el-input type="password" v-model="resetForm.password" placeholder="请输入新密码"></el-input>
                             </el-form-item>
-                            <el-form-item label="请输入新密码：" prop="newPassword" style="width:560px;">
+                            <el-form-item label="请输入新密码：" prop="newPassword">
                                 <el-input type="password" v-model="resetForm.newPassword" placeholder="请输入新密码"></el-input>
                             </el-form-item>
-                            <el-form-item label="请再次输入新密码：" prop="reNewPassword" style="width:560px;">
+                            <el-form-item label="请再次输入新密码：" prop="reNewPassword">
                                 <el-input type="password" v-model="resetForm.reNewPassword" placeholder="请再次输入新密码"></el-input>
                             </el-form-item>
-                            <div class="btn-bottom" style="margin: 80px auto 0 auto; text-align:center;">
+                            <div class="btn-bottom" style="text-align:center;">
                                 <el-button @click="closeDialog(false)">取 消</el-button>
                                 <el-button type="primary" @click="querenDialog('resetForm')">确 定</el-button>
                             </div>
@@ -120,6 +115,7 @@
                 </el-dialog>
             </el-main>
         </el-container>
+    </el-container>
 </template>
 
 <script>
@@ -130,10 +126,9 @@ import {modifyUserPassword,menuList} from 'frame_cpm/http/interface.js'
 export default {
     data() {
         return {
-            defaultActive: "",
+            // defaultActive: "",
             defaultOpenedsArr:['2'],
-            isCollapse: false,
-            activeIndex:'1',
+            isCollapse:false,
             list: [],
             secondList: [],
             request: [],
@@ -172,42 +167,34 @@ export default {
     mounted() {
         this.$nextTick(()=>{
           if(localStorage.getItem('changeCode')){
-            this.handleSelect(localStorage.getItem('changeCode'))
+            this.handleCommand(localStorage.getItem('changeCode'))
           }
         })
     },
     methods: {
-        handleOpen(){
-
-        },
-        handleClose(){
-
-        },
-        handleSelect(index) {
-            let _this = this;
-            if (index === "1-1") {
-                this.dialogVisible = true
-                // this.resetForm.newPassword = null
-                // this.resetForm.reNewPassword = null
-                if(this.$refs.resetForm){
-                    this.$refs.resetForm.clearValidate()
-                }
-            } else if (index === "1-2") {
-                this.loginOutFun()
+        handleCommand(command) {
+          console.log(command)
+          if (command == 'a') {
+            this.dialogVisible = true
+            if(this.$refs.resetForm){
+              this.$refs.resetForm.clearValidate()
             }
+          } else if (command =='b') {
+            this.loginOutFun()
+          }
         },
-      loginOutFun(){
+        loginOutFun(){
           let token =localStorage.getItem('token')
           let data ={
               token
           }
-        this.$store.commit('updateLoginToken','')
-        this.$store.commit('updateLoginUser','')
-        localStorage.removeItem('token');
-        let _this = this;
-        _this.$cpmList.LoginOutApi(data)
+          let _this = this;
+          _this.$cpmList.LoginOutApi(data)
           .then(ret => {
               if(ret.code == 200 ){
+                this.$store.commit('updateLoginToken','')
+                this.$store.commit('updateLoginUser','')
+                localStorage.removeItem('token');
                  _this.$router.push("/login");
 
             }else{
@@ -232,18 +219,27 @@ export default {
                     queryObj.loginName = userObj.loginName
                     queryObj.password = this.resetForm.password
                     queryObj.newPassword = this.resetForm.newPassword;
-                    modifyUserPassword(queryObj).then((ret)=>{
-                      localStorage.removeItem('changeCode')
-                        if(ret.result){
+                    if(this.resetForm.password==this.resetForm.newPassword){
+                      this.error('新密码与原密码相同，请重新输入')
+                    }else{
+                      if(this.resetForm.reNewPassword===queryObj.newPassword) {
+                        modifyUserPassword(queryObj).then((ret)=>{
+                          localStorage.removeItem('changeCode')
+                          if(ret.result){
                             _this.success(ret.msg)
                             _this.dialogVisible = false
                             this.resetForm = {}
-                        }else{
-                            _this.error(ret.msg)
-                        }
-                    }).catch(()=>{
+                          }else{
+                            _this.error('原密码输入错误,请重新输入')
+                          }
+                        }).catch(()=>{
+                        })
+                      }else{
+                        this.error('新密码输入不一致，请重新输入')
+                      }
+                    }
 
-                    })
+
                 }else{
                   return false;
                 }
@@ -274,7 +270,7 @@ export default {
 
           })
 
-      },
+      }
     },
     name: "mainCon",
     components: {
@@ -284,429 +280,191 @@ export default {
     }
 };
 </script>
+<style lang="scss">
 
+</style>
 <style lang='scss'>
-    .el-menu--horizontal {
-        text-align: center;
+.el-container{
+    height:100%;
+    line-height: 100%;
+    .el-menu{
+        border:0;
     }
-    .bigBox {
-            position: absolute;
-            top: 0px;
-            bottom: 0px;
-            width: 100%;
-
-            .el-header {
-                height: 54px;
-                padding-top: 16px;
-                padding-left: 24px;
-                box-sizing: border-box;
-                box-shadow: 0 2px 7px 0 rgba(102, 102, 102, 0.1);
-                .head-cinema-info {
-                    display: inline-block;
-                    height: 38px;
-                    width: 140px;
-                    color: #999;
-                    font-size: 0px;
-                    .el-icon-location-outline {
-                        margin-right: 6px;
-                        font-size: 14px;
-                    }
-                    .head-cinema-name {
-                        font-size: 14px;
-                        display: inline-block;
-                        height: 100%;
-                        line-height: 34px;
-                    }
-                }
-                .header-user {
-                    width: 158px;
-                    height: 38px;
-                    position: absolute;
-                    top: 16px;
-                    right: 0px;
-                    display: flex;
-                    z-index: 99;
-                    justify-content: center;
-                    .el-menu-demo {
-                        border:0;
-                    }
-                    .user-img {
-                        width: 28px;
-                        height: 28px;
-                        margin-left: -6px;
-                        margin-right: 6px;
-                        margin-top: 9px;
-                        border-radius: 50%;
-                        background-image: url("../assets/images/man.png");
-                        background-size: contain;
-                        background-repeat: no-repeat;
-                    }
-                    .el-dropdown-link {
-                        padding-left: 15px;
-                        cursor: pointer;
-                        color: #666666;
-                    }
-                }
+    .el-aside {
+        height:100%;
+        line-height: 100%;
+        background: #21376b;
+        color: #fff;
+        overflow: visible;
+        .el-menu {
+            .workSpace{
+                height: 50px;
+                line-height: 50px;
+                background-color: rgba(59, 116, 255, 0.2);
+                text-align: center;
             }
-            .el-aside {
-                background: #21376b;
-                color: #fff;
-                overflow: visible;
-                .project-title {
-                    font-size: 18px;
-                    line-height: 25px;
-                    letter-spacing: 3.5px;
-                    font-weight: 800;
+            .el-submenu__title{
+                padding:0 !important;
+                text-align: center;
+                height:40px;
+                line-height:40px;
+            }
+        }
+        .project-title {
+            font-size: 18px;
+            line-height: 25px;
+            letter-spacing: 3.5px;
+            font-weight: 800;
+            display: block;
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px 0;
+        }
+        .xian{
+            width: 80px;
+            height: 2px;
+            border: none;
+            background: #FFFFFF;
+            opacity: 0.2;
+            margin: 5px auto;
+
+        }
+        .first{
+            background: #21376b;
+            margin-bottom: 5px;
+            &:hover {
+                background-color: #fff !important;
+                span{
+                    color: #1278E1;
+                }
+                .secondMenu{
                     display: block;
-                    text-align: center;
-                    margin-bottom: 20px;
-                    padding: 10px 0;
                 }
-                .work-space {
-                    width: 100%;
-                    height: 40px;
-                    line-height: 40px;
-                    text-align: center;
-                    /* background-color: rgba( 59, 116, 255, 0.2);
-                     color: #FFFFFF;*/
-                    .el-icon-date{
-                        margin-right: 10px;
+                .divTitle{
+                    i.el-icon-menu{
+                        color:#1278E1;
                     }
                 }
-                .el-menu-item {
-                    width: 100%;
-                    height: 40px;
-                    .gongzuo {
-                        width: 135px;
-                        height: 100%;
-                        text-align: center;
-                        line-height: 40px;
-                        background-color: rgba(59,116,255,0.2) !important;
-                        .border {
-                            float: right;
-                            width: 5px;
-                            height: 40px;
-                            background-color: #3B74FF;
-                            visibility: visible;
-                        }
-                    }
-                }
-                .xian{
-                    width: 80px;
-                    height: 2px;
-                    border: none;
-                    background: #FFFFFF;
-                    opacity: 0.2;
-                    margin: 5px auto;
 
+            }
+            .divTitle{
+                position:relative;
+                /*i.el-icon-menu{*/
+                    /*color:#fff;*/
+                /*}*/
+            }
+            .secondMenu{
+                min-width: 200px;
+                /*max-height:400px;*/
+                position: absolute;
+                left: 100%;
+                top: 0;
+                /*bottom:0;*/
+                z-index:9999;
+                background-color: #fff;
+                box-shadow: 4px 4px 12px 0 rgba(0,0,0,0.20);
+                display: none;
+                overflow-y: scroll;
+                li.secondTitle{
+                    color: #ccc;
+                    font-size: 12px;
+                    border-bottom: 1px solid #ccc;
                 }
-                .divTitle {
-                    width: 135px;
-                }
-                .first{
-                    position: relative;
-                    .secondMenu{
-                        min-width: 200px;
-                        height: 451px;
-                        position: absolute;
-                        left: 136px;
-                        top: 0;
-                        background-color: #fff;
-                        box-shadow: 4px 4px 12px 0 rgba(0,0,0,0.20);
-                        z-index: 99;
-                        display: none;
-                        overflow-y: scroll;
-                        li.secondTitle{
-                            color: #ccc;
-                            font-size: 12px;
-                            border-bottom: 1px solid #ccc;
-                        }
+                li{
+                    .secondList{
+                        width: 400px;
+                        display: flex;
+                        justify-content: flex-start;
+                        align-items: center;
+                        flex-wrap: wrap;
                         li{
-                            .secondList{
-                                width: 400px;
-                                display: flex;
-                                justify-content: flex-start;
-                                align-items: center;
-                                flex-wrap: wrap;
-                                li{
-                                    color: #666;
-                                    margin: 0 20px 0 10px;
-                                    width: 100px;
-                                    text-overflow: ellipsis;
-                                    overflow: hidden;
+                            color: #666;
+                            margin: 0 20px 0 10px;
+                            width: 100px;
+                            text-overflow: ellipsis;
+                            overflow: hidden;
 
-                                }
-                            }
-                        }
-
-                    }
-                    &:hover {
-                        background-color: #fff !important;
-                        i{
-                            color: #1278E1;
-                        }
-                        span{
-                            color: #1278E1;
-                        }
-                        .secondMenu{
-                            display: block;
-                        }
-                    }
-                }
-                .button {
-                    width: 100%;
-                }
-            }
-            .el-main {
-                padding: 0;
-                height: 100vh;
-                .content-wrapper {
-                    height: calc(100vh - 56px);
-                    overflow: auto;
-                    padding: 10px 10px 0 10px;
-                    box-sizing: border-box;
-                    .page-wrapper{
-                        .el-form--inline{
-                            .el-form-item__label{
-                                padding:0;
-                            }
-                            .el-form-item{
-                                margin-right: 0;
-                            }
                         }
                     }
                 }
 
             }
-            // mmodal
-            .el-dialog {
-                border-radius: 5px;
-                overflow: hidden;
-                .el-dialog__header {
-                    padding: 14px;
-                    .el-dialog__title {
-                        font-size: 18px;
-                        color: black;
-                    }
+        }
+        .button {
+            width: 100%;
+            text-align: center;
+            height: 350px;
+            background-color: #21376b;
+            line-height: 80px;
+            .el-button--default{
+                color: #fff;
+                background-color: #21376b;
+                &:hover {
+                    color: #1278E1;
+                    background-color: #fff;
                 }
-                .el-dialog__body {
-                  padding: 0 10px 10px 10px;
-                }
-            }
-
-            .el-step.is-center .el-step__main {
-                // text-align:left;
-            }
-            .el-step__icon.is-text {
-                border-color: #303133;
-                color: #303133;
-            }
-            .el-step__head.is-finish .el-step__icon.is-text,
-            .forgot-pwd .content .el-step__head.is-success .el-step__icon.is-text {
-                color: #ffa037;
-                border-color: #ffa037;
-                font-weight: bold;
-            }
-            .el-step__title.is-wait {
-                color: #303133;
-            }
-
-            .show{
-                display:block;
-            }
-            .list-wrapper {
-                width: 100%;
-                margin-top: 10px;
-                border: 1px solid #ccc;
-                .search-form{
-                    padding: 24px 0 0 6px;
-                    margin-bottom: 10px;
-                    .mini-select-size{
-                        width: 158px;
-                    }
-                    .search-padding{
-                        margin-left:8px;
-                        padding: 7px 16px;
-                    }
-                }
-                .newBuild {
-                    width: 100%;
-                    height: 60px;
-                    background-color: #ccc;
-                    border-top: #8b8b8b;
-                    display: flex;
-                    justify-content: flex-end;
-                    align-items: center;
-                }
-                .el-table.el-table--striped{
-                    border: 1px solid #e5e5e5;
-                    border-bottom:0;
-                }
-                .el-table--striped .el-table__body tr.el-table__row--striped td{
-                    background:#f0f0f0;
-                }
-                .el-table--striped .el-table__body tr.el-table__row--striped.current-row td{
-                    background:#e7ebff;
-                }
-                .el-table__body tr.current-row > td{
-                    background:#e7ebff;
-                }
-                .el-table .cell{
-                    padding-left: 8px;
-                    padding-right: 8px;
-                    span{
-                        color:#333;
-                        &.table-btn-mini{
-                            color:#3B74FF;
-                            cursor: pointer;
-                            margin-right:6px;
-                        }
-                    }
-                }
-                .el-table th.is-leaf{
-                    border-bottom: 1px solid #e5e5e5;
-                    border-left: 1px solid #e5e5e5;
-                    background: #e7ebff;
-                    color: #333;
-                }
-                .el-table td {
-                    border-left: 1px solid #e5e5e5;
-                }
-                .el-table th.is-leaf:nth-child(1), .el-table td:nth-child(1) {
-                    border-left: 0;
-                }
-                .table {
-                    width: 96%;
-                    margin: 30px auto;
-                }
-            }
-            .create-wrapper {
-                width: 100%;
-                height: 32px;
-                margin-bottom:10px;
-                // background-color: #ccc;
-                // border-top: #8b8b8b;
-                display: flex;
-                justify-content: flex-end;
-                align-items: center;
-            }
-            .has-gutter tr th{
-                background: #F2F4FD;
-                color: #333333;
-                font-family: MicrosoftYaHei;
-            }
-            .content-line{
-                clear:both;
-                height: 1px;
-                line-height: 1px;
-                font-size:0;
-                background: #ccc;
-                margin:0 auto 20px;
             }
 
         }
-        .el-menu {
-            width: 100%;
+        .el-menu-item {
+            padding:0 !important;
             text-align: center;
+            background-color: #fff;
+            height: 40px;
+            line-height: 40px;
         }
         .el-submenu .el-menu-item {
-            min-width: 0px;
-            width: 136px;
-            height: 40px;
-            line-height: 40px;
-
+            min-width: 0 !important;
         }
-        .el-icon--right {
-            margin-left: 12px;
-        }
-        .el-submenu__title {
-            width: 135px;
-            height: 40px;
-            line-height: 40px;
-            opacity: 0.6;
-            font-family: MicrosoftYaHei;
-            color: #ffffff;
-        }
-        .el-menu-item,
-        .el-submenu__title {
-            padding: 0 16px 0 0 !important;
-            text-align: center;
-        }
-        .el-menu--horizontal > .el-submenu .el-submenu__title {
-            height: 43px;
-            line-height: 43px;
-            color: #909399;
-            background-color: #fff !important;
-            padding: 0 0 0 10px !important;
-            margin-left: -6px;
-        }
-        .el-menu--popup {
-            min-width: 116px;
-        }
-
-        .el-menu--horizontal .el-menu .el-menu-item:hover {
-            background: #f5f5f5 !important;
-        }
-        .el-menu-item.is-active i,.el-menu-item.is-active span{
-            color:#1278e1 !important
-        }
-        .el-menu-item{
-            &.is-active{
-                background-color: #fff!important;
-                color:#1278e1!important;
-            }
-        }
-        .el-menu-vertical-demo {
-            width: 136px;
-        }
-        .el-aside{
-            .el-button--default {
+    }
+    .el-container{
+        .el-header {
+            height: 60px;
+            line-height: 60px;
+            box-sizing: border-box;
+            box-shadow: 0 2px 7px 0 rgba(102, 102, 102, 0.1);
+            .header-user {
+                width: 160px;
+                height: 56px;
+                line-height: 56px;
+                margin-top:4px;
+                float:right;
                 display: flex;
-                justify-content: space-around;
-                background: transparent;
-                opacity: 0.4;
-                border: 1px solid #BCBCBC;
-                border-radius: 4px;
-                word-break: break-all;
-                width: 80px;
-                height: 32px;
-                color: rgba(255, 255, 255, 0.9);
-                // color: #666666;
-                margin: 10px auto;
-                // 默认按钮
-            }
-            .el-button--default:hover {
-                background: #F5F5F5;
-                border: 1px solid #bcbcbc;
-                color: blue;
-                opacity: 1;
-            }
-            .el-button--default.is-disabled {
-                background: #F5F5F5;
-                color: #BCBCBC;
-            }
-            .el-icon-plus {
-                margin-right: 7px;
-            }
+                justify-content: center;
+                align-items: center;
+                .user-img {
+                    width: 28px;
+                    height: 28px;
+                    margin-right:10px;
+                    border-radius: 50%;
+                    display: inline-block;
+                    background-image: url("../assets/images/man.png");
+                    background-size: contain;
+                    background-repeat: no-repeat;
+                }
 
-        }
-
-        .el-menu-item [class^="el-icon-"] {
-            width: 13px;
-            font-size: 13px;
-            color: #fff;
-        }
-        .main-container .el-aside .el-menu-item {
-            padding-left: 0px !important;
-            i{
-                color:#fff;
             }
         }
-        .el-submenu__title:hover {
-            background-color: rgba(59, 116, 255, 0.2) !important;
+        .el-main {
+            .content-wrapper {
+                height:100%;
+                padding: 0 10px 0 10px;
+                box-sizing: border-box;
+                .list-wrapper{
+                    .el-form--inline{
+                        .el-form-item__label{
+                            padding:0;
+                        }
+                        .el-form-item{
+                            margin-right: 0;
+                        }
+                    }
+                }
+            }
         }
-        .el-menu--horizontal > .el-submenu.is-active .el-submenu__title {
-            border: none;
-        }
+    }
+}
+
+
 
 </style>

@@ -142,15 +142,15 @@
 
             // mode view: 查看, edit: 编辑
             scanPlan(date) {
-                this.$router.push({ path: '/ctm/moviePlan/layout', query: { date, mode: 'view' }})
+                this.$router.push({ path: '/ticket/moviePlan/layout', query: { date, mode: 'view' }})
             },
 
             editPlan(date) {
-                this.$router.push({ path: '/ctm/moviePlan/layout', query: { date, mode: 'edit' }})
+                this.$router.push({ path: '/ticket/moviePlan/layout', query: { date, mode: 'edit' }})
             },
 
             addPlan(date) {
-                this.$router.push({ path: '/ctm/moviePlan/layout', query: { date, mode: 'edit' }})
+                this.$router.push({ path: '/ticket/moviePlan/layout', query: { date, mode: 'edit' }})
             },
 
             mGetDate(year, month) {

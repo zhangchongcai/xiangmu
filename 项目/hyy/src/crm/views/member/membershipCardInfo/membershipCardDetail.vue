@@ -75,6 +75,13 @@
             <label class="lable">邮箱：</label>
             {{cardDetail.email}}
           </div>
+          <div class="member-email itemInfo" v-if="cardDetail.cardTypeCode == 'stored_card'">
+            <label class="lable">储值金额：</label>
+            <div class="stored-total">
+              ￥{{cardDetail.totalBalance}} &nbsp;
+              <span class="stored-detail">(实收￥{{cardDetail.basicBalance}}，奖励￥{{cardDetail.giveBalance}})</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -111,8 +118,8 @@
         </div>
         <!-- 分页 start -->
         <div class="page-wrap">
-          <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="current"
-            :page-sizes="[20 , 50 , 100]" :page-size="pageSize" layout="prev, pager, next, jumper, sizes" :total="total-0"></el-pagination>
+          <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="current-0"
+            :page-sizes="[20 , 50 , 100]" :page-size="pageSize-0" layout="prev, pager, next, jumper, sizes" :total="total-0"></el-pagination>
         </div>
         <!-- 分页 end -->
       </el-collapse-item>
@@ -162,7 +169,7 @@ export default {
       let _this = this;
       let param = {
         cardNo: _this.$route.query.cardNo,
-        tenantId:  this.$store.state.loginUser.consumerId
+        tenantId: this.$store.state.loginUser.consumerId
       };
       _this.$crmList.memberCardDetail(param).then(ret => {
         _this.cardDetail = ret;
@@ -180,7 +187,7 @@ export default {
         startTime: _this.formData.date[0],
         endTime: _this.formData.date[1],
         cardNo: _this.$route.query.cardNo,
-        tenantId:  this.$store.state.loginUser.consumerId,
+        tenantId: this.$store.state.loginUser.consumerId,
         businessType: _this.formData.source,
         memberId: ""
       };
@@ -219,13 +226,19 @@ export default {
     handleMembershipCardDetail() {
       this.$router.push({
         path: "/member/cardTypeManagement/detail",
-        query: { cardProductId: this.cardDetail.cardProductId, tenantId: this.$store.state.loginUser.consumerId }
+        query: {
+          cardProductId: this.cardDetail.cardProductId,
+          tenantId: this.$store.state.loginUser.consumerId
+        }
       });
     },
     // 修改状态
     handleChangeStatus(cardNo, status) {
       let _this = this;
-      let msg = status == "frozen" ? "冻结后此卡将无法正常使用，确定冻结吗？" : "确定解冻此卡？";
+      let msg =
+        status == "frozen"
+          ? "冻结后此卡将无法正常使用，确定冻结吗？"
+          : "确定解冻此卡？";
       _this
         .$confirm(msg, "提示", {
           confirmButtonText: "确定",
@@ -236,7 +249,7 @@ export default {
           let param = {
             cardNo: cardNo,
             status: status,
-            tenantId:  this.$store.state.loginUser.consumerId
+            tenantId: this.$store.state.loginUser.consumerId
           };
           _this.$crmList.rcardStatus(param).then(ret => {
             _this.getMemberCardDetail();
@@ -290,6 +303,17 @@ export default {
           margin: 10px;
           color: #666666;
           font-size: 12px;
+          .stored-total {
+            display: flex;
+            align-items: center;
+            font-size: 21px;
+            color: #333333;
+            margin-top: 15px;
+            .stored-detail {
+              font-size: 12px;
+              color: #666;
+            }
+          }
         }
       }
     }

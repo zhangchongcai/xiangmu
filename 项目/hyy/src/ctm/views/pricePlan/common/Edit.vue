@@ -193,7 +193,7 @@
                     <el-time-picker
                       v-model="item.startTm"
                       placeholder="请输入时间"
-                     
+                     @change="findTime($event,index)"
                     >
                     </el-time-picker>
                     <span class="time-padding">至</span>
@@ -534,6 +534,7 @@ export default {
     return {
       flagWeekArr:[],
       flagWeekendArr:[],
+      cinemaUids:'',
       //交互部分****************
       selectCinemaStatus:false,
       getCinemaTreeList:[],
@@ -632,8 +633,8 @@ export default {
                 uid: "",
                 tenantId: "",
                 programUid: "",
-                startTm: "",
-                endTm: "",
+                startTm: null,
+                endTm: null,
                 monday: "0",
                 tuesday: "0",
                 wednesday: "0",
@@ -686,7 +687,7 @@ export default {
   mixins: [fixStepMixin],
   created() {
     this.getHallTypeList();
-    this.getTickettypeList();
+    // this.getTickettypeList();
     this.getDisVersionList();
     this.getMovieList();
     this.getChannelList(0);
@@ -697,7 +698,6 @@ export default {
   updated: function() {},
   methods: {
     selectCinemaClose(val){
-      console.log('val8888888888888888888',val)
       this.selectCinemaStatus = val
     },
     //选择影院方法
@@ -724,7 +724,13 @@ export default {
     getSelectedCinema(val){
       let self =this
       self.sizeForm.ciCinemaList =val
-      console.log('valllllllllllllllllllllllll',val)
+      let UidArr =[]
+      self.sizeForm.ciCinemaList.forEach((item,index)=>{
+        UidArr.push(item.uid)
+      })
+      self.cinemaUids=UidArr.join(',')
+      self.getTickettypeList()
+      // self.ttVoList=[]
     },
     getxxx(val){
       console.log('val',val,typeof(val))
@@ -745,8 +751,8 @@ export default {
           self.sizeForm.tmList[index].startTm * 1
         ) {
           // alert('2')
-          self.sizeForm.tmList[index].startTm = "";
-          self.sizeForm.tmList[index].endTm = "";
+          self.sizeForm.tmList[index].startTm = null;
+          self.sizeForm.tmList[index].endTm = null;
           self.$message({
             message: "时间段不能重叠",
             type: "warning"
@@ -771,8 +777,8 @@ export default {
                 uid: "",
                 tenantId: "",
                 programUid: "",
-                startTm: "",
-                endTm: "",
+                startTm: null,
+                endTm: null,
                 monday: "0",
                 tuesday: "0",
                 wednesday: "0",
@@ -816,7 +822,7 @@ export default {
     handleSelectionTtVoListChange(val) {
       let self = this;
       self.formTtVoList = val
-      console.log('formTtVoList', self.formTtVoList)
+      // console.log('formTtVoList', self.formTtVoList)
 
     },
     handleSelectionPriceNetSaleChange(val){
@@ -863,6 +869,7 @@ export default {
         self.sizeForm.tmList[index].wednesday = "1"
         self.sizeForm.tmList[index].thursday = "1"
         self.sizeForm.tmList[index].friday = "1"
+         self.sizeForm.tmList[index].flagWeekArr.push(1)
         
       }else{
        self.sizeForm.tmList[index].monday ="0";
@@ -870,6 +877,7 @@ export default {
         self.sizeForm.tmList[index].wednesday ="0"
         self.sizeForm.tmList[index].thursday ="0"
         self.sizeForm.tmList[index].friday ="0"
+        self.sizeForm.tmList[index].flagWeekArr.pop()
       }
       self.sizeForm.tmList[index].isIndeterminate_week = false;
       
@@ -894,10 +902,12 @@ export default {
         self.sizeForm.tmList[index].saturday = "1"
         self.sizeForm.tmList[index].sunday = "1"
         self.isIndeterminate_week = true;
+        self.sizeForm.tmList[index].flagWeekendArr.push(1)
       }else{
         self.sizeForm.tmList[index].saturday = "0"
         self.sizeForm.tmList[index].sunday = "0"
         self.isIndeterminate_week = false;
+        self.sizeForm.tmList[index].flagWeekendArr.pop()
        
       }
       self.sizeForm.tmList[index].isIndeterminate_weekend = false;
@@ -939,7 +949,7 @@ export default {
       })
 
       self.price_disVersion_1.forEach((item, i) => {
-        console.log('1',self.price_disVersion_1)
+        // console.log('1',self.price_disVersion_1)
         if (self.price_tickettype.length > 0) {
           self.price_tickettype.forEach((item2, i2) => {
             //生成列表数组
@@ -979,7 +989,6 @@ export default {
     },
     // 线上售票方法********************************************************************************************
     handleCheckedDisVersion_Change_2(value) {
-      console.log('valueeeeeeeeeeeeeeeeeeeee',value)
       let checkedCount = value.length;
       this.disVersion_checkAll_2 = checkedCount == this.disVersionList.length;
       this.disVersion_isIndeterminate_2 =
@@ -1098,10 +1107,11 @@ export default {
           console.log("哪里出错了，检擦一下哥哥");
         });
     },
-    getTickettypeList() {
+     getTickettypeList_1() {
       let self = this;
       let data = {
-        type:0
+        type:0,
+        cinemaUids:self.cinemaUids || '',
       };
       self.$ctmList
         .getTickettypeList(data)
@@ -1109,11 +1119,60 @@ export default {
           if (ret.data) {
             self.tickettypeList = ret.data;
             self.tickettypeList.forEach((item,index)=>{
-              let result 
+              // let result 
               if(item.name=='成人票'){
                 self.price_tickettype.push(item.uid+','+item.name)
               }
             })
+              //勾选的票类更新
+              let resultTickettype = []
+              self.ttVoList.forEach((item,index)=>{
+                resultTickettype.push(item.ttUid+','+item.ttName) 
+              })
+             self.price_tickettype = [...new Set(resultTickettype)]
+             console.log('self.price_tickettype:', self.price_tickettype)
+          }
+        })
+        .catch(() => {
+          console.log("哪里出错了，检擦一下哥哥");
+        });
+    },
+    getTickettypeList() {
+      let self = this;
+      let data = {
+        type:0,
+        cinemaUids:self.cinemaUids || '',
+      };
+      self.$ctmList
+        .getTickettypeList(data)
+        .then(ret => {
+          if (ret.data) {
+            self.tickettypeList = ret.data;
+               //过滤票类没有的数据
+            if(self.ttVoList.length>0){
+              let filtResultArr = []
+              self.ttVoList.forEach((item,index)=>{
+                self.tickettypeList.forEach((item2,index2)=>{
+                  if( item.ttUid == item2.uid){
+                  filtResultArr.push(item)
+                  }
+                })
+              })
+              self.ttVoList = filtResultArr 
+              //勾选的票类更新
+              let resultTickettype = []
+              let resultTtVoList = []
+              self.ttVoList.forEach((item,index)=>{
+              resultTtVoList.push(item.movieVersion+','+item.movieVersionName)
+              resultTickettype.push(item.ttUid+','+item.ttName) 
+              })
+             self.price_tickettype = [...new Set(resultTickettype)]
+              
+                self.$nextTick(()=>{
+                   self.toggleSelection1(self.ttVoList)
+                })
+               
+          }
           }
         })
         .catch(() => {
@@ -1217,6 +1276,9 @@ export default {
         self.sizeForm.schBashHallTypeList = resultHallTypeList;
       }
     },
+     findTime($event,index){
+      console.log("event:",$event)
+    },
     // *************************************************************************************************
     // 保存价格方案
     priceprogramUpdate(rulesSizeForm) {
@@ -1266,11 +1328,11 @@ export default {
           let resultTime =JSON.parse(JSON.stringify(self.sizeForm.tmList))
           if (self.sizeForm.tmList.length > 0) {
             resultTime = resultTime.map((item, index) => {
-              item.startTm =
-                new Date(item.startTm).getHours() + ":" + new Date(item.startTm).getMinutes();
-              item.endTm =
-               new Date(item.endTm).getHours() + ":" + new Date(item.endTm).getMinutes();
-              return item;
+              if(item.startTm && item.endTm){
+                  item.startTm = new Date(item.startTm).getHours() + ":" + new Date(item.startTm).getMinutes();
+                  item.endTm = new Date(item.endTm).getHours() + ":" + new Date(item.endTm).getMinutes();
+              }
+               return item;
             });
             console.log('resultTime',resultTime)
           }
@@ -1291,14 +1353,22 @@ export default {
                   ttVoList: self.formTtVoList,
                   ciPriceSaleChannelVoList: ciPriceSaleChannelVoList
               };
-              //判断渠道是否选择
-              if(ciPriceSaleChannelVoList.length <= 0){
-                 self.$message({
-                  message: '请选择渠道',
+          //判断适用时段是否选择
+          if(!self.sizeForm.tmList.every((item,index)=>{ return (item.flagWeekArr.length>0 || item.flagWeekendArr.length>0)&&(item.startTm !=null && item.endTm !=null)})){
+             self.$message({
+                  message: '请选择适用时段',
                   type: 'warning'
                 }); 
                 return
-              }
+          }
+          //判断渠道是否选择
+          if(ciPriceSaleChannelVoList.length <= 0){
+              self.$message({
+              message: '请选择渠道',
+              type: 'warning'
+            }); 
+            return
+          }
           //判断表格选择
           if(self.formPriceNetSale.length <= 0 && self.formTtVoList.length <= 0){
              self.$message({
@@ -1307,6 +1377,21 @@ export default {
                 }); 
                 return
           }
+          //判断价格不能为0
+         if(self.formPriceNetSale.some((item,index)=>{return(item.price==0)})){
+           self.$message({
+                  message: '价格不能为0',
+                  type: 'warning'
+                }); 
+                return
+         }
+          if(self.formTtVoList.some((item,index)=>{return(item.price==0)})){
+           self.$message({
+                  message: '价格不能为0',
+                  type: 'warning'
+                }); 
+                return
+         }
           self.$ctmList
                 .priceprogramUpdate(params)
                 .then(ret => {
@@ -1354,6 +1439,7 @@ export default {
      toggleSelection1(rows) {
        let self =this
         if (rows) {
+          console.log('rows:',rows)
           rows.forEach(row => {
             self.$refs.multipleTable1.toggleRowSelection(row);
           });
@@ -1374,7 +1460,7 @@ export default {
     //获取初始数据
     getDatas() {
       let self = this;
-      console.log('self.$route.query.id',self.$route.query.id)
+      // console.log('self.$route.query.id',self.$route.query.id)
       let data = {
          id: self.$route.query.id,
       };
@@ -1389,6 +1475,14 @@ export default {
             // debugger
             //影院处理
             this.sizeForm.ciCinemaList = result.ciCinemaList
+            //处理影院Uid
+            let UidArr =[]
+            self.sizeForm.ciCinemaList.forEach((item,index)=>{
+              UidArr.push(item.uid)
+            })
+            self.cinemaUids=UidArr.join(',')
+            self.getTickettypeList_1()
+
             self.sizeForm.ciPriceProgram.tiemStart_end =  result.ciPriceProgram.startDy ?[result.ciPriceProgram.startDy,result.ciPriceProgram.endDy]:[]
             //时间段处理
             self.sizeForm.tmList = result.tmList.map((item,index)=>{
@@ -1446,9 +1540,7 @@ export default {
                 if(item.sunday ==1){
                   item.flagWeekendArr.push(1)
               }
-
-             
-              console.log('item-加时间',item)
+              // console.log('item-加时间',item)
               return item
             })
             
@@ -2118,7 +2210,7 @@ export default {
     z-index: 999;
     bottom: 0;
     right: 0;
-    background-color: #f5f5f5;
+    background-color: #ffffff;
     .btn-area {
       width: 500px;
       margin: 0 auto;

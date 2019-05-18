@@ -439,15 +439,17 @@ export default {
                     }
                     this.$refs.filmPlan.resetSaveFlage()
                     if (turnPageParam && turnPageParam.type) {
-                        let uid = ''
+                        let uid = '', joinFlag = 0, type = turnPageParam.type
                         res.data.some(item => {
                             if (item.hallUid == turnPageParam.curPlan.hallUid && item.startTime == `${turnPageParam.curPlan.startTime.hours}:${turnPageParam.curPlan.startTime.minute}`) {
                                     uid = item.planUid
+                                    joinFlag = item.joinFlag
                                     return true
                                 }
                         })
+                        let path = type == 'continuityPlan' ? `consecutivePlan?mode=edit&uid=${uid}` : joinFlag ? `consecutivePlan?mode=${type}&uid=${uid}` : `detail?mode=${type}&uid=${uid}`
                         this.$router.push({
-                            path: `detail?mode=${turnPageParam.type}&uid=${uid}`
+                                path
                         })
                     }
                 }
@@ -455,7 +457,7 @@ export default {
         },
         getReference() {
             getRefTip({
-                "cinemaUid":"111111",
+                "cinemaUid": this.baseParam.uidCinema,
                 "consultCinemaCode":"00000000",
                 "planDate":"2019-04-15",
                 "startTime":"2019-04-15 17:00:00",
@@ -549,6 +551,7 @@ export default {
             this.$refs.filmPlan.submitReview();
         },
         changeMyData() {
+            // if ()
             // 计算 排片总数 和 黄金场次总数
             let planTotal = this.$refs.filmPlan.plan_rooms.reduce((data, item) => {
                 return data += item.length

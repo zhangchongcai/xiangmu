@@ -116,9 +116,11 @@
         <el-button @click="dialogTableVisible2 = false">取消</el-button>
       </div>
     </el-dialog>
+     <singeCinema ref="singeCinema" @callback="callback" @firstCinema="firstCinema"></singeCinema>
   </div>
 </template>
 <script type="text/javascript">
+  import singeCinema from '../publicModule/singeCinema'
   function timeStampToString(time) {
     var datetime = new Date();
     datetime.setTime(time);
@@ -131,6 +133,9 @@
     return year + "-" + month + "-" + date;
   }
   export default {
+    components: {
+      singeCinema
+    },
     data() {
       return {
         total: 1, //总数
@@ -341,6 +346,20 @@
             }
           })
       },
+       // 打开影院
+       openCinema(){
+        this.$refs.singeCinema.opendialog = true;
+      },
+      callback(val){
+        console.log(val)
+        this.cinemaName = val.orgName
+        this.searchAdition.cinemaUid = val.cinemaUID
+      },
+      firstCinema(val){
+        // this.$set(this.searchAdition,"cinemaUID",val.cinemaUID)
+        this.searchAdition.cinemaUid = val.cinemaUID;
+        this.searchAdition.cinemaUid &&  this.getList();
+      }
     },
     watch: {
       dialogTableVisible1() {
@@ -437,7 +456,7 @@
 
 
   .search-btn {
-    position: absolute;
+    // position: absolute;
     top: calc(50% - 24px);
     right: 32px;
   }

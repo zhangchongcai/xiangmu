@@ -128,16 +128,26 @@ export default function $axios(options) {
                         // alert(data.msg);
                         Message({
                             message: data.msg,
-                            type: 'warning'
-                        });
+                            type: 'error',
+                            center: true,
+                            showClose: false,
+                            customClass: 'hyy-toast',
+                            iconClass: 'icon-danchuang-cuowu iconfont',
+                            duration: 1500
+                        })
                         window.location.href = '#/login';
                         break;
                     default:
                         // alert(data.msg);
                         Message({
                             message: data.msg,
-                            type: 'warning'
-                        });
+                            type: 'error',
+                            center: true,
+                            showClose: false,
+                            customClass: 'hyy-toast',
+                            iconClass: 'icon-danchuang-cuowu iconfont',
+                            duration: 1500
+                        })
                         return Promise.reject();
                         break;
                 }

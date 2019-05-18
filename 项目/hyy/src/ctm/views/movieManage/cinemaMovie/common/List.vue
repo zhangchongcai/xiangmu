@@ -1,12 +1,11 @@
 <template>
   <div>
     <div class="ciniema-stock-header">
-      <div class="search-wrap">
+      <div class="search-wrap" style="margin-left:0px;">
         <span> 影片名称：</span>
         <el-input
           size='small'
           placeholder="请输入内容"
-          prefix-icon="el-icon-search"
           v-model="movieName"
         >
         </el-input>
@@ -16,10 +15,19 @@
         <el-input
           size='small'
           placeholder="请输入内容"
-          prefix-icon="el-icon-search"
           v-model="movieCode"
         >
         </el-input>
+      </div>
+      <div class="search-wrap">
+        <span>适用影院：</span>
+        <el-input
+          size='small'
+          placeholder="请输入内容"
+          v-model="innerDataSingle.fullName"
+        >
+        </el-input>
+       <div class="companySpan" @click='chosenCinemaFun'><i class="el-icon-more"></i></div>
       </div>
       <div class="search-wrap">
         <span>公映日期</span>
@@ -82,7 +90,7 @@
       </div>
     </div>
     <div class="ticket-price-plan-tableNew" style="">
-      <div class="creat-tickPrice" style="display:inline-block;float:right">
+      <div class="creat-tickPrice" style="display:inline-block;float:right;margin-bottom:12px;margin-top:11px;">
         <el-button
           type="primary"
           size="small"
@@ -115,7 +123,7 @@
         </div>
         <span slot="footer" class="dialog-footer">
           <el-button @click="dialogVisible = false">取 消</el-button>
-          <el-button type="primary" @click="downLoadMovie2">确 定</el-button>
+          <el-button type="primary" @click="downLoadMovie">确 定</el-button>
         </span>
     </el-dialog>
     <div class="cinema-stock-table">
@@ -219,7 +227,7 @@
         </el-table-column>
         <el-table-column
           prop="datePublicShow"
-          label="公映日期"
+          label="公映日期:"
           width="100"
         >
          <template slot-scope="scope" v-if='scope.row.datePublicShow'>
@@ -287,14 +295,44 @@
       >
       </el-pagination>
     </div>
+    <!-- <frameSingleFilmBase :reviewData="reviewFilmDataSingle" 
+         :innerData="paramsFilmDataSingle" :whereUse="mainPageUnique"
+         @frameFilmBaseSingleCallBack="frameSingleFilmBaseCallBack"
+         ref='frameSingleFilm'>
+    </frameSingleFilmBase> -->
+    <frame-singlecinema
+      :framedialogVisible="singleCinemaVisible"
+      :whereUse="whereUse"
+      :type="cinematype"
+      :innerData="innerDataSingle"
+      @callBackSingle="handleSingleCallBack"
+      ref="frameSingleCinema"
+    >
+      <div slot="footerId">
+        <el-button @click="singleCinemaVisible= false">取 消</el-button>
+        <el-button
+          type="primary"
+          @click="confirmCinemaSingleDialog(), singleCinemaVisible= false"
+        >确 定</el-button>
+      </div>
+    </frame-singlecinema>
   </div>
 
 </template>
 <script>
-
+import frameSingleFilmBase from 'src/frame_cpm/dialogs/film/singleBase'
 export default {
   data() {
     return {
+      // mainPageUnique:1, // 传递给 组件的调用的影院类型 属性参数 1 基础影片
+      // paramsFilmDataSingle:{},
+      // reviewFilmDataSingle:{"id": 4}, // 需要回显选中的数据
+       // 影院单选
+       innerDataSingle: { id: 38 },
+      singleCinemaVisible: false,
+      whereUse: null,
+      cinematype: 1, // 传递给 组件的调用的影院类型 属性参数
+      innerData: [], // 传递给 组件的可选参数 props 参数
       // is_public_value:false,
       movieCode: "",
       movieName: "",
@@ -347,6 +385,23 @@ export default {
   },
  
   methods: {
+    chosenCinemaFun(){
+      this.singleCinemaVisible = true;
+      this.cinematype = 1;
+      this.$refs.frameSingleCinema.listAuthCommCinemas();
+    },
+    confirmCinemaSingleDialog() {
+      this.$refs.frameSingleCinema.confirmData();
+    },
+    //  frameSingleFilmBaseCallBack(opt) {
+    //         this.reviewFilmDataSingle = opt.data
+    //         console.log(' this.reviewFilmDataSingle:', this.reviewFilmDataSingle)
+    //   },
+    handleSingleCallBack(opt) {
+      this.innerDataSingle = opt.data;
+      // console.log(' this.innerDataSingle:', this.innerDataSingle)
+      this.singleCinemaVisible = opt.framedialogVisible;
+    },
     resetHandle(){
       let self = this;
       self.movieCode = "";
@@ -357,7 +412,7 @@ export default {
     getDatas() {
       let self = this;
       let params = {
-        cinemaUid:self.cinemaUid,
+        cinemaUid:self.innerDataSingle.id,
         movieCode: self.movieCode,
         movieName: self.movieName,
         dateShowFirst:self.value7?self.value7[0] : '',
@@ -434,7 +489,7 @@ export default {
             })
             .catch(_ => {});
       },
-        downLoadMovie2() {
+        downLoadMovie() {
           console.log('调用了影院的下载方法')
           let self = this
           let datas = {
@@ -444,6 +499,15 @@ export default {
             ishead:'1'
           }
           this.$ctmList.cinemaList({page:1,pageSize:10}).then(res =>{ 
+            if(!res.data.list.length){
+              this.$message({
+                    message: '查询影院信息失败',
+                    type: 'error',
+                    duration: 1000,
+                    onClose: () => {
+                    }
+                })
+            }
             datas.cinemaUid = res.data.list[0]['uid']
             console.log(datas)
             this.$ctmList.schbashmovieLoad(datas).then(res => {
@@ -463,7 +527,9 @@ export default {
         })
       },
   },
-
+  components:{
+    frameSingleFilmBase
+  },
   created() {
     this.getDatas();
     
@@ -481,7 +547,7 @@ export default {
   .search-wrap {
     display: inline-block;
     height: 32px;
-    margin-left: 32px;
+    // margin-left: 32px;
     .el-input {
       width: 264px;
     }
@@ -489,16 +555,37 @@ export default {
       color: #666666;
       font-size: 12px;
     }
+    .companySpan {
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      line-height: 32px;
+      text-align: center;
+      display: inline-block;
+      background-color: #3B74FF;
+      color: #fff;
+      vertical-align: middle;
+      i {
+          font-size: 26px;
+          vertical-align: middle;
+      }
+    }
   }
   .plan-size{
       .el-input {
       width: 160px;
+    }
+    .el-input--suffix .el-input__inner{
+      font-size: 12px;
     }
     }
   .button-wrap {
     margin-top:15px;
     margin-left: 31.4px;
     display: inline-block;
+     span{
+      font-size: 12px;
+    }
   }
 }
 .cinema-stock-table {

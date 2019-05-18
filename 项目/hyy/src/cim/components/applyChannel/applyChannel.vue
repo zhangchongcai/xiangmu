@@ -1,9 +1,9 @@
 <template>
   <div>
-    <el-radio-group v-model="type" @change="handleApplyChange">
+    <el-radio-group v-model="defaultSelected" @change="handleApplyChange">
       <el-radio v-for="(item) in radios" @click.native="(item)" :label="item.type" :key="item.type">
         {{item.label}}
-        <span class="apply-tag" v-if="item.type!=0 && item.type == type">
+        <span class="apply-tag" v-if="item.type!='1' && item.type == defaultSelected">
           <el-input
             class="input"
             v-model="item.name"
@@ -36,6 +36,35 @@
       <div class="apply-tree">
         <el-row>
           <el-col :span="24">
+            <!-- <el-table
+              ref="materialTable"
+              :data="tableData"
+              height="300"
+              @selection-change="handleSelectionMaterial"
+              stripe
+              empty-text="暂无记录"
+            >
+              <el-table-column type="selection" width="40"></el-table-column>
+              <el-table-column
+                v-for="item in tableColumn"
+                :key="item.key"
+                :prop="item.key"
+                :label="item.label"
+                :formatter="item.formatter"
+              ></el-table-column>
+            </el-table>
+            <div class="page-wrap">
+              <el-pagination
+                @size-change="handleSizeChange"
+                @current-change="handleCurrentChange"
+                :current-page="queryData.currentPage"
+                :page-size="queryData.pageSize"
+                :background="pgbackground"
+                :page-sizes="pageSizes"
+                :layout="pgLayout"
+                :total="total"
+              ></el-pagination>
+            </div> -->
             <el-tree
               :data="sourceData"
               :props="defaultProps"
@@ -44,7 +73,7 @@
               :default-expanded-keys="defaultCheckedKys"
               :filter-node-method="filterNode"
               ref="applyTree"
-            >></el-tree>
+            ></el-tree>
           </el-col>
         </el-row>
       </div>
@@ -64,7 +93,7 @@ export default {
       // default: false
     },
     defaultSelected: {
-      type: [Number, String]
+      type: [String, Number]
       // default: false
     },
     radios: {
@@ -75,7 +104,11 @@ export default {
   },
   data() {
     return {
-      type: this.defaultSelected,
+      // type: this.defaultSelected,
+      queryData: {
+        currentPage: 1,
+        pageSize: 20
+      },
       filterQueryValue: "", //筛选值
       applyDialog: false,
       defaultCheckedKys: [],
@@ -130,14 +163,55 @@ export default {
           ]
         }
       ],
+      tableData: [],
+      selectedtableData: [],
       defaultProps: {
         children: "children",
         label: "label"
-      }
+      },
+      tableColumn: [
+        {
+          label: "商品名称",
+          key: "name"
+        },
+        {
+          label: "商品编码",
+          key: "code"
+        },
+        {
+          label: "SKU编码",
+          key: "skuCode"
+        },
+        {
+          label: "速记代码",
+          key: "shorthandCode"
+        },
+        {
+          label: "商品规格",
+          key: "attrValue"
+        },
+        {
+          label: "基本单位",
+          key: "unitName"
+        }
+      ]
     };
   },
-  mounted() {},
+  mounted() {
+    this.queryBaseChannel();
+  },
   methods: {
+    // 获取基本单位
+    queryBaseChannel(param) {
+      this.$cimList.headquartersGoods
+        .queryBaseChannel(param)
+        .then(resData => {
+          if (resData.code == 200) {
+            this.tableData = resData.data;
+          }
+        })
+        .catch(err => {});
+    },
     //切换
     handleApplyChange(type) {
       let tempArr = this.radios.filter(item => {
@@ -145,11 +219,13 @@ export default {
       });
       this.currentChecked = tempArr[0];
       this.$emit("onCheckedNodes", {
-        type: this.type,
+        type: this.defaultSelected,
         value: this.currentChecked.value || []
       });
       //  this.$emit("onRadioChange", this.type);
     },
+    handleSizeChange() {},
+    handleCurrentChange() {},
     setCheckedKeys() {
       this.applyDialog = true;
       this.$nextTick(() => {
@@ -158,12 +234,15 @@ export default {
       });
       console.log(this.defaultCheckedKys);
     },
+    handleSelectionMaterial(value) {
+      console.log(value)
+    },
     handleDelete(item) {
       item.name = "";
       item.value = [];
       item.checkedKys = [];
       let tempObj = {
-        type: this.type,
+        type: this.defaultSelected,
         value: []
       };
       this.$emit("onCheckedNodes", tempObj);
@@ -182,7 +261,7 @@ export default {
     handleApplySubmit() {
       let checkedNodes = this.$refs.applyTree.getCheckedNodes(true);
       let tempObj = {
-        type: this.type,
+        type: this.defaultSelected,
         value: checkedNodes
       };
       this.$emit("onCheckedNodes", tempObj);

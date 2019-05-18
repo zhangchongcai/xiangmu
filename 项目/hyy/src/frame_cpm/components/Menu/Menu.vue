@@ -62,14 +62,11 @@ export default {
     color: #fff;
     .el-submenu__title {
         text-indent: 12px;
+        &:hover{
+            background-color: #fff;
+        }
     }
-    .el-submenu__icon-arrow {
-        right: 30px;
-        top: 53%;
-    }
-    .el-submenu.is-opened > .el-submenu__title .el-submenu__icon-arrow {
-        transform: rotatex(180deg);
-    }
+
     > .item {
         position: relative;
         box-sizing: border-box;

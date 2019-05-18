@@ -1,8 +1,7 @@
 <template>
-  <div style="margin:10px 100px">
-    <el-input style="width:152px;" :value="selectedCinemaNameArray.join(',')" readonly>
-    </el-input>
-    <el-button type="primary" @click="selectedCinemaShow = true">选择</el-button>
+  <div style="display:inline-block;margin-left:20px">
+    <el-input style="width:192px;" :value="selectedCinemaNameArray.join(',')" readonly placeholder="请输入" @focus="inputFocus"></el-input>
+    <el-button type="primary" @click="selectedCinemaShow = true" style="margin-left:10px" v-if="selectedCinemaNameArray.length">编辑</el-button>
     <el-dialog
       title="选择影院"
       :close-on-click-modal="false"
@@ -66,6 +65,12 @@
       };
     },
     methods: {
+      /**
+       * 编辑弹框显示隐藏事件
+       */
+      inputFocus(){
+        this.selectedCinemaShow = true
+      },
       /**
        * 复选框选择事件处理
        **/

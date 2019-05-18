@@ -1,4 +1,4 @@
-import axios from "./api"
+import axios from "frame_cpm/http/api.js"
 
 /**
  * 将所有接口统一起来便于维护

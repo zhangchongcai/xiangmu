@@ -1,5 +1,5 @@
 <template>
-  <div class="datacenter-main">
+  <div class="datacenter-main" v-loading="tableLoading">
     <el-table
       class="table"
       stripe
@@ -7,7 +7,6 @@
       :border="true"
       :data="noGroupTableData"
       highlight-current-row
-      v-loading="this.tableLoading"
       :show-summary="true"
       :summary-method="getSummaries"
       v-if="styleGroupArr.length == 0"
@@ -29,7 +28,7 @@
       class="el-table-newbox"
       v-if="styleGroupArr.length > 0"
       ref="groupDatatable"
-      v-loading="this.tableLoading"
+      v-loading="tableLoading"
       style="height: 662px;"
     >
       <table class="el-table" ref="tableWrapper">
@@ -212,6 +211,7 @@
       :colKey="colKey"
       :colData="colData"
       @sendSelectStatus="getSelectStatus"
+      @sendDialog1Visible="getDialog1Visible"
     ></table-dialog>
     <table-dialog1
       :dialogVisible1="dialogVisible1"
@@ -230,6 +230,8 @@ import TableDialog from "./dataCommon/tableDialog";
 import TableDialog1 from "./dataCommon/tableDialog1";
 import Sortable from "sortablejs";
 import { ascCompare, descCompare } from "../../util/complexSort.js";
+import Print from "../../assets/prints.js";
+import Vue from "vue";
 
 let szArray = arr => {
   const m = arr.slice(1);
@@ -490,9 +492,11 @@ export default {
       this.$refs.datatable.clearSort();
     },
     printTable: function() {
+      Vue.use(Print);
       this.$print(this.$refs.datatable);
     },
     groupDatatable: function() {
+      Vue.use(Print);
       this.$print(this.$refs.groupDatatable);
     },
     filterHandler(value, row, column) {
@@ -561,6 +565,9 @@ export default {
     },
     showDetailDialog() {
       this.dialogVisible = true;
+    },
+    getDialog1Visible() {
+      this.dialogVisible1 = false;
     },
     //控制表格筛选查询按钮样式
     getSelectStatus(data) {
@@ -688,7 +695,7 @@ export default {
         let styleParams =
           "transform:translate(0," +
           scrollTop +
-          "px); position: absolute; z-index: 1000;";
+          "px); position: absolute; z-index: 10;";
         tableHeader[0].style = styleParams;
         tableFoot[0].style = styleParams;
       }
@@ -703,7 +710,7 @@ export default {
         let styleParams =
           "transform:translate(0," +
           scrollTop +
-          "px); position: absolute; z-index: 1000; width: " +
+          "px); position: absolute; z-index: 10; width: " +
           widthSum +
           "px;";
         if (scrollTop + clientHeight <= scrollHeight) {

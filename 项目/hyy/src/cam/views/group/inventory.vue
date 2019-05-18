@@ -177,27 +177,28 @@
       <div class="section-content" >
         <div style="overflow:hidden;zoom:1">
             <el-button class="right" size="mini" style="margin-right:10px" @click="getOut">导出</el-button>
-            <el-button class="right" size="mini" style="margin-right:10px" @click="goUnSale">滞销处理</el-button>
-            <el-button class="right" size="mini" @click="goReplenish">智能补货</el-button>
+            <!-- 影院级别的有智能补货和滞销处理 -->
+            <!-- <el-button class="right" size="mini" style="margin-right:10px" @click="goUnSale">滞销处理</el-button>
+            <el-button class="right" size="mini" @click="goReplenish">智能补货</el-button> -->
         </div>
         <div class="reset-table mt20">
           <el-table border :data="tableData">
-            <el-table-column prop="goodSku" label="SKU编码" align="center" min-width="110" fixed></el-table-column>
-            <el-table-column prop="goodName" label="商品名称" align="center" min-width="120" fixed></el-table-column>
-            <el-table-column prop="parentCategoryName" label="一级品类" align="center" min-width="90"></el-table-column>
-            <el-table-column prop="categoryName" label="二级品类" align="center" min-width="90"></el-table-column>
-            <el-table-column prop="brandName" label="品牌" align="center" min-width="90"></el-table-column>
-            <el-table-column prop="supplyName" label="供应商" align="center" min-width="140"></el-table-column>
-            <el-table-column prop="startInventory" label="期初库存数量" align="center" min-width="110px"></el-table-column>
-            <el-table-column prop="startAmount" label="期初库存成本额" align="center" min-width="110px"></el-table-column>
-            <el-table-column prop="purchCount" label="采购数量" align="center" min-width="110px"></el-table-column>
-            <el-table-column prop="purchCount" label="采购成本额" align="center" min-width="110px"></el-table-column>
-            <el-table-column prop="saleCount" label="销售数量" align="center" min-width="120px"></el-table-column>
-            <el-table-column prop="saleAmount" label="销售成本额" align="center" min-width="120px"></el-table-column>
-            <el-table-column prop="endInventory" label="期末库存数量" align="center" min-width="120px"></el-table-column>
-            <el-table-column prop="endAmount" label="期末库存成本额"  align="center" min-width="120px"></el-table-column>
-            <el-table-column prop="inventoryTurnoverDaysDay" label="库存数量周转天" align="center" min-width="120px"></el-table-column>
-            <el-table-column prop="inventoryTurnoverDaysAmount" label="库存金额周转天" align="center" min-width="120px"></el-table-column>
+            <el-table-column prop="goodSku" label="SKU编码"  min-width="110" fixed></el-table-column>
+            <el-table-column prop="goodName" label="商品名称"  min-width="120" fixed></el-table-column>
+            <el-table-column prop="parentCategoryName" label="一级品类"  min-width="90"></el-table-column>
+            <el-table-column prop="categoryName" label="二级品类"  min-width="90"></el-table-column>
+            <el-table-column prop="brandName" label="品牌"  min-width="90"></el-table-column>
+            <el-table-column prop="supplyName" label="供应商"  min-width="140"></el-table-column>
+            <el-table-column prop="startInventory" label="期初库存数量"  min-width="110px"></el-table-column>
+            <el-table-column prop="startAmount" label="期初库存成本额"  min-width="110px"></el-table-column>
+            <el-table-column prop="purchCount" label="采购数量"  min-width="110px"></el-table-column>
+            <el-table-column prop="purchCount" label="采购成本额"  min-width="110px"></el-table-column>
+            <el-table-column prop="saleCount" label="销售数量"  min-width="120px"></el-table-column>
+            <el-table-column prop="saleAmount" label="销售成本额"  min-width="120px"></el-table-column>
+            <el-table-column prop="endInventory" label="期末库存数量"  min-width="120px"></el-table-column>
+            <el-table-column prop="endAmount" label="期末库存成本额"   min-width="120px"></el-table-column>
+            <el-table-column prop="inventoryTurnoverDaysDay" label="库存数量周转天"  min-width="120px"></el-table-column>
+            <el-table-column prop="inventoryTurnoverDaysAmount" label="库存金额周转天"  min-width="120px"></el-table-column>
           </el-table>
         </div>
         <div class="reset-page">
@@ -242,25 +243,9 @@ export default {
     return {
         isLine:true,
         dateType:['周','月'],
-        categoryList:[{
-          value:'1',
-          label:'类型1',
-          leval:1,
-          children:[{
-            value:'1-1',
-            label:'子类型1',
-            leval:2,
-
-          },{
-            value:'1-2',
-            label:'子类型2',
-            leval:2
-          }]
-        }],
+        categoryList:[],
         categoryId:null,
-        suppliersList:[{
-
-        }],
+        suppliersList:[],
         supplierId:null,
         supplierId:null,
         typeArr:[{
@@ -449,7 +434,6 @@ export default {
   },
   created() {
     this.getAllData();
-    // console.log(this.categoryObject,'fgf')
   },
   methods: {
     getAllData() {
@@ -476,7 +460,8 @@ export default {
             level:this.level,
         }   
       }
-      this.$camList.inoutData(params).then(res=>{
+      this.$camList.inoutData(params).then(response =>{
+        let res = response.data;
         if(res){
           let resData = res;
           let targetData = resData.currentData;
@@ -522,7 +507,8 @@ export default {
     },
     // 2.获取商品类型
     getCategoryList(){
-      this.$camList.categoryList().then(res=>{
+      this.$camList.categoryList().then(response =>{
+        let res = response.data;
         let resData = res.map(item=>{
           return {
             value:item.categoryCode,
@@ -550,7 +536,8 @@ export default {
           supplyName:name?name:null,
         }
       }
-      this.$camList.suppliersList(params).then(res=>{
+      this.$camList.suppliersList(params).then(response =>{
+        let res = response.data;
         if(res.list){
           this.suppliersList = res.list;
         }
@@ -571,7 +558,8 @@ export default {
           pageSize:this.size,
         }
       }
-      this.$camList.inoutTable(params).then(res=>{
+      this.$camList.inoutTable(params).then(response =>{
+        let res = response.data;
         this.tableData = res.list;
         this.total = res.total;
       })

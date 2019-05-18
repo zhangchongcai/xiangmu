@@ -1,8 +1,8 @@
 <template>
   <div class="seatpage">
     <el-breadcrumb separator=">" separator-class="el-icon-arrow-right">
-      <el-breadcrumb-item to="/CTM/cinema/list">我的影院</el-breadcrumb-item>
-      <el-breadcrumb-item :to="linkToHallList">影厅管理</el-breadcrumb-item>
+      <el-breadcrumb-item >我的影院</el-breadcrumb-item>
+      <el-breadcrumb-item :to="{path:'/ticket/cinema/edit',query:{uid:params.cinemaUid}}" ><span style="color:#666">影厅管理</span>  </el-breadcrumb-item>
       <el-breadcrumb-item class="edit-seat">编辑座位图</el-breadcrumb-item>
     </el-breadcrumb>
     <el-container style="height: 705px;">
@@ -15,6 +15,7 @@
           <tr>
             <template v-model="messagecolArr" v-for="(col,index) in messagecolArr">
               <td v-if="index>1"> 
+                <div class="nullBox"></div>
               </td>
               <td v-if="index == 0">
                 <div class="editSeatBtn" @click="editSeatBtn()"><span>编辑座位号</span></div>
@@ -30,6 +31,7 @@
                   </svg>
                   <p class="fanzhuagn-box-title">翻转</p>
                 </div>
+                <div class="nullBox" v-if="index != 1"></div>
             </td>
           </tr>
         </table>
@@ -53,11 +55,15 @@
                   <p class="fanzhuagn-box-title">翻转</p>
                 </div>
               </td>
-              <td v-for="row in messagecolArr"></td>
+              <td v-for="row in messagecolArr">
+                <div class="nullBox"></div>
+              </td>
               <td v-for="(cell, index) in seatColNumArray">
                 <div></div>
               </td>
-              <td v-for="row in messagecolArr"></td>
+              <td v-for="row in messagecolArr">
+                <div class="nullBox"></div>
+              </td>
             </tr>
             <tr v-for="(cell, index) in seatRowNumArray">
               <td>
@@ -70,12 +76,16 @@
               <td v-for="row in messagecolArr"></td>
             </tr>
             <tr v-for="col in messagerowArr">
-              <td></td>
-              <td v-for="row in messagecolArr"></td>
+              <td><div class="nullBox"></div></td>
+              <td v-for="row in messagecolArr">
+                <div class="nullBox"></div>
+              </td>
               <td v-for="(cell, index) in seatColNumArray">
                 <div></div>
               </td>
-              <td v-for="row in messagecolArr"></td>
+              <td v-for="row in messagecolArr">
+                <div class="nullBox"></div>
+              </td>
             </tr>
           </table>
           <!--座位区域-->
@@ -107,34 +117,24 @@
           <div class="drawline" v-if="drawline.drawing"
                v-bind:style="{left: drawline.left + 'px', top: drawline.top + 'px', width: drawline.width + 'px', height: drawline.height + 'px'}"></div>
         </div>
-        {{this.seatColNumArray}}
-        <br/> 
-        {{this.seatRowNumArray}}
-        <br/>
-        <!-- {{this.eaitDisabled}} -->
-        <br/>
-        <!-- <hr> -->
-        {{this.seatAreaGrid}}
-        <br/>
-        <hr>
-        {{this.seatCellGrid}}
-        <br/>
-        <!-- <hr> -->
-        <!-- {{this.drawline.selectedGrid}} -->
+        <!-- {{this.messageRow}} -->
+        <!-- <br> -->
+        <!-- {{this.seatCellGrid}} -->
+        <!-- {{this.messageRow}} -->
       </el-main>
       <!--右边区域-->
       <el-aside width="300px" style="background-color: #FFF; margin-left: 20px;position: relative;overflow: hidden;">
         <div class="h">
           <div class="seat-area" style="margin-bottom:8px;"><span>座位区域</span>
-            <el-input class="area-row-col seat-inputBtn" v-model="maxrowsize" @change="maxrowsizeChangeHandler()"/>
+            <el-input class="area-row-col seat-inputBtn" v-model="maxrowsize" @focus="focusMaxrowsize()" @change="maxrowsizeChangeHandler()"/>
             <span style="color:#666666;">行　X</span>
-            <el-input class="area-row-col seat-inputBtn" v-model="maxcolsize" @change="maxcolsizeChangeHandler()"/>
+            <el-input class="area-row-col seat-inputBtn" v-model="maxcolsize" @focus="focusMaxcolsize()" @change="maxcolsizeChangeHandler()"/>
             <span style="color:#666666;">列</span>
           </div>
           <div class="seat-area" style="margin-bottom:35px;"><span>留白区域</span>
-            <el-input class="area-row-col seat-inputBtn" v-model="messageRow" @change="messageRowChangeHandler()"/>
+            <el-input class="area-row-col seat-inputBtn" v-model="messageRow" @focus="focusMessageRow()" @blur="messageRowChangeHandler()"/>
             <span style="color:#666666;">行　X</span>
-            <el-input class="area-row-col seat-inputBtn" v-model="messageCol" @change="messageColChangeHandler()"/>
+            <el-input class="area-row-col seat-inputBtn" v-model="messageCol" @focus="focusMessageCol()" @blur="messageColChangeHandler()"/>
             <span style="color:#666666;">列</span>
           </div>
           <div style="margin-bottom:17px;">添加座位</div>
@@ -387,8 +387,10 @@
     name: 'seatdesign',
     data() {
       const seatWidthHeight = 40, seatNonBorderWidthHeight = 41;//没有边框线座位单元格子的大小像素
-      const defaultMaxRowSize = 0, defaultMaxColSize = 0;//初始化默认座位图最大行列数
+      const defaultMaxRowSize = 16, defaultMaxColSize = 16;//初始化默认座位图最大行列数
+      const defaultMaxMessageRow = 1, defaultMaxMessageCol = 2;//初始化默认座位图最大行列数
       return {
+        test:"",//测试
         testData:{},
         // totalArr:{
         //   // 影厅名称
@@ -418,7 +420,7 @@
         //座位更多等级
         seatlevArrmore:[],
         // 座位标识
-        sgCode:0,
+        sgCode:1,
         // 画销售区域
         drawSaleArea:[],
         // 当前选择的销售区域背景色
@@ -440,9 +442,9 @@
         minClientY: 115,//框选区域时，最少的X、Y坐标
         maxrowsize: defaultMaxRowSize,//最大行数，座位行号列表根据该行数进行生成
         maxcolsize: defaultMaxColSize,//最大列数，座位行号列表根据该列数进行生成
-        messageRow: 1,//留白行数默认1行
+        messageRow: defaultMaxMessageRow,//留白行数默认1行
         messagerowArr:[],
-        messageCol: 2,//留白列数默认2列
+        messageCol: defaultMaxMessageCol,//留白列数默认2列
         messagecolArr:[],
         seatNonBorderWidthHeight: seatNonBorderWidthHeight,//没有边框的座位宽度高度
         seatarea: {//座位区域层次位置参数
@@ -479,11 +481,34 @@
           Handicapped:0,
           Massagechair:0,
           badSeat:0
-        }
+        },
+        kktest:""
       }
     },
     components: {},
     methods: {
+      // 判断座位区域方法
+      maxrowsizeEvent(value){
+        // alert(value == NaN)
+        // if(value <= 0 || value == NaN){
+        //     alert(12123)
+        //   // this.maxrowsiz = this.kktest
+        // }else{
+
+        // }
+      },
+      focusMaxrowsize(){
+        this.kktest = this.maxrowsize
+      },
+      focusMaxcolsize(){
+        this.kktest = this.maxcolsize
+      },
+      focusMessageRow(){
+        this.kktest = this.messageRow
+      },
+      focusMessageCol(){
+        this.kktest = this.messageCol
+      },
       delSaleEvent(){
         this.delActiveType()
         this.actionType = 11
@@ -652,6 +677,7 @@
       },
       //计算画线对应的座位单元格
       calculateDrawlineSeatCell() {
+        // debugger
         const ignoreWidthOrHeight = 8;
         // debugger
         //如果框选区域忽略像素
@@ -669,20 +695,21 @@
         //当前框选区域原点（左上角的点）计算对应单元格子公式：
         //当前行索引 = Math.floor((原点Y坐标 - 座位区域离顶边的距离-留白区域 + Y滚动条滚动的高度) / 单元格子的高度)
         //当前列索引 = Math.floor((原点X坐标 - 座位区域离左边的距离-留白区域 + X滚动条滚动的宽度) / 单元格子的宽度)
-        let rowIndexStart = Math.floor((this.drawline.top - this.minClientY - 41*this.messageRow + scrollTop) / this.seatNonBorderWidthHeight);
+        let rowIndexStart = Math.floor((this.drawline.top - this.minClientY - 41*this.messageRow -41 + scrollTop) / this.seatNonBorderWidthHeight);
         // debugger
-        let rowIndexEnd = Math.floor((this.drawline.top + this.drawline.height - this.minClientY - 41*this.messageRow + scrollTop) / this.seatNonBorderWidthHeight);
-        let colIndexStart = Math.floor((this.drawline.left - this.minClientX - 41*this.messageCol + scrollLeft) / this.seatNonBorderWidthHeight);
-        let colIndexEnd = Math.floor((this.drawline.left + this.drawline.width - this.minClientX - 41*this.messageCol + scrollLeft) / this.seatNonBorderWidthHeight);
+        let rowIndexEnd = Math.floor((this.drawline.top + this.drawline.height - this.minClientY - 41*this.messageRow-41 + scrollTop) / this.seatNonBorderWidthHeight);
+        let colIndexStart = Math.floor((this.drawline.left - this.minClientX - 41*this.messageCol-123 + scrollLeft) / this.seatNonBorderWidthHeight);
+        let colIndexEnd = Math.floor((this.drawline.left + this.drawline.width - this.minClientX - 41*this.messageCol-123 + scrollLeft) / this.seatNonBorderWidthHeight);
         if (rowIndexEnd >= this.maxrowsize) {
           rowIndexEnd = this.maxrowsize - 1;
         }
         if (colIndexEnd >= this.maxcolsize) {
           colIndexEnd = this.maxcolsize - 1;
         }
-        for (let y = rowIndexStart; y <= rowIndexEnd; y++) {
+        // debugger
+        for (let y = rowIndexStart; y < rowIndexEnd; y++) {
           let row = [];
-          for (let x = colIndexStart; x <= colIndexEnd; x++) {
+          for (let x = colIndexStart; x < colIndexEnd; x++) {
             
             row.push({x: x, y: y});
             // debugger
@@ -758,6 +785,10 @@
             // 删除框选销售区域
             this.deldrawSaleEvent();
             break;
+          case 12:
+            // 画等级
+            this.drawGrade();
+            break;
           default:
             break;
         }
@@ -777,6 +808,7 @@
             break;
           }
           for (let j = 0; j < selectedRow.length; j++) {
+
             let selectedCol = selectedRow[j];
             if(selectedCol.x < 0 || selectedCol.y < 0 ){
               
@@ -1034,6 +1066,7 @@
       },
       // 添加坏座
       badSeat() {
+        let lssgCode = 0
         if (this.drawline.selectedGrid == null || this.drawline.selectedGrid.length <= 0) {
           return;
         }
@@ -1049,13 +1082,19 @@
             }else{
                 let cell = this.seatCellGrid[selectedCol.y][selectedCol.x];
                 let ff =  this.seatCellGrid[selectedCol.y]
+                if(cell.sgCode == lssgCode){
+                    continue
+                  } 
+                lssgCode = cell.sgCode
                 if(cell.exist == 1){
-                  let badArr = []
-                  ff.forEach(function(val,index){
-                    if(val.sgCode == cell.sgCode){
-                      badArr.push(val)
-                    }
-                  })
+                  if(cell.status == 1){
+                    let badArr = []
+                    ff.forEach(function(val,index){
+                      
+                      if(val.sgCode == cell.sgCode){
+                        badArr.push(val)
+                      }
+                    })
                   if(badArr.length == 1){
                     badArr[0].imageType = 10
                     badArr[0].status = 0
@@ -1078,7 +1117,37 @@
                       }
                     })
                   }
+                }else if(cell.status == 0){
+                  let badArr = []
+                    ff.forEach(function(val1,index){
+                      if(val1.sgCode == cell.sgCode){
+                        badArr.push(val1)
+                      }
+                    })
+                  if(badArr.length == 1){
+                    badArr[0].imageType = 1
+                    badArr[0].status = 1
+                  }else if(badArr.length == 2){
+                    badArr[0].imageType = 2
+                    badArr[0].status = 1
+                    badArr[badArr.length-1].imageType = 3
+                    badArr[badArr.length-1].status = 1
+                  }else if(badArr.length >= 3){
+                    badArr.forEach(function(val,index,arr){
+                      if(index == 0){
+                        val.imageType = 4
+                        val.status = 1
+                      }else if(index == arr.length-1){
+                        val.imageType = 6
+                        val.status = 1
+                      }else{
+                        val.imageType = 5
+                        val.status = 1
+                      }
+                    })
+                  }
                 }
+              }
             }
           }  
         }
@@ -1204,7 +1273,29 @@
           this.sgCode = seatIdA
         }       
       },
-
+      // 画等级
+      drawGrade(){
+        if (this.drawline.selectedGrid == null || this.drawline.selectedGrid.length <= 0) {
+          return;
+        }
+        for (let i = 0; i < this.drawline.selectedGrid.length; i++) {
+          let selectedRow = this.drawline.selectedGrid[i];
+          if (selectedRow == null || selectedRow.length <= 0) {
+            break;
+          }
+          for (let j = 0; j < selectedRow.length; j++) {
+            let selectedCol = selectedRow[j];
+            if(selectedCol.x < 0 || selectedCol.y < 0 ){
+              
+            }else{
+              var cell = this.seatCellGrid[selectedCol.y][selectedCol.x];
+              if(cell.exist == 1){
+                cell.seatLevel = this.seatlevActive
+              }
+            }
+          }
+        }
+      },
       // 根据属性去重
       arrayUnique2(arr, name) {
         var hash = {};
@@ -1282,18 +1373,49 @@
        * 最大行数改变事件处理，将重新初始化座位数据
        */
       maxrowsizeChangeHandler() {
-        // this.maxrowsize == "" ? 1 : this.maxrowsize
-        this.maxrowsize = Number(this.maxrowsize);
-        this.generateSeatData();
-        let uu = this.seatCellGrid
-        this.addSeatprototype(uu)
+        if(typeof(this.maxrowsize) == "string" && parseInt(this.maxrowsize) >= 1 && parseInt(this.maxrowsize) !=NaN){
+          this.maxrowsize = Number(this.maxrowsize);
+          let boolean = new RegExp(/^\+?[1-9]\d*$/).test(this.maxrowsize)
+          if(!boolean){
+            this.maxrowsize = Number(this.kktest);
+            this.$message({
+              message: '请输入大于0整数',
+              type: 'warning'
+            })
+          }
+
+        }else{
+          this.maxrowsize = Number(this.kktest);
+          this.$message({
+            message: '请输入大于0整数',
+            type: 'warning'
+          });
+        }
+          this.generateSeatData();
+          let uu = this.seatCellGrid
+          this.addSeatprototype(uu)
       },
       /**
        * 最大列数改变事件处理，将重新初始化座位数据
        */
       maxcolsizeChangeHandler() {
-        console.log(this.seatCellGrid)
-        this.maxcolsize = Number(this.maxcolsize);
+        if(typeof(this.maxcolsize) == "string" && parseInt(this.maxcolsize) >= 1 && parseInt(this.maxrowsize) !=NaN){
+          this.maxcolsize = Number(this.maxcolsize);
+          let boolean = new RegExp(/^\+?[1-9]\d*$/).test(this.maxcolsize)
+          if(!boolean){
+            this.maxcolsize = Number(this.kktest);
+            this.$message({
+              message: '请输入大于0整数',
+              type: 'warning'
+            })
+          }
+        }else{
+          this.maxcolsize = Number(this.kktest);
+          this.$message({
+            message: '请输入大于0整数',
+            type: 'warning'
+          });
+        }
         this.generateSeatData();
         let uu = this.seatCellGrid
         this.addSeatprototype(uu)
@@ -1458,6 +1580,7 @@
         this.seatlevActive = i
         this.seatlevClickActive = true
         this.delActiveType()
+        this.actionType = 12
       },
       // 座位等级更多点击事件
       seatlevEventMore(){
@@ -1471,6 +1594,7 @@
         this.seatlevMore = !this.seatlevMore;
         this.seatlevClickActive = true
         this.delActiveType()
+        this.actionType = 12
       },
       // 留白区域列渲染
       lbGetcolArr(i){
@@ -1489,42 +1613,66 @@
       },
       messageRowChangeHandler(){
         this.messagerowArr = []
-        // debugger
-        let a = this.messageRow
-        this.messageRow == '' ? messageRow : a
+        if(typeof(this.messageRow) == "string" && parseInt(this.messageRow) >= 1 && parseInt(this.messageRow) !=NaN){
+          this.messageRow = this.messageRow
+          let boolean = new RegExp(/^\+?[1-9]\d*$/).test(this.messageRow)
+          if(!boolean){
+            this.messageRow = Number(this.kktest);
+            this.$message({
+              message: '请输入大于1整数',
+              type: 'warning'
+            })
+          }
+        }else{
+          this.messageRow = this.kktest;
+          this.$message({
+            message: '留白行输入大于等于1的整数',
+            type: 'warning'
+          });
+        }
         this.lbGetrowArr(this.messageRow)
         this.generateSeatData()
       },
       messageColChangeHandler(){
         this.messagecolArr = []
-        // this.messageCol == '' ? messageCol : 2
+        if(typeof(this.messageCol) == "string" && parseInt(this.messageCol) >= 2 && parseInt(this.messageCol) !=NaN){
+          // debugger
+          this.messageCol = this.messageCol
+          let boolean = new RegExp(/^\+?[1-9]\d*$/).test(this.messageCol)
+          if(!boolean){
+            this.messageCol = Number(this.kktest);
+            this.$message({
+              message: '请输入大于2整数',
+              type: 'warning'
+            })
+          }
+        }else{
+          // debugger
+          this.messageCol = this.kktest;
+          this.$message({
+            message: '留白列输入大于等于2的整数',
+            type: 'warning'
+          });
+        }
         this.lbGetcolArr(this.messageCol)
         this.generateSeatData()
       },
       noEditEvent(){
-        let data = {
-          hallUid:this.$route.query.hallUid
-          // hallUid:"0be5d90b-6ac5-4483-b673-b5c53bdc2619"
-          } ;
-      this.$api.ciseatMap(data).then( data => {
-        let _self = this
-          if (data && data.code === 200) {
-            let newdata = data.data
-            _self.testData = newdata
-            _self.maxrowsize = newdata.hallSeatX
-            _self.maxcolsize = newdata.hallSeatY
-            _self.seatAreaGrid = newdata.regionArray
-            _self.seatCellGrid = newdata.seatArray
-            _self.drawSaleArea = newdata.regionList
-            _self.hallName = newdata.hallName
-            _self.messageRow = newdata.hallBlankAreaX < 1 ? 1 : newdata.hallBlankAreaX
-            _self.messageCol = newdata.hallBlankAreaY < 2 ? 2 : newdata.hallBlankAreaY
-            _self.generateSeatData()
-            _self.sgCode = _self.getMaxSgCode(newdata.seatArray)
-          }
-          }).catch( err => {
-            console.log(err,1111)
+        this.$confirm('是否放弃编辑', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$router.push({
+            path:'/ticket/cinema/edit',
+            query:{
+              uid:this.$route.query.cinemaUid
+            }
           })
+        }).catch(() => {
+        
+        });
+
       },
       // 编辑座位号
       editSeatBtn(){
@@ -1558,45 +1706,55 @@
       },
       // 完成编辑保存
       yesEditEvent(){
-        let data = {
-          hallUid:this.$route.query.hallUid,
-          cinemaUid:this.$route.query.cinemaUid,
-          hallBlankAreaX:this.messageRow,
-          hallBlankAreaY:this.messageCol,
-          hallSeatX:this.maxrowsize,
-          hallSeatY:this.maxcolsize,
-          regionArray:this.seatAreaGrid,
-          regionList:this.drawSaleArea,
-          seatArray:this.seatCellGrid
-        }
-        console.log(data)
-        this.$api.ciseatDesign(data).then( data => {
-            if(res.code === 200) {
-              this.$message.success('上报成功！');
+        this.$confirm('完成编辑', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+            let data = {
+            hallUid:this.$route.query.hallUid,
+            cinemaUid:this.$route.query.cinemaUid,
+            hallBlankAreaX:this.messageRow,
+            hallBlankAreaY:this.messageCol,
+            hallSeatX:this.maxrowsize,
+            hallSeatY:this.maxcolsize,
+            regionArray:this.seatAreaGrid,
+            regionList:this.drawSaleArea,
+            seatArray:this.seatCellGrid
+          }
+          console.log(data,'这里是最新数据')    
 
-            }else {
-              this.$message.error(res.msg);
-            }
-        }).catch( err => {
-            console.log(err,1111)
+
+          this.$ctmList.ciseatDesign(data).then( data => {
+              if(data.code === 200) {
+                this.$message.success('保存成功');
+                 // 返回影厅列表
+                this.$router.push({
+                  path:'/ticket/cinema/edit',
+                  query:{
+                    uid:this.$route.query.cinemaUid
+                  }
+                })
+              }else {
+                this.$message.error(res.msg);
+              }
           })
+        
+        }).catch(() => {
+        
+        });
       },
       // 获取界面最大的sgCode
-      getMaxSgCode(arr){
-        let getmaxvalue = 0
-        for(let i = 0 ; i<arr.length;i++ ){
-          for(let j = 0 ; j<arr[i].length;j++){
-            let aa = arr[i][j].sgCode
-            if(aa == null){}else{
-              if(aa >= getmaxvalue){
-                getmaxvalue = aa
-              }else{
-                break
-              }
-            }
-          }
-        }
-        return getmaxvalue
+      getMaxSgCode(bb){
+        var aa = 0
+          bb.forEach((val,index,arr)=>{
+            val.forEach((val,index,arr)=>{
+                if(parseInt(val.sgCode) != NaN && parseInt(val.sgCode) >= parseInt(aa)){
+                    aa = val.sgCode
+                }
+            })
+          })
+        return aa
       },
       // 行翻转事件
       rowIndexBtnEvent(){
@@ -1645,7 +1803,7 @@
       // 列号反转事件
       colIndexBtnEvent(){
         if(this.getSeatNum() == true){
-          debugger
+          // debugger
           let lsColNumArray = this.seatColNumArray
           this.seatColNumArray = this.colIndexBtnEventItem()
           let oldlsVal = ""
@@ -1777,10 +1935,10 @@
             if(val.seatType == 3 && val.status ==1){
               Handicapped++
             }
-            if(val.seatType == 4 && val.status ==1){
+            if(val.seatType == 5 && val.status ==1){
               childrenSeat++
             }
-            if(val.seatType == 5 && val.status ==1){
+            if(val.seatType == 4 && val.status ==1){
               Massagechair++
             }
             if(val.status == 0 && val.exist == 1){
@@ -1818,7 +1976,7 @@
           hallUid:this.$route.query.hallUid
           // hallUid:"0be5d90b-6ac5-4483-b673-b5c53bdc2619"
           } ;
-      this.$api.ciseatMap(data).then( data => {
+      this.$ctmList.ciseatMap(data).then( data => {
         let _self = this
           if (data && data.code === 200) {
             let newdata = data.data
@@ -2583,6 +2741,13 @@
   .fanzhuagn-box{
     text-align: center;
     cursor: pointer;
+    height:40px;
+    overflow: hidden;
+    width:40px;
+  }
+  .nullBox{
+    height:40px;
+    width:40px;
   }
   .fanzhuagn-box-title{
     font-size: 12px;

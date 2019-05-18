@@ -1,6 +1,5 @@
-import basicSettings from './cim/basicSettings.js';
-import goodsInformation from './cim/goodsInformation.js';
+import cimIndex from './cim/index.js';
 
-const index = Object.assign({}, basicSettings, goodsInformation);
+const index = Object.assign({}, cimIndex);
 
 export default index;

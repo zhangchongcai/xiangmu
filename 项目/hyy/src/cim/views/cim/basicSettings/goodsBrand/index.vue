@@ -20,9 +20,9 @@
         </el-form-item>
       </el-form>
     </div>
-    <div class="common-new-built">
+    <!-- <div class="common-new-built">
       <el-button type="primary" size="small" plain @click="handleNewBuilt">新建</el-button>
-    </div>
+    </div> -->
     <div>
       <el-table :data="tableData" v-loading="tableLoding" stripe>
         <el-table-column
@@ -30,13 +30,22 @@
           :key="item.key"
           :prop="item.key"
           :label="item.label"
-        ></el-table-column>
-        <el-table-column label="操作">
+        >
+          <template slot-scope="{row}" name="header">
+              <div v-if="item.key=='logoUrl'">
+                 <img class="logo-url" :src="row[item.key]" alt="">
+              </div>
+              <div v-else>
+                <span>{{row[item.key]}}</span>
+              </div>
+            </template>
+        </el-table-column>
+        <!-- <el-table-column label="操作">
           <template slot-scope="{row,$index}">
             <el-button type="text" size="small" @click.stop="handleModification(row, $index)">修改</el-button>
             <el-button type="text" size="small" @click.stop="handleeDlete(row, $index)">删除</el-button>
           </template>
-        </el-table-column>
+        </el-table-column> -->
       </el-table>
       <div class="page-wrap">
         <el-pagination
@@ -87,6 +96,7 @@
 <script>
 import qs from "qs";
 import mixin from "cim/mixins/cim/paginationConfig.js";
+import { letterAndNumReg } from "cim/util/reg.js";
 
 export default {
   mixins: [mixin],
@@ -110,9 +120,21 @@ export default {
           key: "name"
         },
         {
-          label: "备注",
-          key: "remark"
-        }
+          label: "中文名称",
+          key: "cnName"
+        },
+        {
+          label: "英文名称",
+          key: "enName"
+        },
+        {
+          label: "首字母",
+          key: "firstLetter"
+        },
+        {
+          label: "品牌LOGO",
+          key: "logoUrl"
+        },
       ],
       tableData: [],
       tableLoding: false,
@@ -128,7 +150,7 @@ export default {
         code: [
           { required: true, message: "请输入品牌编码", trigger: "blur" },
           {
-            pattern: this.$reg.letterAndNumReg,
+            pattern: letterAndNumReg,
             message: "请输入英文或数字!"
           }
         ],
@@ -150,19 +172,23 @@ export default {
     },
     // 获取品牌列表
     getBrandLists(param) {
-      this.tableLoding = true;
-      this.$api
-        .findBrandList(qs.stringify(param))
-        .then(resData => {
-          if (resData.code == 200) {
-            this.tableData = resData.data.list;
-            this.total = resData.data.total;
-          }
-          this.tableLoding = false;
-        })
-        .catch(() => {
-          this.tableLoding = false;
-        });
+      try {
+        this.tableLoding = true;
+        this.$cimList
+          .findBrandList(param)
+          .then(resData => {
+            if (resData.code == 200) {
+              this.tableData = resData.data.list;
+              this.total = resData.data.total;
+            }
+            this.tableLoding = false;
+          })
+          .catch(() => {
+            this.tableLoding = false;
+          });
+      } catch (err) {
+        this.tableLoding = false;
+      }
     },
     // 新建
     saveBrand(param) {
@@ -252,6 +278,9 @@ export default {
 </script>
 
 <style lang="scss">
+.logo-url{
+  width: 100px;
+}
 .change-dialog {
   .el-form--inline .el-form-item {
     width: 100%;

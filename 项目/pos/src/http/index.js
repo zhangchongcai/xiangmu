@@ -1,4 +1,6 @@
-import csmposApi from './csmpos/index';
+import cimApi from './cim/index';
+import ctmApi from './ctm/index';
+import csmApi from './csm/index';
 import axios from 'axios';
 
 const install = (Vue) => {
@@ -11,7 +13,7 @@ const install = (Vue) => {
         //挂载在Vue原型的 $api 对象上
         $api: {
             get() {
-                return Object.assign({}, csmposApi);
+                return Object.assign({}, cimApi, ctmApi, csmApi);
             }
         },
         $http: {

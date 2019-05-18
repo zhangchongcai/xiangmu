@@ -44,9 +44,9 @@
 </template>
 
 <script>
-import '../../../assets/common.scss';
-import searchLan from '../../../components/search/index.vue';
-import commonTable from '../../../components/Table/commonTable.vue';
+import 'cmm/assets/common.scss';
+import searchLan from 'cmm/components/search/index.vue';
+import commonTable from 'cmm/components/Table/commonTable.vue';
 import AddMovieTicket from './add-or-update'
 import AuditView from './auditView'
 
@@ -80,28 +80,28 @@ export default {
                     type: 'input',
                     value: '',
                     alertButton: true,
-                    alertSrc: 'http://192.168.100.148:8080/alertWindow',
+                    alertCompontsName: 'payType',
                 }, {
                     keyName: 'searchCreaterArea',
                     name: '创建单位',
                     type: 'input',
                     value: '',
                     alertButton: true,
-                    alertSrc: 'http://192.168.100.148:8080/alertWindow',
+                    alertCompontsName: '',
                 }, {
                     keyName: 'searchApprovalmanId',
                     name: '审批人',
                     type: 'input',
                     value: '',
                     alertButton: true,
-                    alertSrc: 'http://192.168.100.148:8080/alertWindow',
+                    alertCompontsName: '',
                 }, {
                     keyName: 'businessCode',
                     name: '适用商户',
                     type: 'input',
                     value: '',
                     alertButton: true,
-                    alertSrc: 'http://192.168.100.148:8080/alertWindow',
+                    alertCompontsName: '',
                 }, {
                     keyName: 'executeMode',
                     name: '执行策略',
@@ -391,9 +391,9 @@ export default {
             }
             if (exitsSearhParam) {
                 if (this.searchParam.validDate) {
-                    pageData.searchValidDateStart = this.timeRule(this.searchParam.validDate[0],'time');
-                    pageData.searchValidDateEnd = this.timeRule(this.searchParam.validDate[1],'time');
-                    
+                    pageData.searchValidDateStart = this.timeRule(this.searchParam.validDate[0], 'time');
+                    pageData.searchValidDateEnd = this.timeRule(this.searchParam.validDate[1], 'time');
+
                 }
                 // if (this.searchParam.ruleTemplateId == "") {
                 //     this.searchParam.ruleTemplateId = pageData.ruleTemplateId;
@@ -404,18 +404,18 @@ export default {
             }
             return params;
         },
-        timeRule(time,type) {
-          let Time = new Date(time);
-          let _time = '';
-          switch(type) {
-              case 'time':
+        timeRule(time, type) {
+            let Time = new Date(time);
+            let _time = '';
+            switch (type) {
+                case 'time':
                     _time = `${Time.getFullYear()}-${Time.getMonth()+1}-${Time.getDate()}`;
                     break;
-              case 'hours':
+                case 'hours':
                     _time = `${Time.getHours()}:${Time.getMinutes()}`;
                     break;
-          }
-          return _time;
+            }
+            return _time;
         },
         /**
          * @function setSearch - 修改搜索栏数据
@@ -454,32 +454,7 @@ export default {
 
         //操作列回调
         handleButton(data) {
-            switch (data.method) {
-                case 'openAct':
-                    this.openAct(data.scope);
-                    break;
-                case 'closeAct':
-                    this.closeAct(data.scope);
-                    break;
-                case 'cancelAct':
-                    this.cancelAct(data.scope);
-                    break;
-                case 'updateAct':
-                    this.updateAct(data.scope);
-                    break;
-                case 'actDetail':
-                    this.actDetail(data.scope);
-                    break;
-                case 'copyAct':
-                    this.copyAct(data.scope);
-                    break;
-                case 'submitApproval':
-                    this.submitApproval(data.scope);
-                    break;
-                case 'approvalDetail':
-                    this.approvalDetail(data.scope);
-                    break;
-            }
+            this[`${data.method}`](data.scope);
         },
 
         /* 启用活动 */
@@ -591,7 +566,6 @@ export default {
                     this.$cmmList.marketingEnableOrDisabl({
                         "id": this.stopOrStartId,
                         "tenantId": this.tenantId,
-                        "accountId": 1,
                         "remark": this.startOrStopForm.remark
                     }).then(data => {
                         console.log(data)

@@ -1,34 +1,46 @@
-import homeRoutes from './home'
-import pagesRoutes from './page'
-let routes = [{   //一级路由  home  或者  page 
-		path: '/',
-		redirect: 'home',
-		component: () => import('views'),
-		children: [
+import cimRoutes from './cim'
+import ctmRoutes from './ctm'
+import csmRoutes from './csm'
 
-			// 主 menu home 页 (外层带页面框架的页面)
-			{
-				path: 'home',
-				component: () => import('views/common/layout'),
-				children: homeRoutes //二级路由
-			},
+const routerView = {template: '<router-view></router-view>'};
 
-			// 内部页面 (UI 图对应的不带框架的页面)
-			{
-				path: 'page',
-				component: () => import('views/common/page'),
-				children: pagesRoutes //二级路由
-			},
-			{
-				path: 'login',
-				component: () => import('views/csmpos/login')
-			}
-		]
-	},
+let routes = [
+  {
+    path: '/',
+    component: routerView,
+    redirect: 'ctm'
+  },
+  {
+    path: '/cim',
+    meta: {
+      title: '卖品'
+    },
+    name: '卖品',
+    component: routerView,
+    redirect: 'cim/index',
+    children: cimRoutes
 
-
-
+  },
+  {
+    path: '/ctm',
+    meta: {
+      title: '票务'
+    },
+    name: '票务',
+    component: routerView,
+    redirect: 'ctm/index',
+    children: ctmRoutes
+  },
+  {
+    path: '/csm',
+    meta: {
+      title: '销售'
+    },
+    name: '销售',
+    component: routerView,
+    redirect: 'csm/index',
+    children: csmRoutes
+  }
 ];
-
 
 export default routes;

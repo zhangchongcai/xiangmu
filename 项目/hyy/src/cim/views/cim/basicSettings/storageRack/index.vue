@@ -1,6 +1,7 @@
 <template>
   <div>
     <div class="common-header">
+    {{this.queryData}}
       <el-form
         :inline="true"
         :model="queryData"
@@ -39,6 +40,7 @@
           :key="item.key"
           :prop="item.key"
           :label="item.label"
+          :formatter="item.formatter"
         ></el-table-column>
         <el-table-column label="操作">
           <template slot-scope="{row,$index}">
@@ -70,7 +72,7 @@
         label-suffix=":"
         :rules="changeRules"
       >
-        <el-form-item label="状态" prop="status">
+        <el-form-item label="状态" prop="status" > 
           <el-radio v-model="changeData.status" label="0">启用</el-radio>
           <el-radio v-model="changeData.status" label="1">停用</el-radio>
         </el-form-item>
@@ -129,7 +131,19 @@ export default {
         },
         {
           label: "状态",
-          key: "status"
+          key: "status",
+          formatter(row, column, status) {
+            let result = "";
+            switch (row.status) {
+              case 0:
+                result = "停用";
+                break;
+              case 1:
+                result = "启用";
+                break;
+            }
+            return result;
+          }
         }
       ],
       tableData: [],
@@ -144,9 +158,18 @@ export default {
       isNewBuile: true,
       changeDialog: false,
       changeRules: {
-        // cinameUid: [{ required: true, message: "请输入门店名称", trigger: "blur" }],
-        // code: [{ required: true, message: "请输入仓库编码", trigger: "blur" }],
-        // name: [{ required: true, message: "请输入仓库名称", trigger: "blur" }]
+        storeName: [
+          { required: true, message: '请选择门店', trigger: 'blur' },
+          { min: 3, max: 10, message: '长度在 3 到 5 个字符', trigger: 'blur' }
+        ],
+        name: [
+          { required: true, message: '请输入货架名称', trigger: 'blur' },
+          { min: 0, max: 10, message: '长度在 3 到 5 个字符', trigger: 'blur' }
+        ]
+        // address: [
+        //   { required: true, message: '请输入货架地址', trigger: 'blur' },
+        //   { min: 0, max: 10, message: '长度在 3 到 5 个字符', trigger: 'blur' }
+        // ],
       }
     };
   },
@@ -172,42 +195,40 @@ export default {
     },
     // 查询数据
     queryStoreEvent(data){
-      this.$api.findStorageRackList(data).then( data => {
+      this.$cimList.findStorageRackList(data).then( data => {
         let _self = this
           if (data && data.code === 200) {
             let newdata = data.data
             _self.tableData = newdata.list
             _self.total = newdata.total
           } else {
-
+            this.$message(data.msg);
           }
-          }).catch( err => {
-            console.log(err)
           })
     },
     // 新增
     saveStoreEvent(data){
-      this.$api.saveStorageRack(data).then( data => {
+      this.$cimList.saveStorageRack(data).then( data => {
         let _self = this
           if (data && data.code === 200) {
-            _sethis.queryStoreEvent(this.queryData)
+            _self.queryStoreEvent(this.queryData)
+            this.$message("新建成功");
           } else {
-
+            this.$message(data.msg);
           }
           }).catch( err => {
             console.log(err)
           })
     },// 修改
     updateStoreEvent(data){
-      this.$api.updateStorageRack(data).then( data => {
+      this.$cimList.updateStorageRack(data).then( data => {
         let _self = this
           if (data && data.code === 200) {
-            _sethis.queryStoreEvent(JSON.stringify(this.queryData))
+            _self.queryStoreEvent(this.queryData)
+            this.$message("修改成功");
           } else {
-
+            this.$message(data.msg);
           }
-          }).catch( err => {
-            console.log(err)
           })
     },
     // 修改操作
@@ -223,15 +244,13 @@ export default {
     },
     // 删除操作
     handleeDlete(index, row) {
-      this.$api.delStorageRack(row.code).then( data => {
+      this.$cimList.delStorageRack(row.code).then( data => {
         let _self = this
           if (data && data.code === 200) {
             _self.queryStoreEvent(_self.queryData)
-          } else if(data && data.code === 400){
-            alert("默认货架不能删除")
-          }
-          else {
-
+            this.$message("删除成功");
+          }else {
+              this.$message(data.msg);
           }
           }).catch( err => {
             console.log(err)
@@ -247,7 +266,6 @@ export default {
           } else {
             _self.updateStoreEvent(_self.changeData);
           }
-          _self.queryStoreEvent(_self.queryData)
           _self.changeDialog = false;
         } else {
           console.log("error submit!!");
@@ -290,5 +308,8 @@ export default {
   .el-form-item__content {
     width: 70%;
   }
+}
+.common-new-built{
+  float:right;
 }
 </style>

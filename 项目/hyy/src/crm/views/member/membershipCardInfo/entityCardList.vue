@@ -56,8 +56,8 @@
         </div>
     <!-- 分页 start -->
         <div class="page-wrap">
-          <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="current"
-            :page-sizes="[20 , 50 , 100]" :page-size="pageSize" layout="prev, pager, next, jumper, sizes" :total="total-0"></el-pagination>
+          <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="current-0"
+            :page-sizes="[20 , 50 , 100]" :page-size="pageSize-0" layout="prev, pager, next, jumper, sizes" :total="total-0"></el-pagination>
         </div>
     <!-- 分页 end -->
       </tempalte>
@@ -186,7 +186,7 @@ export default {
           // console.log(ret);
           if ((ret.msg = "ok")) {
             let url =
-              "http://47.92.223.156:9191" +
+              this.$store.state.crm.domain +
               "/cardbatch/export?cardBatchId=" +
               cardBatchId +
               "&tenantId="+ this.$store.state.loginUser.consumerId;

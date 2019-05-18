@@ -170,7 +170,7 @@
         methods: {
 
             findPayTypeByCode(code) {
-                this.$api.findPayTypeByCode({ code }).then( res => {
+                this.$csmList.findPayTypeByCode({ code }).then( res => {
                     console.log(res)
                     if(res.code === 200) {
                         this.addForm.payTypeCode = res.data.payTypeCode
@@ -188,7 +188,7 @@
             },
 
             updateStatus(status, uid) {
-                this.$api.updatePayTypeStatus({ uid, status }).then( res => {
+                this.$csmList.updatePayTypeStatus({ uid, status }).then( res => {
                     console.log(res)
                     if(res.code === 200) {
                         this.success(res.msg)
@@ -207,7 +207,7 @@
                     cancelButtonText: '取消',
                     type: 'warning'
                 }).then(() => {
-                    this.$api.deletePayType({ uid }).then( res => {
+                    this.$csmList.deletePayType({ uid }).then( res => {
                         console.log(res)
                         if(res.code === 200) {
                             this.success('删除成功！')
@@ -227,7 +227,7 @@
             savePayType(formName) {
                 this.$refs[formName].validate((valid) => {
                     if (valid) {
-                        this.$api.savePayType(this.addForm).then( res => {
+                        this.$csmList.savePayType(this.addForm).then( res => {
                             console.log(res)
                             if(res.code === 200) {
                                 this.dialogVisible = false
@@ -248,7 +248,7 @@
             },
 
             getPayTypeCode() {
-                this.$api.getPayTypeCode().then( res => {
+                this.$csmList.getPayTypeCode().then( res => {
                     console.log(res)
                     if(res.code === 200) {
                         this.addForm.payTypeCode = res.data
@@ -265,7 +265,7 @@
             },
 
             search() {
-                this.$api.findPayTypePage(this.formData).then( res => {
+                this.$csmList.findPayTypePage(this.formData).then( res => {
                     console.log(res)
                     if(res.code === 200) {
                         this.tableData = res.data.records

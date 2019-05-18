@@ -27,12 +27,7 @@
          <div class="time-item">
           <label class="label-title">
             供应商：
-              <el-select
-                v-model="supplierId"
-                filterable
-                remote
-                clearable
-                reserve-keyword
+              <el-select v-model="supplierId" filterable remote clearable reserve-keyword
                 placeholder="请输入关键词"
                 :remote-method="getSuppliersList"
                 :loading="loading"
@@ -58,37 +53,22 @@
       </div>
       <div class="section-content" >
         <div style="overflow:hidden;zoom:1">
-            <el-button class="right" size="mini" @click="goOrder">导出</el-button>
+            <el-button class="right" size="mini" @click="getOut">导出</el-button>
         </div>
         <div class="reset-table mt20">
           <el-table border :data="tableData">
-            <el-table-column prop="goodSku" label="SKU编码" align="center" min-width="110"></el-table-column>
-            <el-table-column prop="goodName" label="卖品名称" align="center" min-width="90"></el-table-column>
-            <!-- <el-table-column prop="psiType" label="状态" align="center" min-width="90">
-              <templte slot-scope="scope">
-                {{scope.row.psiType}}
-              </templte>
-            </el-table-column> -->
-            <el-table-column prop="parentCategoryName" label="一级品类" align="center" min-width="90"></el-table-column>
-            <el-table-column prop="categoryName" label="二级品类" align="center" min-width="90"></el-table-column>
-            <!-- <el-table-column prop="brandName" label="品牌" align="center" min-width="90"></el-table-column> -->
-            <el-table-column prop="supplyName" label="所属供应商" align="center" min-width="90"></el-table-column>
-            <!-- <el-table-column prop="startInventory" label="期初库存数量" align="center" min-width="110px"></el-table-column>
-            <el-table-column prop="startAmount" label="期初库存成本额" align="center" min-width="110px"></el-table-column>
-            <el-table-column prop="purchCount" label="采购数量" align="center" min-width="110px"></el-table-column>
-            <el-table-column prop="purchCount" label="采购成本额" align="center" min-width="110px"></el-table-column>
-            <el-table-column prop="saleCount"  label="销售数量" align="center" min-width="120px"></el-table-column>
-            <el-table-column prop="saleAmount" label="销售成本额" align="center" min-width="120px"></el-table-column>
-            <el-table-column prop="endInventory" label="期末库存数量" align="center" min-width="120px"></el-table-column>
-            <el-table-column prop="endAmount" label="期末库存成本额" align="center" min-width="120px"></el-table-column>
-            <el-table-column prop="inventoryTurnoverDaysDay" label="库存数量周转天" align="center" min-width="120px"></el-table-column>
-            <el-table-column prop="inventoryTurnoverDaysAmount" label="库存金额周转天" align="center" min-width="120px"></el-table-column> -->
-            <el-table-column prop="supplyName" label="库存数量" align="center" min-width="90"></el-table-column>
-            <el-table-column prop="supplyName" label="可销天数" align="center" min-width="90"></el-table-column>
-            <el-table-column prop="supplyName" label="操作" align="center" min-width="90">
+            <el-table-column prop="goodSku" label="SKU编码"  min-width="110"></el-table-column>
+            <el-table-column prop="goodName" label="卖品名称" min-width="90"></el-table-column>
+            <el-table-column prop="parentCategoryName" label="一级品类"  min-width="90"></el-table-column>
+            <el-table-column prop="categoryName" label="二级品类" min-width="90"></el-table-column>
+            <el-table-column prop="supplyName" label="所属供应商"  min-width="90"></el-table-column>
+            <el-table-column prop="supplyName" label="库存数量"  min-width="90"></el-table-column>
+            <el-table-column prop="supplyName" label="可销天数"  min-width="90"></el-table-column>
+            <el-table-column prop="supplyName" label="操作"  min-width="90">
                 <template slot-scope="scope">
                   <!-- 跳转营销、卖品 -->
-                  <span class="text-blue cursor">促销</span> <span class="text-blue cursor">退供</span>
+                  <span class="text-blue cursor" style="padding-right:10px" @click="goMarket">促销</span> 
+                  <span class="text-blue cursor" @click="goSale">退供</span>
                 </template>
             </el-table-column>
 
@@ -111,21 +91,21 @@
   </div>
 </template>
 <script>
-
 export default {
- 
   data() {
     return {
+        groupId:1,
         cityId:1,
         cinameId:1106970,
-        isLine:true,
         categoryList:[],
         categoryId:null,
         level:null,
         suppliersList:[],
         supplierId:null,
         timeType: "day",
-        tableData: [], // 表格列表
+        tableData: [{
+
+        }], // 表格列表
         size: 10,
         page: 1,
         total: 0,
@@ -136,7 +116,7 @@ export default {
         let obj = {};
         this.categoryList.forEach(item=>{
             let id = item.value;
-            let leval = item.level;
+            let level = item.level;
             if(!obj.hasOwnProperty(id)){
               obj[id] = level;
             }
@@ -163,9 +143,10 @@ export default {
     search(){
       this.getTableData();
     },
-    // 1.获取商品类型
+    // 1.获取商品列表
     getCategoryList(){
-      this.$camList.categoryList().then(res=>{
+      this.$camList.categoryList().then(response =>{
+        let res = response.data;
         let resData = res.map(item=>{
           return {
             value:item.categoryCode,
@@ -173,7 +154,7 @@ export default {
             level:item.level,
             children:item.childNodes.map(item=>{
               return {
-                 value:item.categoryCode,
+                value:item.categoryCode,
                 label:item.categoryName,
                 level:item.level
               }
@@ -181,42 +162,45 @@ export default {
           }
         })
         this.categoryList = resData;
-        // console.log(resData,'gggg')
       })
     },
-    //2.获取供应商
+    //2.获取供应商列表
     getSuppliersList(name){
       let params = {
         body:{
-          pageNo:1,
-          pageSize:10,
           supplyCode:null,
           supplyName:name?name:null,
+          pageNo:1,
+          pageSize:10,
         }
       }
-      this.$camList.suppliersList(params).then(res=>{
+      this.$camList.suppliersList(params).then(response =>{
+        let res = response.data;
         if(res.list){
           this.suppliersList = res.list;
         }
       })
     },
-     // 3.表格
+     // 3.滞销列表
     getTableData(){
+      console.log(this.level,'level')
       let params = {
         body:{
-          groupId:1,
+          groupId:this.groupId,
           cityId:this.cityId,
           cinemaId:this.cinemaId,
-          dataType:'week',
+          dataType:this.timeType,
           categoryCode:this.categoryId,
           level:this.level,
           supplyId:this.supplierId,
+          psiType:1, // 0.缺货 1 滞销
           pageNo:this.page,
           pageSize:this.size,
-          psiType:1 // 1.缺货 0 滞销
         }
       }
-      this.$camList.inoutTable(params).then(res=>{
+      console.log(params,)
+      this.$camList.inoutTable(params).then(response =>{
+        let res = response.data;
         this.tableData = res.list;
         this.total = res.total;
       })
@@ -226,16 +210,27 @@ export default {
       let new_id = id[id.length*1 - 1]
       this.categoryId = new_id;
       this.level = this.categoryObject[new_id];
+      // console.log(this.level,'level',this.categoryObject)
     },
-    // 前往采购单
-    goOrder(){
+    // 导出
+    getOut(){
       this.$message({type:'warning',message:"导出开发中"})
     },
-    // 保留小数点
-    formatFloat(num, count) {
-      if (num) {
-        return num.toFixed(count);
-      }
+    // 促销
+    goMarket(){
+      this.$message({
+        message:'跳转到促销页面',
+        type:'warning'
+      })
+      // this.$router.push({name:'卖品活动管理'})
+    },
+    // 退供
+    goSale(){
+      this.$message({
+        message:'跳转到退供页面',
+        type:'warning'
+      })
+      // this.$router.push({name:'卖品活动管理'})
     },
     // 分页/大小
     handleSizeChange(num) {

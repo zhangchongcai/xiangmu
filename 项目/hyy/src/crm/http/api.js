@@ -3,8 +3,14 @@ import config from "../../frame_cpm/http/config"; //倒入默认配置
 import qs from "qs"; //序列化数据，视服务端的要求
 import store from "../../frame_cpm/vuex/index";
 import md5 from "js-md5";
-import { isEmojiCharacter } from "../util/inputDataCheck";
-import { MessageBox, Message, Loading } from "element-ui";
+import {
+  isEmojiCharacter
+} from "../util/inputDataCheck";
+import {
+  MessageBox,
+  Message,
+  Loading
+} from "element-ui";
 
 /*** 全局loading处理 start ***/
 // let needLoadingRequestCount = 0
@@ -45,43 +51,67 @@ export default function $axios(options) {
     const instance = axios.create({
       baseURL: config.baseURL,
       headers: {},
-      transformResponse: [function(data) {}]
+      transformResponse: [function (data) {}]
     });
     instance.interceptors.request.use(
-      config => {
+      (config) => {
         if (store.state.loginToken) {
-          config.headers["Authorization"] = store.state.loginToken;
+          let timestamp = (new Date()).getTime();
+          config.headers['Authorization'] = store.state.loginToken;
+          config.headers['timestamp'] = timestamp;
+          config.headers['sign'] = md5(store.state.loginToken + store.state.signKey + timestamp);
         }
-        if (config.url.indexOf("/sys/perm/user/updatePwd") > -1) {
-          delete config.headers["Authorization"];
+        if (config.url.indexOf('/sys/perm/user/updatePwd') > -1) {
+          delete config.headers['Authorization'];
         }
+        //暂且从localStorge获取token
+        if (localStorage.getItem('token')) {
+          config.headers['Cpm-User-Token'] = localStorage.getItem('token');
+        }
+        let hasEmojiCharacter = false;
         //根据请求方法，序列化传来的参数，根据后端需求是否序列化
         if (
-          config.method.toLocaleLowerCase() === "post" ||
-          config.method.toLocaleLowerCase() === "put" ||
-          config.method.toLocaleLowerCase() === "delete"
+          config.method.toLocaleLowerCase() === 'post' ||
+          config.method.toLocaleLowerCase() === 'put' ||
+          config.method.toLocaleLowerCase() === 'delete'
         ) {
           // config.data = qs.stringify(config.data);
+          for (let item in config.data) {
+            if (isEmojiCharacter(config.data[item])) {
+              hasEmojiCharacter = true;
+              Message({
+                message: '请勿在输入框输入表情符号',
+                type: 'warning'
+              });
+              return false;
+            }
+          }
+        } else if (config.method.toLocaleLowerCase() == 'get') {
+          // alert(config.params);
+          for (let item in config.params) {
+            if (isEmojiCharacter(config.params[item])) {
+              hasEmojiCharacter = true;
+              Message({
+                message: '请勿在输入框输入表情符号',
+                type: 'warning'
+              });
+              return false;
+            }
+          }
         }
         // 请求开始显示loading方法 需要先判断是否为影片和影院的请求
         // if(config.url.indexOf('movie') != -1 || config.url.indexOf('cinema') != -1) {
         //     showFullScreenLoading()
         // }
-        // console.log(config.url);
         return config;
       },
-      error => {
+      (error) => {
         //请求错误时（接口错误、超时等）
         //关闭loading
-        console.log("request:", error);
+        console.log('request:', error);
         //判断请求超时
-        if (
-          error.code == "ECONNABORTED" &&
-          error.message.indexOf("timeout") != -1
-        ) {
-          console.log(
-            "根据你设置的 timeout 判断请求超时了，你可以在这里加入超时的处理方案"
-          );
+        if (error.code == 'ECONNABORTED' && error.message.indexOf('timeout') != -1) {
+          console.log('根据你设置的 timeout 判断请求超时了，你可以在这里加入超时的处理方案');
           // return service.request(originalRequest); //例如再重复请求一次
         }
 
@@ -190,8 +220,8 @@ export default function $axios(options) {
               break;
             default:
           }
-        }else{
-          switch(err.message) {
+        } else {
+          switch (err.message) {
             case 'Network Error':
               err.message = "网络错误，请重试";
               break;

@@ -75,6 +75,10 @@ export default {
     //新建组织
     addNewOrgFun(){
       let self = this;
+      if (this.name == "") {
+        this.error("请输入组织名称");
+        return false;
+      }
       let data ={
         pUid: this.chosenOneOrg.id?this.chosenOneOrg.id:0,
         name: this.name,
@@ -100,14 +104,6 @@ export default {
           });
 
     },
-    // addOrgInforFun(){
-    //     let item={name:"",remark:''}
-    //    if(this.formData.length>2){
-    //        return
-    //    }else{
-    //         this.formData.push(item)
-    //    }
-    // }
   },
   created() {
   }

@@ -2,7 +2,7 @@
     <div :class='["ticket_design",isZoom ? "full" : ""]'  >
         <el-container>
             <div class="aside_lef">
-                <el-aside width="260px" >
+                <el-aside width="240px" >
                     <div class="edit_ele" >
                         <!-- 全部元素 -->
                         <div class="title"><span>票版元素</span><span style="margin-left:5px;">(请拖动选择)</span></div>
@@ -65,7 +65,7 @@
                 
             </el-main>
             <div class="aside_right">
-                <el-aside width="330px ">
+                <el-aside width="320px ">
                     <div class="edi_ele">
                         <p>编辑属性</p>
                         <div class="option-warp">
@@ -78,7 +78,16 @@
                                 </div>
                             </div>
                         </div>
-                        
+                        <div class="option-warp">
+                            <label class="name">适用影院：</label>
+                            <div class="content">
+                                <div class="inputFrame nowrap">
+                                    <el-input type="input" v-model="cinemaName"
+                                    @focus="cinemaDialogShow"
+                                    ></el-input>
+                                </div>
+                            </div>
+                        </div>
                         <div class="option-warp">
                             <label class="name">票版名称：</label>
                             <div class="content">
@@ -227,7 +236,7 @@
                                     <el-button @click="abandon">放弃编辑</el-button>
                                 </div>
                                 <div v-else class="foot-btn">
-                                    <el-button type="primary" @click="newBuild">新建票版</el-button>
+                                    <el-button type="primary" @click="newBuild">完成编辑</el-button>
                                     <el-button @click="abandon">放弃编辑</el-button>
                                 </div>
                             </div>
@@ -238,11 +247,29 @@
             </div>
             
         </el-container>
-        
+    <!-- 选择影院弹窗 -->
+        <frame-singlecinema
+        :framedialogVisible="singleCinemaVisible"
+        :whereUse="whereUse"
+        :type="cinematype"
+        :innerData="innerDataSingle"
+        @callBackSingle="handleSingleCallBack"
+        ref="frameSingleCinema"
+      >
+        <div slot="footerId">
+          <el-button @click="singleCinemaVisible= false">取 消</el-button>
+          <el-button
+            type="primary"
+            @click="confirmCinemaSingleDialog(), singleCinemaVisible= false"
+          >确 定</el-button>
+        </div>
+      </frame-singlecinema>
     </div>
 </template>
 <script>
 import qs from 'qs';
+import cinemaDialog from 'ctm/mixins/cinemaDialog.js'
+
 export default {
     data() {
       return {
@@ -354,6 +381,7 @@ export default {
         };
 
     },
+    mixins:[cinemaDialog],
     methods: {
         //尺寸大小改变
         size_sel(value) {
@@ -365,15 +393,15 @@ export default {
         },
         scale_input_width(value) {
             this.edi_ele.size="";
-            this.edi_ele.width = value = value>=114? 114 : value;
+            this.edi_ele.width = value = value>=120? 120 : value;
             this.mouseCanv_width = value * this.mmToPixel;
             this.size = '';
             this.repaintCanvas();
         },
         scale_input_height(value) {
             this.edi_ele.size="";
-            this.edi_ele.height = value>=100? 100 : value;
-            this.mouseCanv_height = value* this.mmToPixel*this.zoom ;
+            this.edi_ele.height = value =  value>=120? 120 : value;
+            this.mouseCanv_height = value* this.mmToPixel;
             this.repaintCanvas();
         },
         fontSize_change(val) {
@@ -916,7 +944,6 @@ export default {
                     this.edi_ele.isPrintTitle = data.isPrintTitle;
                     this.edi_ele.isOtherUse = data.isOtherUse;
                     this.edi_ele.printMode = data.printMode;
-                    console.log(data.width,'宽度啊')
                     this.size = Math.ceil(data.width/this.mmToPixel) ;
                     //获取图片base64
                      if(data.picUrl){
@@ -925,6 +952,9 @@ export default {
                         image.src = url ;
                         this.sele_background = image; 
                     } 
+                    //获取Uid和name
+                    this.cinemaUid = data.cinemaUid
+                    this.cinemaName = data.cinemaName
                     //赋值渠道
                     this.channel_new =data.ticketsampleChannelUids? JSON.parse(JSON.stringify(data.ticketsampleChannelUids)) : [] ;
                     this.channel_old =data.ticketsampleChannelUids? JSON.parse(JSON.stringify(data.ticketsampleChannelUids)) : [] ;
@@ -1024,6 +1054,8 @@ export default {
             data.ticketsampleChannelUids = this.channel_new;
 
             if(flag){
+                data.cineamUid = this.cinemaUid
+                data.cineamName = this.cinemaName
                 data.width = this.edi_ele.width*this.mmToPixel
                 data.height = this.edi_ele.height*this.mmToPixel
                 this.$ctmList.ticketelementAdd(data).then( data => {
@@ -1052,13 +1084,19 @@ export default {
         ticketSampleupdata(){
             var flag = this.judge();
             var data = Object.assign(this.edi_ele)
-            data.ciTicketsampleitemList = this.ticket_data;
+            let _ticket_data = JSON.parse(JSON.stringify(this.ticket_data))
+            _ticket_data.forEach(item=> {         
+                delete item.id
+            })
+            data.ciTicketsampleitemList = _ticket_data;
             data.ticketsampleChannelUids = this.channel_new;
             data.uid = this.uid;
             data.picUrl = this.sele_background;
+            
             if(flag){
                 data.width = this.edi_ele.width*this.mmToPixel
                 data.height = this.edi_ele.height*this.mmToPixel
+                // console.log(JSON.stringify(data))
                 this.$ctmList.ticketSampleUpdata(data).then( data => {
                     if(data && data.code == 200){
                         this.$message({
@@ -1224,7 +1262,7 @@ export default {
                 line-height: 40px;
                 justify-content: flex-end;
                 .name{margin-right: 12px;}
-                .content{width: 190px;color: #666!important}
+                .content{width: 180px;color: #666!important}
                 span{color: #666}
             }
             .sample-size{
@@ -1305,6 +1343,7 @@ export default {
             .curren_eleSel{border-top: 1px solid #F5F5F5} 
             
         }
+        .el-main{height: auto;overflow: hidden;}
         .main{
             text-align: center;
             position: relative;

@@ -7,13 +7,13 @@
                     <el-input v-model="form.baseInfo.name.value" class="input-type-217"></el-input>
                 </el-form-item>
                 <el-form-item label="票券类型:" prop="baseInfo.couponType.value">
-                    <el-radio-group v-model="form.baseInfo.couponType.value" @change="resetCouponTypeCode">
+                    <el-radio-group v-model="form.baseInfo.couponType.value" @change="resetcouponTypeId">
                         <el-radio-button v-for="item in form.baseInfo.couponType.options" :key="item.value" :label="item.value">{{item.label}}</el-radio-button>
                     </el-radio-group>
                 </el-form-item>
-                <el-form-item label="票券分类:" prop="baseInfo.couponTypeCode.value" :rules="form.baseInfo.couponTypeCode.rules">
-                    <el-select v-model="form.baseInfo.couponTypeCode.value" placeholder="请选择" @change="changeTicketType">
-                        <el-option v-for="item in form.baseInfo.couponTypeCode.options" :key="item.value" :label="item.label" :value="item.value"></el-option>
+                <el-form-item label="票券分类:" prop="baseInfo.couponTypeId.value" :rules="form.baseInfo.couponTypeId.rules">
+                    <el-select v-model="form.baseInfo.couponTypeId.value" placeholder="请选择" @change="changeTicketType">
+                        <el-option v-for="item in form.baseInfo.couponTypeId.options" :key="item.value" :label="item.label" :value="item.value"></el-option>
                     </el-select>
                 </el-form-item>
                 <el-form-item label="票券数量:" prop="baseInfo.couponCount.value" :rules="form.baseInfo.couponCount.rules">
@@ -327,7 +327,7 @@ export default {
                         }]
                     },
                     // 票券分类
-                    couponTypeCode: {
+                    couponTypeId: {
                         value: '',
                         options: [],
                         rules: {
@@ -838,7 +838,7 @@ export default {
             this.model.type = type;
 
             this.editiSaleList(this.$route.params.applyCode);
-            this.getCouponTypeCode(this.form.baseInfo.couponType.value);
+            this.getcouponTypeId(this.form.baseInfo.couponType.value);
             return ;
         }
 
@@ -871,7 +871,7 @@ export default {
         // 展示ruleChild
         this.showRuleData(this.ruleChild);
         // 查询当前票券分类类型
-        this.getCouponTypeCode(this.form.baseInfo.couponType.value);
+        this.getcouponTypeId(this.form.baseInfo.couponType.value);
     },
     methods: {
         /**
@@ -1022,19 +1022,19 @@ export default {
             }
         },
         /**
-         * @function resetCouponTypeCode - 重置票券分类选择
+         * @function resetcouponTypeId - 重置票券分类选择
          * @param  {String} couponType - '0':兑换券;'1':代金券;'2':优惠券;
          */
-        resetCouponTypeCode(couponType) {
-            this.form.baseInfo.couponTypeCode.value = '';
+        resetcouponTypeId(couponType) {
+            this.form.baseInfo.couponTypeId.value = '';
             this.ruleInfo.isShow = false;
 
-            this.getCouponTypeCode(couponType);
+            this.getcouponTypeId(couponType);
         },
         /**
-         * @function getCouponTypeCode - 
+         * @function getcouponTypeId - 
          */
-        getCouponTypeCode(couponType) {
+        getcouponTypeId(couponType) {
             let params = {
                 couponName: '',
                 couponType,
@@ -1054,7 +1054,7 @@ export default {
                             value
                         });
                     });
-                    this.form.baseInfo.couponTypeCode.options = couponArr;
+                    this.form.baseInfo.couponTypeId.options = couponArr;
                 } else {
                     this.$message({
                         type: 'warning',
@@ -1293,7 +1293,7 @@ export default {
                 param[`id`] = this.model.id;
             }
 
-            let keyArr_baseInfo = ['couponType', 'couponTypeCode', 'couponCount', 'couponPrice', 'startSaleNum', 'salesMode', 'incomeCinemaId', 'couponGeneration'];
+            let keyArr_baseInfo = ['couponType', 'couponTypeId', 'couponCount', 'couponPrice', 'startSaleNum', 'salesMode', 'incomeCinemaId', 'couponGeneration'];
             keyArr_baseInfo.forEach((item, index) => {
                 let value = baseInfo[`${item}`].value;
                 param[`${item}`] = value;

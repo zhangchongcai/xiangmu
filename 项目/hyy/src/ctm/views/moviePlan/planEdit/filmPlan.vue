@@ -2,7 +2,7 @@
     <section class="movie-plan-window" @scroll="scroll" :style="{width:width+'px',height: contentSize.height +'px'}" ref="moviePlanWindow" @mousemove="changeTimeLine">
         <div class="content" id="planContent" :style="{width:contentSize.width+'px',height: '100%'}" @mousedown="addFilm" @mousemove="drawBlock" @mouseup="cleanDrawBlock" ref="content">
             <!-- 过去时间：灰色 -->
-            <div class="pass-time" :style="{height: contentSize.height + 'px',width: pass_time.width + 'px'}"></div>
+            <div class="pass-time" :style="{height: '100%',width: pass_time.width + 'px'}"></div>
             <!-- 排片内容 -->
             <ul>
                 <li class="row_content" v-for="(item,index) in plan_rooms" :key="index" :style="{height: contentSize.roomItemHeight + 'px'}" :data-item="index">
@@ -371,9 +371,9 @@ export default {
                 }
             }
             if (JSON.stringify(new_flage) !== JSON.stringify(old_flage)) {
-                this.userNeedSave = true;
+                this.userNeedSave = true
             } else {
-                this.userNeedSave = false;
+                this.userNeedSave = false
             }
 
             // 实时修改 
@@ -1583,14 +1583,14 @@ export default {
             this.plan_rooms.forEach((row, rowIndex) => {
                 subData = subData.concat(
                 row.filter(plan => plan.approveStatus !== 'WAIT_APPROVE' && plan.approveStatus !== 'APPROVED').map(plan =>{
-                    return {
+                    let item = {
                         "planUid": plan.planUid ? plan.planUid : '',
                         "cinemaUid": this.baseParam.uidCinema,
                         "movieCode": plan.movieCode,
                         "hallUid": this.rooms[rowIndex].uid_hall,
                         "movieLanguage": plan.language,
                         "mustRightSeat": plan.mustRightSeat != undefined ? plan.mustRightSeat : 1,
-                        "planDate": this.baseParam.planDate,
+                        "planDate": plan.startTime.hours < 6 ? this.formatDateTime(new Date(this.baseParam.planDate).getTime() + 24 * 60 * 60 * 1000) : this.baseParam.planDate,
                         "planTimeStart": plan.startTime.hours < 6 ? `${this.formatDateTime(new Date(this.baseParam.planDate).getTime() + 24 * 60 * 60 * 1000)} ${plan.startTime.hours}:${plan.startTime.minute}` : `${this.baseParam.planDate} ${plan.startTime.hours}:${plan.startTime.minute}`,
                         "planTimeEnd": plan.endTime.hours < 6 ? `${this.formatDateTime(new Date(this.baseParam.planDate).getTime() + 24 * 60 * 60 * 1000)} ${plan.endTime.hours}:${plan.endTime.minute}` : `${this.baseParam.planDate} ${plan.endTime.hours}:${plan.endTime.minute}`,
                         "minPrice": plan.minPrice != undefined ? plan.minPrice : 0,
@@ -1605,6 +1605,18 @@ export default {
                         "showNoInHall": plan.showNoInHall,
                         "planShowInterval": plan.planShowInterval
                         }
+                        return plan.joinFlag ? plan.newJoinFlag ? Object.assign(item, {
+                            movieTemplateVos: [
+                                {
+                                    joinMovieName: plan.movieName,
+                                    percentPrice: 100,
+                                    showIndex: 1,
+                                    movieCode: plan.movieCode,
+                                    minPrice: plan.minPrice,	
+                                    rate: plan.publisherRate,	
+                                }
+                            ]
+                        }) : item : item
                     }))
                 })
             
@@ -1674,29 +1686,31 @@ export default {
                 t_b_control_width = this.control.t_b_width,
                 t_b_control_height = this.control.t_b_height
 
-            let type;
+            let type = 'bottom';
             let c_positionY, c_positionX
-            if (bottom == roomHeight) {
-                // 只有一行数据
-                if (max_positionY + r_l_control_width > right) {
-                    type = 'left'
-                    c_positionX = min_positionY - r_l_control_width
-                } else {
-                    type = 'right'
-                    c_positionX = max_positionX
-                }
-                c_positionY = max_positionY - (max_positionY - min_positionY) / 2 - r_l_control_height / 2 + (roomHeight - itemHeight) / 2
-            } else {
-                // 多行数据
-                if (max_positionY + t_b_control_height > bottom) {
-                    type = 'top'
-                    c_positionY = min_positionY - t_b_control_height
-                } else {
-                    type = 'bottom'
-                    c_positionY = max_positionY
-                }
-                c_positionX = min_positionX
-            }
+            c_positionX = min_positionX
+            c_positionY = max_positionY
+            // if (bottom == roomHeight) {
+            //     // 只有一行数据
+            //     if (max_positionY + r_l_control_width > right) {
+            //         type = 'left'
+            //         c_positionX = min_positionY - r_l_control_width
+            //     } else {
+            //         type = 'right'
+            //         c_positionX = max_positionX
+            //     }
+            //     c_positionY = max_positionY - (max_positionY - min_positionY) / 2 - r_l_control_height / 2 + (roomHeight - itemHeight) / 2
+            // } else {
+            //     // 多行数据
+            //     if (max_positionY + t_b_control_height > bottom) {
+            //         type = 'top'
+            //         c_positionY = min_positionY - t_b_control_height
+            //     } else {
+            //         type = 'bottom'
+            //         c_positionY = max_positionY
+            //     }
+            //     c_positionX = min_positionX
+            // }
 
             let controlItemArr = this.controlItem(movie)
 
@@ -1753,7 +1767,7 @@ export default {
             if (this.mode) {
                 if (approveStatus == 'NOT_APPROVE' || approveStatus == '') {
                     // 未审核 或 新建
-                    setControlArr = ['edit', 'copy', 'delete', 'continuityPlan', 'selectSameMoive']
+                    setControlArr = !movie.joinFlag ? ['edit', 'copy', 'delete', 'continuityPlan', 'selectSameMoive'] : ['edit', 'copy', 'delete', 'selectSameMoive']
                 } else if (approveStatus == 'WAIT_APPROVE') {
                     // 审核中
                     setControlArr = ['checkMovie', 'copy']
@@ -1899,7 +1913,6 @@ export default {
                 item.showTimeEnd = item.endTime.hours < 6 ? `${this.formatDateTime(new Date (this.baseParam.planDate).getTime() + 24 * 60 * 60 * 1000)} ${item.endTime.hours}:${item.endTime.minute}` : `${this.baseParam.planDate} ${item.endTime.hours}:${item.endTime.minute}`
             })
             let currentRow = rowData.filter(item => !(item.hallUid == this.curPlan.hallUid && item.positionX == this.curPlan.positionX))
-            this.$store.commit('changeCurrentRow', currentRow)
             if (this.userNeedSave && this.mode) {
                 this.savePlan(_type, true)
                 return 
@@ -1910,20 +1923,27 @@ export default {
             
         },
         goToPlanDetail(type) {
-            let uid = ''
+            let uid = '', joinFlag = 0
             if (this.curPlan.planUid) {
                 uid = this.curPlan.planUid
+                joinFlag = this.curPlan.joinFlag
             } else {
-                this.plan_rooms.some(item => {
+                this.plan_rooms.reduce((data, row) => {
+                    return data.concat(row)
+                }, []).some(item => {
                     if (item.hallUid == this.curPlan.hallUid && item.positionX == this.curPlan.positionX) {
                         uid = item.planUid
+                        joinFlag = item.joinFlag
                         return true
                     }
                 })
             }
+            
+            let path = type == 'continuityPlan' ? `consecutivePlan?mode=edit&uid=${uid}` : joinFlag ? `consecutivePlan?mode=${type}&uid=${uid}` : `detail?mode=${type}&uid=${uid}`
             this.$router.push({
-                path: `detail?mode=${type}&uid=${uid}`
+                    path
             })
+            
         },
         /* 控制器 - 查看影片*/
         viewMoive() {
@@ -1931,7 +1951,21 @@ export default {
         },
         /* 控制器 - 连排 */
         continuityPlan() {
-            console.log('触发连排！')
+            let plan_rooms = JSON.parse(JSON.stringify(this.plan_rooms))
+            plan_rooms.forEach(row => {
+                row.forEach(plan => {
+                    if (plan.hallUid == this.curPlan.hallUid && plan.positionX == this.curPlan.positionX) {
+                        
+                        plan.joinFlag = 1
+                        this.userNeedSave = true
+                        // plan.originFlag = 
+                        plan.newJoinFlag = true
+                        return true
+                    }
+                })        
+            })
+            this.plan_rooms = plan_rooms
+            this.editionMovie('continuityPlan')
         },
         /* 控制器 - 停售 */
         stopSale() {
@@ -2292,6 +2326,7 @@ export default {
 }
 .movie-plan-window {
     max-height: calc(100% - 30px) !important;
+    min-height: 600px;
     min-width: 915px;
     overflow: auto;
     position: relative;

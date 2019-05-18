@@ -162,8 +162,8 @@
         </div>
         <!-- 分页 start -->
         <div class="page-wrap">
-          <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="current"
-            :page-size="size" layout="prev, pager, next, jumper, sizes" :page-sizes="[20 , 50 , 100]" :total="total-0"></el-pagination>
+          <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="current-0"
+            :page-size="size-0" layout="prev, pager, next, jumper, sizes" :page-sizes="[20 , 50 , 100]" :total="total-0"></el-pagination>
         </div>
         <!-- 分页 end -->
       </el-collapse-item>

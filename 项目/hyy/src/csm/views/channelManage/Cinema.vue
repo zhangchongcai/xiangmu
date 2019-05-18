@@ -83,74 +83,6 @@
             </div>
         </el-dialog>
 
-        <el-dialog title="选择渠道" :visible.sync="dialogVisible" width="76%">
-            <el-form :inline="true" :model="searchForm" :label-width="formLabelWidth" size="small">
-                <el-form-item label="渠道类型">
-                    <el-select v-model="searchForm.type" placeholder="请选择">
-                        <el-option label="全部" value=""></el-option>
-                        <el-option
-                                v-for="item in dialogChannelNatureOptions"
-                                :key="item.keyCode"
-                                :label="item.keyName"
-                                :value="item.keyCode">
-                        </el-option>
-                    </el-select>
-                </el-form-item>
-                <el-form-item label="渠道编码">
-                    <el-input v-model="searchForm.code" placeholder="请输入渠道编码"></el-input>
-                </el-form-item>
-                <el-form-item label="渠道名称">
-                    <el-input v-model="searchForm.name" placeholder="请输入渠道名称"></el-input>
-                </el-form-item>
-                <el-form-item>
-                    <el-button type="primary" @click="getChannelOtherList" icon="el-icon-search">查询</el-button>
-                </el-form-item>
-            </el-form>
-
-            <div style="display: flex">
-                <el-table
-                        :data="gridData"
-                        ref="multipleTable"
-                        stripe
-                        :header-cell-style="{'background': '#F2F4FD'}"
-                        @selection-change="handleSelectionChange"
-                        style="width: 70%">
-                    <el-table-column
-                            type="selection"
-                            width="55">
-                    </el-table-column>
-                    <el-table-column property="code" label="渠道编码" width="150"></el-table-column>
-                    <el-table-column property="name" label="渠道名称"></el-table-column>
-                    <el-table-column
-                            label="渠道类型"
-                            show-overflow-tooltip>
-                        <template slot-scope="scope">
-                            <span v-if="scope.row.type === 0">线下渠道</span>
-                            <span v-else-if="scope.row.type === 1">直营线上</span>
-                            <span v-else-if="scope.row.type === 2">网络代售渠道</span>
-                        </template>
-                    </el-table-column>
-                </el-table>
-
-                <el-card class="box-card" shadow="never">
-                    <div slot="header" class="clearfix">
-                        <span>已选内容：</span>
-                        <el-button style="float: right; padding: 3px 0" type="text" @click="emptyData">清空</el-button>
-                    </div>
-                    <div v-for="item in multipleSelection" :key="item.code" class="text item">
-                        <span>{{ item.name }}</span>
-                        <i style="float: right; padding: 3px 0; cursor: pointer" class="el-icon-close" @click="deleteCurrent(item.code)"></i>
-                    </div>
-                </el-card>
-
-            </div>
-
-            <div slot="footer" class="dialog-footer">
-                <el-button :disabled="!multipleSelection.length"  type="primary" @click="addHeaderChannel">保 存</el-button>
-                <el-button @click="dialogVisible = false">取 消</el-button>
-            </div>
-        </el-dialog>
-
         <el-form :inline="true" :model="formData" class="demo-form-inline search-form" size="small">
             <el-form-item label="渠道类型：">
                 <el-select v-model="formData.channelNature" placeholder="请选择">
@@ -177,7 +109,7 @@
             <el-form-item label="渠道名称：">
                 <el-input
                         placeholder="请输入渠道名称"
-                        v-model="formData.name"
+                        v-model="formData.channelName"
                         clearable>
                 </el-input>
             </el-form-item>
@@ -187,15 +119,11 @@
             </el-form-item>
         </el-form>
 
-        <div class="el-row-btns clearfix">
-            <el-button style="float: right;" @click="dialogVisible = true" size="small">添加渠道</el-button>
-        </div>
-
         <el-table
                 :data="tableData"
                 stripe
                 :header-cell-style="{'background': '#F2F4FD'}"
-                style="width: 100%">
+                style="width: 100%; margin-top: 20px">
             <el-table-column
                     label="序号"
                     type="index"
@@ -212,20 +140,13 @@
                     show-overflow-tooltip>
             </el-table-column>
             <el-table-column
-                    prop="channelNature"
+                    prop="nature"
                     label="渠道类型"
                     show-overflow-tooltip>
                 <template slot-scope="scope">
-                    <span v-if="scope.row.channelNature === 0">线下渠道</span>
-                    <span v-else-if="scope.row.channelNature === 1">直营线上</span>
-                    <span v-else-if="scope.row.channelNature === 2">网络代售渠道</span>
-                </template>
-            </el-table-column>
-            <el-table-column
-                    label="授权影院数"
-                    show-overflow-tooltip>
-                <template slot-scope="scope">
-                    <span v-for="item in scope.row.ciCinemas" :key="item.name">{{item.name}}，</span>
+                    <span v-if="scope.row.nature === 0">线下渠道</span>
+                    <span v-else-if="scope.row.nature === 1">直营线上</span>
+                    <span v-else-if="scope.row.nature === 2">网络代售渠道</span>
                 </template>
             </el-table-column>
             <el-table-column
@@ -234,17 +155,18 @@
                     width="120"
                     show-overflow-tooltip>
                 <template slot-scope="scope">
-                    <span v-if="scope.row.status">启用</span>
+                    <span v-if="scope.row.status === 0">启用</span>
                     <span v-else>停用</span>
                 </template>
             </el-table-column>
             <el-table-column
-                    width="260"
+                    width="300"
                     fixed="right"
                     label="操作">
                 <template slot-scope="scope">
-                    <el-button style="padding: 0" @click="updateStatus(scope.row.status === 0 ? 1 : 0, scope.row.uid)" type="text" size="small">{{scope.row.status ? '停用' : '启用'}}</el-button>
-                    <el-button style="padding: 0" @click="setAuthorizedCinema(scope.row.uid)" type="text" size="small">设置授权影院</el-button>
+                    <el-button style="padding: 0" @click="updateStatus(scope.row.status === 0 ? 1 : 0, scope.row.uid)" type="text" size="small">{{scope.row.status ? '启用' : '停用'}}</el-button>
+                    <el-button style="padding: 0" @click="setParams(scope.row)" type="text" size="small">设置参数</el-button>
+                    <el-button style="padding: 0" @click="setAuthorizedCinema(scope.row.uid)" type="text" size="small">卖品网售设置</el-button>
                     <el-button style="padding: 0" @click="getChannelDetail(scope.row.uid)" type="text" size="small">查看详情</el-button>
 
                 </template>
@@ -256,7 +178,7 @@
                     background
                     @size-change="handleSizeChange"
                     @current-change="handleCurrentChange"
-                    :current-page="formData.page"
+                    :current-page="formData.current"
                     :page-sizes="[20, 40, 60, 80]"
                     :page-size="formData.pageSize"
                     layout="total, sizes, prev, pager, next, jumper"
@@ -267,6 +189,9 @@
 </template>
 
 <script>
+    // import config from '../../http/config'
+    import config from '../../../frame_cpm/http/config'
+
     export default {
         name: "cinema",
         data() {
@@ -286,7 +211,6 @@
                     code: '',
                 },
                 formLabelWidth: '60px',
-                dialogVisible: false,
                 tableData: [],
                 dialogChannelNatureOptions: [{
                     keyCode: 2,
@@ -314,11 +238,12 @@
                 }],
                 total: 0,
                 formData: {
+                    cinemaName: '',
                     channelNature: '',
-                    name: '',
+                    channelName: '',
                     status: '',
                     pageSize: 20,
-                    page: 1,
+                    current: 1,
                 },
                 authorizedCinemaData: {
                     channelUid: '',
@@ -385,30 +310,7 @@
 
             },
 
-            addHeaderChannel() {
-                let channel = this.multipleSelection.map( item => {
-                    return {
-                        channelNature: item.type,
-                        name: item.name,
-                        company: item.company,
-                        code: item.code
-                    }
-                })
-                console.log(channel)
-                this.$csmList.addHeaderChannel(channel).then( res => {
-                    console.log(res)
-                    if(res.code === 200) {
-                        this.$refs.multipleTable.clearSelection()
-                        this.dialogVisible = false
-                        this.success(res.msg)
-                        this.search()
-                    }else {
-                        this.error(res.msg)
-                    }
 
-                })
-
-            },
 
             emptyData() {
                 this.multipleSelection = []
@@ -471,7 +373,7 @@
                 // })
                 this.axios({
                     method: 'get',
-                    url: 'http://10.8.0.18:8082/cinema/tree',
+                    url: `${config.baseURL}/ticket/cinema/tree`,
                 }).then( res => {
                     console.log(res.data)
                     if(res.data.code === 200) {
@@ -497,20 +399,10 @@
 
             },
 
-            findPayTypeByCode(code) {
-                this.$csmList.findPayTypeByCode({ code }).then( res => {
-                    console.log(res)
-                    if(res.code === 200) {
-                        this.addForm.payTypeCode = res.data.payTypeCode
-                        this.addForm.payTypeName = res.data.payTypeName
-                        this.addForm.status = res.data.status
-                        this.dialogVisible = true
+            setParams(row) {
+                console.log(row)
+                this.$router.push({ path: '/trade/cinemaChannelParam', params: { date: row }})
 
-                    }else {
-                        this.error(res.msg)
-                    }
-
-                })
             },
 
             updateStatus(status, channelUid) {
@@ -550,31 +442,9 @@
 
             },
 
-            savePayType(formName) {
-                this.$refs[formName].validate((valid) => {
-                    if (valid) {
-                        this.$csmList.savePayType(this.addForm).then( res => {
-                            console.log(res)
-                            if(res.code === 200) {
-                                this.dialogVisible = false
-                                this.success('保存成功！')
-                                this.$refs[formName].resetFields()
-                                this.search()
-
-                            }else {
-                                this.error(res.msg);
-                            }
-
-                        })
-                    } else {
-                        console.log('error submit!!')
-                        return false
-                    }
-                })
-            },
 
             search() {
-                this.$csmList.getChannelList(this.formData).then( res => {
+                this.$csmList.getCinemaChannelList(this.formData).then( res => {
                     console.log(res)
                     if(res.code === 200) {
                         this.tableData = res.data.list
@@ -600,11 +470,13 @@
                 // })
                 this.axios({
                     method: 'get',
-                    url: 'http://10.8.0.18:8082/common/user',
+                    url: `${config.baseURL}/ticket/common/user`,
                 }).then( res => {
                     console.log(res.data)
                     if(res.data.code === 200) {
                         this.cinemaUid = res.data.data.cinemaUid
+                        this.formData.cinemaName = res.data.data.cinemaName
+                        this.search()
 
                     }else {
                         this.error(res.data.msg)
@@ -620,7 +492,7 @@
 
             handleCurrentChange(val) {
                 console.log(`当前页: ${val}`);
-                this.formData.page = val
+                this.formData.current = val
                 this.search()
             },
 
@@ -628,7 +500,6 @@
         },
         mounted() {
             this.getUserInfo()
-            this.search()
             this.getCinemaTree()
         }
     }

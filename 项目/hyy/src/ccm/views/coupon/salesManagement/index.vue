@@ -143,23 +143,23 @@ export default {
                     alertSrc: 'http://192.168.100.148:8080/alertWindow',
                 },
                 {
-                    keyName: 'couponTypeCode',
+                    keyName: 'couponType',
                     name: '票券类型',
                     type: 'select',
                     level: 'hight',
                     value: '',
                     options: [{
                         label: '全部',
-                        value: '1'
+                        value: ''
                     }, {
                         label: '兑换券',
-                        value: '2'
+                        value: '0'
                     }, {
                         label: '优惠券',
-                        value: '3'
+                        value: '2'
                     }, {
                         label: '代金券',
-                        value: '4'
+                        value: '1'
                     }, ]
                 }, {
                     keyName: 'status',
@@ -334,7 +334,7 @@ export default {
         setParams(params) {
             params = params ? params : {};
             let searchParam = this.searchParam;
-            let keysArr = ['applyCode', 'auditState', 'batchCode', 'contractCode', 'couponName', 'couponTypeCode', 'status'];
+            let keysArr = ['applyCode', 'auditState', 'batchCode', 'contractCode', 'couponName', 'couponType', 'status'];
 
             let _params = {};
             keysArr.forEach((item) => {

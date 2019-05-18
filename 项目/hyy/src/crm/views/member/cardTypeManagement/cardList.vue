@@ -38,13 +38,13 @@
     </div>
     <div class="member-list-table _m-member-table-custom">
       <el-table :data="tableData" stripe style="width: 100%" :empty-text="tipMessage">
-        <el-table-column prop="productNo" label="政策编号" min-width="100" :formatter="formateEmpty" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="productNo" label="政策编号" min-width="120" :formatter="formateEmpty" show-overflow-tooltip></el-table-column>
         <el-table-column prop="cardName" label="政策名称" min-width="120" :formatter="formateEmpty" show-overflow-tooltip></el-table-column>
         <el-table-column prop="cardTypeCode" label="卡类型" min-width="120" :formatter="formateEmpty"
           show-overflow-tooltip>
           <template slot-scope="scope">{{scope.row.cardTypeCode | formatCardTypeCode}}</template>
         </el-table-column>
-        <el-table-column prop="channelType" label="可售渠道" min-width="100" :formatter="formateEmpty"
+        <el-table-column prop="channelType" label="可售渠道" min-width="120" :formatter="formateEmpty"
           show-overflow-tooltip></el-table-column>
         <el-table-column prop="createTime" label="创建时间" min-width="120" show-overflow-tooltip>
           <template slot-scope="scope">{{scope.row.createTime | formatCreateTime}}</template>
@@ -55,14 +55,12 @@
               | judegStatus}}</span>
           </template>
         </el-table-column>
-        <el-table-column fixed="right" label="操作" min-width="200">
+        <el-table-column fixed="right" label="操作" min-width="150">
           <template slot-scope="scope">
             <el-button @click="handleMemberDetail(scope.row)" type="text" size="small" class="operation-button">查看</el-button>
             <el-button @click="handleEmitCardType(scope.row)" type="text" size="small" class="operation-button" v-if="scope.row.status=='unstart'?true:false">修改</el-button>
             <el-button @click="handleStartUse(scope.row)" type="text" size="small" class="operation-button" v-if="scope.row.status=='unstart'?true:false">启用</el-button>
             <el-button @click="handleStopUse(scope.row)" type="text" size="small" class="operation-button" v-if="scope.row.status=='start'?true:false">停用</el-button>
-            <el-button @click="handleOperationLog(scope.row)" type="text" size="small" class="operation-button"
-              disabled>操作日志</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -70,8 +68,8 @@
 
     <!-- 分页 start -->
     <div class="page-wrap">
-      <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage"
-        :page-size="formData.size" layout="prev, pager, next, jumper, sizes" :page-sizes="[20 , 50 , 100]" :total="total-0"></el-pagination>
+      <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage-0"
+        :page-size="formData.size-0" layout="prev, pager, next, jumper, sizes" :page-sizes="[20 , 50 , 100]" :total="total-0"></el-pagination>
     </div>
     <!-- 分页 end -->
   </div>
@@ -294,10 +292,6 @@ export default {
             message: "已取消停用"
           });
         });
-    },
-    // 操作日志
-    handleOperationLog(scope) {
-      console.log("scope=", scope);
     },
     formateEmpty(row, column, cellValue, index) {
       return cellValue != null ? cellValue : "-";

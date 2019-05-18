@@ -374,8 +374,6 @@ export default {
     '$route'(to, from){
       let styleUid;
       this.getDatacenter(styleUid);
-      console.log('to:', to)
-      console.log('from:', from)
     },
   }
 };

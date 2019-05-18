@@ -1,6 +1,17 @@
 <template>
     <div class="audit">
 
+        <singleCinema
+                ref="frameSingleCinema"
+                :framedialogVisible="singleCinemaVisible"
+                :type="singleCinemaType"
+                :innerData="innerData">
+            <div slot="footerId">
+                <el-button @click="singleCinemaVisible = false">取 消</el-button>
+                <el-button type="primary" @click="singleCinemaVisible = false">确 定</el-button>
+            </div>
+        </singleCinema>
+
         <el-dialog
             title="提示"
             :visible.sync="dialogVisible"
@@ -13,6 +24,10 @@
         </el-dialog>
 
         <el-form v-show="showType === 'table'" :inline="true" :model="formData" class="demo-form-inline search-form" size="small">
+            <el-form-item>
+                <el-button type="primary" @click="singleCinemaVisible = true">确 定</el-button>
+
+            </el-form-item>
             <el-form-item label="场次日期：">
                 <el-date-picker
                     v-model="date"
@@ -235,15 +250,23 @@
 <script>
     import formatDate from 'ctm/mixins/formatDate'
     import moviePlan from "ctm/views/moviePlan/planApprove/components/moviePlan"
+    import singleCinema from "frame_cpm/dialogs/cinemaDialog/singleCinema"
 
     export default {
         name: "Audit",
         mixins: [formatDate],
         components: {
-            moviePlan
+            moviePlan,
+            singleCinema
         },
         data() {
             return {
+                singleCinemaVisible: false,
+                singleCinemaType: 2,
+                innerData: {
+                    id: '',
+                },
+
                 checkAll: false,
                 isIndeterminate: false,
                 showType: 'table',
@@ -337,7 +360,7 @@
             toDetail(uid) {
                 console.log(uid)
                 this.$router.push({
-                    path: '/ctm/moviePlan/detail',
+                    path: '/ticket/moviePlan/detail',
                     query: { mode: 'view', uid }
                 })
             },
@@ -494,6 +517,7 @@
                 console.log(res)
                 if(res.code === 200) {
                     this.formData.cinemaUid = res.data.cinemaUid
+                    this.innerData.id = res.data.cinemaUid
                     this.search()
                     this.getByName()
 

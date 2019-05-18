@@ -13,13 +13,13 @@
             <el-form :model="basicDataForm" :rules="basicDataRule" ref="basicDataForm" label-width="150px" class="common-form">
                 <!-- 活动基础信息 -->
                 <el-collapse-item title="活动基础信息" name="1">
-                    <el-form-item label="活动名称" prop="activityName">
-                        <el-input v-model="basicDataForm.activityName" placeholder="请输入活动名称" :disabled="disabled" @blur="valActivityName" maxlength="15"></el-input>
+                    <el-form-item label="活动名称:" prop="activityName">
+                        <el-input class="input-type-217" v-model="basicDataForm.activityName" placeholder="请输入活动名称" :disabled="disabled" @blur="valActivityName" maxlength="15"></el-input>
                     </el-form-item>
-                    <el-form-item label="活动描述" prop="activityDesc">
+                    <el-form-item label="活动描述:" prop="activityDesc">
                         <el-input type="textarea" v-model="basicDataForm.activityDesc" :disabled="disabled" placeholder="请输入活动描述" maxlength="100"></el-input>
                     </el-form-item>
-                    <el-form-item label="执行策略" size="mini" prop="executeMode">
+                    <el-form-item label="执行策略:" size="mini" prop="executeMode">
                         <el-radio-group v-model="basicDataForm.executeMode" :disabled="disabled">
                             <el-radio :label="'AUTO_MATCH'">自动</el-radio>
                             <el-radio :label="'AUTO_MATCH_RECOMMEND'">推荐</el-radio>
@@ -29,22 +29,23 @@
 “刷招行信用卡25元购票”，对于这种活动必须由柜台操作员判断顾客是否持有相应的信用卡支付，确认后需手工点选实现打折，建议设置为推荐执行策略；
 当同一个优先级存在多个匹配的活动时，系统提示操作员手工选择执行。">
                                 <el-button type="text" slot="reference" class="el-icon-warning"></el-button>
-                                <span style="color:#ffffff">1</span>
+                                <!-- <span style="color:#ffffff">1</span> -->
                             </el-popover>
                         </el-radio-group>
                     </el-form-item>
-                    <el-form-item label="执行优先级" size="mini" prop="priorityNum" class="priorityNum">
+                    <el-form-item label="执行优先级:" size="mini" prop="priorityNum" class="priorityNum">
                         <el-radio-group v-model="basicDataForm.priority" style="width:70%;" :disabled="disabled">
-                            <el-radio :label="1" style="margin:6px 10px 15px 0;">输入优先级数字</el-radio>
-                            <el-input v-if="basicDataForm.priority==1" v-model="basicDataForm.priorityNum" :disabled="disabled" placeholder="数值越大优先级越高(0-99)" min="0" max="99"></el-input>
-                            <br>
-                            <el-radio :label="2">按最优先执行</el-radio>
+                            <el-row class="flex-base">
+                                <el-radio :label="1">输入优先级数字</el-radio>
+                                <el-input class="input-type-94" v-if="basicDataForm.priority==1" v-model="basicDataForm.priorityNum" :disabled="disabled" placeholder="数值越大优先级越高(0-99)" min="0" max="99"></el-input>
+                                <el-radio class="margin-left-10" :label="2">按最优先执行</el-radio>
+                            </el-row>
                         </el-radio-group>
                     </el-form-item>
-                    <el-form-item label="活动有效期" prop="validDateOption">
+                    <el-form-item label="活动有效期:" prop="validDateOption">
                         <el-date-picker v-model="basicDataForm.validDateOption" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" :disabled="disabled" @change="setValidityDate"></el-date-picker>
                     </el-form-item>
-                    <el-form-item label="排除日期">
+                    <el-form-item label="排除日期:">
                         <el-checkbox-group v-model="basicDataForm.excludeDate" :disabled="disabled">
                             <el-checkbox :label="'节假日除外'" name="excludeDate">节假日除外</el-checkbox>
                             <el-checkbox :label="'指定排除日期范围'" name="excludeDate">指定排除日期范围</el-checkbox>
@@ -64,7 +65,7 @@
                         </div>
                     </el-form-item>
 
-                    <el-form-item label="时段范围">
+                    <el-form-item label="时段范围:">
                         <el-select v-model="basicDataForm.timeRange" :disabled="disabled">
                             <el-option label="不限制" value="0"></el-option>
                             <el-option label="指定时段" value="1"></el-option>
@@ -104,7 +105,7 @@
                         </div>
                     </el-form-item>
 
-                    <el-form-item label="交易渠道">
+                    <el-form-item label="交易渠道:">
                         <el-select v-model="basicDataForm.tradingChannel" :disabled="disabled" clearable>
                             <el-option label="不限" value></el-option>
                             <el-option label="包含" value="normalIn"></el-option>
@@ -131,52 +132,62 @@
                 </el-collapse-item>
                 <!-- 设置活动预算 -->
                 <el-collapse-item title="设置活动预算" name="3">
-                    <el-form-item label="预算金额计算" prop="amountCalculation">
+                    <el-form-item label="预算金额计算:" prop="amountCalculation">
                         <el-select v-model="basicDataForm.amountCalculation" :disabled="disabled">
                             <el-option label="优惠金额" value="discount"></el-option>
                             <el-option label="补贴金额" value="allowance"></el-option>
                         </el-select>
                     </el-form-item>
-                    <el-form-item label="活动总预算" prop="activityBudgetSum">
+                    <el-form-item label="活动总预算:" prop="activityBudgetSum">
                         <el-select v-model="basicDataForm.activityBudgetSum" :disabled="disabled">
                             <el-option label="不限制" value></el-option>
                             <el-option label="指定预算限制" value="1"></el-option>
                         </el-select>
+
                         <div v-if="basicDataForm.activityBudgetSum==1">
-                            <span>限制总票数</span>
-                            <el-input style="width:20%;" v-model="basicDataForm.totalTicketsAmount" :disabled="disabled" placeholder="请输入"></el-input>
-                            <span>张</span>
-                            <br>
-                            <span>限制总补贴金额</span>
-                            <el-input style="width:20%;" v-model="basicDataForm.totalDiscountAmount" :disabled="disabled" placeholder="请输入"></el-input>
-                            <span>元</span>
+                            <el-form-item>
+                                <el-row class="flex-base">
+                                    <span>限制总票数</span>
+                                    <el-input class="input-type-94 margin-left-5" v-model="basicDataForm.totalTicketsAmount" :disabled="disabled" placeholder="请输入"></el-input>
+                                    <span class="margin-left-5">张</span>
+                                </el-row>
+                            </el-form-item>
+                            <el-form-item>
+                                <el-row class="flex-base">
+                                    <span>限制总补贴金额</span>
+                                    <el-input class="input-type-94 margin-left-5" v-model="basicDataForm.totalDiscountAmount" :disabled="disabled" placeholder="请输入"></el-input>
+                                    <span class="margin-left-5">元</span>
+                                </el-row>
+                            </el-form-item>
                         </div>
                     </el-form-item>
-                    <el-form-item label="活动总预算周期限制" prop="activityBudgetCycle">
-                        <el-select v-model="basicDataForm.activityBudgetCycle" :disabled="disabled">
-                            <el-option label="不限制" value></el-option>
-                            <el-option label="每日限制" value="perDay"></el-option>
-                            <el-option label="每周限制" value="perWeek"></el-option>
-                            <el-option label="每月限制" value="perMonth"></el-option>
-                            <el-option label="每年限制" value="perYear"></el-option>
-                            <el-option label="指定周期限制" value="appointTimeRange"></el-option>
-                        </el-select>
-                        <el-date-picker v-if="basicDataForm.activityBudgetCycle == 'appointTimeRange'" v-model="basicDataForm.activityBudgetCycleDate" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" :disabled="disabled"></el-date-picker>
-                        <span v-if="basicDataForm.activityBudgetCycle!=''">
-                <span>数量</span>
-                        <el-input style="width:20%;" v-model="basicDataForm.activityBudgetCycleInput" :disabled="disabled" placeholder="请输入"></el-input>
-                        <span>个</span>
-                        </span>
+                    <el-form-item label="活动总预算周期限制:" prop="activityBudgetCycle">
+                        <el-row class="flex-base">
+                            <el-select v-model="basicDataForm.activityBudgetCycle" :disabled="disabled">
+                                <el-option label="不限制" value></el-option>
+                                <el-option label="每日限制" value="perDay"></el-option>
+                                <el-option label="每周限制" value="perWeek"></el-option>
+                                <el-option label="每月限制" value="perMonth"></el-option>
+                                <el-option label="每年限制" value="perYear"></el-option>
+                                <el-option label="指定周期限制" value="appointTimeRange"></el-option>
+                            </el-select>
+                            <el-date-picker class="margin-left-5" v-if="basicDataForm.activityBudgetCycle == 'appointTimeRange'" v-model="basicDataForm.activityBudgetCycleDate" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" :disabled="disabled"></el-date-picker>
+                        </el-row>
+                        <el-form-item v-if="basicDataForm.activityBudgetCycle!=''">
+                            <span>数量</span>
+                            <el-input class="input-type-94" v-model="basicDataForm.activityBudgetCycleInput" :disabled="disabled" placeholder="请输入"></el-input>
+                            <span>个</span>
+                        </el-form-item>
                     </el-form-item>
                 </el-collapse-item>
             </el-form>
         </el-collapse>
         <fixStepTool :stepData="stepData.stepList"></fixStepTool>
-        <div style="margin-left:200px; margin-bottom:100px;">
+        <el-row class="flex-base flex-center bottom-control-group">
             <el-button type="primary" v-if="isEdit!='detail'" @click="dataFormSubmit(2)">提交执行</el-button>
             <el-button type="primary" v-if="isEdit!='detail'" @click="dataFormSubmit(1)">保存草稿</el-button>
             <el-button @click="returnList()">返回</el-button>
-        </div>
+        </el-row>
     </div>
     <add-group v-if="addGroupShow" ref="addGroup" @close="close" @transferData="transferData"></add-group>
 </div>

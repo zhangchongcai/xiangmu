@@ -2,12 +2,11 @@
   <div>
 
     <div class="download-film-header">
-      <div class="search-wrap">
+      <div class="search-wrap" style="margin-left:0px;">
         <span>影片名称：</span>
         <el-input
           size='small'
           placeholder="请输入内容"
-          prefix-icon="el-icon-search"
           v-model="movieName"
         >
         </el-input>
@@ -17,14 +16,13 @@
         <el-input
           size='small'
           placeholder="请输入内容"
-          prefix-icon="el-icon-search"
           v-model="movieCode"
         >
         </el-input>
       </div>
       
       <div class="search-wrap">
-        <span>公映日期</span>
+        <span>公映日期:</span>
         <el-date-picker
           v-model="value7"
           type="daterange"
@@ -432,7 +430,7 @@ export default {
   .search-wrap {
     display: inline-block;
     height: 32px;
-    margin-left: 32px;
+    // margin-left: 32px;
     .el-input {
       width: 264px;
     }
@@ -445,10 +443,17 @@ export default {
       .el-input {
       width: 160px;
     }
+    .el-input--suffix .el-input__inner{
+      font-size: 12px;
+    }
     }
   .button-wrap {
     margin-left: 31.4px;
     display: inline-block;
+    margin-top:15px;
+     span{
+      font-size: 12px;
+    }
   }
 }
 .download-film-table {
@@ -461,6 +466,7 @@ export default {
       margin-right: 22px;
       float: right;
       display: inline-block;
+      margin-bottom: 12px;
     }
   }
   .el-table .warning-row {

@@ -73,19 +73,24 @@
           <div class="basic-info-item item-left">
             <div class="item-inner"><label class="lable-name">开卡必填：</label>{{detailData.mustFillName?detailData.mustFillName.split(',').join('、'):''}}</div>
             <div class="item-inner"><label class="lable-name">权益卡售价：</label>{{detailData.price | emptyShow}}元</div>
+            <div class="item-inner"><label class="lable-name">免费支付：</label>{{detailData.freeConsumption |
+              formatFreeConsumption}}</div>
             <div class="item-inner"><label class="lable-name">延期设置：</label>{{detailData.canDelay ==
               "can_delay"?'允许延期':'不允许延期'}}</div>
-              <div class="item-inner" v-if="detailData.canDelay == 'can_delay'"><label class="lable-name">延期手续费：</label>{{detailData.delayPrice | emptyShow}}元</div>
+            <div class="item-inner" v-if="detailData.canDelay == 'can_delay'"><label class="lable-name">延期手续费：</label>{{detailData.delayPrice
+              | emptyShow}}元</div>
           </div>
         </div>
         <div class="open-card-recharge-set" v-else-if="detailData.cardTypeCode == 'cobranded_card'">
           <div class="basic-info-item item-left">
             <div class="item-inner"><label class="lable-name">开卡必填：</label>{{detailData.mustFillName?detailData.mustFillName.split(',').join('、'):''}}</div>
             <div class="item-inner"><label class="lable-name">联名卡结算价：</label>{{detailData.settlementPrice}}元</div>
-            <div class="item-inner" v-if="detailData.priceTag"><label class="lable-name">联名卡标价：</label>{{detailData.priceTag | emptyShow}}元</div>
+            <div class="item-inner" v-if="detailData.priceTag"><label class="lable-name">联名卡标价：</label>{{detailData.priceTag
+              | emptyShow}}元</div>
             <div class="item-inner"><label class="lable-name">延期设置：</label>{{detailData.canDelay ==
               "can_delay"?'允许延期':'不允许延期'}}</div>
-              <div class="item-inner" v-if="detailData.canDelay == 'can_delay'"><label class="lable-name">延期手续费：</label>{{detailData.delayPrice | emptyShow}}元</div>
+            <div class="item-inner" v-if="detailData.canDelay == 'can_delay'"><label class="lable-name">延期手续费：</label>{{detailData.delayPrice
+              | emptyShow}}元</div>
           </div>
         </div>
         <!-- 卡使用须知 -->
@@ -206,9 +211,9 @@ export default {
     },
     nianFeiTime: function(value, that) {
       if (that.detailData.yearRule.deductionsType == "fixed_date") {
-        return `固定日期 ${new Date(('2019-'+value).replace(/-/g, "/")).formatDate(
-          "MM-dd"
-        )}`;
+        return `固定日期 ${new Date(
+          ("2019-" + value).replace(/-/g, "/")
+        ).formatDate("MM-dd")}`;
       } else {
         return `开卡后${value}天`;
       }
@@ -240,6 +245,14 @@ export default {
         default:
           return "-";
           break;
+      }
+    },
+    // 免密支付
+    formatFreeConsumption(value) {
+      if (value) {
+        return "允许免密支付";
+      } else {
+        return "不允许免密支付";
       }
     },
     emptyShow: function(value) {

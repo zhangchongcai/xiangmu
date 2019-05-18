@@ -1,10 +1,10 @@
 <template>
-  <div class="contentCenter">
+  <div class="content-wrapper">
       <div class="breadcrumb">
           <el-breadcrumb separator-class="el-icon-arrow-right">
               <el-breadcrumb-item>系统设置</el-breadcrumb-item>
               <el-breadcrumb-item>角色管理</el-breadcrumb-item>
-              <el-breadcrumb-item>新建角色</el-breadcrumb-item>
+              <el-breadcrumb-item>{{level}}</el-breadcrumb-item>
           </el-breadcrumb>
       </div>
       <div class="org-wrap">
@@ -31,8 +31,9 @@
                     </el-form-item>
                 </div>
                 <div class="btn" style="margin-top:20px;margin-bottom:20px;">
-                    <el-button @click="out">取消</el-button>
-                    <el-button type="primary" @click="confirmRole('prole',false)">保存</el-button>
+                    <el-button @click="out" v-if="isSee">取消</el-button>
+                    <el-button type="primary" @click="confirmRole('prole',false)" v-if="isSee">保存</el-button>
+                    <el-button @click="out" type="primary" v-else>返回</el-button>
                 </div>
             </el-form>
         </div>
@@ -64,21 +65,17 @@
 
 <script>
     import {addRole,roleMenuTree,editRole} from 'frame_cpm/http/interface.js'
-    import resouceDialog from './resouceDialog'
     let id = 1000;
 export default {
   name: "newRole",
-  components:{
-		'resoucedialog':resouceDialog
-	},
   data() {
     const data = [];
     return {
-      // data5: JSON.parse(JSON.stringify(data)),
-      isModify:false,
       isJustSee:false,
+      isSee:true,
       isEdit:false,
       isShowCheckbox:true,
+      level: '新建角色',
       id:null,
       data5:[],
       prole:{
@@ -99,8 +96,6 @@ export default {
       size: 10,
       pages: "" || 1,
       name: "",
-      dialogFormVisible: false,
-      newResouceDialogFormVisible:false,
       multipleSelection: [],
       postObj: {
           menuName: null,
@@ -108,69 +103,77 @@ export default {
           productVersion: null,
           parentId: null
       },
-      bitianxiangObj:{
-        menuId:null,
-        productCode:null, // 	父级菜单编码
-        productVersion:null, // URL链接
-      },
-      newResouceObj:{
-        id:null, // 菜单id
-        menuName:null, // 菜单名称
-        productCode:null, // 	父级菜单编码
-        productVersion:null, // URL链接
-        menuType:null, // 1 导航 0功能
-        parentId:null, // 父级菜单id
-        url:null, // 链接url
-        resourceId:null // 资源id
-      },
-      newNav:{
-        menuName:null,
-        icon:null
-      },
       treeData:[],
       defaultProps: {
           children: 'submenu',
           label: 'menuName'
       },
-      navigatorText:'',
-      isEditMenuName:null,
-        ids: [],
+      ids: [],
+    }
+  },
+  watch: {
+    $route: {
+      handler: function(newVal, oldVal){
+        this.level = newVal.name
+        if(newVal.query.isEdit){
+          this.isSee = true
+          this.isJustSee =false
+          this.isEdit = Boolean(this.$route.query.isEdit)?true:false
+          this.prole = JSON.parse(localStorage.getItem('roleEdit'))
+          this.prole.status = this.prole.status.toString()
+          this.getData(this.$route.query.roleUid)
+        }else if(newVal.query.isJustSee){
+          this.isSee = this.isEdit = false
+          this.isJustSee = Boolean(this.$route.query.isJustSee)?true:false
+          this.prole = JSON.parse(localStorage.getItem('roleEdit'))
+          this.prole.status = this.prole.status.toString()
+          this.getData(this.$route.query.roleUid)
+        }else if(newVal.query.level){
+          this.isSee = true
+          this.isJustSee = this.isEdit = false
+          this.prole ={
+              name:null,
+              status:'1',
+              remark:null
+          },
+          this.$refs.tree.setCheckedKeys([]);
+        }
+      },
+      // 深度观察监听
+      deep: true
     }
   },
   created(){
-      this.isEdit = Boolean(this.$route.query.isEdit)?true:false
-      this.isJustSee = Boolean(this.$route.query.isJustSee)?Boolean(this.$route.query.isJustSee):false
-      this.data5 = JSON.parse(localStorage.getItem('leftTreeList'))
-
+    this.isEdit = Boolean(this.$route.query.isEdit)?true:false
+    this.isJustSee = Boolean(this.$route.query.isJustSee)?true:false
+    this.data5 = JSON.parse(localStorage.getItem('leftTreeList'))
+    this.level = this.$route.name
   },
   mounted() {
     if(this.isEdit){
+      this.isSee = true
+      this.isJustSee = false
       this.prole = JSON.parse(localStorage.getItem('roleEdit'))
       this.prole.status = this.prole.status.toString()
       this.getData(this.$route.query.roleUid)
-    }
-    if(this.isJustSee){
+    }else if(this.isJustSee){
+      this.isSee = this.isEdit =false
+      this.prole = JSON.parse(localStorage.getItem('roleEdit'))
+      this.prole.status = this.prole.status.toString()
       this.getData(this.$route.query.roleUid)
-      // this.isShowCheckbox = false
+    }else{
+      this.isSee = true
+      this.isJustSee = this.isEdit = false
     }
   },
   methods: {
-    introduceSelf (opt) {
-      this.newResouceDialogFormVisible = opt.dialogVisible;
-    },
     handleCheckChange(data, checked, indeterminate) {
 
-    },
-    cancel(){
-        this.dialogFormVisible = false;
-    },
-    closeDialog(){
-        this.dialogFormVisible = false;
     },
     confirmRole(formName){
         let _this = this
         let postObj = this.prole
-      let roleArr = this.$refs.tree.getCheckedNodes()
+        let roleArr = this.$refs.tree.getCheckedNodes()
         if(roleArr.length!=0) {
             let resourceArr = []
             roleArr.forEach(item=>{
@@ -229,20 +232,13 @@ export default {
     },
     out(){
       this.$router.go(-1)
-    },
-    bmSure() {
-      this.flag = false
-      console.log()
-    },
-    bmCancel() {
-      this.flag = false
-    },
+    }
   }
 };
 </script>
 
 <style  type="text/css" lang="scss" scoped>
-    .contentCenter {
+    .content-wrapper {
         height: 100%;
 
         .breadcrumb {

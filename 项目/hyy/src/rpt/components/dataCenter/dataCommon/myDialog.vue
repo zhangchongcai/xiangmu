@@ -17,7 +17,10 @@
         </div>
       </div>
       <hr class="top-hr" v-if="marginBottom === 0">
-      <div class="dialog-content" :style="{height: contentHeight, marginBottom: `${marginBottom}px`}">
+      <div
+        class="dialog-content"
+        :style="{height: contentHeight, marginBottom: `${marginBottom}px`}"
+      >
         <slot name="dialog-content"></slot>
       </div>
       <hr class="bottom-hr" v-if="marginBottom === 0">
@@ -102,9 +105,7 @@ export default {
   },
   watch: {
     isShow(newVal, oldVal) {
-      if (newVal === true) {
-        this.visibility = newVal;
-      }
+      this.visibility = newVal;
     }
   }
 };
@@ -144,7 +145,7 @@ $buttunHeight: 32px;
   bottom: 0;
   background: black;
   opacity: 0.6;
-  z-index: 2000;
+  z-index: 499;
   animation: maskFadeIn ease 0.3s;
 }
 .my-dialog {
@@ -157,7 +158,7 @@ $buttunHeight: 32px;
   background: #ffffff;
   box-shadow: 0 1px 4px 0 rgba(102, 102, 102, 0.25);
   border-radius: 4px;
-  z-index: 2500;
+  z-index: 500;
   // box-sizing: border-box;
   animation: fadeIn ease 0.3s;
   .dialog-header {

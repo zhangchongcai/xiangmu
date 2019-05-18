@@ -36,7 +36,7 @@ import ScrollBar from '../ScrollBar/ScrollBar'
 export default {
     data() {
         return {
-            defaultPage: "/home",
+            // defaultPage: "/home",
             leftMessage: '-1',
             rightMessage: '1',
             clickData: ''
@@ -79,11 +79,12 @@ export default {
             // 如果没有前一个Tag，则加载默认页面
             this.$store.commit("tagNav/removeTagNav", item)
             if (this.$route.path == item.path) {
+              let path = localStorage.getItem('defaultPath')
                 if (index) {
                     this.$router.push(this.tagNavList[index - 1].path)
                 } else {
-                    this.$router.push(this.defaultPage)
-                    if (this.$route.path == "/home") {
+                    this.$router.push(path)
+                    if (this.$route.path == path) {
                         this.addTagNav()
                     }
                 }
@@ -113,7 +114,7 @@ export default {
 .tag-nav {
     display: inline-block;
     width: calc(100% - 160px);
-    height: 38px;
+    height: 50px;
     position: relative;
     box-sizing: border-box;
     white-space: nowrap;
@@ -129,7 +130,6 @@ export default {
         right: 0;
         top: 0;
         box-sizing: border-box;
-        padding-top: 12px;
     }
     .tag-nav-item {
         display: inline-block;

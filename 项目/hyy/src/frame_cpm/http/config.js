@@ -17,6 +17,11 @@ switch (domain) {
         config.baseURL =  "http://apidev.oristarcloud.com";
         // config.baseURL = "http://apitest.oristarcloud.com";
         // config.baseURL = 'http://192.168.1.69:9090';
+        // config.baseURL = 'http://192.168.100.136:2301'; //境丰
+        // config.baseURL = 'http://172.26.71.217:2181'; //本地开发
+        // config.baseURL = 'http://192.168.100.123:2301'; //文浩
+        // config.baseURL = 'http://192.168.100.23:2301'; //胡恩
+        
     break;
     case "dev.oristarcloud.com":
         config.baseURL = "http://apidev.oristarcloud.com";

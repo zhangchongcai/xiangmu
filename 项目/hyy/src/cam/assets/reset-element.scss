@@ -1,62 +1,133 @@
-//
+//面包屑
 .reset-bread {
     line-height: 42px;
-    font-size: 14px;
+    font-size: 12px;
 }
-
+// 单选按钮的字体大小
 .reset-radios-group {
     .el-radio__label {
         font-size: 12px;
     }
+}
+// 全局样式
+.el-button{
+    span{
+        font-size:12px;
+    }
+}
+.reset-button{
+    .el-button--default{
+        color:#3B74FF;
+        border-color:#3B74FF;
+        &:hover{
+            background:#fff;
+        }
+        span{
+           font-size:12px; 
+        }
+    }
 
 }
-
 // 表格
 .reset-table {
+    .el-table .cell{
+        font-size:12px;
+    }
     .el-table th.is-leaf {
         background-color: #E7EBFF;
         border-right: 1px solid #DCDADA;
         color: #333;
-        font-size: 12px;
     }
 }
+// 表格
+.none-border-table{
+    .el-table .cell{
+        font-size:12px;
+    }
+    .el-table th.is-leaf {
+        background-color: #F2F4FD ;
+        border-right: none;
+        color: #666;
+        font-size: 12px;
+    }
+    .el-table td,.el-table th{
+        height:30px;
+        padding:0;
+        color: #666;
+        font-size: 12px;
 
-//
+    }
+}
+//分页器
 .reset-page {
     margin: 30px auto;
     text-align: center;
-
     .el-input__inner {
         height: 30px;
     }
-
     .el-input__icon {
         line-height: 30px
     }
-}
-
-// reset-select
-.auto-radio-button-wrap {
-    .reset-select {
-        display: inline-block;
-        width: 120px;
-        height: 30px;
-
-        .el-input__inner {
-            height: 34px;
-            line-height: 34px;
-            font-size:12px;
-        }
+    .el-pager li.active{
+        color: #fff;
+        cursor: default;
+        background: #3B74FF;
+        border-color:#3B74FF;
     }
+    .el-pager li{
+        box-sizing: border-box;
+        border-radius:2px;
+        border:1px solid #BCBCBC;
+        margin-right:10px;
+        // height:24px;
+        // width:24px;
+        // line-height: 24px;
+        padding:0;
+        // min-width:24px;
+        font-size:12px;
+        color:'#666';
+    }
+    .el-pager li.active + li{
+        border-left:1px solid  #BCBCBC;
+    }
+    .el-pagination .btn-prev {
+        border:1px solid #BCBCBC;
+        box-sizing: border-box;
+        border-radius:2px;
+        margin-right:10px;
+        // width:24px;
+        // height:24px;
+        // min-width:24px;
+    }
+    .el-pagination .btn-next{
+        border:1px solid #BCBCBC;
+        box-sizing: border-box;
+        border-radius:2px;
+        // width:24px;
+        // height:24px;
+        // min-width:24px;
+        padding-left:8px;
+    }
+    .el-pagination__editor.el-input .el-input__inner{
+        // height:24px;
+        // width:48px;
+        border-radius:2px;
+    }
+    .el-pagination .el-select .el-input .el-input__inner{
+        // width:84px;
+        // height:24px;
+        border-radius:2px;
+    }
+
 }
+
 // reset-target
 .reset-target-dialog{
     .el-checkbox{
         display:block;
     }
 }
-//
-
+//取消按钮
 .el-button--primary.reset-cancle{
     background-color: #fff;
     color:#3B74FF;
@@ -64,4 +135,66 @@
         background-color: #fff;
         color:#3B74FF;
     }
+}
+// 固定宽度弹窗
+.reset-fix-dialog{
+    .el-dialog{
+        width:710px;
+        .el-dialog__body{
+            padding:0 20px 30px 20px
+        }
+        .el-dialog__title {
+            font-size:14px;
+        }
+    }
+}
+//表单输入框
+.reset-form-input{
+  .el-input{
+      width:200px;
+  } 
+}
+// 表单下拉选择
+.reset-form-select{
+    .el-date-editor.el-input{
+        width:200px;
+    }
+}
+// 卖品概览页面指标select样式
+
+.auto-radio-button-wrap {
+    .reset-select {
+      .el-select{
+        .el-input__inner {
+            height: 32px;
+            line-height: 32px;
+            font-size:12px;
+            border:none;
+            border-left:1px solid #3b74ff;
+            text-align:center;
+            border-radius: 0 0 0 0;
+        }
+        input::-webkit-input-placeholder{ 
+            /* WebKit browsers */ 
+            color: #3b74ff; 
+        }
+        input::-moz-placeholder{
+            /* Mozilla Firefox 19+ */
+            color: #3b74ff; 
+        } 
+        input::-ms-input-placeholder{
+            /* Internet Explorer 10+ */ 
+            color: #3b74ff; 
+        }
+   
+      }
+    }
+    .reset-select.selectActive {
+        .el-select{
+          .el-input__inner {
+              background:#3b74ff;
+              color:#fff
+            }
+        }
+      }
 }

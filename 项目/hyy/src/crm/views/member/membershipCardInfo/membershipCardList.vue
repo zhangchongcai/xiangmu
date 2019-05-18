@@ -27,7 +27,7 @@
         </el-select>
       </el-form-item>
       <el-form-item label="会员卡号：" prop="cardNo">
-        <el-input v-model="formData.cardNo" @blur="()=>{formData.cardNo = formData.cardNo.trim()}" placeholder="会员卡号/手机号"
+        <el-input v-model="formData.cardNo" @blur="()=>{formData.cardNo = formData.cardNo.trim()}" placeholder="会员卡号"
           clearable></el-input>
       </el-form-item>
       <el-form-item label="会员姓名：" prop="userName">
@@ -62,6 +62,7 @@
             <span v-if="scope.row.status=='expire'" style="fontSize:12px;">过期</span>
             <span v-if="scope.row.status=='frozen'" style="fontSize:12px;">冻结</span>
             <span v-if="scope.row.status=='cancel'" style="fontSize:12px;">注销</span>
+            <span v-if="scope.row.status=='loss'" style="fontSize:12px;">挂失</span>
           </template>
         </el-table-column>
         <el-table-column label="注册时间" min-width="80" show-overflow-tooltip>
@@ -82,8 +83,8 @@
 
     <!-- 分页 start -->
     <div class="page-wrap">
-      <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="current"
-        :page-sizes="[20 , 50 , 100]" :page-size="pageSize" layout="prev, pager, next, jumper, sizes" :total="total-0"></el-pagination>
+      <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="current-0"
+        :page-sizes="[20 , 50 , 100]" :page-size="pageSize-0" layout="prev, pager, next, jumper, sizes" :total="total-0"></el-pagination>
     </div>
     <!-- 分页 end -->
   </div>
@@ -116,6 +117,10 @@ export default {
         {
           label: "过期",
           value: "expire"
+        },
+        {
+          label: "挂失",
+          value: "loss"
         }
       ],
       cardNameOptions: [],

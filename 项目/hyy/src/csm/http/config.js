@@ -16,7 +16,9 @@ console.log(domain)
 switch (domain) {
        // 黎康
     case '192.168.100.124':
-       config.baseURL = 'http://192.168.100.118:8084';
+    //    config.baseURL = 'http://192.168.100.118:2302';
+    //    config.baseURL = 'https://apitestpos.oristarcloud.com'
+            config.baseURL = 'https://apidevpos.oristarcloud.com'
        // config.baseURL = 'http://192.168.100.25:8084'
        break
     case '127.0.0.1':
@@ -33,8 +35,12 @@ switch (domain) {
         // config.baseURL = 'http://121.32.27.26:38084';
         // config.baseURL = 'http://10.8.11.9:8084';
         // config.baseURL = 'http://10.8.0.18:8084';
-        config.baseURL = 'https://apitestpos.oristarcloud.com'
-        // config.baseURL = "http://apitest.oristarcloud.com";
+        // config.baseURL = 'http://192.168.100.23:2301'
+        // config.baseURL = 'https://apitestpos.oristarcloud.com'
+        // config.baseURL = 'http:192.168.100.23:2301'  //胡恩
+        // config.baseURL = 'http://172.16.1.110:2302';
+        // config.baseURL = 'http://10.8.0.18:2302';
+        config.baseURL = 'https://apidevpos.oristarcloud.com'
         break;
     case "dev.oristarcloud.com":
         // config.baseURL = "http://apidev.oristarcloud.com";

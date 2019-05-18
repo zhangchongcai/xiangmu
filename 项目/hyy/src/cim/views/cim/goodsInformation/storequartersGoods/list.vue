@@ -3,91 +3,88 @@
     <div class="common-header">
       <el-form
         :inline="true"
-        :model="queryData"
+        :model="GoodsListQueryData"
         label-position="right"
         label-width="100px"
         label-suffix=":"
       >
-        <el-form-item label="门店名称">
-          <el-input v-model="queryData.cinemaUid" placeholder="请输内容" prefix-icon="el-icon-search"></el-input>
+      <el-form-item label="门店名称">
+          <el-input
+            v-model="GoodsListQueryData.cinemaUid"
+            placeholder="请输内容"
+          ></el-input>
         </el-form-item>
-        
         <el-form-item label="商品名称">
-          <el-input v-model="queryData.name" placeholder="请输内容" prefix-icon="el-icon-search"></el-input>
+          <el-input
+            v-model="GoodsListQueryData.merName"
+            placeholder="请输内容"
+          ></el-input>
         </el-form-item>
         <el-form-item label="商品编码">
-          <el-input v-model="queryData.code" placeholder="请输内容" prefix-icon="el-icon-search"></el-input>
+          <el-input
+            v-model="GoodsListQueryData.merCode"
+            placeholder="请输内容"
+          ></el-input>
         </el-form-item>
-        <el-form-item label="固定属性">
-          <el-input v-model="queryData.name" placeholder="请输内容" prefix-icon="el-icon-search"></el-input>
+        <el-form-item label="sku编码">
+          <el-input
+            v-model="GoodsListQueryData.skuCode"
+            placeholder="请输内容"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="速记代码">
+          <el-input
+            v-model="GoodsListQueryData.shorthandCode"
+            placeholder="请输内容"
+          ></el-input>
         </el-form-item>
         <el-form-item label="商品类型">
-          <el-select v-model="queryData.status">
+          <el-select v-model="GoodsListQueryData.merType">
             <el-option label="全部" value></el-option>
-            <el-option label="单品" value="0"></el-option>
-            <el-option label="原材料" value="1"></el-option>
+            <el-option label="单品" value="1"></el-option>
+            <el-option label="原材料" value="5"></el-option>
             <el-option label="合成品" value="2"></el-option>
-            <el-option label="套餐" value="3"></el-option>
-            <el-option label="服务商品" value="4"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="商品分类">
-          <el-select v-model="queryData.status">
-            <el-option label="全部" value></el-option>
-            <el-option label="单品" value="0"></el-option>
-            <el-option label="原材料" value="1"></el-option>
-            <el-option label="合成品" value="2"></el-option>
-            <el-option label="套餐" value="3"></el-option>
-            <el-option label="服务商品" value="4"></el-option>
+            <el-option label="套餐" value="4"></el-option>
+            <el-option label="服务商品" value="3"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="销售状态">
-          <el-select v-model="queryData.status">
+          <el-select v-model="GoodsListQueryData.canSale">
             <el-option label="全部" value></el-option>
-            <el-option label="启用" value="0"></el-option>
-            <el-option label="停用" value="1"></el-option>
+            <el-option label="允许" value="1"></el-option>
+            <el-option label="禁用" value="0"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item class="query-btn-box">
-          <el-button type="primary" @click="onSubmit">查询</el-button>
+          <el-button type="primary" @click="GoodsListQueryDataEvent()">查询</el-button>
         </el-form-item>
       </el-form>
     </div>
     <div class="common-left">
-      <el-tree :data="data" :props="defaultProps" @node-click="handleNodeClick"></el-tree>
+      <el-tree
+        :data="proThreedata"
+        default-expand-all
+        ref="proTree"
+        node-key="uid"
+        :props="proThreedefaultProps"
+        @node-click="proThreehandleNodeClick"
+      ></el-tree>
     </div>
     <div class="common-right">
-      <div class="common-new-built">
-        <el-button type="primary" size="small" plain @click="handleComBank">从标品库添加商品</el-button>
-        <el-dropdown @command="newAddhandleCommand">
-          <el-button type="primary">
-            新建
-            <i class="el-icon-arrow-down el-icon--right"></i>
-          </el-button>
-          <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item command="1">单品</el-dropdown-item>
-            <el-dropdown-item command="2">原材料</el-dropdown-item>
-            <el-dropdown-item command="3">合成品</el-dropdown-item>
-            <el-dropdown-item command="4">套餐</el-dropdown-item>
-            <el-dropdown-item command="5">服务商品</el-dropdown-item>
-          </el-dropdown-menu>
-        </el-dropdown>
-      </div>
       <div>
-        <el-table :data="tableData" stripe>
+        <el-table :data="GoodsListData" stripe>
           <el-table-column
-            v-for="item in tableColumn"
+            v-for="item in GoodsListDataColumn"
             :key="item.key"
             :prop="item.key"
             :label="item.label"
-            width="200px"
+            :formatter="item.formatter"
           ></el-table-column>
           <el-table-column label="操作" style="width:180px;">
             <template slot-scope="{row,$index}">
-              <el-button type="text" size="small" @click.stop="handleeDlete($index, row)">查看</el-button>
-              <el-button type="text" size="small" @click.stop="handleModification($index, row)">修改</el-button>
-              <el-button type="text" size="small" @click.stop="handleModification($index, row)">停用</el-button>
-              <el-button type="text" size="small" @click.stop="handleModification($index, row)">删除</el-button>
+              <el-button type="text" size="small" @click.stop="proSeeEvent($index, row)">查看</el-button>
+              <el-button type="text" size="small" @click.stop="proModifyEvent($index, row)">修改</el-button>
+              <el-button type="text" size="small" @click.stop="proStopEvent($index, row)">停用</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -96,14 +93,13 @@
             background
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
-            :current-page="queryData.page"
+            :current-page="GoodsListQueryData.page"
             :page-sizes="[10,20,30]"
-            :page-size="queryData.pageSize"
+            :page-size="GoodsListQueryData.pageSize"
             layout="total, sizes, prev, pager, next, jumper"
             :total="total"
           ></el-pagination>
         </div>
-        {{this.ComBankdialogVisible}}
       </div>
     </div>
     <el-dialog
@@ -112,16 +108,14 @@
       :visible.sync="newProDialog"
       width="600px"
     >
-    <div class="newPro-box">
-      <div class="tips">请先查找是否已存在相同商品，避免重复新建。或从标准商品库中选择您要的商品，添加到系统中使用。
+      <div class="newPro-box">
+        <div class="tips">请先查找是否已存在相同商品，避免重复新建。或从标准商品库中选择您要的商品，添加到系统中使用。</div>
+        <div class="title">商品类型：{{this.newProtitleArr.name}}</div>
+        <div class="selectName">请选择商品分类</div>
+        <div class="newProTree">
+          <el-tree :data="proThreedata" :props="proThreedefaultProps" @node-click="addProNodeClick"></el-tree>
+        </div>
       </div>
-      <div class="title">商品类型：{{this.newProtitleArr.name}}</div>
-      <div class="selectName">请选择商品分类</div>
-      <div class="newProTree">
-        <el-tree :data="proMerTypedata" :props="defaultProps" @node-click="proMerTypeNodeClick"></el-tree>
-      </div>
-    </div>
-      {{this.newProtitleArr}}
       <span slot="footer">
         <el-button @click="newProDialog = false">取 消</el-button>
         <el-button type="primary" @click="newAddProPage(newProtitleArr.merType)">确 定</el-button>
@@ -138,192 +132,110 @@ import ComBank from "./comBank/common";
 export default {
   data() {
     return {
-      newProtitleArr:{
-        newProtitle:"",
-        name:"",
-        merType:"",
-        merTypeLabel:""
+      teGetUidArr: [],
+      getUidArr: [],
+      newProtitleArr: {
+        newProtitle: "",
+        name: "",
+        merType: "",
+        merTypeLabel: "",
+        uid: "",
+        uidname: "",
+        proCode: ""
       },
-      newProDialog:false,
+      newProDialog: false,
       ComBankdialogVisible: false,
       // 数结构
-      data: [
-        {
-          label: "一级 1",
-          children: [
-            {
-              label: "二级 1-1",
-              children: [
-                {
-                  label: "三级 1-1-1"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          label: "一级 2",
-          children: [
-            {
-              label: "二级 2-1",
-              children: [
-                {
-                  label: "三级 2-1-1"
-                }
-              ]
-            },
-            {
-              label: "二级 2-2",
-              children: [
-                {
-                  label: "三级 2-2-1"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          label: "一级 3",
-          children: [
-            {
-              label: "二级 3-1",
-              children: [
-                {
-                  label: "三级 3-1-1"
-                }
-              ]
-            },
-            {
-              label: "二级 3-2",
-              children: [
-                {
-                  label: "三级 3-2-1"
-                }
-              ]
-            }
-          ]
-        }
-      ],
-      proMerTypedata: [
-        {
-          label: "一级 1",
-          children: [
-            {
-              label: "二级 1-1",
-              children: [
-                {
-                  label: "三级 1-1-1"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          label: "一级 2",
-          children: [
-            {
-              label: "二级 2-1",
-              children: [
-                {
-                  label: "三级 2-1-1"
-                }
-              ]
-            },
-            {
-              label: "二级 2-2",
-              children: [
-                {
-                  label: "三级 2-2-1"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          label: "一级 3",
-          children: [
-            {
-              label: "二级 3-1",
-              children: [
-                {
-                  label: "三级 3-1-1"
-                }
-              ]
-            },
-            {
-              label: "二级 3-2",
-              children: [
-                {
-                  label: "三级 3-2-1"
-                }
-              ]
-            }
-          ]
-        }
-      ],
-      defaultProps: {
+      proThreedata: [],
+      proThreedefaultProps: {
         children: "children",
-        label: "label"
+        label: "name"
       },
       // 新建状态
       statusRadio: 1,
       //查询数据
-      queryData: {
+      GoodsListQueryData: {
         pageSize: 10,
         page: 1,
-        cinemaUid: null,
-        name: null,
-        code: null,
-        status: null
+        merName: "",
+        merCode: "",
+        classUid: "",
+        canSale: "",
+        merType: "",
+        shorthandCode: "",
+        skuCode: "",
+        classUid: "",
+        // cinemaUid:"CM123"
+        cinemaUid:""
       },
       // 数据总数
       total: 10,
-      tableColumn: [
-        {
-          label: "商品编码",
-          key: "cinemaUid"
-        },
+      // 总部首页表格表头
+      GoodsListDataColumn: [
         {
           label: "商品名称",
-          key: "code"
+          key: "merName"
+        },
+        {
+          label: "商品编码",
+          key: "merCode"
+        },
+        {
+          label: "sku编码",
+          key: "skuCode"
         },
         {
           label: "类型",
-          key: "name"
+          key: "merType",
+          formatter(row, column, cellValue) {
+            let result = "";
+            switch (row.merType) {
+              case "1":
+                result = "单品";
+                break;
+              case "2":
+                result = "合成品";
+                break;
+              case "3":
+                result = "服务商品";
+                break;
+              case "4":
+                result = "套餐";
+                break;
+              case "5":
+                result = "原材料";
+                break;
+            }
+            return result;
+          }
         },
         {
           label: "基本单位",
-          key: "address"
+          key: "unitName"
         },
         {
           label: "价格",
-          key: "address"
+          key: "price"
         },
         {
           label: "状态",
-          key: "status"
+          key: "canSaleType",
+          formatter(row, column, cellValue) {
+            let result = "";
+            switch (row.canSaleType) {
+              case "1":
+                result = "允许";
+                break;
+              case "0":
+                result = "禁用";
+                break;
+            }
+            return result;
+          }
         }
       ],
-      tableData: [
-        {
-          id: 1,
-          uid: "ff5e4f86-fc77-40fb-a734-b3c0324b5165",
-          tenantId: "TID000000",
-          cinemaUid: "cuid001",
-          code: "CK001",
-          name: "测试仓库修改1",
-          address: "测试仓库修改1地址",
-          status: 1,
-          isDef: 0,
-          delFlag: 0,
-          createTime: "2019-03-29 11:57:20",
-          createUserUid: "123456789",
-          createUserName: "超级管理员",
-          updateTime: "2019-03-29 13:58:50",
-          updateUserUid: "123456789",
-          updateUserName: "超级管理员"
-        }
-      ],
+      // 总部首页表格数据
+      GoodsListData: [],
       //新建or修改数据
       changeData: {
         status: "1",
@@ -342,22 +254,30 @@ export default {
     };
   },
   mounted() {
-    // this.init();
+    this.goodsDataQueryGoodsList();
+    this.selectProductClass();
   },
   methods: {
+    getCheckedNodes() {
+      console.log(this.$refs.tree.getCheckedNodes());
+    },
     // 初始化
     init() {
       this.queryDataIfNull(this.queryData);
       this.queryStoreEvent(this.queryData);
     },
+    // 新建选择分类
     newAddhandleCommand(command) {
-      this.comClassSelect(command)
+      this.comClassSelect(command);
+      this.selectProductClass();
     },
     comClassSelect(a) {
-      this.newProDialog = true
-      this.newProtitleArr.newProtitle = "新建"+this.newPro(a)
-      this.newProtitleArr.name = this.newPro(a)
-      this.newProtitleArr.merType = a
+      this.newProDialog = true;
+      this.newProtitleArr.newProtitle = "新建" + this.newPro(a).name;
+      this.newProtitleArr.name = this.newPro(a).name;
+      this.newProtitleArr.merType = a;
+      this.newProtitleArr.uid = "";
+      this.resCreateMerCode(this.newPro(a).erCode);
     },
     singleProPage(param) {
       this.$router.push({
@@ -371,61 +291,79 @@ export default {
         query: param
       });
     },
-    newPro(a){
-      switch(a){
+    newPro(a) {
+      switch (a) {
         case "1":
-          return "单品"
+          return { name: "单品", erCode: "DP" };
           break;
         case "2":
-          return "原材料"
+          return { name: "合成品", erCode: "HC" };
           break;
         case "3":
-          return "合成品"
+          return { name: "服务商品", erCode: "FW" };
           break;
         case "4":
-          return "套餐"
+          return { name: "套餐", erCode: "TC" };
           break;
         case "5":
-          return "服务商品"
+          return { name: "原材料", erCode: "YC" };
           break;
       }
     },
-    newAddProPage(command){
-      this.newProDialog = false
-      switch (command) {
-        // 单品
-        case "1":
-          return this.singleProPage({
-            type: 1 //1新建，2修改，3查看
-          });
-          break;
-        // 原材料
-        case "2":
-          return this.comMaterialProPage({
-            type: 1 //1新建，2修改，3查看
-          });
-          break;
-        // 合成品
-        case "3":
-          this.comPositeJump({
-            type: 1 //1新建，2修改，3查看
-          });
-          break;
-        // 套餐
-        case "4":
-
-          break;
-        // 服务商品
-        case "5":
-          this.serveGoodJump({
-            type: 1 //1新建，2修改，3查看
-          });
-          break;
+    newAddProPage(command) {
+      if (this.newProtitleArr.uid == "") {
+        // debugger
+        this.newProDialog = true;
+        this.$message("请选择一个分类");
+      } else {
+        this.newProDialog = false;
+        switch (command) {
+          // 单品
+          case "1":
+            return this.singleProPage({
+              type: 1, //1新建，2修改，3查看
+              data: JSON.stringify(this.newProtitleArr)
+            });
+            break;
+          // 原材料
+          case "2":
+            return this.comMaterialProPage({
+              type: 1, //1新建，2修改，3查看
+              data: JSON.stringify(this.newProtitleArr)
+            });
+            break;
+          // 合成品
+          case "3":
+            this.comPositeJump({
+              type: '1', //1新建，2修改，3查看
+              data: JSON.stringify(this.newProtitleArr)
+            });
+            break;
+          // 套餐
+          case "4":
+            this.setMealJump({
+              type: '1', //1新建，2修改，3查看
+              data: JSON.stringify(this.newProtitleArr)
+            });
+            break;
+          // 服务商品
+          case "5":
+            this.serveGoodJump({
+              type: '1', //1新建，2修改，3查看
+              data: JSON.stringify(this.newProtitleArr)
+            });
+            break;
+        }
       }
     },
-    proMerTypeNodeClick(data){
-      this.newProtitleArr.merTypeLabel = data.label
-      console.log(data)
+    // 新建选择商品分类事件
+    addProNodeClick(data) {
+      this.newProtitleArr.uid = data.uid == "0" ? "" : data.uid;
+      this.newProtitleArr.uidname = data.name;
+    },
+    proMerTypeNodeClick(data) {
+      this.newProtitleArr.merTypeLabel = data.label;
+      console.log(data);
     },
     // 合成品页面跳转
     comPositeJump(param) {
@@ -441,8 +379,87 @@ export default {
         query: param
       });
     },
-    handleComBank() {
-      alert();
+    // 套餐页面跳转
+    setMealJump(param) {
+      this.$router.push({
+        path: "setMeal",
+        query: param
+      });
+    },
+    handleComBank() {},
+    // 查询总部首页方法d
+    goodsDataQueryGoodsList() {
+      let GoodsListQueryData = this.GoodsListQueryData;
+      this.$cimList.storequartersGoods
+        .goodsDataQueryCinemaGoodsList(GoodsListQueryData)
+        .then(res => {
+          if (res.code === 200) {
+            this.GoodsListData = res.data.list;
+            this.total = res.data.total;
+          } else {
+            this.error(res.msg);
+          }
+        })
+        .catch(err => {});
+    },
+    // 商品编码请求
+    resCreateMerCode(val) {
+      let resval = {
+        codeHead: val
+      };
+      this.$cimList.headquartersGoods
+        .singleProductCreateMerCode(resval)
+        .then(res => {
+          if (res.code === 200) {
+            this.newProtitleArr.proCode = res.data;
+          } else {
+            this.error(res.msg);
+          }
+        })
+        .catch(err => {});
+    },
+    // 查询总部首页事件
+    GoodsListQueryDataEvent() {
+      this.GoodsListQueryData.classUid = "";
+      this.goodsDataQueryGoodsList();
+    },
+    // 查询商品分类
+    selectProductClass() {
+      let proClass = { uid: "" };
+      this.$cimList.headquartersGoods
+        .setmeaLoadCategoies(proClass)
+        .then(res => {
+          if (res.code === 200) {
+            this.proThreedata = [];
+            this.proThreedata.push(res.data);
+            console.log(res.data);
+          } else {
+            this.error(res.msg);
+          }
+        })
+        .catch(err => {});
+    },
+    // 商品分类查询事件
+    proThreehandleNodeClick(data) {
+      this.getUidArr = [];
+      let linshiGetUidArr = [];
+      linshiGetUidArr.push(data);
+      this.teGetUidArr = linshiGetUidArr;
+      this.getUid(this.teGetUidArr);
+      this.getUidArr.forEach((value, index, arr) => {
+        if (value == 0) {
+          arr.splice(index, 1);
+        }
+      });
+      this.GoodsListQueryData.classUid = this.getUidArr.join(",");
+      this.goodsDataQueryGoodsList();
+    },
+    // 获取点击的uid
+    getUid(arr) {
+      arr.forEach((value, index, arr) => {
+        this.getUidArr.push(value.uid);
+        this.getUid(value.children);
+      });
     },
 
     // 查询
@@ -501,7 +518,6 @@ export default {
         address: this.changeData.address,
         id: this.changeData.id
       };
-      // debugger
       this.queryDataIfNull(data);
       this.$api
         .updateStorehouse(data)
@@ -530,7 +546,6 @@ export default {
     },
     // 删除操作
     handleeDlete(index, row) {
-      // debugger
       this.$api
         .delStorehouse(row.id)
         .then(data => {
@@ -567,12 +582,14 @@ export default {
       });
     },
     handleSizeChange(val) {
-      this.queryData.pageSize = val;
+      this.GoodsListQueryData.pageSize = val;
+      this.goodsDataQueryGoodsList()
       this.queryStoreEvent(this.queryData);
       console.log(`每页 ${val} 条`);
     },
     handleCurrentChange(val) {
-      this.queryData.page = val;
+      this.GoodsListQueryData.page = val;
+      this.goodsDataQueryGoodsList()
       this.queryStoreEvent(this.queryData);
       console.log(`当前页: ${val}`);
     },
@@ -587,7 +604,139 @@ export default {
       // },
       // this.changeDialog = true;
       // this.isNewBuile = true;
-    }
+    },
+    // 查看
+    proSeeEvent(index, row) {
+      console.log(row);
+      //  1：单品，2：合成品，3：服务，4：套餐，5：原材料
+      switch (row.merType) {
+        // 单品
+        case "1":
+          this.singleProPage({
+            type: '3',
+            data: JSON.stringify(row)
+          });
+          break;
+        // 合成品
+        case "2":
+         this.comPositeJump({
+            type: '3',
+            data: JSON.stringify(row)
+          });
+          break;
+        // 服务商品
+        case "3":
+         this.serveGoodJump({
+            type: '3',
+            data: JSON.stringify(row)
+          });
+          break;
+        //套餐
+        case "4":
+         this.setMealJump({
+            type: '3',
+            data: JSON.stringify(row)
+          });
+          break;
+        // 原材料
+        case "5":
+           this.comMaterialProPage({
+            type: '3',
+            data: JSON.stringify(row)
+          })
+          break;
+      }
+    },
+
+    // 修改
+    proModifyEvent(index, row) {
+       switch (row.merType) {
+        // 单品
+        case "1":
+          this.singleProPage({
+            type: '2',
+            data: JSON.stringify(row)
+          });
+          break;
+        // 合成品
+        case "2":
+         this.comPositeJump({
+            type: '2',
+            data: JSON.stringify(row)
+          });
+          break;
+        // 服务商品
+        case "3":
+         this.serveGoodJump({
+            type: '2',
+            data: JSON.stringify(row)
+          });
+          break;
+        //套餐
+        case "4":
+         this.setMealJump({
+            type: '2',
+            data: JSON.stringify(row)
+          });
+          break;
+        // 原材料
+        case "5":
+          this.comMaterialProPage({
+            type: '2',
+            data: JSON.stringify(row)
+          })
+          break;
+      }
+    },
+    // 停用
+    proStopEvent(index, row) {
+      let val = {
+          uid:row.uid,
+          skuCode:row.skuCode,
+          skuUid:row.skuUid,
+          merType:row.merType,
+          canSaleType:row.canSaleType
+      }
+      this.$cimList.headquartersGoods
+        .goodsDataUpdateMerStatusByUid(val)
+        .then(res => {
+          if (res.code === 200) {
+            this.GoodsListData.canSaleType = res.data
+            this.$message("操作成功");
+            this.error(res.msg);
+          }else{
+            this.$message(res.msg);
+          }
+        })
+        .catch(err => {});
+    },
+    // 删除
+    proDelEvent(index, row) {},
+    // proSwitchEvent(value) {
+    //   switch (value) {
+    //     // 单品
+    //     case "单品":
+    //       this.singleProPage({
+    //         type: 3 //1新建，2修改，3查看
+    //       });
+    //       break;
+    //     // 原材料
+    //     case "原材料":
+    //       this.comMaterialProPage({
+    //         type: 3 //1新建，2修改，3查看
+    //       });
+    //       break;
+    //     // 合成品
+    //     case "合成品":
+    //       break;
+    //     // 套餐
+    //     case "套餐":
+    //       break;
+    //     // 服务商品
+    //     case "服务商品":
+    //       break;
+    //   }
+    // }
   },
   components: {
     ComBank
@@ -595,7 +744,8 @@ export default {
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
+@import "../../../../assets/css/common.scss";
 .change-dialog {
   .el-form--inline .el-form-item {
     width: 100%;
@@ -605,6 +755,23 @@ export default {
   }
 }
 
+
+.common-header{
+  padding: 24px;
+}
+.el-form-item{
+  margin-bottom:2px;
+}
+.bigBox .has-gutter tr th{
+  background: #e7ebff !important; 
+}
+.el-form-item__label,.el-input__inner{
+  color:#666;
+}
+
+.bigBox .has-gutter tr th{
+      background: red;
+}
 .common-left {
   width: 200px;
   height: 100px;
@@ -613,20 +780,19 @@ export default {
 .common-right {
   padding-left: 200px;
 }
-.newPro-box{
-  .tips{
-
+.newPro-box {
+  .tips {
   }
-  .title{
-    margin:10px 0;
-    font-size:16px;
+  .title {
+    margin: 10px 0;
+    font-size: 16px;
   }
-  .selectName{
-    font-size:16px;
-    margin:10px 0;
+  .selectName {
+    font-size: 16px;
+    margin: 10px 0;
   }
-  .newProTree{
-    height:330px;
+  .newProTree {
+    height: 330px;
     overflow: auto;
   }
 }

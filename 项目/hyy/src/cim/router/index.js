@@ -152,6 +152,14 @@ let routes = [
             component: (resolve) => require(['cim/views/cim/goodsInformation/headquartersGoods/comMaterial/common.vue'], resolve),
             name: '原材料'
         },
+        {
+            path: 'setMeal',
+            meta: {
+                title: '套餐'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/headquartersGoods/setMeal/common.vue'], resolve),
+            name: '套餐'
+        },
     ],
 },// 商品资料---门店商品管理
 {
@@ -204,6 +212,14 @@ let routes = [
             },
             component: (resolve) => require(['cim/views/cim/goodsInformation/storequartersGoods/comMaterial/common.vue'], resolve),
             name: '原材料'
+        },
+        {
+            path: 'setMeal',
+            meta: {
+                title: '套餐'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/storequartersGoods/setMeal/common.vue'], resolve),
+            name: '套餐'
         },
     ],
 },

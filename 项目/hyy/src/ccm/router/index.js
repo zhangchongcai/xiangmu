@@ -1,13 +1,13 @@
 import couponSalesRoutes from './ticketSales';
 
 let routes = [{
-    path: '/coupon/couponSales',
+    path: 'couponSales',
     meta: {
         title: '票券'
     },
     component: (resolve) => require(['../views/ticketSale.vue'], resolve),
     name: 'couponSales',
-    redirect: '/coupon/couponSales/salesManagement',
+    redirect: 'couponSales/salesManagement',
     children: couponSalesRoutes
 }]
 

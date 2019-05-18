@@ -11,29 +11,42 @@
             <span>首页</span>
           </template>
           <el-menu-item-group>
-            <el-menu-item index="/group/home">集团</el-menu-item>
-            <el-menu-item index="/area/home">城市体</el-menu-item>
-            <el-menu-item index="/cinema/home">影院</el-menu-item>
+            <el-menu-item index="/group/home">首页(集团版)</el-menu-item>
+            <el-menu-item index="/area/home">首页(城市体版)</el-menu-item>
+            <el-menu-item index="/cinema/home">首页(影院版)</el-menu-item>
           </el-menu-item-group>
         </el-submenu>
         <el-submenu index="2">
           <template slot="title">
-            <span>卖品</span>
+            <span>卖品分析</span>
           </template>
           <el-menu-item-group>
-            <el-menu-item index="/group/sale/total">集团</el-menu-item>
-            <el-menu-item index="/area/sale/total">城市体</el-menu-item>
-            <el-menu-item index="/cinema/sale/total">影院</el-menu-item>
+            <el-menu-item index="/group/sale/total">销售概览(集团版)</el-menu-item>
+            <el-menu-item index="/area/sale/total">销售概览(城市体版)</el-menu-item>
+            <el-menu-item index="/cinema/sale/total">销售概览(影院版)</el-menu-item>
+          </el-menu-item-group>
+            <el-submenu index="3">
+          <template slot="title">
+            <span>进销存管理</span>
+          </template>
+          <el-menu-item-group>
+            <el-menu-item index="/group/inventory">进销存分析(集团版)</el-menu-item>
+            <el-menu-item index="/area/inventory">进销存分析(城市体版)</el-menu-item>
+            <el-menu-item index="/cinema/inventory">进销存分析(影院版)</el-menu-item>
+            <el-menu-item index="/cinema/replenish">缺货明细(影院版)</el-menu-item>
+            <el-menu-item index="/cinema/unsale">滞销明细(影院版)</el-menu-item>
           </el-menu-item-group>
         </el-submenu>
-        <el-submenu index="3">
+        </el-submenu>
+         <el-submenu index="4">
           <template slot="title">
-            <span>进销存</span>
+            <span>个人中心</span>
           </template>
           <el-menu-item-group>
-            <el-menu-item index="/group/inventory">集团进销存</el-menu-item>
-            <el-menu-item index="/area/inventory">城市体进销存</el-menu-item>
-            <el-menu-item index="/cinema/inventory">影院进销存</el-menu-item>
+            <el-menu-item index="/group/cinema/manage">竞对影院管理</el-menu-item>
+            <!-- <el-menu-item index="/cinema/cinema/manage">竞对影院管理(影院版)</el-menu-item> -->
+            <el-menu-item index="/group/cinema/kpi">影院KPI管理</el-menu-item>
+            <el-menu-item index="/group/sale/manage">卖品规则管理</el-menu-item>
           </el-menu-item-group>
         </el-submenu>
       </el-menu>
@@ -75,7 +88,7 @@ export default {
   left: 0;
   bottom: 0;
   height: 100%;
-  width: 136px !important;
+  width: 200px !important;
   background-color: #21376b;
   overflow: hidden;
 }

@@ -8,6 +8,12 @@
         label-width="100px"
         label-suffix=":"
       >
+        <el-form-item label="单位编码">
+          <el-input v-model="queryData.unitCode" placeholder="请输内容" prefix-icon="el-icon-search"></el-input>
+        </el-form-item>
+        <el-form-item label="单位名称">
+          <el-input v-model="queryData.unitName" placeholder="请输内容" prefix-icon="el-icon-search"></el-input>
+        </el-form-item>
         <el-form-item label="单位类型">
           <el-select v-model="queryData.unitType">
             <el-option label="全部" value></el-option>
@@ -15,21 +21,14 @@
             <el-option label="采购单位" value="1"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="单位编码">
-          <el-input v-model="queryData.unitCode" placeholder="请输内容" prefix-icon="el-icon-search"></el-input>
-        </el-form-item>
-        <el-form-item label="单位名称">
-          <el-input v-model="queryData.unitName" placeholder="请输内容" prefix-icon="el-icon-search"></el-input>
-        </el-form-item>
-
         <el-form-item class="query-btn-box">
           <el-button type="primary" @click="onQuery">查询</el-button>
         </el-form-item>
       </el-form>
     </div>
-    <div class="common-new-built">
+    <!-- <div class="common-new-built">
       <el-button type="primary" size="small" plain @click="handleNewBuilt">新建</el-button>
-    </div>
+    </div>-->
     <div>
       <el-table :data="tableData" stripe v-loading="tableLoding">
         <el-table-column
@@ -39,12 +38,12 @@
           :label="item.label"
           :formatter="item.formatter"
         ></el-table-column>
-        <el-table-column label="操作">
+        <!-- <el-table-column label="操作">
           <template slot-scope="{row,$index}">
             <el-button type="text" size="small" @click.stop="handleModification(row, $index)">修改</el-button>
             <el-button type="text" size="small" @click.stop="handleeDlete(row, $index)">删除</el-button>
           </template>
-        </el-table-column>
+        </el-table-column>-->
       </el-table>
       <div class="page-wrap">
         <el-pagination
@@ -74,6 +73,15 @@
         label-suffix=":"
         :rules="changeRules"
       >
+        <el-form-item label="单位编码" prop="unitCode">
+          <el-input v-model="changeData.unitCode" :disabled="!isNewBuile"></el-input>
+        </el-form-item>
+        <el-form-item label="单位名称" prop="unitName">
+          <el-input v-model="changeData.unitName"></el-input>
+        </el-form-item>
+        <el-form-item label="备注" prop="remark">
+          <el-input v-model="changeData.remark"></el-input>
+        </el-form-item>
         <el-form-item label="单位类型" prop="unitType">
           <el-radio
             v-model="changeData.unitType"
@@ -88,15 +96,6 @@
             @change="handleUnitTypeChange"
           >采购单位</el-radio>
         </el-form-item>
-        <el-form-item label="单位编码" prop="unitCode">
-          <el-input v-model="changeData.unitCode" :disabled="!isNewBuile"></el-input>
-        </el-form-item>
-        <el-form-item label="单位名称" prop="unitName">
-          <el-input v-model="changeData.unitName"></el-input>
-        </el-form-item>
-        <el-form-item label="备注" prop="remark">
-          <el-input v-model="changeData.remark"></el-input>
-        </el-form-item>
       </el-form>
       <span slot="footer">
         <el-button @click="changeDialog = false">取 消</el-button>
@@ -109,6 +108,7 @@
 <script>
 import qs from "qs";
 import mixin from "cim/mixins/cim/paginationConfig.js";
+import { letterAndNumReg } from "cim/util/reg.js";
 
 export default {
   mixins: [mixin],
@@ -117,6 +117,8 @@ export default {
       //查询数据
       queryData: {
         unitType: "",
+        baseFlag: "", //是否基本单位 0否，1是
+        purFlag: "", //是否采购单位 0否，1是
         unitCode: "",
         unitName: "",
         page: 1,
@@ -124,28 +126,28 @@ export default {
       },
       tableColumn: [
         {
-          label: "单位类型",
-          key: "unitType",
-          formatter(row, column, cellValue) {
-            let result = "";
-            switch (row.unitType) {
-              case 0:
-                result = "基本单位";
-                break;
-              case 1:
-                result = "采购单位";
-                break;
-            }
-            return result;
-          }
-        },
-        {
           label: "单位编码",
           key: "unitCode"
         },
         {
           label: "单位名称",
           key: "unitName"
+        },
+        {
+          label: "类型",
+          key: "unitType",
+          formatter(row, column, cellValue) {
+            let result = "";
+            switch (row.baseFlag) {
+              case 0:
+                result = "采购单位";
+                break;
+              case 1:
+                result = "基本单位";
+                break;
+            }
+            return result;
+          }
         },
         {
           label: "备注",
@@ -168,7 +170,7 @@ export default {
         unitCode: [
           { required: true, message: "请输入单位编码", trigger: "blur" },
           {
-            pattern: this.$reg.letterAndNumReg,
+            pattern: letterAndNumReg,
             message: "请输入英文或数字!"
           }
         ],
@@ -187,19 +189,23 @@ export default {
     },
     // 获取单位列表
     getUnitLists(param) {
-      this.tableLoding = true;
-      this.$api
-        .queryUnit(qs.stringify(param))
-        .then(resData => {
-          if (resData.code == 200) {
-            this.tableData = resData.data.list;
-            this.total = resData.data.total;
-          }
-          this.tableLoding = false;
-        })
-        .catch(() => {
-          this.tableLoding = false;
-        });
+      try {
+        // this.tableLoding = true;
+        this.$cimList
+          .queryUnit(param)
+          .then(resData => {
+            if (resData.code == 200) {
+              this.tableData = resData.data.list;
+              this.total = resData.data.total;
+            }
+            this.tableLoding = false;
+          })
+          .catch(() => {
+            this.tableLoding = false;
+          });
+      } catch (err) {
+        this.tableLoding = false;
+      }
     },
     // 新建
     saveUnit(param) {
@@ -242,6 +248,20 @@ export default {
     },
     // 查询
     onQuery() {
+      //采购单位purFlag
+      // debugger
+      if (this.queryData.unitType === "0") {
+        this.queryData.purFlag = 0;
+        this.queryData.baseFlag = 1;
+      } else {
+        if (this.queryData.unitType === "1") {
+          this.queryData.purFlag = 1;
+          this.queryData.baseFlag = 0;
+        }else{
+          this.queryData.purFlag = "";
+          this.queryData.baseFlag = "";
+        }
+      }
       this.getUnitLists(this.queryData);
     },
     // 修改操作

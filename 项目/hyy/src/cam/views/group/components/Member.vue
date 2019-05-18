@@ -15,18 +15,19 @@
     </div>
 
     <!-- nav导航 -->
+
     <div class="right-col">
       <ul class="listUl">
         <li class="first-li" @click="MeClick('0')" :class="{active:cur==0}">
             <div class="cont">
-              <h1>{{MemberTop.newMember}}</h1>
-              <p>新增会员人数</p>
+              <h1>{{MemberTop.newMember | capitalizePerson}}</h1>
+              <p>新增会员人数({{MemberTop.newMember | too}})</p>
             </div>
         </li>
         <li @click="MeClick('1')" :class="{active:cur==1}">
           <div>会员消费金额</div>
           <div>
-            <span>{{MemberTop.memberConsumeAmount | capitalizeFloor}}</span>元
+            <span>{{MemberTop.memberConsumeAmount | capitalizeOne}}</span>{{MemberTop.memberConsumeAmount | foo}}
           </div>
         </li>
         <li @click="MeClick('2')" :class="{active:cur==2}">
@@ -38,13 +39,13 @@
         <li @click="MeClick('3')" :class="{active:cur==3}">
           <div>开卡数量</div>
           <div>
-            <span>{{MemberTop.newCardCount}}</span>张
+            <span>{{MemberTop.newCardCount | capitalizeSheet}}</span>{{MemberTop.newCardCount | sheets}}
           </div>
         </li>
         <li @click="MeClick('4')" :class="{active:cur==4}">
           <div>储值金额</div>
           <div>
-            <span>{{MemberTop.totalStoreAmount}}</span>元
+            <span>{{MemberTop.totalStoreAmount | capitalizeOne}}</span>{{MemberTop.totalStoreAmount | foo}}
           </div>
         </li>
       </ul>
@@ -53,23 +54,37 @@
     <!--新增会员人数Content-->
     <div class="membership_Container" v-if="cur==0">
       <!--KPI完成率-->
-        <div class="ModuleTitleLayout">
+        <div class="ModuleTitleLayout ModuleKPI" v-if="flag">
           <div class="ModuleTitle">
             <div>
               KPI完成率
-              <i class="iconfont icon-danchuang-tishi"></i>
+              <el-tooltip class="item" effect="dark" placement="right-start">
+                <div slot="content" style="width:300px">
+                  <ul id="ulMain">
+                    <li>新增会员人数当日达成 : <span>{{MemberKPIData.newMemberCurrent | capitalizePerson}}{{MemberKPIData.newMemberCurrent | too}}</span></li>
+                    <li>环比前一日 : <span :class="[MemberKPIData.memberChainDay > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[MemberKPIData.memberChainDay > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{MemberKPIData.memberChainDay}}%</span></li>
+                    <li>月至今达成 : <span>{{MemberKPIData.memberMonthToNow | capitalizePerson}}{{MemberKPIData.memberMonthToNow | too}}</span></li>
+                    <li>环比上月 : <span :class="[MemberKPIData.memberChainMonth > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[MemberKPIData.memberChainMonth > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{MemberKPIData.memberChainMonth}}%</span></li>
+                    <li>本月目标为 : <span>{{MemberKPIData.newMemberTarget | capitalizePerson}}</span>{{MemberKPIData.newMemberTarget | foo}}</li>
+                    <li>达成率 : <span>{{MemberKPIData.newMemberRate}}</span>%</li>
+                    <li>与时间进度差距为 : <span :class="[MemberKPIData.timeRate > 0? 'green':'red']">{{MemberKPIData.timeRate}}%</span></li>
+                    <li>按目前进度,预计月底达成率为 : <span>{{MemberKPIData.memberExpect}}</span>%</li>
+                    <li>与目标额差距 : <span :class="[MemberKPIData.memberGap > 0? 'green':'red']">{{MemberKPIData.memberGap}}</span>%</li>
+                  </ul>
+                </div>
+                <i class="iconfont icon-danchuang-tishi"></i>
+              </el-tooltip>
             </div>
-            <div class="last">截止:2018/02/21</div>
+            <div class="last">截止:{{this.startDate && this.endDate}}</div>
           </div>
           <div class="kip-wrap">
             <member-dash :MemberKPIvalue="MemberKPIData"></member-dash>
           </div>
         </div>
       <!--新增会员人数 -->
-      <div class="ModuleTitleLayout">
+      <div class="ModuleTitleLayout ModuleKPI">
         <div class="ModuleTitle">
           <div>新增会员人数趋势</div>
-          <div></div>
         </div>
         <ve-line
           :data="lineData"
@@ -78,16 +93,16 @@
           :extend="lineExtend"
         ></ve-line>
       </div>
-      <!--城市体详情 -->
-      <div class="ModuleTitleLayout CityModuleLayout">
+      <!--区域详情 -->
+      <div class="ModuleTitleLayout CityModuleLayout ">
         <div class="ModuleTitle">
-          <div>城市体详情</div>
+          <div>区域详情</div>
           <div></div>
         </div>
-        <div class="ModuleTable reset-table">
+        <div class="ModuleTable reset-table topTable">
           <el-table 
             size="mini" 
-            :data="MemberTableTop" 
+            :data="CurrentMemberTableTop" 
             border
           >
             <el-table-column label="序号" min-width="68" type="index" align="left"></el-table-column>
@@ -96,9 +111,9 @@
                 <span class="color" @click="clickCity(scope.$index, scope.row)">{{ scope.row.name }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="columeName" label="新增会员人数" min-width="100" align="left">
+            <el-table-column prop="showNumMember" label="新增会员人数" min-width="115" align="left" :sortable="true" :sort-method="sortByDate">
               <template slot-scope="scope">
-                <span>{{ scope.row.columeName}}人</span>
+                <span>{{ scope.row.showNumMember }}</span>
               </template>
             </el-table-column>
             <el-table-column prop="columePercent" label="环比" min-width="90" align="left">
@@ -120,40 +135,39 @@
        <el-pagination 
           background 
           layout="prev, pager, next"
-          @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
           :page-size="this.pageSize"
-          :total="this.total" 
+          :total="this.totalPage" 
         ></el-pagination>
       </div>
     </div>
 
     <!--会员消费金额Content-->
-    <div class="membership_Container" v-if="cur==1">
+    <div class="membership_Container ModuleKPI" v-if="cur==1">
       <!--会员消费金额 -->
       <div class="ModuleTitleLayout">
         <div class="ModuleTitle">
           <div>会员消费金额趋势</div>
           <div></div>
-        </div>
+        </div>  
         <ve-line
           :data="ChartsAmount"
           :legend-visible="false"
           :settings="lineSettings"
-          :extend="lineExtend"
+          :extend="lineExtendMoney"
         ></ve-line>
       </div>
-      <!--城市体详情 -->
+      <!--区域详情 -->
       <div class="ModuleTitleLayout CityModuleLayout">
         <div class="ModuleTitle">
-          <div>城市体详情</div>
+          <div>区域详情</div>
           <div></div>
         </div>
-        <div class="ModuleTable reset-table">
+        <div class="ModuleTable reset-table topTable">
           <el-table 
             size="mini" 
-            :data="MemberTableTop" 
+            :data="CurrentMemberTableTop" 
             border
           >
             <el-table-column label="序号" min-width="68" type="index" align="left"></el-table-column>
@@ -162,9 +176,9 @@
                 <span class="color" @click="clickCity(scope.$index, scope.row)">{{ scope.row.name }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="columeName" label="会员消费金额" min-width="100" align="left">
+            <el-table-column prop="showNumMember" label="会员消费金额" min-width="115" align="left" :sortable="true" :sort-method="sortByDate">
               <template slot-scope="scope">
-                <span>{{ scope.row.columeName}}元</span>
+                <span>{{ scope.row.showNumMember }}</span>
               </template>
             </el-table-column>
             <el-table-column prop="columePercent" label="环比" min-width="90" align="left">
@@ -186,17 +200,16 @@
         <el-pagination 
           background 
           layout="prev, pager, next"
-          @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
           :page-size="this.pageSize"
-          :total="this.total" 
+          :total="this.totalPage" 
         ></el-pagination>
       </div>
     </div>
 
     <!--会员消费占比Content-->
-    <div class="membership_Container" v-if="cur==2">
+    <div class="membership_Container ModuleKPI" v-if="cur==2">
       <!--会员消费占比趋势人数 -->
       <div class="ModuleTitleLayout">
         <div class="ModuleTitle">
@@ -207,26 +220,30 @@
           :data="ChartsProp"
           :legend-visible="false"
           :settings="lineSettings"
-          :extend="lineExtend"
+          :extend="lineExtendBI"
         ></ve-line>
       </div>
-      <!--城市体详情 -->
+      <!--区域详情 -->
       <div class="ModuleTitleLayout CityModuleLayout">
         <div class="ModuleTitle">
-          <div>城市体详情</div>
+          <div>区域详情</div>
           <div></div>
         </div>
-        <div class="ModuleTable reset-table">
-          <el-table size="mini" :data="MemberTableTop" border>
+        <div class="ModuleTable reset-table topTable">
+          <el-table 
+            size="mini" 
+            :data="CurrentMemberTableTop" 
+            border
+          >
             <el-table-column label="序号" min-width="68" type="index" align="left"></el-table-column>
             <el-table-column prop="name" label="城市名称" min-width="100" align="left">
               <template slot-scope="scope">
                 <span class="color" @click="clickCity(scope.$index, scope.row)">{{ scope.row.name }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="columeName" label="会员消费占比" min-width="100" align="left">
+            <el-table-column prop="showNumMember" label="会员消费占比" min-width="115" align="left" :sortable="true" :sort-method="sortByDate">
               <template slot-scope="scope">
-                <span>{{ scope.row.columeName}}%</span>
+                <span>{{ scope.row.showNumMember}}</span>
               </template>
             </el-table-column>
             <el-table-column prop="columePercent" label="环比" min-width="90" align="left">
@@ -248,17 +265,16 @@
         <el-pagination 
           background 
           layout="prev, pager, next"
-          @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
           :page-size="this.pageSize"
-          :total="this.total" 
+          :total="this.totalPage" 
         ></el-pagination>
       </div>
     </div>
 
     <!--开卡数量Content-->
-    <div class="membership_Container" v-if="cur==3">
+    <div class="membership_Container ModuleKPI" v-if="cur==3">
       <!--会员消费占比趋势人数 -->
       <div class="ModuleTitleLayout">
         <div class="ModuleTitle">
@@ -269,26 +285,30 @@
           :data="ChartsOpen"
           :legend-visible="false"
           :settings="lineSettings"
-          :extend="lineExtend"
+          :extend="lineExtendZhang"
         ></ve-line>
       </div>
-      <!--城市体详情 -->
+      <!--区域详情 -->
       <div class="ModuleTitleLayout CityModuleLayout">
         <div class="ModuleTitle">
-          <div>城市体详情</div>
+          <div>区域详情</div>
           <div></div>
         </div>
-        <div class="ModuleTable reset-table">
-          <el-table size="mini" :data="MemberTableTop" border>
+        <div class="ModuleTable reset-table topTable">
+          <el-table 
+            size="mini" 
+            :data="CurrentMemberTableTop" 
+            border
+          >
             <el-table-column label="序号" min-width="68" type="index" align="left"></el-table-column>
             <el-table-column prop="name" label="城市名称" min-width="100" align="left">
               <template slot-scope="scope">
                 <span class="color" @click="clickCity(scope.$index, scope.row)">{{ scope.row.name }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="columeName" label="开卡数量" min-width="100" align="left">
+            <el-table-column prop="showNumMember" label="开卡数量" min-width="100" align="left" :sortable="true" :sort-method="sortByDate">
               <template slot-scope="scope">
-                <span>{{ scope.row.columeName}}张</span>
+                <span>{{ scope.row.showNumMember }}</span>
               </template>
             </el-table-column>
             <el-table-column prop="columePercent" label="环比" min-width="90" align="left">
@@ -310,17 +330,16 @@
         <el-pagination 
           background 
           layout="prev, pager, next"
-          @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
           :page-size="this.pageSize"
-          :total="this.total" 
+          :total="this.totalPage" 
         ></el-pagination>
       </div>
     </div>
 
     <!--储值金额Content-->
-    <div class="membership_Container" v-if="cur==4">
+    <div class="membership_Container ModuleKPI" v-if="cur==4">
       <!--储值金额趋势 -->
       <div class="ModuleTitleLayout">
         <div class="ModuleTitle">
@@ -331,27 +350,31 @@
           :data="ChartsProfit"
           :legend-visible="false"
           :settings="lineSettings"
-          :extend="lineExtend"
+          :extend="lineExtendMoneyTwo"
         ></ve-line>
         
       </div>
-      <!--城市体详情 -->
+      <!--区域详情 -->
       <div class="ModuleTitleLayout CityModuleLayout">
         <div class="ModuleTitle">
-          <div>城市体详情</div>
+          <div>区域详情</div>
           <div></div>
         </div>
-        <div class="ModuleTable reset-table">
-          <el-table size="mini" :data="MemberTableTop" border>
+        <div class="ModuleTable reset-table topTable">
+          <el-table 
+            size="mini" 
+            :data="CurrentMemberTableTop" 
+            border
+          >
             <el-table-column label="序号" min-width="68" type="index" align="left"></el-table-column>
             <el-table-column prop="name" label="城市名称" min-width="100" align="left">
               <template slot-scope="scope">
                 <span class="color" @click="clickCity(scope.$index, scope.row)">{{ scope.row.name }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="columeName" label="储值金额" min-width="100" align="left">
+            <el-table-column prop="showNumMember" label="储值金额" min-width="115" align="left" :sortable="true" :sort-method="sortByDate">
               <template slot-scope="scope">
-                <span>{{ scope.row.columeName}}元</span>
+                <span>{{ scope.row.showNumMember }}</span>
               </template>
             </el-table-column>
             <el-table-column prop="columePercent" label="环比" min-width="90" align="left">
@@ -373,11 +396,10 @@
         <el-pagination 
           background 
           layout="prev, pager, next"
-          @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
           :page-size="this.pageSize"
-          :total="this.total" 
+          :total="this.totalPage" 
         ></el-pagination>
       </div>
     </div>
@@ -389,7 +411,7 @@ export default {
   components:{
     MemberDash
   },
-  name: "BoxOffice",
+  name: "Member",
   props: {
     MemberTop: {
       type: Object
@@ -400,29 +422,93 @@ export default {
     lineData: {
       type: Object
     },
-    startTime: {
-      type:String
+    startDate:{
+      type: String
     },
-    endTime: {
-      type:String
+    endDate:{
+      type: String
     },
-    time:{
-      type:String
+    timeType:{
+      type: String
     },
     MemberKPIData:{
       type:Object
+    },
+    MemberTotal:{
+      type:Number
+    },
+    initMemberPage:{
+      type:Number
     }
+    
   },
   components: {
     MemberDash
   },
   data() {
+    this.lineExtend = {
+      'xAxis.0.axisLabel.rotate': 60,
+      xAxis:{
+        offset:10
+      },
+      tooltip: {
+        trigger: 'axis',
+        //在这里设置
+        formatter: '{a0} : {c0}人'
+      }
+    };
+    this.lineExtendBI = {
+      'xAxis.0.axisLabel.rotate': 60,
+      xAxis:{
+        offset:10
+      },
+      tooltip: {
+        trigger: 'axis',
+        //在这里设置
+        formatter: '{a0} : {c0}%'
+      }
+    };
+    this.lineExtendMoneyTwo = {
+      'xAxis.0.axisLabel.rotate': 60,
+      xAxis:{
+        offset:10
+      },
+      tooltip: {
+        trigger: 'axis',
+        //在这里设置
+        formatter: '{a0} : {c0}元'
+      }
+    };
+    this.lineExtendMoney = {
+      'xAxis.0.axisLabel.rotate': 60,
+      xAxis:{
+        offset:10
+      },
+      tooltip: {
+        trigger: 'axis',
+        //在这里设置
+        formatter: '{a0} : {c0}元'
+      }
+    };
+    this.lineExtendZhang = {
+      'xAxis.0.axisLabel.rotate': 60,
+      xAxis:{
+        offset:10
+      },
+      tooltip: {
+        trigger: 'axis',
+        //在这里设置
+        formatter: '{a0} : {c0}张'
+      }
+    };
     return {
+      CurrentMemberTableTop:JSON.parse(JSON.stringify(this.MemberTableTop)),
+      flag:true,
       cur:0,
       currentPage:1,// 当前页码
       pageSize:10,// 每页大小
-      total:'100',
-      BoxType:true,
+      totalPage:0,
+      BoxType:"new_member",
       BoxPage:true,
       MemberTableMain:[],  //票房指标数据
       MemberTablePage:[],  //票房分页数据
@@ -451,28 +537,202 @@ export default {
             color: "#FE825E"
           }
         }
-      },
-      // 折线图扩展
-      lineExtend: {}
+      }
     };
   },
+  watch: {
+    MemberTableTop(val){
+      this.CurrentMemberTableTop = val
+    }
+  },
   filters: {
+    //处理金钱计算保留两位
     capitalizeOne(value) {
-      if (!value) return "";
-      value = value / 10000;
-      return value.toFixed(2);
+      if (!value) return ""
+      let newValue = value.toString();
+
+      if(newValue.indexOf('.') != -1){
+        if(newValue.length < 8){
+          return newValue
+        }
+        else if(newValue.length >= 8 && newValue.length <= 11){
+          return (newValue / 10000).toFixed(2)
+        }
+        else if(newValue.length >= 12){
+          return ((newValue / 10000) / 10000).toFixed(2)
+        }
+      }
+      else{
+        if(newValue.length < 5){
+          return newValue
+        }
+        else if(newValue.length >= 5 && newValue.length <= 8){
+          return (newValue / 10000).toFixed(2)
+        }
+        else if(newValue.length >= 9){
+          return ((newValue / 10000) / 10000).toFixed(2)
+        }
+      }
     },
-    capitalizeTwo(value) {
-      if (!value) return "";
-      value = value * 100;
-      return value.toFixed(2);
+    //处理万人计算保留两位小数
+    capitalizePerson(value) {
+      if (!value) return ""
+      let newValue = value.toString();
+
+      if(newValue.length < 5){
+        return newValue
+      }
+      else if(newValue.length >= 5 && newValue.length <= 8){
+        return (newValue / 10000).toFixed(2)
+      }
+      else if(newValue.length >= 9){
+        return ((newValue / 10000) / 10000).toFixed(2)
+      }
     },
-    capitalizeFloor(value) {
-      if (!value) return "";
-      return value.toFixed(2);
+    //处理开卡张数
+    capitalizeSheet(value) {
+      if (!value) return ""
+      let newValue = value.toString();
+
+      if(newValue.length < 5){
+        return newValue
+      }
+      else if(newValue.length >= 5 && newValue.length <= 8){
+        return (newValue / 10000).toFixed(2)
+      }
+      else if(newValue.length >= 9){
+        return ((newValue / 10000) / 10000).toFixed(2)
+      }
+    },
+    //处理万元计算
+    foo(value){
+      if (!value) return ""
+      let newValue = value.toString();
+      let foo = ''
+
+      if(newValue.indexOf('.') != -1){
+        if(newValue.length < 8){
+          foo = '元'
+          return foo
+        }
+        else if(newValue.length >= 8 && newValue.length <= 11){
+          foo = '万元'
+          return foo
+        }
+        else if(newValue.length >= 12){
+          foo = '亿元'
+          return foo
+        }
+      }
+      else{
+        if(newValue.length < 5){
+          foo = '元'
+          return foo
+        }
+        else if(newValue.length >= 5 && newValue.length <= 8){
+          foo = '万元'
+          return foo
+        }
+        else if(newValue.length >= 9){
+          foo = '亿元'
+          return foo
+        }
+      }
+    },
+    //处理万人单位计算
+    too(value){
+      if (!value) return ""
+
+      let newValue = value.toString();
+      let too = ''
+
+      if(newValue.length < 5){
+        too = '人'
+        return too
+      }
+      else if(newValue.length >= 5 && newValue.length <= 8){
+        too = '万人'
+        return too
+        
+      }
+      else if(newValue.length >= 9){
+        too = '亿人'
+        return too
+      }
+    },
+    //处理万张单位计算
+    sheets(value){
+      if (!value) return ""
+
+      let newValue = value.toString();
+      let sheets = ''
+
+      if(newValue.length < 5){
+        sheets = '张'
+        return sheets
+      }
+      else if(newValue.length >= 5 && newValue.length <= 8){
+        sheets = '万张'
+        return sheets
+      }
+      else if(newValue.length >= 9){
+        sheets = '亿张'
+        return sheets
+      }
     }
   },
   methods: {
+    sortByDate(obj1, obj2) {
+      let val1 = obj1.deadline
+      let val2 = obj2.deadline
+      return val1 - val2
+    },
+    formatValue(num, company) {
+      let showNum
+      if (num < 10000) {
+          showNum = `${num.toFixed(2)}${company}`
+      } 
+      if (num > 10000 && num < 100000000) {
+          showNum = `${(num/10000).toFixed(2)}万${company}`
+      }
+      if (num >= 100000000) {
+          showNum = `${(num/100000000).toFixed(2)}亿${company}`
+      }
+      return showNum
+    },
+    formatPerson(num, company) {
+      let showNum
+      if (num < 10000) {
+          showNum = `${num}${company}`
+      } 
+      if (num > 10000 && num < 100000000) {
+          showNum = `${(num/10000).toFixed(2)}万${company}`
+      }
+      if (num >= 100000000) {
+          showNum = `${(num/100000000).toFixed(2)}亿${company}`
+      }
+      return showNum
+    },
+    formatZhang(num, company) {
+      let showNum
+      if (num < 10000) {
+          showNum = `${num}${company}`
+      } 
+      if (num > 10000 && num < 100000000) {
+          showNum = `${(num/10000).toFixed(2)}万${company}`
+      }
+      if (num >= 100000000) {
+          showNum = `${(num/100000000).toFixed(2)}亿${company}`
+      }
+      return showNum
+    },
+    //初始化分页数据
+    testFun(){
+      this.totalPage = this.initMemberPage  
+    },
+    foo(val){
+      this.flag = val
+    },
     tableRowClassName({ row, rowIndex }) {
       if (rowIndex === 1) {
         return "warning-row";
@@ -487,7 +747,7 @@ export default {
         if(this.BoxType){
           this.getMemberTab('new_member');
           //调用票房首页分页数据
-          this.getMemberPages('new_member',this.currentPage);
+          this.getMemberPages('new_member');
         }
       }
       else if(val === '1'){
@@ -495,7 +755,7 @@ export default {
          //调用会员消费金额指标数据
          this.getMemberTab('member_consume_price');
          //调用会员消费金额分页数据
-         this.getMemberPages('member_consume_price',this.currentPage);
+         this.getMemberPages('member_consume_price');
         }
       }
       else if(val === '2'){
@@ -503,7 +763,7 @@ export default {
           //调用会员消费占比指标数据
           this.getMemberTab('member_consume_percent');
           //调用会员消费占比分页数据
-          this.getMemberPages('member_consume_percent',this.currentPage);
+          this.getMemberPages('member_consume_percent');
          }
       }
       else if(val === '3'){
@@ -511,7 +771,7 @@ export default {
           //调用开卡数量指标数据
           this.getMemberTab('card_number');
           //调用开卡数量分页数据
-          this.getMemberPages('card_number',this.currentPage);
+          this.getMemberPages('card_number');
          }
       }
       else if(val === '4'){
@@ -519,12 +779,12 @@ export default {
           //调用储值金额指标数据
           this.getMemberTab('store_price');
           //调用储值金额分页数据
-          this.getMemberPages('store_price',this.currentPage);
+          this.getMemberPages('store_price');
          }
       }
     },
      // 初始页currentPage、初始每页数据数pagesize和数据data
-    handleCurrentChange: function(val){
+    handleCurrentChange(val){
       this.currentPage = val
       if(this.BoxType === "new_member"){
         //调用会员新增人数分页数据
@@ -552,76 +812,110 @@ export default {
       this.$nextTick(() => {
         this.$camList.MemberPager({
           body: {
-            groupId: 1,
-            startDate: this.time,
-            endDate: this.time,
-            chainPerType: "day",
+            groupId: 44,
+            startDate: this.startDate,
+            endDate: this.endDate,
+            dateType: this.timeType,
             pageSize:this.pageSize,
             pageNo:this.currentPage,
             columnType:this.BoxType
           }
         })
-        .then(res => {
-            let resData = res.memberCinemaPageInfo.list
-            this.MemberTablePage = resData;
-            this.total = res.memberCinemaPageInfo.total
-            this.MemberTableTop = this.MemberTablePage; 
+        .then(response => {
+          let res = response.data;
+
+          if(this.BoxType === "new_member"){
+            res.memberCinemaPageInfo.list.forEach(item => {
+              item.showNumMember = this.formatPerson(item.columeName,'人')
+            })
+          }
+          else if(this.BoxType === "member_consume_price"){
+            res.memberCinemaPageInfo.list.forEach(item => {
+             item.showNumMember = this.formatValue(item.columeName,'元')
+            })
+          }
+          else if(this.BoxType === "member_consume_percent"){
+            res.memberCinemaPageInfo.list.forEach(item => {
+             item.showNumMember = this.formatValue(item.columeName,'%')
+            })
+          }
+          else if(this.BoxType === "card_number"){
+            res.memberCinemaPageInfo.list.forEach(item => {
+             item.showNumMember = this.formatZhang(item.columeName,'张')
+
+            })
+          }
+          else if(this.BoxType === "store_price"){
+            res.memberCinemaPageInfo.list.forEach(item => {
+             item.showNumMember = this.formatValue(item.columeName,'元')
+            })
+          }
+          this.CurrentMemberTableTop = res.memberCinemaPageInfo.list
         });
       })
     },
     //指标切换接口
-    getMemberTab (val) {  
+    getMemberTab (val,currentPage) {  
+      
       this.BoxType = val
       this.$nextTick(() => {
         this.$camList.SwitchMemberTab({
           body: {
-            groupId: 1,
-            startDate: this.time,
-            endDate: this.time,
-            chainPerType: "day",
+            groupId:44,
+            startDate: this.startDate,
+            endDate: this.endDate,
+            dateType: this.timeType,
             pageSize:this.pageSize,
             pageNo:this.currentPage,
-            columnType:this.BoxType
+            columnType:this.BoxType,
+            initNewMember:this.MemberTotal
           }
         })
-        .then(res => {
-          //获取总数据
+        .then(response => {
+          let res = response.data;
           if(this.BoxType === "new_member"){
-            let resData = res.memberCinemaPageInfo.list;
-            //把数据赋值到新变量
-            this.MemberTableMain = resData;
-            this.MemberTableTop = this.MemberTableMain
-          } 
+            res.memberCinemaPageInfo.list.forEach(item => {
+              item.showNumMember = this.formatPerson(item.columeName,'人')
+            })
+          
+            this.CurrentMemberTableTop = res.memberCinemaPageInfo.list;
+           
+            //获取KPI
+            let ResKPI = res.memberKpiInfo;
+            this.MemberKPIData = ResKPI
+          }
           else if(this.BoxType === "member_consume_price"){
-            let resData = res.memberCinemaPageInfo.list;
-            //把数据赋值到新变量
-            this.MemberTableMain = resData;
-            this.MemberTableTop = this.MemberTableMain
+            res.memberCinemaPageInfo.list.forEach(item => {
+              item.showNumMember = this.formatValue(item.columeName,'元')
+            })
+            this.CurrentMemberTableTop = res.memberCinemaPageInfo.list;
+
             //获取会员消费金额
             this.getAmountChart(res)            
           }
           else if(this.BoxType === "member_consume_percent"){
-            let resData = res.memberCinemaPageInfo.list;
-            //把数据赋值到新变量
-            this.MemberTableMain = resData;
-            this.MemberTableTop = this.MemberTableMain
+            res.memberCinemaPageInfo.list.forEach(item => {
+              item.showNumMember = this.formatValue(item.columeName,'%')
+            })
+            this.CurrentMemberTableTop = res.memberCinemaPageInfo.list;
+
             //获取会员消费占比
             this.getPropChart(res)
             
           }
           else if(this.BoxType === "card_number"){
-            let resData = res.memberCinemaPageInfo.list;
-            //把数据赋值到新变量
-            this.MemberTableMain = resData;
-            this.MemberTableTop = this.MemberTableMain
+            res.memberCinemaPageInfo.list.forEach(item => {
+              item.showNumMember = this.formatZhang(item.columeName,'张')
+            })
+            this.CurrentMemberTableTop = res.memberCinemaPageInfo.list;
             //获取开卡数量折线图
             this.getQuantChart(res)
           }
           else if(this.BoxType === "store_price"){
-            let resData = res.memberCinemaPageInfo.list;
-            //把数据赋值到新变量
-            this.MemberTableMain = resData;
-            this.MemberTableTop = this.MemberTableMain
+            res.memberCinemaPageInfo.list.forEach(item => {
+              item.showNumMember = this.formatValue(item.columeName,'元')
+            })
+            this.CurrentMemberTableTop = res.memberCinemaPageInfo.list;
             //获取储值金额折线图
             this.getStorageChart(res)
           }
@@ -673,7 +967,7 @@ export default {
     clickCity(index, row) {
       let cityId = row.cityId;
       this.$router.push({
-        path: "/area/home",
+        name:'城市体首页',
         query: {
           cityId: cityId
         }
@@ -686,6 +980,15 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+#ulMain{
+  width:250px;
+  list-style-type:none;
+  padding:0px;
+  margin:0px;
+  li{
+    line-height:23px;
+  }
+}
 .kip-wrap {
   width: 100%;
   box-sizing: border-box;
@@ -818,6 +1121,8 @@ export default {
   color: #3b74ff;
   font-size: 12px;
   margin-left: 10px;
+  position: relative;
+  top:-2px
 }
 .ModuleTable {
   width: 93%;
@@ -872,5 +1177,8 @@ export default {
 }
 .red{
   color:red;
+}
+.el-pagination{
+  padding-bottom:20px;
 }
 </style>

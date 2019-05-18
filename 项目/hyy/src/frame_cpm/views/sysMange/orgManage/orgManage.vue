@@ -1,5 +1,5 @@
 <template>
-    <div class="contentCenter">
+    <div class="content-wrapper">
       <div class="breadcrumb">
           <el-breadcrumb separator-class="el-icon-arrow-right">
             <el-breadcrumb-item>系统管理</el-breadcrumb-item>
@@ -17,7 +17,7 @@
                 <el-button type="primary" size="small" @click="getDatas">搜索</el-button>
               </div>
               <div class="button-wrap right-offset">
-                <el-button type="primary" size="small" @click="addNewOrgFun()" ><i class="iconfont icon-neiye-tianjia"></i>新建组织</el-button>
+                <el-button type="primary" size="small" @click="addNewOrgFun()" ><i class="el-icon-film"></i>新建组织</el-button>
               </div>
             </div>
             <div class="org-sys">
@@ -30,7 +30,11 @@
                 :expand-on-click-node="false"
                 :props="defaultProps">
                 <span class="custom-tree-node" slot-scope="{ node, data }">
-                  <span @click="getListOrganizationCinema(data)"><i :class="node.icon"></i>{{ data.text }}</span>
+                  <span class="org-button" @click="getListOrganizationCinema(data)">
+                    <i class="el-icon-menu" v-if="data.isCinema==0||data.isCinema==null"></i>
+                    <i class="el-icon-document" v-else></i>
+                    {{data.text}}
+                  </span>
                   <span class="org-button-wrap">
                     <el-button
                       type="text"
@@ -216,7 +220,7 @@ import editNextOrg from "./common/editNextOrg.vue"
         orgUid:'',
         orgName: '',
         cinemaIds: [],
-        tenantLicenseList:[]
+        tenantLicenseList:[],
       }
     },
     components:{
@@ -235,7 +239,6 @@ import editNextOrg from "./common/editNextOrg.vue"
     },
     methods:{
       hide(val) {
-        console.log(val)
         this.dialogVisible_cinemaList = val
       },
       handleSizeChange(val) {
@@ -275,7 +278,6 @@ import editNextOrg from "./common/editNextOrg.vue"
       },
       //组织结构新建下级
       append(node,data) {
-
         this.lastOrgData = data
         this.dialogVisible_addNextOrg = !this.dialogVisible_addNextOrg
       },
@@ -343,9 +345,7 @@ import editNextOrg from "./common/editNextOrg.vue"
           });
       },
       getListOrganizationCinema(val){
-        // this.dialogVisible_cinemaList = false
         this.flag = true
-        console.log('val',val)
         let self = this;
         if(val.id){
           self.orgUid = val.id
@@ -361,7 +361,6 @@ import editNextOrg from "./common/editNextOrg.vue"
         listOrganizationCinema(data)
           .then(ret => {
               if(ret&&ret.code==200){
-                // console.log('ret.data',ret.data)
                 self.tableData = ret.data.rows;
                 self.currentPage=ret.data.pageNum
                 self.total=ret.data.total
@@ -389,8 +388,6 @@ import editNextOrg from "./common/editNextOrg.vue"
           .then(ret => {
               if(ret&&ret.code==200){
                 self.cinemaList = JSON.parse(JSON.stringify(ret.data.rows))
-                // this.dialogVisible_cinemaList = true
-                // console.log('self.cinemaList',self.cinemaList)
             }else{
                   self.$message(ret.msg);
             }
@@ -492,7 +489,7 @@ import editNextOrg from "./common/editNextOrg.vue"
 </script>
 
 <style  type="text/css" lang="scss" >
-  .contentCenter {
+  .content-wrapper {
     height: 100%;
     .breadcrumb{
       padding:9px 0 9px 3px;

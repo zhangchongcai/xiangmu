@@ -76,6 +76,10 @@
             <el-option  v-for="(item,index) in payType" :key="index" :label="item.payTypeName" :value="item.payTypeName">{{item.payTypeName}}</el-option>
           </el-select>
         </el-form-item>
+        <!-- 影院选择 -->
+        <el-form-item label="影院选择:" v-show="isHigh">
+          <el-input v-model="cinemaName" @focus="openCinema"></el-input>
+        </el-form-item>
         <el-form-item label="交易终端:" v-show="isHigh">
           <el-input v-model="searchAdition.terminalCode" ></el-input>
         </el-form-item>
@@ -105,12 +109,12 @@
           <el-table-column prop="applyStatusType" label="审核状态" width="150" show-overflow-tooltip></el-table-column>
           <el-table-column label="操作" show-overflow-tooltip width="80" fixed="right">
             <template slot-scope="scope">
-              <span class="icon-color" @click="account_add(scope.row.uid)">查看</span>
+              <span class="icon-color" @click="account_add(scope.row.id)">查看</span>
             </template>
           </el-table-column>
         </el-table>
       </el-row>
-
+      <singeCinema ref="singeCinema" @callback="callback" @firstCinema="firstCinema"></singeCinema>
       <div class="page-wrap">
         <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange"
           :current-page="current" :page-sizes="[10, 20, 30]" :page-size="pageSize"
@@ -121,7 +125,7 @@
 </template>
 <script type="text/javascript">
   import  dialog from '../public/dialog.vue'
-  
+  import singeCinema from '../publicModule/singeCinema'
   function timeStampToString(time){  
     var datetime = new Date();  
     datetime.setTime(time);  
@@ -135,7 +139,9 @@
 	} 
    
   export default {
-    components: {},
+    components: {
+      singeCinema
+    },
     data() {
       return {
         total: 1,//总数
@@ -160,7 +166,8 @@
           dateStart: "",
           dateEnd: "",
           status: "",
-          timeCode: ""
+          timeCode: "",
+          cinemaUid: ""
         },
         // 订单类型
         billType: {
@@ -183,7 +190,9 @@
         billStatus:{
           0:"新建",1:"支付中",2:"完成",5:"预定", 6:"订单取消",7:"预定结束"
         },
-        payType:[]
+        payType:[],
+        // cinemaUID:"",
+        cinemaName:""
       };
     },
     watch:{
@@ -265,12 +274,34 @@
         this.current = valua;
         console.log(this.current);
         this.getList();
+      },
+      // 打开影院
+       openCinema(){
+        this.$refs.singeCinema.opendialog = true;
+      },
+      callback(val){
+        console.log(val)
+        this.cinemaName = val.orgName
+        this.searchAdition.cinemaUid = val.cinemaUID
+      },
+      firstCinema(val){
+        // this.$set(this.searchAdition,"cinemaUID",val.cinemaUID)
+        this.searchAdition.cinemaUid = val.cinemaUID;
+        this.searchAdition.cinemaUid &&  this.getList();
       }
     },
     created() {
-      this.getList();
       this.getPayType()
+    },
+    mounted(){
+      // console.log(this.searchAdition.cinemaUID)
+      // this.firstCinema();
+     
+    },
+    watch(){
+      searchAdition
     }
+    
   };
 </script>
 <style lang="scss" scoped>

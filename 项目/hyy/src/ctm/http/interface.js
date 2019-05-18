@@ -177,9 +177,9 @@ export const getUserInfo = params => {
   })
 }
 // 票类管理接口
-export const tickettypeList = data => {
+export const tickettypeList = (limit,data) => {
   return axios({
-    url: '/ticket/tickettype/list',
+    url: '/ticket/tickettype/list'+`?page=${limit.page}&pageSize=${limit.pageSize}`,
     method: 'post',
     data
   })
@@ -397,7 +397,7 @@ export const ciseatDesign = data => {
               'Content-Type': 'application/json;charset=utf-8'
           },
           dataType: "json",
-          data: datas
+          data:datas
       })
 }
   //获得影院信息
@@ -510,6 +510,16 @@ export const importPricePlan = data => {
   })
 }
 
+// 批量导入价格方案
+// schplan/loadPricePrograme
+export const importBatchPricePlan = data => {
+  return axios({
+      url: '/ticket/schplan/loadPricePrograme',
+      method: 'post',
+      data
+  })
+}
+
 export const exportMoviePlan = data => {
   return axios({
       url: '/ticket/schplan/getPrintPlanDate',
@@ -564,7 +574,7 @@ export const hallTypeList = params => {
 }
 export const getTickettypeList = params => {
   return axios({
-    url: '/ticket/tickettype/findByType',
+    url: '/ticket/tickettype/findByCinemaUids',
     method: 'post',
     params
   })
@@ -595,7 +605,7 @@ export const cinemaRoomList = data => {
   })
 }
 
-// 排片页根据 id 查询排片详情
+// 排片页根据 id 查询排片详情(单场)
 export const getmoviePlanDetail = params => {
   return axios({
     url: '/ticket/schplan/priceDetail',
@@ -604,7 +614,16 @@ export const getmoviePlanDetail = params => {
   })
 }
 
-// 获取排片参考页 经对影院list
+// 排片页根据 id 查询排片详情(连排)
+export const getmoviePlanDetails = params => {
+  return axios({
+    url: '/ticket/schplan/planDetails',
+    method: 'get',
+    params
+  })
+}
+
+// 获取排片参考页 竞对影院list
 export const getRefCinema = data => {
   return axios({
     url: '/ticket/schplan/competeCinema',
@@ -613,7 +632,7 @@ export const getRefCinema = data => {
   })
 }
 
-// 获取排片参考页 经对影院list
+// 获取排片页 左侧参考数据
 export const getRefTip = data => {
   return axios({
     url: '/ticket/schplan/reference/tip',
@@ -621,7 +640,13 @@ export const getRefTip = data => {
     data
   })
 }
-
+export const getTicketChannel = params => {
+  return axios({
+    url: '/ticket/schplan/getBaseTicketAndChannels',
+    method: 'post',
+    params
+  })
+}
 // 获取排片参考页数据接口
 export const getPlanReference = data => {
   return axios({
@@ -649,6 +674,7 @@ export const setgoldTimeSet = data => {
   })
 }
 
+
 // 获取排片页价格方案
 export const getPricePlan = params => {
   return axios({
@@ -674,8 +700,14 @@ export const getPriceSystem = data => {
     data
   })
 }
-
-
+// 批量设置票价
+export const setBatchPirce = data => {
+  return axios({
+    url: '/ticket/schplan/setPrice',
+    method: 'post',
+    data
+  })
+}
 
 // 保存排片信息
 export const saveMoviePlan = data => {
@@ -766,7 +798,44 @@ export const initTimeLine = data => {
     data
   })
 }
+//门店参数设置
+export const systemParamLoad = data => {
+  return axios({
+    url: '/ticket/systemParam/load',
+    method: 'post',
+    data
+  })
+}
+export const systemParamSavePlat = data => {
+  return axios({
+    url: '/ticket/systemParam/savePlat',
+    method: 'post',
+    data
+  })
+}
+export const systemParamSaveBasic = data => {
+  return axios({
+    url: '/ticket/systemParam/saveBasic',
+    method: 'post',
+    data
+  })
+}
+export const systemGetUserMenuTree = params => {
+  return axios({
+    url: '/ticket/systemParam/getUserMenuTree',
+    method: 'get',
+    params
+  })
+}
+//软件升级信息
 
+export const systemCinemaUiduUdate = params => {
+  return axios({
+    url: '/ticket/system/version/update',
+    method: 'post',
+    params
+  })
+}
 export default {
   //影片管理接口**start*/
   DownloadmovieList,
@@ -859,13 +928,24 @@ export default {
   getgoldTimeSet,
   setgoldTimeSet,
   getRefTip,
+  getTicketChannel,
+  setBatchPirce, 
+  importBatchPricePlan, 
   // 放映计划详情
   getmoviePlanDetail,
+  getmoviePlanDetails,
   getPricePlan,
   getSchPlanLang,
   getPriceSystem,
   exportMoviePlan,
   saveMoviePlan,
   subApproves,
-  importPricePlan
+  importPricePlan,
+  //影院参数设置
+  systemParamLoad,
+  systemParamSavePlat,
+  systemParamSaveBasic,
+  systemGetUserMenuTree,
+  //软件升级信息
+  systemCinemaUiduUdate
 };

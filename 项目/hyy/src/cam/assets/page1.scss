@@ -1,0 +1,43 @@
+
+// 首页模块title布局
+.ModuleTitleLayout {
+    width: 100%;
+    margin: 0px 0px 0px 0px;
+    .ModuleTitle {
+        display: flex;
+        justify-content: space-between;
+        height: 17px;
+        line-height: 17px;
+        font-weight: bold;
+        border-left: 4px solid blue;
+        div {
+            flex: none;
+            width: 170px;
+            font-size: 14px;
+            text-align: left;
+            padding-left: 10px;
+
+            span {
+                font-size: 17px;
+                font-weight: bold;
+            }
+        }
+
+        div.last {
+            text-align: right;
+            font-weight: normal;
+            font-size: 12px;
+            padding-right: 12px;
+            color: #3F3F3F
+        }
+    }
+}
+.page .el-pagination{
+  padding-top:20px;
+}
+.ModuleKPI{
+	padding-top:20px;
+}
+.topTable{
+  padding-top:20px;
+}

@@ -212,6 +212,7 @@ export const tickettypeUpdate = data => {
 // 订单列表页查询
 export const orderList = (data,current,size) => {
   return axios({
+    baseURL:'http://192.168.100.118:2302',
     url: `/saleBillSearch/selectSaleBillByPage?current=${current}&size=${size}`,
     method: 'post',
     data
@@ -263,8 +264,9 @@ export const deleteOtherthing = (uid) => {
 // 获取电影影院
 export const getCinemaByParam = (params) => {
   return axios({
-      baseURL:'http://apidev.oristarcloud.com/report',
-      url: '/condition/getCinemaByParam',
+      baseURL:'http://apidev.oristarcloud.com',
+      // url: '/condition/getCinemaByParam',
+      url: '/cpm/user/auth/queryUserCinemas',
       method: 'get',
       params
   });
@@ -296,6 +298,29 @@ export const getMoneyCashier = (params) => {
      params
  });
 }
+
+/*** 公共组件接口 start ***/
+// 交易渠道/代理商
+export const getDitch = (data) => {
+  return axios({
+      // baseURL:'http://192.168.100.23:2301',
+      baseURL:'http://apidev.oristarcloud.com',
+      url: `/ticket/base/channel/agent`,
+      method: 'post',
+      data
+  });
+ }
+// 页面控件类型
+export const getMoudelData = (page,pageSize,name) => {
+  return axios({
+      // baseURL:'http://192.168.100.23:2301',
+      baseURL:'http://apidev.oristarcloud.com',
+      url: `/ticket//dictionary/page?page=${page}&pageSize=${pageSize}&name=${name}`,
+      method: 'post',
+  });
+ }
+/*** 公共组件接口 end ***/
+
 /*** 支付方式 start ***/
 // 条件分页检索支付方式
 export const findPayTypePage = (data) => {
@@ -359,6 +384,15 @@ export const getPayTypeCode = (data) => {
       data
   });
 };
+
+// 通过影院ids获取支付方式
+export const selectForTenant = data => {
+    return axios({
+        url: '/payType/selectForTenant',
+        method: 'post',
+        data
+    })
+}
 /*** 支付方式 end ***/
 
 /*** 渠道管理 start ***/
@@ -368,6 +402,14 @@ export const getChannelList = (data) => {
         url: `/base/channel/list?page=${data.page}&pageSize=${data.pageSize}`,
         method: 'post',
         data
+    });
+};
+// 获取影院渠道列表
+export const getCinemaChannelList = (params) => {
+    return axios({
+        url: `/cinema/base/channel/list`,
+        method: 'get',
+        params
     });
 };
 
@@ -426,6 +468,14 @@ export const getCinemaTree = params => {
         params
     })
 }
+// 字典数据查询
+export const getDictionaryData = params => {
+    return axios({
+        url: '/dictionary/getByName',
+        method: 'get',
+        params
+    })
+}
 /*** 渠道管理 end ***/
 
 export default {
@@ -470,6 +520,10 @@ export default {
   getMoneyPerson,
   getMoneyCashier,
   //***end */
+  //公共组件方法**start*/
+  getDitch,
+  getMoudelData,
+  //***end */
   /*** 支付方式 start ***/
   findPayTypePage,
   savePayType,
@@ -478,10 +532,12 @@ export default {
   findPayTypeByCode,
   updatePayType,
   getPayTypeCode,
+  selectForTenant,
   /*** 支付方式 end ***/
 
     /*** 渠道管理 start ***/
     getChannelList,
+    getCinemaChannelList,
     getChannelOtherList,
     addHeaderChannel,
     setChannelStatus,
@@ -489,6 +545,7 @@ export default {
     getChannelDetail,
     getUserInfo,
     getCinemaTree,
+    getDictionaryData,
     /*** 渠道管理 end ***/
 
 };

@@ -7,8 +7,10 @@ import ctm from 'ctm/vuex'
 import cim from 'cim/vuex'
 import csm from 'csm/vuex'
 import frameCpm from './modules'
-let modules = Object.assign({}, ctm, cam, ccm, cmm, crm, rpt, cim,csm, frameCpm)
-// let modules = Object.assign({}, ctm, cam, ccm, cmm, crm, rpt,  frameCpm)
+import cwf from 'cwf/vuex'
+
+let modules = Object.assign({}, ctm, cam, ccm, cmm, crm, rpt, cim, csm, cwf, frameCpm)
+    // let modules = Object.assign({}, ctm, cam, ccm, cmm, crm, rpt,  frameCpm)
 
 export default new Vuex.Store({
     state: {

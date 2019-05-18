@@ -110,7 +110,7 @@
                                 <i class="iconfont icon-neiye-shanchu plan-tool-icon"></i>
                                 <p class="plan-menu-name">删除</p>
                             </li>
-                            <li class="plan-single-menu">
+                            <li class="plan-single-menu" @click="editBatch">
                                 <i class="iconfont icon-neiye-piliangbianji plan-tool-icon"></i>
                                 <p class="plan-menu-name">批量编辑</p>
                             </li>
@@ -417,15 +417,141 @@
                 <el-button type="primary" @click="setVieCinema">立即设置</el-button>
                 <el-button @click="cancelSetVieCinema">暂不设置</el-button>
             </span>
+        </el-dialog>
+
+        <el-dialog title="批量编辑" :visible.sync="editBatchDialog">
+            <!-- 导入价格方案 -->
+            <el-dialog class="import-price-plan-dialog" title="导入价格方案" :visible.sync="importPricePlanDialog" @close="closeDialogCb" append-to-body>
+                <el-form>
+                    <el-form-item>
+                        <el-table
+                            class="edit-cichannel-table"
+                            highlight-current-row
+                            @current-change="selectedRow"
+                            :data="importPlanData">
+                            <el-table-column
+                                prop="priceProgramName"
+                                label="方案名称">
+                            </el-table-column>
+                            <el-table-column
+                                label="适用影院">
+                                <template slot-scope="scope">
+                                    {{scope.row.useRange ? '适用于所有影院' : '适用指定影院'}}
+                                </template>
+                            </el-table-column>
+                            <el-table-column
+                                label="有效期">
+                                <template slot-scope="scope">
+                                    {{scope.row.useDyFg ? '指定日期' : '长期有效'}}
+                                </template>
+                            </el-table-column>
+                                <el-table-column
+                                prop="disVersion"
+                                label="发行版本">
+                            </el-table-column>
+                            <el-table-column
+                                prop="hallType"
+                                label="影厅类型">
+                            </el-table-column>
+                            <el-table-column
+                                width="80"
+                                label="操作">
+                                <template slot-scope="scope">
+                                    <el-button @click="toPricePlanDetail(scope.row.id)" type="text">查看</el-button>
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </el-form-item>
+                    <el-pagination
+                        @current-change="handleCurrentChange"
+                        :current-page="curPage"
+                        :page-size="pageSize"
+                        layout="total, prev, pager, next, jumper"
+                        :total="total">
+                    </el-pagination>
+                </el-form>
+                <div slot="footer" class="dialog-footer">
+                    <el-button @click="importPricePlanDialog = false">取 消</el-button>
+                    <el-button type="primary" @click="selectSinglePlan">确 定</el-button>
+                </div>
             </el-dialog>
 
+            <el-button type="text" @click="showPricePlanDialog">导入价格方案</el-button>
+            <el-tabs v-model="activeName" type="card">
+                <el-tab-pane label="柜台/自助" name="first">
+                    <el-table 
+                    class="edit-cichannel-table"
+                    :data="editBatchData.baseTicket"
+                    v-loading="editBatchLoading">
+                         <el-table-column
+                            prop="name"
+                            width="100"
+                        >
+                         </el-table-column>
+                         <el-table-column>
+                             <template slot-scope="scope">
+                                <span class="input-con">
+                                    <el-select
+                                        v-model="scope.row.selValue">
+                                        <el-option
+                                            v-for="item in scope.row.select"
+                                            :key="item.key"
+                                            :value="item.key"
+                                            :label="item.label">
+                                        </el-option>
+                                    </el-select>
+                                </span>
+                                <span class="input-con" v-if="scope.row.selValue == 1">
+                                    价格：<el-input type="number" maxlength="9" v-model="scope.row.price"></el-input>元+增值服务费: <el-input type="number" maxlength="9" v-model="scope.row.addFee"></el-input>元 = 最终售价: {{scope.row.price + scope.row.addFee}}元
+                                </span>
+                            </template>
+                         </el-table-column>
+                    </el-table>
+                </el-tab-pane>
+                <el-tab-pane label="线上网售" name="second">
+                    <el-table 
+                    class="edit-cichannel-table"
+                    :data="editBatchData.favTicket"
+                    v-loading="editBatchLoading">
+                        <el-table-column
+                            prop="name"
+                            width="100"
+                        >
+                         </el-table-column>
+                         <el-table-column>
+                             <template slot-scope="scope">
+                                <span class="input-con">
+                                    <el-select
+                                        v-model="scope.row.selValue">
+                                        <el-option
+                                            v-for="(item, index) in scope.row.select"
+                                            :key="item.key"
+                                            :value="item.key"
+                                            :label="item.label">
+                                        </el-option>
+                                    </el-select>
+                                    <span class="input-con" v-if="scope.row.selValue == 1">
+                                        价格：<el-input type="number" maxlength="9" v-model="scope.row.price"></el-input>元+增值服务费: <el-input type="number" maxlength="9" v-model="scope.row.addFee"></el-input>元 = 最终售价: {{scope.row.price + scope.row.addFee}}元
+                                    </span>
+                                </span>
+                            </template>
+                         </el-table-column>
+                    </el-table>
+                </el-tab-pane>
+            </el-tabs>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="editBatchDialog = false">取 消</el-button>
+                <el-button type="primary" @click="submitSetPrice">确 定</el-button>
+            </div>
+        </el-dialog>
+        
         <movie-plan ref="moviePlan" :price-plan="curPricePlan" :base-param="baseParam" :mode="mode"></movie-plan>
     </div>
 </template>
 
 <script>
 
-import { getPricePlan, subApproves, getUserInfo, exportMoviePlan, getgoldTimeSet, setgoldTimeSet, getRefCinema} from 'ctm/http/interface'
+import { getPricePlan, subApproves, getUserInfo, exportMoviePlan, getgoldTimeSet, setgoldTimeSet, getRefCinema, getTicketChannel, setBatchPirce, importBatchPricePlan} from 'ctm/http/interface'
 import moviePlan from "./moviePlan"
 export default {
     
@@ -500,7 +626,27 @@ export default {
                     { validator: turnoverCountValidate, trigger: 'blur' }
                 ]
             },
-            vieCinemaDialog: false
+            // 没有竞对影院弹窗
+            vieCinemaDialog: false,
+            // 批量编辑弹窗
+            editBatchDialog: false,
+            // 导入价格方案弹框
+            importPricePlanDialog: false,
+            // 批量编辑tabs
+            activeName: 'first',
+            editBatchData: {},
+            editBatchLoading: true,
+            // 导入价格方案 分页数据
+            importPricePlanPage: {
+                curPage: 1,
+                pageSize: 10,
+                total: 0,
+                importPlanData: []
+            },
+            curSelectPlans: [],
+            curImportPricePlan: {
+
+            }
         }
     },
     created() {
@@ -805,7 +951,7 @@ export default {
 		planReference() {
             let userNeedSave = this.$refs.moviePlan.$refs.filmPlan.userNeedSave
             if (userNeedSave) {
-                this.$refs.moviePlan.$refs.filmPlan.savePlan(null, this.lintToPlanRef)
+                this.$refs.moviePlan.$refs.filmPlan.savePlan(null, this.linkToPlanRef)
             } else {
                 this.linkToPlanRef()
             }
@@ -903,7 +1049,220 @@ export default {
 					this.intelligentPlanSetting = false
 				}
 			})
-		},
+        },
+        editBatch() {
+            if (this.$refs.moviePlan.$refs.filmPlan.plan_rooms.every(row => row.every(plan => !plan.isSelect))) return this.warning('请至少选中一个排片计划!')
+            let selectPlans = this.$refs.moviePlan.$refs.filmPlan.plan_rooms.reduce((arr, row) => {
+                return arr.concat(row.filter(plan => plan.isSelect))
+            }, [])
+            this.curSelectPlans = this.$refs.moviePlan.$refs.filmPlan.plan_rooms.reduce((arr, row) => {
+                return arr.concat(row.filter(plan => plan.isSelect && plan.approveStatus !== 'WAIT_APPROVE' && plan.approveStatus !== 'APPROVED'))
+            }, [])
+            if (selectPlans.length && !this.curSelectPlans.length) return this.warning('当前选中的排片计划不可编辑')
+
+            this.editBatchDialog = true
+            this.getTicketChannel()
+        },
+        getTicketChannel() {
+            getTicketChannel({
+                cinemaUid: this.uidCinema
+            }).then(res => {
+                console.log(res.data)
+                res.data.baseTicket.forEach(item => {
+                    item.select = !item.baseFlag ? [
+                        {
+                            key: 0,
+                            label: '保存票类原有价格'
+                        },
+                        {
+                            key: 1,
+                            label: '统一调整票类价格'
+                        }
+                    ] : [
+                        {
+                            key: 0,
+                            label: '保存票类原有价格'
+                        },
+                        {
+                            key: 1,
+                            label: '统一调整票类价格'
+                        },
+                        {
+                            key: 2,
+                            label: '删除该票类价格'
+                        }
+                    ]
+                    item.selValue = 0
+                    item.price = item.price ? item.price : 0
+                    item.addFee = item.addFee ? item.addFee : 0
+                })
+                res.data.favTicket.forEach(item => {
+                    item.select = [
+                        {
+                            key: 0,
+                            label: '保存票类原有价格'
+                        },
+                        {
+                            key: 1,
+                            label: '统一调整票类价格'
+                        },
+                        {
+                            key: 2,
+                            label: '删除该票类价格'
+                        }
+                    ]
+                    item.selValue = 0
+                    item.price = item.price ? item.price : 0
+                    item.addFee = item.addFee ? item.addFee : 0
+                })
+                this.editBatchData = res.data
+                this.editBatchLoading = false
+            })
+        },
+        // 导入价格方案
+        showPricePlanDialog() {
+            this.importPricePlanDialog = true
+            this.importPricePlan()
+        },
+        // 获取导入价格方案数据  curPage为当前分页
+        importPricePlan(curPage) {
+            // this.curPage = curPage ? curPage : 1
+            // importPricePlan({
+            //     "cinemaUid": this.movieData.cinemaUid,
+            //     "movieUid": this.movieData.movieUid,
+            //     "movieVersionCode": this.issueTypeValue,
+            //     "planDateTime": this.movieData.planTime,
+            //     "priceProgramName": this.planName,
+            //     "pageSize": this.exportPricePlanPage.pageSize,
+            //     "currentPage":  this.exportPricePlanPage.curPage,
+            //     "hallTypeCode": this.hallTypeCode
+            //     }).then(res => {
+            //         if (res.code && res.data) {
+            //             this.total = res.data.total
+            //             this.importPlanData = res.data.list
+            //         }
+            //     })
+            // importBatchPricePlan({
+
+            // }).then(res => {
+
+            // })
+        },
+        // close 导入价格方案弹窗
+        closeDialogCb() {
+            this.hallTypeValue = ''
+            this.issueTypeValue = ''
+            this.planName = ''
+            this.curPage = 1
+            this.importPlanData = []
+        },
+        // 选择 一个价格方案进行适配
+        selectSinglePlan() {
+            this.selectPlanData.data = this.currentRow
+            priceprogramScan({id: this.selectPlanData.data.id}).then(res => {
+                if (res.code == 200 && res.data) {
+                    if (!this.selectPlanData.isShow) this.selectPlanData.isShow = true
+                    this.selectPlanData.programName = res.data.ciPriceProgram.name
+                    this.selectPlanData.programUid = res.data.ciPriceProgram.uid
+                    this.ticketData.forEach(item => {
+                        if (res.data.ttVoList && res.data.ttVoList.length) {
+                            res.data.ttVoList.forEach(type => {
+                                if (item.uid == type.ttUid) {
+                                    item.price = type.price
+                                    item.addFee = type.addFee
+                                    item.switchStatus = true
+                                }
+                            })
+                        }
+                        if (!item.price) item.price = 0
+                        if (!item.addPrice) item.addPrice = 0
+                        item.price = parseFloat(item.price).toFixed(2)
+                        item.addPrice = parseFloat(item.addPrice).toFixed(2)
+                    })
+
+                    this.channelData.forEach(item => {
+                        if (res.data.priceNetSale && res.data.priceNetSale.length) {
+                            res.data.priceNetSale.forEach(channel => {
+                                if (item.uid == type.uid) {
+                                    item.price = type.price
+                                    item.switchStatus = true
+                                }
+                            })
+                        }
+                        if (!item.price) item.price = 0
+                        item.price = parseFloat(item.price).toFixed(2)
+                    })
+                    this.permitDiscount = !!res.data.ciPriceProgram.permitDiscount
+                    this.permitSaleBox = !!res.data.ciPriceProgram.permitSaleBox
+                    this.pricePlanDialog = false
+                }
+            })
+        },
+        toPricePlanDetail(id) {
+            this.$router.push({path: '/ticket/ticketPrice_Plan/Scan', query: {id}})
+        },
+         // 表格单选事件
+        selectedRow(val) {
+            this.currentRow = val
+        },
+        handleCurrentChange(curPage) {
+            this.importPricePlan(curPage)
+        },
+        // 提交批量保存价格
+        submitSetPrice() {
+            this.setBatchPirce()
+        },
+        setBatchPirce() {
+            let data = {
+                planBaseTicketList: this.editBatchData.baseTicket.map(item => {
+                    return item.selValue != 1 ? {
+                        setType: item.selValue,
+                        ticketName: item.name,
+                        uidBaseClass: item.uid,
+                        baseFlag: item.baseFlag
+                    } : {
+                        setType: item.selValue,
+                        ticketName: item.name,
+                        uidBaseClass: item.uid,
+                        price: item.price,
+                        addFee: item.addFee,
+                        baseFlag: item.baseFlag
+                    }
+                }),
+                planFavTicketList: this.editBatchData.favTicket.map(item => {
+                    return item.selValue != 1 ? {
+                        setType: item.selValue,
+                        channelName: item.name,
+                        channelNature: item.nature,
+                        uidChannel: item.uid
+                    } : {
+                        setType: item.selValue,
+                        channelName: item.name,
+                        channelNature: item.nature,
+                        uidChannel: item.uid,
+                        price: item.price,
+                        addFee: item.addFee
+                    }
+                }),
+                planMovieList: this.curSelectPlans.map(plan => {
+                    return {
+                        minPrice: plan.minPrice != undefined ? plan.minPrice : 0,
+                        movieCode: plan.movieCode,
+                        planDate: plan.startTime.hours < 6 ? this.formatDateTime(new Date(this.baseParam.planDate).getTime() + 24 * 60 * 60 * 1000) : this.baseParam.planDate,
+                        priceProgramName: this.curImportPricePlan.priceProgramName ? this.curImportPricePlan.priceProgramName : this.curPricePlan.priceProgramName,
+                        priceProgramUid: this.curImportPricePlan.priceProgramUid ? this.curImportPricePlan.priceProgramUid : this.curPricePlan.priceProgramUid,
+                        showTimeEnd: plan.endTime.hours < 6 ? `${this.formatDateTime(new Date(this.baseParam.planDate).getTime() + 24 * 60 * 60 * 1000)} ${plan.endTime.hours}:${plan.endTime.minute}` : `${this.baseParam.planDate} ${plan.endTime.hours}:${plan.endTime.minute}`,
+                        showTimeStart: plan.startTime.hours < 6 ? `${this.formatDateTime(new Date(this.baseParam.planDate).getTime() + 24 * 60 * 60 * 1000)} ${plan.startTime.hours}:${plan.startTime.minute}` : `${this.baseParam.planDate} ${plan.startTime.hours}:${plan.startTime.minute}`,
+                        // tenantId: ,
+                        uidCinema: this.baseParam.uidCinema,
+                        uidHall: plan.hallUid        
+                    }
+                })
+            }
+            setBatchPirce(data).then(res => {
+                console.log(res)
+            })
+        }
     },
     destroyed() {
         window.document.oncontextmenu = null
@@ -1153,6 +1512,59 @@ export default {
                     line-height: 32px;
                     font-size: 12px;
                     margin-right: 8px;
+                }
+            }
+        }
+    }
+    .el-table {
+        .input-con {
+            position: relative;
+            display: inline-block;
+            font-size: 12px;
+            .rmb-hover {
+                position: absolute;
+                left: 10px;
+                top: 2px;
+                font-size: 12px;
+                font-style: normal;
+            }
+            .el-input__inner {
+                width: 150px;
+                height: 20px;
+                padding-left: 20px;
+                padding-right: 0px;
+            }
+            .el-input {
+                width: 80px;
+                // height: 20px;
+                // line-height: 20px;
+                // font-size: 12px;\
+                display: inline-block;
+                .el-input__inner {
+                    width: 80px;
+                }
+            }
+        }
+    }
+    .edit-cichannel-table {
+        .cell {
+            span {
+                display: inline-block;
+                font-size: 12px;
+            }
+            .input-con {
+                // width: 120px;
+                vertical-align: middle;
+            }
+        }
+        .el-select {
+            .el-input {
+                width: 150px;
+                .el-input__inner {
+                    width: 150px;
+                    padding-right: 20px;
+                    font-size: 12px;
+                    color: #666;
                 }
             }
         }

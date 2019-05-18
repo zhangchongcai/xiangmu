@@ -35,7 +35,13 @@ export const menuList = params => {
     })
 }
 
-
+export const getUrl = params => {
+    return axios({
+        url: '/cpm/user/auth/getHomePageUrl',
+        method: 'get',
+        params
+    })
+}
 export const getFirstMenu = () => {
     return axios({
         url: '/cpm/menu/listNavigationMenu/1',
@@ -168,7 +174,7 @@ export const editRole  = data => {
 }
 export const deleteRole  = params => {
     return axios({
-        url: '/cpm/role/delRole'+ params.uid,
+        url: '/cpm/role/delRole/'+ params.uid,
         method: 'get',
     })
 }
@@ -251,7 +257,7 @@ export const modifyUserPassword  = data => {
 //***********日志************
 export const oplogList  = data => {
     return axios({
-        url: '/cpm/operationLog/listOperationLog ',
+        url: '/cpm/operationLog/listOperationLog',
         method: 'post',
         data
     })
@@ -291,6 +297,182 @@ export const dictDetail  = params => {
 export const listAuthCommCinemas = params => {
     return axios({
         url: '/cpm/user/auth/listAuthCommCinemas',
+        method: 'get',
+        params
+    })
+}
+export const  authQueryUserCinemas = params => {
+    return axios({
+        url: '/cpm/user/auth/queryUserCinemas',
+        method: 'get',
+        params
+    })
+}
+
+
+//**************客户管理***************
+export const cusList  = data => {
+    return axios({
+        url: '/cpm/buyer/listBuyerCondition',
+        method: 'post',
+        data
+    })
+}
+
+export const typeList = () => {
+    return axios({
+        url: '/cpm/buyer/listBuyerType',
+        method: 'get',
+    })
+}
+
+export const addCus = data => {
+    return axios({
+        url: '/cpm/buyer/addBuyer',
+        method: 'post',
+        data
+    })
+}
+
+export const editCus = data => {
+    return axios({
+        url: '/cpm/buyer/updateBuyer',
+        method: 'post',
+        data
+    })
+}
+
+export const cusDetail  = params => {
+    return axios({
+        url: '/cpm/buyer/getBuyerInfo/'+params,
+        method: 'get',
+    })
+}
+
+export const cusFn = params => {
+    return axios({
+        url: '/cpm/buyer/ifExitBuyerFullName',
+        method: 'get',
+        params
+    })
+}
+export const cusN = params => {
+    return axios({
+        url: '/cpm/buyer/ifExitBuyerName',
+        method: 'get',
+        params
+    })
+}
+
+export const changeStatu = data => {
+    return axios({
+        url: '/cpm/buyer/modifyStatus',
+        method: 'post',
+        data
+    })
+}
+
+
+// 获取短信模板
+
+export const  querySmsTemplate = params => {
+    return axios({
+        url: '/cpm/sms/querySmsTemplate',
+        method: 'get',
+        params
+    })
+}
+// 获取短信场景
+export const  querySmsScene = params => {
+    return axios({
+        url: '/cpm/sms/querySmsScene',
+        method: 'get',
+        params
+    })
+}
+// 获取短信场景
+
+export const  sendSingleMsg = params => {
+    return axios({
+        url: '/cpm/sms/sendSingleMsg',
+        method: 'get',
+        params
+    })
+}
+//
+export const createSmsTemplate  = data => {
+    return axios({
+        url: '/cpm/sms/createSmsTemplate',
+        method: 'post',
+        data
+    })
+}
+export const cpmFilmList  = params => {
+    return axios({
+        url: '/cpm/film/list',
+        method: 'get',
+        params
+    })
+}
+export const cpmFilmCodeList  = params => {
+    return axios({
+        url: '/cpm/filmCode/list',
+        method: 'get',
+        params
+    })
+}
+export const updateSmsTemplate  = data => {
+    return axios({
+        url: '/cpm/sms/updateSmsTemplate',
+        method: 'post',
+        data
+    })
+}
+export const deletSmsTemplate = params => {
+    return axios({
+        url: '/cpm/sms/deletSmsTemplate',
+        method: 'post',
+        params
+    })
+}
+
+
+//********节假日***********
+
+export const holList  = params => {
+    return axios({
+        url: '/cpm/holiday/list',
+        method: 'get',
+        params
+    })
+}
+export const newHol  = data => {
+    return axios({
+        url: '/cpm/holiday/add',
+        method: 'post',
+        data
+    })
+}
+
+export const editHol  = data => {
+    return axios({
+        url: '/cpm/holiday/edit',
+        method: 'post',
+        data
+    })
+}
+
+export const changeHolStatus  = data => {
+    return axios({
+        url: '/cpm/holiday/updateStatus',
+        method: 'post',
+        data
+    })
+}
+
+export const detailHol  = params => {
+    return axios({
+        url: '/cpm/holiday/get',
         method: 'get',
         params
     })

@@ -74,7 +74,6 @@ export default {
     },
     handleSubmitClick() {
       let colItem;
-      console.log(this.value);
       if (this.value == "like") {
         colItem = {
           queryColKey: this.colKey,
@@ -103,7 +102,8 @@ export default {
       if (colList[0].queryColValue != "" && colList[0].queryColValue != []) {
         datacenterBus.$emit("sendSearchData", colList);
         this.$emit("sendSelectStatus", selectStatus);
-        this.dialogVisible = false;
+        this.$emit("sendDialog1Visible")
+        this.visible = false;
         this.$forceUpdate();
       } else {
         this.$message({

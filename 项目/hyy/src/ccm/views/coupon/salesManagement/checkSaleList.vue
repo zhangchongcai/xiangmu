@@ -121,7 +121,7 @@ export default {
                         },
                         {
                             title: '票券分类',
-                            prop: 'couponTypeCode',
+                            prop: 'couponTypeId',
                             value: '',
                             type: 'text'
                         },
@@ -249,10 +249,11 @@ export default {
                     width: '967px',
                     height: '32px',
                     background: '#F2F4FD',
+                    border: ''
                 },
                 _main: {
                     width: '967px',
-                    border: '0 solid #BCBCBC'
+                    border: '1px solid #BCBCBC'
                 },
                 main: {
                     width: '776px',
@@ -261,8 +262,9 @@ export default {
                 aside: {
                     width: '192px',
                     height: '546px',
+                    background: 'unset',
                     border: {
-                        right: '0 solid #BCBCBC'
+                        right: '1px solid #BCBCBC'
                     }
                 }
 
@@ -342,12 +344,12 @@ export default {
         }
     },
     created() {
-        
+
         let query = this.$route.query;
         this.enterQuery = query;
         this.search(query.applyCode);
-        
-       // let baseInfoArr = this.unpackParams(data);
+
+        // let baseInfoArr = this.unpackParams(data);
 
     },
     methods: {
@@ -359,7 +361,7 @@ export default {
                 applyCode
             };
             this.$ccmList.checkSaleList(params).then(data => {
-                if(data.flag == 1) {
+                if (data.flag == 1) {
                     this.unpackParams(data.data);
                 }
             }).catch(msg => {
@@ -772,7 +774,7 @@ export default {
                     } else {
                         tableItem[`count`] = actionsObj[`amount`].value;
                     }
-                    
+
                     obj.tableData.push(tableItem);
                 })
 
@@ -936,10 +938,12 @@ export default {
 
 .voucherRuleItem {
     margin-bottom: 10px;
+
     .title {
         text-align: right;
         @include font-base;
     }
+
     .content {
         margin-left: 16px;
         @include font-base;
@@ -956,6 +960,9 @@ export default {
         height: 32px;
         margin-bottom: 8px;
         cursor: pointer;
+        span:nth-of-type(1) {
+                font-weight: bold;
+        }
 
         span {
             @include font-base;
@@ -983,6 +990,9 @@ export default {
 }
 
 .rule-content {
+    li:nth-of-type(1) {
+        padding-top:16px;
+    }
     li {
         margin: 16px 0 16px 24px;
 

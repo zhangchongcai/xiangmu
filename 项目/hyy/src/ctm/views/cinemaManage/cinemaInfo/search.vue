@@ -90,6 +90,7 @@
             <div class="line" v-if="activeNames != 1"></div>
         </el-collapse>
         <div class="footer">
+            <el-button type="primary"  @click="edit" >修改</el-button>
             <el-button type="primary" plain @click="goBack">返回</el-button>
         </div>
     </div>
@@ -140,33 +141,43 @@ export default {
     },
     methods:{
         getInfo() {
-                var getname = this.getname;
-                this.$ctmList.cinemaGetInfo(this.$route.query.uid).then((response)=> {
-                    //城市名字分割
-                    let data = response.data//获得数据
-                    var code = data.areaCode
-                    code = code.split(':')
-                    var erea = data.areaName;
-                    erea = erea.split(':')
-                    data.area = data.area || {}
-                    data.area.pcode = code[0]
-                    data.area.ccode = code[1]
-                    data.area.pname = erea[0]
-                    data.area.cname = erea[1]
-                    this.cinemaData = data
-                    this.cinemaData.usbkey = data.usbkey? data.usbkey : ''
-                    this.status = data.status==1?true : false
-                    this.cinemaData.status= Number(data.status)
-                    getname(code[0]);
+            var getname = this.getname;
+            this.$ctmList.cinemaGetInfo(this.$route.query.uid).then((response)=> {
+                //城市名字分割
+                let data = response.data//获得数据
+                var code = data.areaCode
+                code = code.split(':')
+                var erea = data.areaName;
+                erea = erea.split(':')
+                data.area = data.area || {}
+                data.area.pcode = code[0]
+                data.area.ccode = code[1]
+                data.area.pname = erea[0]
+                data.area.cname = erea[1]
+                this.cinemaData = data
+                this.cinemaData.usbkey = data.usbkey? data.usbkey : ''
+                this.status = data.status==1?true : false
+                this.cinemaData.status= Number(data.status)
+                getname(code[0]);
 
-                })
-                .catch(function (error) {
-                    console.log(error);
-                });
-            },
-            goBack() {
-                this.$router.go(-1)
-            }
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+        },
+        //返回
+        goBack() {
+            this.$router.push({
+                path:'/ticket/cinema/list',
+            })
+        },
+        //修改
+        edit(){
+            this.$router.push({
+                path:"/ticket/cinema/edit",
+                query:{uid:this.$route.query.uid}
+            })
+        }
     },
     created() {
         this.getInfo();
@@ -178,9 +189,10 @@ export default {
 <style lang="scss">
     .footer{
         text-align: center;
-        // margin-top: -52px
     }
     .cinemaInfo{
+        padding: 0 15px;
+
         .el-col{
             font-size: 12px;
             height: 51px;

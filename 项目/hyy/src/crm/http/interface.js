@@ -1,4 +1,5 @@
 import axios from "./api";
+//import axios from "../../frame_cpm/http/api";
 
 /**
  * 将所有接口统一起来便于维护
@@ -102,6 +103,14 @@ export const cardbatchAdd = data => {
     url: modelUrl +"/cardbatch/add",
     method: "post",
     data
+  });
+};
+export const memberLogListPage = params => {
+  //会员变更历史/操作日志
+  return axios({
+    url: modelUrl +"/log/listPage",
+    method: "get",
+    params
   });
 };
 
@@ -376,10 +385,34 @@ export const  diffCommodityDetail = params => {
     params
   });
 };
-
-
-
 /* --------- 异业商品类型  end --------- */
+
+/* --------- 异业权益类型  strat --------- */
+export const  getdiffEquityList = params => {
+  //异业权益列表
+  return axios({
+    url: modelUrl +"/diff/equity/list",
+    method: "get",
+    params
+  });
+};
+export const  getdiffEquityDetail = params => {
+  //异业权益详情
+  return axios({
+    url: modelUrl +"/diff/equity/detail",
+    method: "get",
+    params
+  });
+};
+export const diffEquityStatus = data => {
+  //启动停用卡权益
+  return axios({
+    url: modelUrl +"/diff/equity/status",
+    method: "post",
+    data
+  });
+};
+/* --------- 异业权益类型  end --------- */
 
 /* --------- 会员等级成长值 start --------- */
 export const getLevelDetail = params => {
@@ -402,8 +435,117 @@ export const editMemberLevel = data => {
 
 
 /* --------- 会员等级成长值 end --------- */
+/* --------- 异业商品 start --------- */
+export const goodsNameIsExist = params => {
+  //异业商品名称唯一性
+  return axios({
+    url: modelUrl +"/diff/goods/name/isexist",
+    method: "get",
+    params
+  });
+};
+export const addDiffGoods = data => {
+  //添加异业商品
+  return axios({
+    url: modelUrl +"/diff/goods/add",
+    method: "post",
+    data
+  });
+};
+export const diffGoodsDetailList = params => {
+  //异业商品明细列表
+  return axios({
+    url: modelUrl +"/diff/goods/detail/list",
+    method: "get",
+    params
+  });
+};
+
+/* --------- 异业商品 end --------- */
+/* --------- 异业商品 start --------- */
+  //异业商品名称唯一性
+export const editDiffGoods = data => {
+  //修改异业商品
+  return axios({
+    url: modelUrl +"/diff/goods/edit",
+    method: "post",
+    data
+  });
+};
+export const diffGoodsUpdateStatus = data => {
+  //修改商品状态
+  return axios({
+    url: modelUrl +"/diff/goods/update/status",
+    method: "post",
+    data
+  });
+};
+export const diffGoodsList = params => {
+  //异业商品列表
+  return axios({
+    url: modelUrl +"/diff/goods/list",
+    method: "get",
+    params
+  });
+};
+export const diffGoodsDetail = params => {
+  //异业商品详情
+  return axios({
+    url: modelUrl +"/diff/goods/detail",
+    method: "get",
+    params
+  });
+};
+/* --------- 异业商品 end --------- */
+/* --------- 异业权益 start --------- */
+export const diffEquityNameIsexist = params => {
+  //异业权益名称唯一性
+  return axios({
+    url: modelUrl +"/diff/equity/name/isexist",
+    method: "get",
+    params
+  });
+};
+export const diffEquityDetail = params => {
+  //异业权益详情
+  return axios({
+    url: modelUrl +"/diff/equity/detail",
+    method: "get",
+    params
+  });
+};
+export const diffEquityAdd = data => {
+  //添加异业权益
+  return axios({
+    url: modelUrl +"/diff/equity/add",
+    method: "post",
+    data
+  });
+};
+export const diffEquityEdit = data => {
+  //修改异业权益
+  return axios({
+    url: modelUrl +"/diff/equity/edit",
+    method: "post",
+    data
+  });
+};
+/* --------- 异业权益 end --------- */
 
 export default {
+  diffGoodsDetailList ,
+  memberLogListPage,
+  diffGoodsUpdateStatus,
+  editDiffGoods,
+  diffGoodsDetail,
+  diffEquityStatus,
+  diffEquityEdit,
+  diffEquityAdd,
+  diffEquityDetail,
+  diffGoodsList,
+  diffEquityNameIsexist,
+  addDiffGoods,
+  goodsNameIsExist,
   getLevelDetail,
   editMemberLevel,
   diffCommodityTypeedit,
@@ -448,5 +590,7 @@ export default {
   cardTypeList,
   checkStatus,
   cardTypeNameIsExist,
-  addCardType
+  addCardType,
+  getdiffEquityList,
+  getdiffEquityDetail
 };

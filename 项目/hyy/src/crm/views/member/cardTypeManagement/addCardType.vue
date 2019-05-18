@@ -22,7 +22,7 @@
               <el-input v-model="ruleForm.cardName"></el-input>
             </el-form-item>
             <el-form-item label="卡类型：" prop="cardTypeCode">
-              <el-radio-group v-model="ruleForm.cardTypeCode" :disabled="$route.query.cardId" @change="handleChangeCardType('ruleForm')">
+              <el-radio-group v-model="ruleForm.cardTypeCode" :disabled="$route.query.cardId?true:false" @change="handleChangeCardType('ruleForm')">
                 <el-radio label="stored_card">储值卡</el-radio>
                 <el-radio label="equity_card">权益卡</el-radio>
                 <el-radio label="cobranded_card">联名卡</el-radio>
@@ -107,10 +107,10 @@
                 <el-input v-model="ruleForm.makeUpPrice"></el-input>
                 <span class="unit">元</span>
               </el-form-item>
-              <el-form-item label="换卡手续费：" prop="replacePrice">
+              <!-- <el-form-item label="换卡手续费：" prop="replacePrice">
                 <el-input v-model="ruleForm.replacePrice"></el-input>
                 <span class="unit">元</span>
-              </el-form-item>
+              </el-form-item> -->
               <el-form-item label="注销手续费：" prop="backPrice">
                 <el-input v-model="ruleForm.backPrice"></el-input>
                 <span class="unit">元</span>
@@ -173,7 +173,12 @@
                 <el-input v-model="ruleForm.price"></el-input>
                 <span class="unit">元</span>
               </el-form-item>
-
+              <el-form-item label="免密支付：" prop="freeConsumption">
+                <el-select v-model="ruleForm.freeConsumption" placeholder="请选择">
+                  <el-option label="允许免密支付" :value="true"></el-option>
+                  <el-option label="不允许免密支付" :value="false"></el-option>
+                </el-select>
+              </el-form-item>
             </template>
             <!-- 权益卡 end -->
             <!-- ------------------------------------------------------------------------------------------ -->
@@ -270,7 +275,7 @@
             <el-form-item label="权益：" prop="equityList">
               <div class="equity-item-wrap">
                 <div class="equity-coupon-item" v-for="(item, index) of ruleForm.equityList" :key="index">
-                  <i class="iconfont icon-neiye-danchuangquxiao" @click="handleDeleteEquity(item.id,index)"></i>
+                  <i class="iconfont icon-neiye-danchuangquxiao" @click="handleDeleteEquity(index)"></i>
                   <img src="../../../assets/image/white-dot.png" class="white-dot">
                   <div class="coupon-item-type" :class="item.equityType == 'consumer_type'?'consumption-type-color':item.equityType == 'service_type'?'service-type-color':item.equityType == 'experience_type'?'experience-type-color':'identity-type-color'">
                     {{item.equityTypeName}}
@@ -315,7 +320,7 @@
           </el-form-item>
         </el-form>
         <div class="member-list-table _m-member-table-custom">
-          <el-table ref="multipleTable" :data="tableData" stripe style="width: 100%" @selection-change="handleSelect"
+          <el-table ref="multipleTable" :data="tableData" stripe style="width: 100%" @select="handleSelect" @select-all="handleSelect"
             :row-key="getRowKeys">
             <el-table-column type="selection" width="55" :reserve-selection="true">
             </el-table-column>
@@ -329,8 +334,8 @@
         </div>
         <!-- 分页 start -->
         <div class="page-wrap" style="padding:0">
-          <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage"
-            :page-size="formData.size" layout="prev, pager, next, jumper, sizes" :page-sizes="[20 , 50 , 100]" :total="total-0"></el-pagination>
+          <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage-0"
+            :page-size="formData.size-0" layout="prev, pager, next, jumper, sizes" :page-sizes="[20 , 50 , 100]" :total="total-0"></el-pagination>
         </div>
         <!-- 分页 end -->
       </div>
@@ -395,7 +400,7 @@
         <!-- 分页 start -->
         <div class="page-wrap">
           <el-pagination background @size-change="handleMerchantSizeChange" @current-change="handleMerchantCurrentChange"
-            :current-page="searchData.current" :page-size="searchData.size" layout="prev, pager, next, jumper, sizes"
+            :current-page="searchData.current-0" :page-size="searchData.size-0" layout="prev, pager, next, jumper, sizes"
             :page-sizes="[20 , 50 , 100]" :total="merchantTotal-0"></el-pagination>
         </div>
         <!-- 分页 end -->
@@ -479,17 +484,37 @@ export default {
         if (value.toString().replace(/\s/g, "") * 1 <= 0) {
           callback(new Error("请输入大于0的数字"));
         }
-        if(this.ruleForm.firstChargeMin && this.ruleForm.chargeMin && this.ruleForm.chargeMax){
-          if(this.ruleForm.firstChargeMin.toString().replace(/\s/g, "") * 1 > this.ruleForm.chargeMax.toString().replace(/\s/g, "") * 1 && rule.field == "firstChargeMin"){
+        if (
+          this.ruleForm.firstChargeMin &&
+          this.ruleForm.chargeMin &&
+          this.ruleForm.chargeMax
+        ) {
+          if (
+            this.ruleForm.firstChargeMin.toString().replace(/\s/g, "") * 1 >
+              this.ruleForm.chargeMax.toString().replace(/\s/g, "") * 1 &&
+            rule.field == "firstChargeMin"
+          ) {
             callback(new Error("首充最小金额不能大于单充最大金额"));
           }
-          if(this.ruleForm.chargeMin.toString().replace(/\s/g, "") * 1 > this.ruleForm.chargeMax.toString().replace(/\s/g, "") * 1 && rule.field == "chargeMin"){
+          if (
+            this.ruleForm.chargeMin.toString().replace(/\s/g, "") * 1 >
+              this.ruleForm.chargeMax.toString().replace(/\s/g, "") * 1 &&
+            rule.field == "chargeMin"
+          ) {
             callback(new Error("单充最小金额不能大于单充最大金额"));
           }
-          if(this.ruleForm.firstChargeMin.toString().replace(/\s/g, "") * 1 > this.ruleForm.chargeMax.toString().replace(/\s/g, "") * 1 && rule.field == "chargeMax"){
+          if (
+            this.ruleForm.firstChargeMin.toString().replace(/\s/g, "") * 1 >
+              this.ruleForm.chargeMax.toString().replace(/\s/g, "") * 1 &&
+            rule.field == "chargeMax"
+          ) {
             callback(new Error("单充最大金额不能小于首充最小金额"));
           }
-          if(this.ruleForm.chargeMin.toString().replace(/\s/g, "") * 1 > this.ruleForm.chargeMax.toString().replace(/\s/g, "") * 1 && rule.field == "chargeMax"){
+          if (
+            this.ruleForm.chargeMin.toString().replace(/\s/g, "") * 1 >
+              this.ruleForm.chargeMax.toString().replace(/\s/g, "") * 1 &&
+            rule.field == "chargeMax"
+          ) {
             callback(new Error("单充最大金额不能小于单充最小金额"));
           }
         }
@@ -701,7 +726,6 @@ export default {
     };
     // 校验是否选择商户
     var checkMerchantSelect = (rule, value, callback) => {
-      console.log("this.ruleForm.merchantList---", rule, value);
       if (!this.currentMerchantRow.merchantId) {
         callback(new Error("请选择商户"));
       } else {
@@ -710,7 +734,6 @@ export default {
     };
     // 校验是否选择权益
     var checkEquitySelect = (rule, value, callback) => {
-      console.log("rule, value=========", rule, value);
       if (this.ruleForm.equityList.length == 0) {
         callback(new Error("请选择权益"));
       } else {
@@ -830,12 +853,13 @@ export default {
         mustFill: ["user_name", "sex", "birthday", "phone_number"], //开卡必填（姓名，手机号...）
         weakPassword: 0, //是否允许简单密码
         canCharge: 1, //是否允许充值
+        freeConsumption: false,//是否免费支付
         firstChargeMin: "50", //首充最小金额
         chargeMin: "", //最大充值金额
         chargeMax: "", //最小充值金额
         openPrice: "", //开卡手续费
         makeUpPrice: "", //补卡手续费
-        replacePrice: "0", //换卡手续费
+        // replacePrice: "0", //换卡手续费
         backPrice: "0", //注销手续费
         price: "", //权益卡售价
         canDelay: "no_delay", //权益卡延期设置
@@ -878,6 +902,7 @@ export default {
           { required: false, validator: checkRemark, trigger: "blur" }
         ],
         canCharge: [{ required: true, message: "请选择", trigger: "change" }],
+        freeConsumption: [{ required: true, message: "请选择", trigger: "change" }],
         firstChargeMin: [
           { required: true, validator: checkMoney, trigger: "blur" }
         ],
@@ -887,9 +912,9 @@ export default {
         makeUpPrice: [
           { required: true, validator: checkMoney, trigger: "blur" }
         ],
-        replacePrice: [
-          { required: true, validator: checkMoney, trigger: "blur" }
-        ],
+        // replacePrice: [
+        //   { required: true, validator: checkMoney, trigger: "blur" }
+        // ],
         backPrice: [{ required: true, validator: checkMoney, trigger: "blur" }],
         MinIssuePrice: [
           { required: true, validator: checkMoney, trigger: "blur" }
@@ -967,14 +992,16 @@ export default {
     }
   },
   mounted() {
-    this.$crmList.channelList({ tenantId:  this.$store.state.loginUser.consumerId }).then(res => {
-      this.channels = res;
-      this.allChannels = res;
-      // 添加时的初始化
-      this.checkedChannels = res.map(item => {
-        return item.desc + "," + item.code;
+    this.$crmList
+      .channelList({ tenantId: this.$store.state.loginUser.consumerId })
+      .then(res => {
+        this.channels = res;
+        this.allChannels = res;
+        // 添加时的初始化
+        this.checkedChannels = res.map(item => {
+          return item.desc + "," + item.code;
+        });
       });
-    });
     this.$route.query.cardId
       ? this.getcardTypeInfo(this.$route.query.cardId)
       : console.log("添加卡");
@@ -1016,7 +1043,6 @@ export default {
     },
     // 初始化年费信息
     handleInitYearRule(val) {
-      // console.log("val---", this.ruleForm.annualFee);
       if (val && this.ruleForm.yearRule == null) {
         this.ruleForm.yearRule = {
           price: "0", //卡年费
@@ -1081,7 +1107,6 @@ export default {
         })
         .catch(err => {
           this.tipMessage = err.message;
-          console.log("errrrrrr", err.message);
         });
     },
     // 选择商户dialog中点击搜索
@@ -1094,7 +1119,6 @@ export default {
       if (val == "custom_card") {
         this.ruleForm.custom = true;
         this.ruleForm.picPath = "";
-        // console.log("this.ruleForm.picPath===", this.ruleForm.picPath);
       } else {
         this.ruleForm.custom = false;
         if (val == "enjoy_gold") {
@@ -1128,16 +1152,15 @@ export default {
     changeEquityDialog(ok) {
       this.equityDialog = false;
       if (ok) {
-        this.ruleForm.equityList = this.multipleSelectionItem;
+        this.ruleForm.equityList = new Array(...this.multipleSelectionItem) ;
+      } else {
+        this.multipleSelectionItem = new Array(...this.ruleForm.equityList);
       }
     },
     // 添加权益
     handleAddEquityDialog() {
       this.search();
       this.equityDialog = true;
-      setTimeout(() => {
-        this.rowMultipleChecked(this.multipleSelectionItem);
-      }, 500);
     },
     // 预览权益
     handlePreviewEquity(id) {
@@ -1145,32 +1168,22 @@ export default {
       this.previewDialog = true;
     },
     // 删除权益
-    handleDeleteEquity(id, index) {
+    handleDeleteEquity(index) {
       this.ruleForm.equityList.splice(index, 1);
-      for (var i = 0; i < this.multipleSelectionItem.length; i++) {
-        if (id == this.multipleSelectionItem[i].id) {
-          this.multipleSelectionItem.splice(i, 1);
-        }
-      }
-      // var arr = [];
-      // arr = this.ruleForm.equityList;
-      // var arrone = arr.splice(index, 1);
-      // console.log(this.ruleForm.equityList);
-      // this.ruleForm.equityList = arr;
-      // console.log("delete后的数组------", arrone[0]);
-      // this.$refs.multipleTable.toggleRowSelection(arrone[0], false);
+      this.multipleSelectionItem = new Array(...this.ruleForm.equityList)
     },
     // 权益回显
     rowMultipleChecked(selectedArr) {
       if (selectedArr.length != 0) {
         for (let i = 0; i < selectedArr.length; i++) {
           for (let k = 0; k < this.tableData.length; k++) {
-            if (selectedArr[i].equityId == this.tableData[k].id) {
-              this.$refs.multipleTable.toggleRowSelection(
-                this.tableData[k],
-                true
-              );
-            }
+            if (selectedArr[i].id == this.tableData[k].id) {
+                this.$refs.multipleTable.toggleRowSelection(
+                  this.tableData[k],
+                  true
+                );
+                break
+              }
           }
         }
       }
@@ -1182,35 +1195,59 @@ export default {
     getRowKeys(row) {
       return row.id;
     },
+    //单一数据toggle
+    rowOneToggle(row){
+        for (let index = 0; index < this.multipleSelectionItem.length; index++) {
+          if(row.id == this.multipleSelectionItem[index].id){
+            this.multipleSelectionItem.splice(index,1)
+            return
+          }
+        }
+        this.multipleSelectionItem.push(row)
+    },
+    //单一数据add
+    rowOneAdde(row){
+        for (let index = 0; index < this.multipleSelectionItem.length; index++) {
+          if(row.id == this.multipleSelectionItem[index].id){
+            return
+          }
+        }
+        this.multipleSelectionItem.push(row)
+    },
+    //单一数据reomove
+    rowOneRemove(row){
+        for (let index = 0; index < this.multipleSelectionItem.length; index++) {
+          if(row.id == this.multipleSelectionItem[index].id){
+            this.multipleSelectionItem.splice(index,1)
+            return
+          }
+        }
+    },
     //手动选择权益
-    handleSelect(selection,row) {
-      console.log('点击全选时',selection)
-      if (selection.length == 0) {
-        return;
+    handleSelect(selection, row) {
+      if(row){
+        this.rowOneToggle(row)
+      }else{
+        if(selection.length == 0){
+          for (let index = 0; index < this.tableData.length; index++) {
+            const item = this.tableData[index];
+            this.rowOneRemove(item)
+          }
+        }else{
+          for (let j = 0; j < selection.length; j++) {
+            const selectionItem = selection[j];
+            this.rowOneAdde(selectionItem);
+          }
+        }
       }
-      this.multipleSelectionItem = selection;
-      
-      // for(var i = 0;i<this.multipleSelectionItem.length;i++) {
-      //   if(this.getRowKeys(row) == this.multipleSelectionItem[i].id) {
-      //     this.multipleSelectionItem.splice(i,1)
-      //   }else{
-      //     this.multipleSelectionItem.push(i,1)
-      //   }
-      // }
     },
     handleSizeChange(val) {
       this.formData.size = val;
       this.search();
-      setTimeout(() => {
-        this.rowMultipleChecked(this.multipleSelectionItem);
-      }, 500);
     },
     handleCurrentChange(val) {
       this.formData.current = val;
       this.search();
-      setTimeout(() => {
-        this.rowMultipleChecked(this.multipleSelectionItem);
-      }, 500);
     },
     // 搜索自有权益
     search() {
@@ -1220,6 +1257,9 @@ export default {
         .then(data => {
           this.tableData = data.records;
           this.total = data.total;
+          this.$refs.multipleTable.clearSelection();
+          console.log('this.ruleForm.equityList3243234634655',this.ruleForm.equityList)
+          this.rowMultipleChecked(this.multipleSelectionItem);
           // this.loading = false;
         })
         .catch(err => {
@@ -1259,9 +1299,7 @@ export default {
       let resData = res.map(item => {
         return item.channelName;
       });
-      console.log("resData==", resData);
       if (resData.indexOf("影城前台") != -1 && resData.length == 1) {
-        console.log("只有影城前台");
         this.frontDesk = true;
         this.networkSale = false;
         this.checkAllChannels = false;
@@ -1269,7 +1307,6 @@ export default {
         this.checkedChannels = [];
       }
       if (resData.indexOf("全选") != -1) {
-        console.log("全都有", this.checkedChannels);
         this.frontDesk = true;
         this.networkSale = true;
         this.checkAllChannels = true;
@@ -1283,7 +1320,6 @@ export default {
         resData.length <= this.channels.length &&
         resData.length != 1
       ) {
-        console.log("有前台，但不全选");
         this.frontDesk = true;
         this.networkSale = true;
         this.checkAllChannels = false;
@@ -1294,7 +1330,6 @@ export default {
       }
 
       if (resData.indexOf("影城前台") == -1 && resData.length > 1) {
-        console.log("没有影城前台，有其他的");
         this.frontDesk = false;
         this.networkSale = true;
         this.checkedChannels = res.map(item => {
@@ -1309,15 +1344,23 @@ export default {
         ? formatDate.mustFill.split(",")
         : [];
       // 处理卡权益的回显
-      this.multipleSelectionItem = formatDate.equityList;
-      // this.multipleSelectionItem = formatDate.equityList.map(item => {
-      //   return {
-      //     id: item.equityId,
-      //     equityName: item.equityName,
-      //     equityType: item.equityType,
-      //     equityTypeName: item.equityTypeName
-      //   };
-      // });
+      // this.multipleSelectionItem = formatDate.equityList;
+      this.multipleSelectionItem = formatDate.equityList.map(item => {
+        return {
+          id: item.equityId,
+          equityName: item.equityName,
+          equityType: item.equityType,
+          equityTypeName: item.equityTypeName
+        };
+      });
+      formatDate.equityList = formatDate.equityList.map(item => {
+        return {
+          id: item.equityId,
+          equityName: item.equityName,
+          equityType: item.equityType,
+          equityTypeName: item.equityTypeName
+        };
+      });
       // 处理商户
       if (formatDate.cardTypeCode == "cobranded_card") {
         this.currentMerchantRow = {
@@ -1357,7 +1400,10 @@ export default {
     //获取卡详情
     getcardTypeInfo(cardId) {
       this.$crmList
-        .getcardTypeInfo({ cardProductId: cardId, tenantId:  this.$store.state.loginUser.consumerId })
+        .getcardTypeInfo({
+          cardProductId: cardId,
+          tenantId: this.$store.state.loginUser.consumerId
+        })
         .then(res => {
           this.$set(this, "ruleForm", this.dataTurnFormatDate(res));
           this.initChannel(res.channelList);
@@ -1365,7 +1411,6 @@ export default {
     },
     // 表单提交前的 可售渠道处理
     handleSalableChannel(data) {
-      console.log("data.list===", data);
       data.list = [];
       if (this.frontDesk && this.networkSale && this.checkAllChannels) {
         this.checkedChannels.push("影城前台,front_desk", "全选,0");
@@ -1391,10 +1436,6 @@ export default {
     },
     // 提交表单数据
     handleSave() {
-      console.log(
-        "JSON.parse(JSON.stringify(this.ruleForm))---",
-        JSON.parse(JSON.stringify(this.ruleForm))
-      );
       let data = JSON.parse(JSON.stringify(this.ruleForm));
       data.mustFill = data.mustFill.join(",");
       data = this.handleSalableChannel(data);
@@ -1402,25 +1443,24 @@ export default {
       if (this.ruleForm.cardTypeCode == "cobranded_card") {
         data.merchantList = [this.currentMerchantRow];
       }
-      if(this.$route.cardId){
+      if (this.$route.query.cardId) {
         data.equityList = data.equityList.map(item => {
-        return {
-          equityId: item.equityId,
-          equityName: item.equityName,
-          equityType: item.equityType
-        };
-      });
-      }else{
+          return {
+            equityId: item.equityId ? item.equityId : item.id,
+            equityName: item.equityName,
+            equityType: item.equityType
+          };
+        });
+      } else {
         data.equityList = data.equityList.map(item => {
-        return {
-          equityId: item.id,
-          equityName: item.equityName,
-          equityType: item.equityType
-        };
-      });
+          return {
+            equityId: item.id,
+            equityName: item.equityName,
+            equityType: item.equityType
+          };
+        });
       }
 
-      console.log("提交前的data========", data);
       if (this.$route.query.cardId) {
         this.$crmList
           .editcardTypeInfo(data)
@@ -1586,7 +1626,7 @@ export default {
     .card-type-basic-set {
       padding: 0 15px;
       .el-form-item__error {
-        top: 12px !important;
+        top: 8.5px !important;
         left: 380px;
       }
       .card-style-wrap {
@@ -1684,7 +1724,7 @@ export default {
     .open-card-recharge-set {
       padding: 0 15px;
       .el-form-item__error {
-        top: 12px !important;
+        top: 8.5px !important;
         left: 380px;
       }
       .checked-fee-wrap {

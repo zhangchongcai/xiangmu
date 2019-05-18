@@ -1,5 +1,5 @@
 <template>
-    <div class="contentCenter">
+    <div class="content-wrapper">
         <div class="breadcrumb">
             <el-breadcrumb separator-class="el-icon-arrow-right">
                 <el-breadcrumb-item>系统设置</el-breadcrumb-item>
@@ -12,10 +12,10 @@
                 <el-input v-model="ruleForm.loginName"  disabled></el-input>
             </el-form-item>
             <el-form-item label="用户名称" prop="fullName">
-                <el-input v-model="ruleForm.fullName" placeholder="请输入20个以内汉字或字符"></el-input>
+                <el-input v-model="ruleForm.fullName"></el-input>
             </el-form-item>
             <el-form-item label="用户编码" prop="empCode">
-                <el-input v-model="ruleForm.empCode" placeholder="请输入10个以内汉字或字符"></el-input>
+                <el-input v-model="ruleForm.empCode"></el-input>
             </el-form-item>
             <el-form-item label="状态" prop="status" >
                 <el-radio v-model="ruleForm.status" label="0" >启用</el-radio>
@@ -47,11 +47,12 @@
         </el-form>
         <el-dialog :title="title" :visible.sync="dialogVisible">
             <el-table
+                    :reserve-selection="true"
                     v-if="treeFlag"
                     :data="roleArr"
                     style="width: 100%"
                     ref="multipleTable"
-                    :row-key="getRowKeys"
+                    :row-key="getrowkey"
                     @selection-change="handleSelectionChange"
             >
                 <el-table-column
@@ -73,23 +74,31 @@
                     @node-click="handleNodeClick"
                     node-key="id"
                     default-expand-all
+                    :expand-on-click-node="false"
                     :highlight-current="true"
                     :props="defaultProps"
             >
+                <span class="custom-tree-node" slot-scope="{ node, data }">
+                <span class="org-button">
+                    <i class="el-icon-menu" v-if="data.isCinema==0||data.isCinema==null"></i>
+                    <i class="el-icon-document" v-else></i>
+                    {{data.text}}
+                  </span>
+                </span>
             </el-tree>
-            <!-- footer 分页条 -->
-            <!--<div class="page-wrap" v-if="treeFlag">-->
-                <!--<el-pagination-->
-                        <!--background-->
-                        <!--@size-change="handleSizeChange"-->
-                        <!--@current-change="handleCurrentChange"-->
-                        <!--:current-page.sync="currentPage"-->
-                        <!--:page-sizes="[10, 25, 50, 100]"-->
-                        <!--:page-size="pageSize"-->
-                        <!--layout="total, sizes, prev, pager, next, jumper"-->
-                        <!--:total="total">-->
-                <!--</el-pagination>-->
-            <!--</div>-->
+             <!--footer 分页条 -->
+            <div class="page-wrap" v-if="treeFlag">
+                <el-pagination
+                        background
+                        @size-change="handleSizeChange"
+                        @current-change="handleCurrentChange"
+                        :current-page.sync="currentPage"
+                        :page-sizes="[10, 25, 50, 100]"
+                        :page-size="pageSize"
+                        layout="total, sizes, prev, pager, next, jumper"
+                        :total="total">
+                </el-pagination>
+            </div>
             <div slot="footer" class="dialog-footer">
                 <el-button @click="cancel">取 消</el-button>
                 <el-button type="primary" @click="ok">确 定</el-button>
@@ -107,9 +116,17 @@
                     node-key="id"
                     default-expand-all
                     show-checkbox
+                    :expand-on-click-node="false"
                     :highlight-current="true"
                     :props="defaultProps"
             >
+               <span class="custom-tree-node" slot-scope="{ node, data }">
+                <span class="org-button">
+                    <i class="el-icon-menu" v-if="data.isCinema==0||data.isCinema==null"></i>
+                    <i class="el-icon-document" v-else></i>
+                    {{data.text}}
+                  </span>
+                </span>
             </el-tree>
             <div slot="footer" class="dialog-footer">
                 <el-button @click="cancel">取 消</el-button>
@@ -138,7 +155,6 @@
                 formLabelWidth: '100px',
                 uid: '',
                 roleArr: [],
-                roles: [],
                 roleIds: [],
                 orgArr: [],
                 deptArr: [],
@@ -188,15 +204,14 @@
                         { required: true, message: '请选择角色', trigger: 'blur' }
                     ]
                 },
-                // 获取row的key值
-                getRowKeys(row) {
-                    return row.id;
+                getrowkey(row) {
+                  return row.id
                 }
             }
         },
         created() {
             this.uid = localStorage.getItem('onlyUser')
-            this.getRoleTreeList()
+            // this.getRoleTreeList()
             this.getOrgTreeList()
             this.getUser()
         },
@@ -212,7 +227,7 @@
                                 fullName: this.ruleForm.fullName,
                                 empCode: this.ruleForm.empcode,
                                 status: this.ruleForm.status,
-                                orgUid: this.ruleForm.orgUid,
+                                orgUid: this.orgUid,
                                 orgType: this.orgType,
                                 phone: this.ruleForm.phone,
                                 email: this.ruleForm.email
@@ -251,14 +266,12 @@
                 if(this.treeFlag) {
                     let arr = []
                     let arrIds = []
-                    if(this.multipleSelection.length!=0){
-                      this.multipleSelection.forEach(item=>{
+                    this.multipleSelection.forEach(item=>{
                         arr.push(item.name)
                         arrIds.push(item.uid)
-                      })
-                      this.ruleForm.rolesName = [ ...new Set(arr)].join('，')
-                      this.roleIds = [ ...new Set(arrIds)]
-                    }
+                    })
+                    this.ruleForm.rolesName = arr.join('，')
+                    this.roleIds = arrIds
                 }
             },
             ok2() {
@@ -302,11 +315,7 @@
                 this.ruleForm.orgName = val.text
             },
             handleSelectionChange(val) {
-              if(val) {
                 this.multipleSelection = val
-              }else{
-                this.roleIds = []
-              }
             },
             getUser(){
                 let _this = this;
@@ -316,17 +325,16 @@
                             this.ruleForm.loginName = ret.data.user.loginName
                             this.ruleForm.fullName = ret.data.user.fullName
                             this.ruleForm.status = ret.data.user.status.toString()
-
                             this.ruleForm.empCode = ret.data.user.empCode
                             this.orgUid = ret.data.user.orgUid
                             this.ruleForm.orgName = ret.data.user.organization.name
                             let arr = []
-                            this.roles = ret.data.user.roles
-                            this.roles.forEach(item=>{
+                            this.multipleSelection = ret.data.user.roles
+                            this.multipleSelection.forEach(item=>{
                                 this.roleIds.push(item.uid)
                                 arr.push(item.name)
                             })
-                            this.ruleForm.rolesName = arr.join('，')
+                            this.ruleForm.rolesName= arr.join('，')
                             this.orgType = ret.data.user.orgType.toString()
                             this.radioType = ret.data.radioType.toString()
                             this.ruleForm.phone = ret.data.user.phone
@@ -345,20 +353,23 @@
                     .catch(() => {
                     });
             },
+            toggleSelection(rows) {
+                if (rows) {
+                  rows.forEach(row => {
+                    this.$refs.multipleTable.toggleRowSelection(row,true);
+                  });
+                }
+            },
             getTree(val) {
                 if(val==1) {
                     this.dialogVisible = true
                     this.title = '选择所属角色'
                     this.treeFlag = true
-                    // this.$nextTick(()=>{
-                    //   if (this.roles.length!=0) {
-                    //     this.roles.forEach(row => {
-                    //       this.$refs.multipleTable.toggleRowSelection(row,true);
-                    //     });
-                    //   } else {
-                    //     this.$refs.multipleTable.clearSelection();
-                    //   }
-                    // })
+                    this.getRoleTreeList()
+                    this.$nextTick(()=>{
+                        this.toggleSelection(this.multipleSelection)
+                    })
+
                 }else if(val==2) {
                     this.dialogVisible = true
                     this.title = '选择所属组织'
@@ -392,6 +403,10 @@
                     .then(ret => {
                         if(ret && ret.code==200){
                           _this.roleArr = ret.data
+                          _this.pageNum = ret.data.pageNum
+                          _this.pageSize = ret.data.pageSize
+                          _this.total = ret.data.total
+
                         }
                     })
                     .catch(() => {
@@ -408,21 +423,27 @@
                     .catch(() => {
                     });
             },
-            //当前页改变
+            // 当前页改变
             handleCurrentChange(value) {
                 this.currentPage = value;
-                this.getUserList();
+                this.getRoleTreeList();
+              this.$nextTick(()=>{
+                this.toggleSelection(this.multipleSelection)
+              })
             },
             //当前页数数目改变e
             handleSizeChange(value) {
                 this.pageSize = value;
-                this.getUserList();
+                this.getRoleTreeList();
+              this.$nextTick(()=>{
+                this.toggleSelection(this.multipleSelection)
+              })
             },
         }
     }
 </script>
 <style lang="scss" scoped>
-    .contentCenter {
+    .content-wrapper {
         height: 100%;
 
         .breadcrumb {

@@ -8,7 +8,7 @@
           <span>卖品</span>
         </div>
         <div class="right">
-          <span class="tip cursor">详情</span>
+          <span class="tip cursor" @click="goDetail">详情</span>
           <i class="iconfont icon-neiye-zhankaijiantou icon-arrow"></i>
         </div>
       </div>
@@ -19,14 +19,14 @@
       <ul class="listUl">
         <li class="first-li" @click="MeClick('0')" :class="{active:cur==0}">
           <div class="cont">
-            <h1>{{GoodTop.sppPrice | capitalizeFloor}}</h1>
-            <p>人均卖品金额(元)</p>
+            <h1>{{GoodTop.sppPrice | capitalizeOne}}</h1>
+            <p>人均卖品金额({{GoodTop.sppPrice | foo}})</p>
           </div>
         </li>
         <li @click="MeClick('1')" :class="{active:cur==1}">
           <div>卖品收入</div>
           <div>
-            <span>{{GoodTop.salesVolume | capitalizeOne}}</span>万元
+            <span>{{GoodTop.salesVolume | capitalizeOne}}</span>{{GoodTop.salesVolume | foo}}
           </div>
         </li>
         <li @click="MeClick('2')" :class="{active:cur==2}">
@@ -38,7 +38,7 @@
         <li @click="MeClick('3')" :class="{active:cur==3}">
           <div>客单价</div>
           <div>
-            <span>{{GoodTop.unitPrice | capitalizeFloor}}</span>元
+            <span>{{GoodTop.unitPrice | capitalizeFloor}}</span>{{GoodTop.unitPrice | foo}}
           </div>
         </li>
         <li @click="MeClick('4')" :class="{active:cur==4}">
@@ -51,24 +51,30 @@
     </div>
 
     <!--人均卖品收入Content -->
-    <div class="PerCapita_Content" v-if="cur==0">
+    <div class="PerCapita_Content ModuleKPI" v-if="cur==0">
       <!-- KPI -->
-      <div class="ModuleTitleLayout">
+      <div class="ModuleTitleLayout" v-if="flag">
         <div class="ModuleTitle">
           <div>
             KPI完成率
-            <i class="iconfont icon-danchuang-tishi"></i>
+            <el-tooltip class="item" effect="dark" placement="right-start">
+              <div slot="content" style="width:300px">
+                <ul id="ulMain">
+                  <li>人均卖品收入当日达成 : <span>{{CurrentSellKPIDataCine.sppCurrent | capitalizeOne}}{{CurrentSellKPIDataCine.sppCurrent | foo}}</span></li>
+                  <li>环比前一日 : <span :class="[CurrentSellKPIDataCine.sppChainDay > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[CurrentSellKPIDataCine.sppChainDay > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{CurrentSellKPIDataCine.sppChainDay}}%</span></li>
+                  <li>月至今达成 : <span>{{CurrentSellKPIDataCine.sppMonthToNow | capitalizeOne}}{{CurrentSellKPIDataCine.sppMonthToNow | foo}}</span></li>
+                  <li>环比上月 : <span :class="[CurrentSellKPIDataCine.sppChainMonth > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[CurrentSellKPIDataCine.sppChainMonth > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{CurrentSellKPIDataCine.sppChainMonth}}%</span></li>
+                  <li>本月目标为 : <span>{{CurrentSellKPIDataCine.sppTarget | capitalizeOne}}</span>{{CurrentSellKPIDataCine.sppTarget | foo}}</li>
+                  <li>距目标额差距 : <span :class="[CurrentSellKPIDataCine.sppGap > 0? 'green':'red']">{{CurrentSellKPIDataCine.sppGap}}</span>%</li>
+                </ul>
+              </div>
+              <i class="iconfont icon-danchuang-tishi"></i>
+            </el-tooltip>
           </div>
-          <div class="last">截止:2018/02/21</div>
+          <div class="last">截止:{{this.startDate && this.endDate}}</div>
         </div>
         <div class="kip-wrap">
-          <div style="height:200px;">
-               <kip-view></kip-view>
-            </div>
-            <div class="flex" style="color:#666;font-size:12px;margin-top:30px">
-              <div>月至今达成：8456.765元</div>
-              <div>KPI值：9567.8元</div>
-            </div>
+          <sell-dash-cine :SellKPIvalueCine="CurrentSellKPIDataCine"></sell-dash-cine>
         </div>
       </div>
       <!--人均卖品收入趋势 -->
@@ -87,7 +93,7 @@
     </div>
 
     <!--卖品总收入Content -->
-    <div class="Revenue_Content" v-if="cur==1">    
+    <div class="Revenue_Content ModuleKPI" v-if="cur==1">    
       <!--卖品总收入 -->
       <div class="ModuleTitleLayout">
         <div class="ModuleTitle">
@@ -106,7 +112,7 @@
     </div>
 
     <!--购买率Content -->
-    <div class="Purchase_Content" v-if="cur==2">    
+    <div class="Purchase_Content ModuleKPI" v-if="cur==2">    
       <!--购买率 -->
       <div class="ModuleTitleLayout">
         <div class="ModuleTitle">
@@ -123,7 +129,7 @@
     </div>
 
     <!--客单价Content -->
-    <div class="Customer_Content" v-if="cur==3">    
+    <div class="Customer_Content ModuleKPI" v-if="cur==3">    
       <!--客单价 -->
       <div class="ModuleTitleLayout">
         <div class="ModuleTitle">
@@ -139,7 +145,7 @@
       </div>
     </div>
     <!--套餐消费占比趋势Content -->
-    <div class="Purchase_Content" v-if="cur==4">    
+    <div class="Purchase_Content ModuleKPI" v-if="cur==4">    
       <!--套餐消费占比趋势 -->
       <div class="ModuleTitleLayout">
         <div class="ModuleTitle">
@@ -151,7 +157,7 @@
           :data="ChartsLine"
           :legend-visible="false"
           :settings="lineSettings"
-          :extend="lineExtend"
+          :extend="lineExtendTwo"
         ></ve-line>
       </div>
     </div>
@@ -159,9 +165,11 @@
   </div>
 </template>
 <script>
-import KipView from '../../partical/kpi'
+import SellDashCine from './KPI/SellDashCine'
 export default {
-  components:{KipView},
+  components:{
+    SellDashCine
+  },
   name: "BoxOffice",
   props: {
     GoodTop: {
@@ -173,17 +181,51 @@ export default {
     SelllineData: {
       type: Object
     },
-    time:{
-      type: Object
-    },
     cityId:{
-      type:String
+      type: Number
     },
     memberId:{
-      type:String
+      type: Number
+    },
+    SellKPIDataCine:{
+      type: Object
+    },
+    SellTotal:{
+      type: Number
+    },
+    startDate:{
+      type: String
+    },
+    endDate:{
+      type: String
+    },
+    timeType:{
+      type: String
     }
   },
   data() {
+    this.lineExtend = {
+      'xAxis.0.axisLabel.rotate': 60,
+      xAxis:{
+        offset:10
+      },
+      tooltip: {
+        trigger: 'axis',
+        //在这里设置
+        formatter: '{a0} : {c0}元'
+      }
+    };
+    this.lineExtendTwo = {
+      'xAxis.0.axisLabel.rotate': 60,
+      xAxis:{
+        offset:10
+      },
+      tooltip: {
+        trigger: 'axis',
+        //在这里设置
+        formatter: '{a0} : {c0}%'
+      }
+    };
     this.chartSettings = {
       roseType: "radius",
       offsetY: "100"
@@ -200,11 +242,14 @@ export default {
       "#8E7EFF",
       "#ca8622",
       "#bda29a",
+      
       "#6e7074",
       "#546570",
       "#c4ccd3"
     ];
     return {
+      CurrentSellKPIDataCine:JSON.parse(JSON.stringify(this.SellKPIDataCine)),
+      flag:true,
       cur:0,
       currentPage:1,// 当前页码
       pageSize:10,// 每页大小
@@ -287,11 +332,113 @@ export default {
       }
     };
   },
+  watch: {
+    SellKPIDataCine(val){
+      this.CurrentSellKPIDataCine = val
+    }
+  },
   filters: {
     capitalizeOne(value) {
-      if (!value) return "";
-      value = value / 10000;
-      return value.toFixed(2);
+      if (!value) return ""
+      let newValue = value.toString();
+
+      //判断逻辑
+      if(newValue.indexOf('.') != -1){
+        if(newValue.length < 8){
+          return newValue
+        }
+        else if(newValue.length >= 8 && newValue.length <= 11){
+
+          return (newValue / 10000).toFixed(2)
+        }
+        else if(newValue.length >= 12){
+          return ((newValue / 10000) / 10000).toFixed(2)
+        }
+      }
+      else
+      {
+        if(newValue.length < 5){
+          return newValue
+        }
+        else if(newValue.length >= 5 && newValue.length <= 8){
+          return (newValue / 10000).toFixed(2)
+        }
+        else if(newValue.length >= 9){
+          return ((newValue / 10000) / 10000).toFixed(2)
+        }
+      }
+    },
+    //处理万人计算保留两位小数
+    capitalizePerson(value) {
+      if (!value) return ""
+      let newValue = value.toString();
+
+      if(newValue.length < 5){
+        return newValue
+      }
+      else if(newValue.length >= 5 && newValue.length <= 8){
+
+        return (newValue / 10000).toFixed(2)
+      }
+      else if(newValue.length >= 9){
+        return ((newValue / 10000) / 10000).toFixed(2)
+      }
+    },
+    //处理万元计算
+    foo(value){
+      if (!value) return ""
+
+      let newValue = value.toString();
+      let foo = ''
+
+      if(newValue.length < 8){
+        foo = '元'
+        return foo
+      }
+      else if(newValue.length >= 8 && newValue.length <= 11){
+        foo = '万元'
+        return foo
+      }
+      else if(newValue.length >= 12){
+        foo = '亿元'
+        return foo
+      }
+    },
+    //处理万人单位计算
+    too(value){
+      if (!value) return ""
+
+      let newValue = value.toString();
+      let too = ''
+
+      if(newValue.indexOf('.') != -1){
+        if(newValue.length < 8){
+          foo = '元'
+          return foo
+        }
+        else if(newValue.length >= 8 && newValue.length <= 11){
+          foo = '万元'
+          return foo
+        }
+        else if(newValue.length >= 12){
+          foo = '亿元'
+          return foo
+        }
+      }
+      else{
+        if(newValue.length < 5){
+          foo = '元'
+          return foo
+        }
+        else if(newValue.length >= 5 && newValue.length <= 8){
+          foo = '万元'
+          return foo
+        }
+        else if(newValue.length >= 9){
+          foo = '亿元'
+          return foo
+        }
+      }
     },
     capitalizeTwo(value) {
       if (!value) return "";
@@ -304,6 +451,9 @@ export default {
     }
   },
   methods: {
+    foo(val){
+      this.flag = val
+    },
     tableRowClassName({ row, rowIndex }) {
       if (rowIndex === 1) {
         return "warning-row";
@@ -351,20 +501,28 @@ export default {
       this.$nextTick(() => {
         this.$camList.SwitchSellGoodsTab({
           body: {
-            groupId: 1,
-            startDate: this.time,
-            endDate: this.time,
-            chainPerType: "day",
+            groupId:44,
+            startDate: this.startDate,
+            endDate: this.endDate,
+            dateType: this.timeType,
             pageSize:this.pageSize,
             pageNo:this.currentPage,
             columnType:this.BoxType,
             cityId:this.Boxcityid,
-            cinemaId:this.BoxMemberId
+            cinemaId:this.BoxMemberId,
+            initSppPrice:this.SellTotal
           }
         })
-        .then(res => {
+        .then(response => {
+          let res = response.data;
           //获取总数据
-          if(this.BoxType === "sales_volume"){
+          if(this.BoxType === "spp_price"){
+            
+            //获取KPI
+            let ResKPI = res.sellGoodsKpiInfo;
+            this.CurrentSellKPIDataCine = ResKPI
+          }
+          else if(this.BoxType === "sales_volume"){
             //获取卖品收入玫瑰图
             this.getRevenChart(res)
           }
@@ -453,6 +611,10 @@ export default {
         }
       });
     },
+     // 影院卖品分析
+     goDetail(){
+      this.$router.push({name:"影院卖品分析"})
+    }
   }
 };
 </script>
@@ -638,5 +800,20 @@ export default {
 }
 .icon-neiye-xiajiangjiantou{
   color:red;
+}
+.green{
+  color:green;
+}
+.red{
+  color:red;
+}
+#ulMain{
+  width:250px;
+  list-style-type:none;
+  padding:0px;
+  margin:0px;
+  li{
+    line-height:23px;
+  }
 }
 </style>

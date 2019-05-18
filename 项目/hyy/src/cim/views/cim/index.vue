@@ -175,33 +175,5 @@ export default {
 </script>
 
 <style lang="scss">
-.link-item {
-  display: inline-block;
-  width: 180px;
-  line-height: 1;
-  white-space: nowrap;
-  cursor: pointer;
-  background: #fff;
-  border: 1px solid #dcdfe6;
-  border-color: #dcdfe6;
-  color: #606266;
-  -webkit-appearance: none;
-  text-align: center;
-  box-sizing: border-box;
-  outline: none;
-  margin: 0;
-  transition: 0.1s;
-  -moz-user-select: none;
-  -webkit-user-select: none;
-  -ms-user-select: none;
-  padding: 12px 20px;
-  font-size: 14px;
-  border-radius: 4px;
-  margin: 3px;
-  &:hover {
-    background: #409eff;
-    border-color: #409eff;
-    color: #fff;
-  }
-}
+
 </style>

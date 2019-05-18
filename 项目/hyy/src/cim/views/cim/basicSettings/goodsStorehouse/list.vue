@@ -196,7 +196,7 @@ export default {
     },
     // 查询数据
     queryStoreEvent(data){
-      this.$api.queryStorehouse(data).then( data => {
+      this.$cimList.queryStorehouse(data).then( data => {
         let _self = this
           if (data && data.code === 200) {
             let newdata = data.data
@@ -212,7 +212,7 @@ export default {
     },
     // 新增
     saveStoreEvent(data){
-      this.$api.saveStorehouse(data).then( data => {
+      this.$cimList.saveStorehouse(data).then( data => {
         let _self = this
           if (data && data.code === 200) {
             this.queryDataIfNull(this.queryData)
@@ -235,7 +235,7 @@ export default {
       }
       // debugger
       this.queryDataIfNull(data)
-      this.$api.updateStorehouse(data).then( data => {
+      this.$cimList.updateStorehouse(data).then( data => {
         let _self = this
           if (data && data.code === 200) {
             _self.queryDataIfNull(_self.queryData)
@@ -261,7 +261,7 @@ export default {
     // 删除操作
     handleeDlete(index, row) {
       // debugger
-      this.$api.delStorehouse(row.id).then( data => {
+      this.$cimList.delStorehouse(row.id).then( data => {
         let _self = this
           if (data && data.code === 200) {
             _self.queryDataIfNull(_self.queryData)

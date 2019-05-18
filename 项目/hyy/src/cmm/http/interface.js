@@ -1,4 +1,4 @@
-import axios from "./api";
+import axios from "frame_cpm/http/api.js";
 /**
  * 将所有接口统一起来便于维护
  * 如果项目很大可以将 URL 独立成文件，接口分成不同的模块
@@ -8,7 +8,6 @@ import axios from "./api";
 /** 
     @function marketingList -查询营销活动列表
 
-    @param {Number} accountId - 账户id
     @param {object} searchVo 			
     @param {String} searchVo.autoShow
     @param {String} searchVo.businessCode -交易商户编码

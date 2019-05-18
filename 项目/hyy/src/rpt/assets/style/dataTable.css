@@ -171,7 +171,7 @@ tbody .el-table__row:nth-child(2n) {
 .datacenter-main {
     overflow: scroll;
     position: relative;
-    height: 654px;
+    height: 655px;
 }
 
 .datacenter-main .el-table {
@@ -181,7 +181,7 @@ tbody .el-table__row:nth-child(2n) {
 
 .datacenter-main .el-table .el-table__header-wrapper {
     position: absolute;
-    z-index: 100;
+    z-index: 10;
     width: auto;
 }
 
@@ -207,7 +207,7 @@ tbody .el-table__row:nth-child(2n) {
 
 .datacenter-main .el-table .el-table__footer-wrapper {
     position: absolute;
-    z-index: 100;
+    z-index: 10;
     bottom: 0;
     width: auto;
 }
@@ -220,7 +220,7 @@ tbody .el-table__row:nth-child(2n) {
 .el-table-newbox .el-table tfoot {
     position: absolute;
     bottom: 0;
-    z-index: 1000;
+    z-index: 10;
     height: 37px;
 }
 
@@ -331,38 +331,22 @@ tbody .el-table__row:nth-child(2n) {
 }
 
 /* 筛选弹框样式 */
-.search-wrapper .el-dialog {
-    width: 372px !important;
-    height: 458px !important;
-}
-
-.search-wrapper .el-dialog .el-dialog__header {
-    margin: 0 20px;
-    padding: 16px 0 8px 0;
-    font-size: 12px;
-    border-bottom: 1px solid #e5e5e5;
-}
-
-.search-wrapper .el-dialog .el-dialog__body {
-    margin-top: 12px;
-}
-
-.search-wrapper .el-dialog .el-input {
+.search-wrapper .el-input {
     width: 232px;
     height: 32px;
 }
 
 
-.search-wrapper .el-dialog .el-input .el-icon-circle-close {
+.search-wrapper .el-input .el-icon-circle-close {
     cursor: pointer;
 }
 
-.search-wrapper .el-dialog .input-wrapper {
+.search-wrapper .input-wrapper {
     display: flex;
     justify-content: space-between;
 }
 
-.search-wrapper .el-dialog .input-wrapper button {
+.search-wrapper .input-wrapper button {
     width: 80px;
     height: 32px;
     color: white;
@@ -371,55 +355,53 @@ tbody .el-table__row:nth-child(2n) {
     background: #3B74FF;
 }
 
-.search-wrapper .el-dialog .input-wrapper button:hover {
+.search-wrapper .input-wrapper button:hover {
     cursor: pointer;
     background: #0F55FF
 }
 
-.search-wrapper .el-dialog .data-wrapper {
+.search-wrapper .data-wrapper {
     margin-top: 13px;
+    padding-top: 12px;
     width: 100%;
     height: 300px;
     border-top: 1px solid #e5e5e5;
-    border-bottom: 1px solid #e5e5e5;
     box-sizing: border-box;
     overflow-x: hidden;
 }
 
-.search-wrapper .el-dialog .data-wrapper .data-item {
+.search-wrapper .dialog-content {
+    padding-top: 6px;
+}
+
+.search-wrapper .data-wrapper .data-item {
     padding-left: 15px;
     width: 332px;
     height: 30px;
     line-height: 30px;
+    font-size: 12px;
     color: #666666;
     background: white;
 }
 
-.search-wrapper .el-dialog .data-wrapper .data-empty {
+.search-wrapper .data-wrapper .data-empty {
     padding-left: 0;
     color: #666666 !important;
     text-align: center;
 }
 
-.search-wrapper .el-dialog .data-wrapper .data-item:hover,
-.search-wrapper .el-dialog .data-wrapper .data-empty:hover {
+.search-wrapper .data-wrapper .data-item:hover,
+.search-wrapper .data-wrapper .data-empty:hover {
     cursor: pointer;
     background: #F0F0F0 !important;
 }
-
-.search-wrapper .el-dialog .el-dialog__footer .el-button+.el-button {
-    margin-left: 32px;
-}
-
-.main-container .el-dialog .el-dialog__header {
-    padding: 20px 0 0 0 !important;
-}
-
-.main-container .el-dialog .el-dialog__body {
-    padding: 0 20px !important;
-}
-
 /* 高级筛选框样式 */
+.bigBox .el-dialog .el-dialog__header .el-dialog__title {
+    font-size: 14px;
+}
+.advanced-search-wrapper {
+    padding: 16px 20px; 
+}
 .advanced-search-wrapper .el-dialog {
     width: 372px !important;
     height: 157px !important;
@@ -437,6 +419,14 @@ tbody .el-table__row:nth-child(2n) {
 .advanced-search-wrapper .input-wrapper .el-input {
     width: 184px;
     height: 32px;
+}
+
+.bigBox .el-dialog .el-dialog__body {
+    padding: 0 20px;
+}
+
+.el-select-dropdown__item {
+    font-size: 12px;
 }
 
 .el-select-dropdown__item.selected {

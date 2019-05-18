@@ -1,11 +1,19 @@
 <template>
   <div class="ticketSample">
       <!-- 查询块 -->
-      <el-form :inline='true' :model="dataForm" class="demo-ruleForm">
-        <el-form-item>
-          <el-button type="primary" @click="addTicket()">新建</el-button>
-        </el-form-item>
-      </el-form>
+        <div class="demo-ruleForm">
+          <div class="item-warp" >
+            <span>影院名称:</span>
+            <el-input v-model="cinemaName" @focus="cinemaDialogShow" style="width:220px;"></el-input>
+          </div>
+            <div style="display:inline-block">
+              <el-button type="primary" @click="searchCinema">查询</el-button>
+            </div>
+          <div style="float:right">
+            <el-button type="primary" @click="addTicket()">新建</el-button>
+          </div>
+        </div>
+      
       <!-- 内容块 -->
       <el-table
         :data='dataList'
@@ -15,6 +23,13 @@
         <el-table-column
           type="index"
           label='序号'
+          header-align="center"
+          align="center"
+          width="80">
+        </el-table-column>
+        <el-table-column
+          prop='cinemaName'
+          label='适用影院'
           header-align="center"
           align="center"
           width="80">
@@ -78,18 +93,32 @@
           layout='total, sizes, prev, pager, next, jumper'>
         </el-pagination>
       </div>
+      <frame-singlecinema
+        :framedialogVisible="singleCinemaVisible"
+        :whereUse="whereUse"
+        :type="cinematype"
+        :innerData="innerDataSingle"
+        @callBackSingle="handleSingleCallBack"
+        ref="frameSingleCinema"
+      >
+        <div slot="footerId">
+          <el-button @click="singleCinemaVisible= false">取 消</el-button>
+          <el-button
+            type="primary"
+            @click="confirmCinemaSingleDialog(), singleCinemaVisible= false"
+          >确 定</el-button>
+        </div>
+      </frame-singlecinema>
   </div>
 </template>
 <script>
+import cinemaDialog from 'ctm/mixins/cinemaDialog.js'
   export default {
     data () {
       return {
         excelUrl: '',
         // 添加/编辑数据
-        dialogShow: false,
-        dataForm: {
-          
-        },
+        dataForm: {},
         // 回调数据
         dataList: [],
         pageIndex: 1,
@@ -102,14 +131,15 @@
     created () {
       this.getDataList();
     },
+    mixins:[cinemaDialog],
     methods: {
       // 获取数据列表
-      getDataList () {
+      getDataList (cinemaUid) {
         let limit = {
           'page': this.pageIndex,
-          'pageSize': this.pageSize
+          'pageSize': this.pageSize,
+          cinemaUid:cinemaUid || null
         }
-        
         this.$ctmList.ticketList(limit).then( data => {
             if (data && data.code === 200) {
               data = data.data;
@@ -254,9 +284,7 @@
                 console.log(err)
             })
           }
-          // let token = this.$cookie.get('token')
-
-          
+     
       },
       importHandle (uid) {
         this.uid = uid
@@ -291,6 +319,11 @@
             }
           }
         })
+      },
+      
+      //查询  
+      searchCinema() {
+        this.getDataList(this.cinemaUid)
       }
     }
   }
@@ -301,9 +334,20 @@
 }
 .ticketSample{
   .demo-ruleForm{
-    padding-right: 50px;
-    padding-top: 20px;
-    float: right;
+    width: 100%;
+    padding: 18px 0;
+    .item-warp{
+      display: inline-block;
+      span{
+        display:inline-block;
+        width: 70px;line-height: 32px;
+        color:#333;
+      }
+    }
+    .search-Btn{
+      float: left;
+      margin-left: 18px;      
+    }
   }
   .el-pagination{
     padding-top: 15px;

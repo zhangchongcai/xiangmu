@@ -1,9 +1,8 @@
 //主页面
-.el-form {
-    margin-top: 20px;
-    margin-left: 20px;
-}
-
+// .el-form {
+//     margin-top: 20px;
+//     margin-left: 20px;
+// }
 .demo-ruleForm {
     padding-right: 50px;
     padding-top: 20px;
@@ -60,22 +59,22 @@
             }
         }
     }
-    .el-input {
-        width: 60%;
-    }
-    .el-input {
-        &.el-input--suffix {
-            width: 100%;
-        }
-    }
+    // .el-input {
+    //     width: 60%;
+    // }
+    // .el-input {
+    //     &.el-input--suffix {
+    //         width: 100%;
+    //     }
+    // }
     .el-textarea {
         width: 60%;
     }
     .el-collapse {
-        width: 70%;
-        border-bottom: 0 none;
-        border-top: 0 none;
-        margin-bottom: 50px;
+        // width: 70%;
+        // border-bottom: 0 none;
+        // border-top: 0 none;
+        // margin-bottom: 50px;
         .el-collapse-item__header {
             padding-left: 30px;
             position: relative;
@@ -129,7 +128,7 @@
         }
     }
     .chooseWidth1 {
-        width: 30%;
+        width: 166px;
     }
 }
 
@@ -165,7 +164,7 @@
 .el-range-editor {
     &.el-input__inner {
         padding: 0px 10px;
-        margin-top: 5px;
+        margin-top: 3px;
     }
 }
 

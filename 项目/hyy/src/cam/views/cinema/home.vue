@@ -8,22 +8,22 @@
           <div class="left-sider" :span="12">
             <div class="left-purple-dark submitMain">
               <span>选择时间 :</span>
-              <el-date-picker
+              <calendar-view
+                size="mini"
                 v-model="time"
-                type="date"
-                placeholder="选择日期"
-                size="small"
+                @emitCalendarType="getTimeType"
                 @change="changeTime"
-              ></el-date-picker>
-              <el-button type="primary" size="small" class="submit">查询</el-button>
+              ></calendar-view>
             </div>
           </div>
         </div>
         <div class="total">
           <div class="totalLeft">
-            <h1>{{allCount}}</h1>
-            <p>营 业 总 额( 万 元 )</p>
-            <i class="iconfont icon-danchuang-tishi"></i>
+            <h1>{{allCount | capitalizeOne}}</h1>
+            <p>营 业 总 额({{allCount | foo}})</p>
+            <el-tooltip class="item" effect="dark" content="营业总额=票房收入+卖品收入" placement="right-start">
+              <i class="iconfont icon-danchuang-tishi"></i>
+            </el-tooltip>
           </div>
           <div class="progress">
             <div class="ProgressBoxCoff">
@@ -57,7 +57,12 @@
             :chartIncome="ChartQuota"
             :cityId="cityId"
             :memberId="MemberId"
-            :time="time"
+            :startDate="startTime"
+            :endDate="endTime"
+            :timeType="timeType"
+            :BoxKPIDataCine="BoxKPIDataCine"
+            :BoxKPIDataShare="BoxKPIDataShare"
+            :BoxTotal="BoxTotal"
           ></box-office-no-table>
         </el-col>
         <el-col class="center" :span="8">
@@ -67,7 +72,11 @@
             :SelllineData="goodsLineData"
             :cityId="cityId"
             :memberId="MemberId"
-            :time="time"
+            :startDate="startTime"
+            :endDate="endTime"
+            :timeType="timeType"
+            :SellKPIDataCine="SellKPIDataCine"
+            :SellTotal="SellTotal"
           ></sell-goods-no-table>
         </el-col>
         <el-col class="right" :span="8">
@@ -77,7 +86,11 @@
             :MemberLineData="MemberLineData"
             :cityId="cityId"
             :memberId="MemberId"
-            :time="time"
+            :startDate="startTime"
+            :endDate="endTime"
+            :timeType="timeType"
+            :MemberKPIDataCine="MemberKPIDataCine"
+            :MemberTotal="MemberTotal"
           ></member-no-table>
         </el-col>
       </el-row>
@@ -88,15 +101,24 @@
 import BoxOfficeNoTable from "./components/BoxOfficeNoTable";
 import SellGoodsNoTable from "./components/SellGoodsNoTable";
 import MemberNoTable from "./components/MemberNoTable";
+import CalendarView from '../../components/calendar/calendar'
 export default {
   name: "Cinema-detail",
   data() {
     return {
       boxCount: null,
       saleCount: null,
-      time: this.$moment(this.$moment(new Date()).add(-1, "day")).format(
-        "YYYY-MM-DD"
-      ),
+      time: this.$moment(this.$moment(new Date()).add(-1, "day")).format("YYYY-MM-DD"),
+      startTime: this.$moment(new Date())
+        .add(-1, "day")
+        .format("YYYY-MM-DD"),
+      endTime: this.$moment(new Date())
+        .add(-1, "day")
+        .format("YYYY-MM-DD"),
+      timeType: "day",
+      BoxTotal:0,
+      MemberTotal:0,
+      SellTotal:0,
       BoxOffdetail: {},
       Goodsdetail: {},
       Memberdetail: {},
@@ -106,8 +128,12 @@ export default {
       value2: 20,
       Boxincome: "",
       Goodsincome: "",
-      MemberId: "",
-      cityId: "",
+      MemberId: 0,
+      cityId: 0,
+      BoxKPIDataCine:{},    //票房KPI
+      MemberKPIDataCine:{}, //会员KPI
+      SellKPIDataCine:{},   //卖品KPI
+      BoxKPIDataShare:{},   //市场分额KPI
       ChartQuota: {
         columns: [],
         rows: []
@@ -126,7 +152,8 @@ export default {
     // 销售总额
     allCount() {
       if (this.boxCount && this.saleCount) {
-        return ((this.boxCount * 1 + this.saleCount * 1) / 10000).toFixed(2);
+        let newValue = (this.boxCount * 1 + this.saleCount * 1).toFixed(2);
+        return newValue
       } else {
         return 0;
       }
@@ -154,14 +181,53 @@ export default {
       }
     }
   },
+  filters: {
+    capitalizeOne(value) {
+      if (!value) return ""
+      let newValue = value.toString();
+
+      if(newValue.length < 8){
+        return newValue
+      }
+      else if(newValue.length >= 8 && newValue.length <= 11){
+
+        return (newValue / 10000).toFixed(2)
+      }
+      else if(newValue.length >= 12){
+        return ((newValue / 10000) / 10000).toFixed(2)
+      }
+    },
+    //处理万元计算
+    foo(value){
+      if (!value) return ""
+
+      let newValue = value.toString();
+      let foo = ''
+
+      if(newValue.length < 8){
+        foo = '元'
+        return foo
+      }
+      else if(newValue.length >= 8 && newValue.length <= 11){
+        foo = '万元'
+        return foo
+      }
+      else if(newValue.length >= 12){
+        foo = '亿元'
+        return foo
+      }
+    }
+  },
   components: {
     BoxOfficeNoTable,
     SellGoodsNoTable,
-    MemberNoTable
+    MemberNoTable,
+    CalendarView
   },
   created: function() {
     //获取传过来的cinemaId
     this.getquery();
+    console.log(typeof this.MemberId)
   },
   mounted:function(){
     //获取票房数据数据
@@ -173,32 +239,59 @@ export default {
   },
   methods: {
     getquery() {
-      this.cityId = this.$route.query.cityId;
-      this.MemberId = this.$route.query.Member;
+      this.cityId = Number(this.$route.query.cityId);
+      this.MemberId = Number(this.$route.query.Member);
     },
     //票房
     getBoxOfficeData() {
       this.$camList
         .BoxOfficeData({
           body: {
-            groupId: 1,
+            groupId: 44,
             cityId: this.cityId,
             cinemaId: this.MemberId,
-            startDate: this.time,
-            endDate: this.time,
-            chainPerType: "day"
+            startDate: this.startTime,
+            endDate: this.endTime,
+            dateType: this.timeType,
           }
         })
-        .then(res => {
-          //票房数据
-          let resData = res.boxOfficeCinemaVO;
-          this.BoxOffdetail = resData;
+        .then(response => {
+          let res = response.data;
 
-          //取到票房总收入
-          this.Boxincome = res.boxOfficeCinemaVO.boxOffice;
-          this.boxCount = res.boxOfficeCinemaVO.boxOffice;
+          //选取周月年判断
+          if(this.timeType !== 'day'){
+            //是周月年时候隐藏KPI
+            this.$nextTick(()=>{
+              this.$refs.BoxOffice.foo(false);
+            })
+          }
+          else{
+            //是天的时候获取KPI
+            if(res.boxOfficeKpiInfo !== null || res.boxOfficeKpiInfo !== undefined){
+              this.BoxKPIDataCine = res.boxOfficeKpiInfo;
+              this.$nextTick(()=>{
+                this.$refs.BoxOffice.foo(true);
+              })
+            }
+            else{
+              this.$nextTick(()=>{
+                this.$refs.BoxOffice.foo(false);
+              })
+            }
+          }      
+          //获取票房总数据    
+          if(res.boxOfficeCinemaVO){
+            //票房数据
+            this.BoxOffdetail = res.boxOfficeCinemaVO;
+            //获取票房收入
+            this.BoxTotal = res.boxOfficeCinemaVO.boxOffice;
+            //取到票房总收入
+            this.Boxincome = res.boxOfficeCinemaVO.boxOffice;
+            this.boxCount = res.boxOfficeCinemaVO.boxOffice;
+          }
+          
           //初始化玫瑰图
-          this.getRoseChart(res)
+          this.getRoseChart(res)    
         });
     },
     //卖品
@@ -206,24 +299,54 @@ export default {
       this.$camList
         .GoodsData({
           body: {
-            groupId: 1,
+            groupId: 44,
             cityId: this.cityId,
             cinemaId: this.MemberId,
-            startDate: this.time,
-            endDate: this.time,
-            chainPerType: "day"
+            startDate: this.startTime,
+            endDate: this.endTime,
+            dateType: this.timeType,
           }
         })
-        .then(res => {
-          //卖品数据
-          let resData = res.sellGoodsCinema;
-          this.Goodsdetail = resData;
-          //取到卖品总收入
-          this.Goodsincome = res.sellGoodsCinema.sppPrice;
-          
-          this.saleCount = res.sellGoodsCinema.salesVolume;
+        .then(response => {
+          let res = response.data;
+          //选取周月年判断
+          if(this.timeType !== 'day'){
+            //是周月年时候隐藏KPI
+            this.$nextTick(()=>{
+              this.$refs.GoodsSell.foo(false);
+            })
+          }
+          else{
+            //KPI
+            if(res.sellGoodsKpiInfo !== null || res.sellGoodsKpiInfo !== undefined){
+              //获取KPI
+              this.SellKPIDataCine = res.sellGoodsKpiInfo;
+
+              this.$nextTick(()=>{
+              this.$refs.GoodsSell.foo(true);
+              })
+            }
+            else{
+              this.$nextTick(()=>{
+                this.$refs.GoodsSell.foo(false);
+              })
+            }
+          }
+          //获取卖品总数据
+          if(res.sellGoodsCinema){
+            //卖品数据
+            this.Goodsdetail = res.sellGoodsCinema;
+
+            //取到卖品总收入
+            this.Goodsincome = res.sellGoodsCinema.sppPrice;
+            this.saleCount = res.sellGoodsCinema.salesVolume;
+
+            //获取人均卖品金额
+            this.SellTotal = res.sellGoodsCinema.sppPrice;
+          }
           //获取卖品折线图初始化
           this.getSellLineChart(res)
+          
         });
     },
     //会员
@@ -231,17 +354,46 @@ export default {
       this.$camList
         .MemberData({
           body: {
-            groupId: 1,
+            groupId: 44,
             cityId: this.cityId,
             cinemaId: this.MemberId,
-            startDate: this.time,
-            endDate: this.time,
-            chainPerType: "day"
+            startDate: this.startTime,
+            endDate: this.endTime,
+            dateType: this.timeType,
           }
         })
-        .then(res => {
-          let resData = res.memberCinemaVO;
-          this.Memberdetail = resData;
+        .then(response => {
+          let res = response.data;
+          
+          //判断KPI
+          if(this.timeType !== 'day'){
+            //是周月年时候隐藏KPI
+            this.$nextTick(()=>{
+              this.$refs.Member.foo(false);
+            })
+          }
+          else
+          {
+            if(res.memberKpiInfo !== null || res.memberKpiInfo !== undefined){
+              //获取KPI
+              this.MemberKPIDataCine = res.memberKpiInfo;
+              this.$nextTick(()=>{
+                this.$refs.Member.foo(true);
+              })
+            }
+            else{
+              this.$nextTick(()=>{
+                this.$refs.Member.foo(false);
+              })
+            }
+          }
+          //获取会员数据
+          if(res.memberCinemaVO){
+            this.Memberdetail = res.memberCinemaVO;
+            //获取新增会员数
+            this.MemberTotal = res.memberCinemaVO.newMember;
+          }
+          
           //获取会员折线图
           this.getMemberLineChart(res)
         });
@@ -265,45 +417,56 @@ export default {
     //卖品-折线图
     getSellLineChart(res){
       // 卖品折线图
-      this.goodsLineData.columns = ["日期", "人均卖品收入"];
-      this.goodsLineData.rows = res.sellGoodsIndex.yAxis.map(item => {
-        return {
-          日期: item.dateKey,
-          人均卖品收入: item.sppPrice
-        };
-      });
+      if(res.sellGoodsIndex){
+        this.goodsLineData.columns = ["日期", "人均卖品收入"];
+        this.goodsLineData.rows = res.sellGoodsIndex.yAxis.map(item => {
+          return {
+            日期: item.dateKey,
+            人均卖品收入: item.sppPrice
+          };
+        });
+      }
     },
     //会员-折线图
     getMemberLineChart(res){
       // 卖品折线图
-      this.MemberLineData.columns = ["日期", "新增会员人数"];
-      this.MemberLineData.rows = res.memberIndex.yAxis.map(item => {
-        return {
-          日期: item.dateKey,
-          新增会员人数: item.newMember
-        };
-      });
-    },
-    // 1.change time
-    changeTime(time) {
-      if (time) {
-        this.$moment(time).format("YYYY-MM-DD");
-        let new_time = this.$moment(time).format("YYYY-MM-DD");
-        this.startTime = new_time;
-        this.endTime = new_time;
-        this.time = new_time;
-      } else {
-        this.startTime = null;
-        this.endTime = null;
+      if(res.memberIndex){
+        this.MemberLineData.columns = ["日期", "新增会员人数"];
+        this.MemberLineData.rows = res.memberIndex.yAxis.map(item => {
+          return {
+            日期: item.dateKey,
+            新增会员人数: item.newMember
+          };
+        });
       }
-      this.getBoxOfficeData();
-      this.getMemberData();
-      this.getGoodsData();
+     
+    },
+    //获取时间类型
+    getTimeType(type) {
+      this.timeType = type;
+      console.log(this.timeType)
+    },
+    //改变时间
+    changeTime(option) {
+      if (option.startTime) {
+        this.startTime = option.startTime;
+        this.endTime = option.endTime;
+        this.getBoxOfficeData();
+        this.getMemberData();
+        this.getGoodsData();
+      }else{
+        this.startTime = this.$moment(option).format('YYYY-MM-DD');
+        this.endTime = this.$moment(option).format('YYYY-MM-DD')
+      }
+      
     }
   }
 };
 </script>
 <style lang="scss" scoped>
+.self-el-section-warp{
+  z-index:10;
+}
 //外层容器
 .SysContent {
   padding: 0px 20px;
@@ -348,9 +511,11 @@ export default {
     }
   }
 }
+
 .SysMain {
   margin-top: 20px;
   width: 100%;
+  padding-bottom:20px;
 }
 .left-purple-dark {
   height: 50px;

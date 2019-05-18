@@ -234,7 +234,7 @@
                 width="120"
                 show-overflow-tooltip>
                 <template slot-scope="scope">
-                    <span v-if="scope.row.status">启用</span>
+                    <span v-if="scope.row.status === 0">启用</span>
                     <span v-else>停用</span>
                 </template>
             </el-table-column>
@@ -243,7 +243,7 @@
                 fixed="right"
                 label="操作">
                 <template slot-scope="scope">
-                    <el-button style="padding: 0" @click="updateStatus(scope.row.status === 0 ? 1 : 0, scope.row.uid)" type="text" size="small">{{scope.row.status ? '停用' : '启用'}}</el-button>
+                    <el-button style="padding: 0" @click="updateStatus(scope.row.status === 0 ? 1 : 0, scope.row.uid)" type="text" size="small">{{scope.row.status ? '启用' : '停用'}}</el-button>
                     <el-button style="padding: 0" @click="setAuthorizedCinema(scope.row.uid)" type="text" size="small">设置授权影院</el-button>
                     <el-button style="padding: 0" @click="getChannelDetail(scope.row.uid)" type="text" size="small">查看详情</el-button>
 
@@ -267,6 +267,8 @@
 </template>
 
 <script>
+    import config from '../../http/config'
+
     export default {
         name: "Headquarters",
         data() {
@@ -471,7 +473,7 @@
                 // })
                 this.axios({
                     method: 'get',
-                    url: 'http://10.8.0.18:8082/cinema/tree',
+                    url: `${config.baseURL}/cinema/tree`,
                 }).then( res => {
                     console.log(res.data)
                     if(res.data.code === 200) {
@@ -600,7 +602,7 @@
                 // })
                 this.axios({
                     method: 'get',
-                    url: 'http://10.8.0.18:8082/common/user',
+                    url: `${config.baseURL}/common/user`,
                 }).then( res => {
                     console.log(res.data)
                     if(res.data.code === 200) {

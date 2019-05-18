@@ -52,13 +52,13 @@ export const query = params => {
 export const reportTableInfo = (data, params) => {
     if (params) {
         return axios({
-            url: 'report/report/reportTableInfo?reportCode=' + data.reportCode + "&styleUid=" + params,
+            url: `report/report/reportTableInfo/${data.reportCode}?styleUid=${params}`,
             method: 'post',
             data
         });
     } else {
         return axios({
-            url: 'report/report/reportTableInfo?reportCode=' + data.reportCode,
+            url: `report/report/reportTableInfo/${data.reportCode}`,
             method: 'post',
             data
         });

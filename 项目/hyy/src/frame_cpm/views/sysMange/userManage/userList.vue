@@ -1,5 +1,5 @@
 <template>
-    <div class="contentCenter">
+    <div class="content-wrapper">
         <div class="breadcrumb">
             <el-breadcrumb separator-class="el-icon-arrow-right">
                 <el-breadcrumb-item>系统设置</el-breadcrumb-item>
@@ -82,9 +82,9 @@
                     </el-table-column>
                     <el-table-column label="操作" width="200">
                         <template slot-scope="scope">
-                            <span @click="handleClick(scope.row)" class="table-btn-mini">查看</span>
-                            <span class="table-btn-mini" @click="editUser(scope.row)">编辑</span>
-                            <span class="table-btn-mini" @click="diaPwd(scope.row)">重置密码</span>
+                            <el-button @click="handleClick(scope.row)" type="text">查看</el-button>
+                            <el-button @click="editUser(scope.row)" type="text">编辑</el-button>
+                            <el-button  @click="diaPwd(scope.row)" type="text">重置密码</el-button>
                         </template>
                     </el-table-column>
                 </el-table>
@@ -279,7 +279,7 @@
   }
 </script>
 <style lang="scss" scoped>
-    .contentCenter {
+    .content-wrapper {
         height: 100%;
         .breadcrumb {
             padding: 9px 0 9px 3px;

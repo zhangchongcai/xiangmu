@@ -1,26 +1,22 @@
 import Vue from 'vue';
 import App from './App.vue';
 import 'element-ui/lib/theme-chalk/index.css';
+import api from './http/index';
 import VueRouter from 'vue-router';
-import store from './newVuex/index';
+import store from './vuex/index';
 import routes from './router/index';
-//导入mock数据文件
-require('./mocks/films.js')
+import NProgress from 'nprogress';
+import axios from 'axios';
+import Echarts from 'vue-echarts'
+import 'nprogress/nprogress.css';
 import {
     MessageBox,
     Message
 } from 'element-ui';
 import './assets/element-common.scss'
-import './assets/iconfont/iconfont.css'
-import './assets/css/mixin.scss'
-import './assets/iconfont/iconfont'
-import Axios from './http/http'
-import * as TYPES from './newVuex/types'
-import util from './http/app'
-
 Vue.use(VueRouter);
-Vue.prototype.$get = Axios.get;
-Vue.prototype.$post = Axios.post;
+Vue.use(api);
+Vue.prototype.axios = axios;
 
 // Vue.use(ElementUI)
 const router = new VueRouter({
@@ -32,10 +28,10 @@ const router = new VueRouter({
  * Config
  */
 
-Vue.config.debug = process.env.NODE_ENV === 'development'
-Vue.config.silent = process.env.NODE_ENV === 'production'
-Vue.config.devtools = true
-Vue.config.productionTip = false
+Vue.config.debug = process.env.NODE_ENV === 'development';
+Vue.config.silent = process.env.NODE_ENV === 'production';
+Vue.config.devtools = true;
+Vue.config.productionTip = false;
 
 const setGlobalTopNavs = function(to, next) {
     let matchedLength = to.matched.length;
@@ -53,56 +49,47 @@ const setGlobalTopNavs = function(to, next) {
         store.commit('updateNavTabData', newItem);
     }
     next();
-}
-    const wsApi = process.env.NODE_ENV == 'production' ? 'ws://apitestpos.oristarcloud.com/websocket/server/' : 'ws://apitestpos.oristarcloud.com/websocket/server/'
+};
 
 Vue.use(require('vue-wechat-title'));
-
-//获取终端配置
-util.readTerminalParameter((configData)=>{
-    store.commit(TYPES.SET_CONFIG_DATA,configData)
-})
-
-// router.beforeEach((to,form,next) => {
-//     //数组里放哪里页面不需要头部尾部显示的 routerName
-//     if(['setting'].includes(to.name)){
-      
-//     }else{
-//         // store.commit(TYPES.USER_INFO,true)
-//     }
-//     next();
-// })
-
 router.beforeEach((to, from, next) => {
+    //console.log(from,to);
     let token = localStorage.getItem('token');
-    		if((/\/home\/?$/).test(to.path)) {
-                if (token) {
-                    Vue.prototype.$ws = new WebSocket(`${wsApi}${localStorage.getItem('cinemaUid')}/${localStorage.getItem('terminalCode')}`);
-
-                    Vue.prototype.$ws.onopen = function(evt) { 
-                        console.log("Connection open ..."); 
-                        Vue.prototype.$ws.send("Hello WebSockets!");
-                    };
-                    
-                    Vue.prototype.$ws.onmessage = function(evt) {
-                        console.log(JSON.parse(evt.data));
-                        setTimeout(() => {
-                            store.commit('CHECK_CURRENT_SEAT_STATUS', JSON.parse(evt.data))
-                        }, 20);
-                    };
-                    
-                    Vue.prototype.$ws.onclose = function(evt) {
-                        console.log("Connection closed.");
-                    }; 
-                    next();
-                } else {
-                    next({ path: '/login' });
-                }
-            }else {
-                next()
-            }
+    NProgress.start();
+    // if (to.path == '/login') {
+    //     let loginInfor = localStorage.getItem('userLocation');
+    //     localStorage.clear();
+    //     localStorage.setItem('userLocation', loginInfor);
+    //     store.commit('updateLoginToken', null);
+    //     store.commit('updateLoginUser', null);
+    //     store.commit('updateUserMenu', null);
+    //     localStorage.removeItem('navTabData');
+    //     store.commit('updateNavTabDataByIndex', [{
+    //         name: '首页',
+    //         url: '/home',
+    //         active: true,
+    //     }])
+    // 	next();
+    // } else {		
+    // 	if (!store.state.loginToken) {
+    // 		if (token) {
+    //             store.commit('updateLoginToken', token);
+    //             store.commit('updateLoginUser', JSON.parse(localStorage.getItem('user')));
+    //             store.commit('updateUserMenu', JSON.parse(localStorage.getItem('userMenu')));
+    //             setGlobalTopNavs(to , next);
+    // 		} else {
+    // 			next({ path: '/login' });
+    // 		}
+    // 	} else {
+    //         // next();
+    //         setGlobalTopNavs(to, next);
+    // 	}
+    // }
+    next();
 });
-
+router.afterEach((transition) => {
+    NProgress.done();
+});
 
 //整理全局弹出框
 Vue.prototype.alert = function(obj) {
@@ -145,20 +132,60 @@ Vue.prototype.confirm = function(obj) {
 Vue.prototype.error = function(str) {
     Message({
         message: str,
-        type: 'warning'
-    });
-};
-
+        type: 'error',
+        center: true,
+        showClose: false,
+        customClass: 'hyy-toast',
+        iconClass: 'icon-danchuang-cuowu iconfont',
+        duration: 1500
+    })
+}
+//整理全局错误信息
+Vue.prototype.warning = function(str) {
+    Message({
+        message: str,
+        type: 'warning',
+        center: true,
+        showClose: false,
+        customClass: 'hyy-toast',
+        iconClass: 'icon-danchuang-jingtanhao iconfont',
+        duration: 1500
+    })
+}
 //整理全局成功信息
 Vue.prototype.success = function(str) {
     Message({
         message: str,
-        type: 'success'
-    });
-};
+        type: 'success',
+        center: true,
+        showClose: false,
+        customClass: 'hyy-toast',
+        iconClass: 'icon-danchuang-wancheng iconfont',
+        duration: 1500
+    })
+}
+
+// 升降序
+Vue.prototype.sort = function(str, type) {
+    return function(a, b) {
+        if (type == 'up') {
+            return a[str] - b[str];
+        } else if (type == 'down') {
+            return b[str] - a[str];
+        }
+    }
+}
 
 //  全局组件之间通信
 Vue.prototype.$eventHub = Vue.prototype.$eventHub || new Vue()
+
+// 设置浏览器窗口大小
+window.onresize = function(e) {
+    store.commit('changeWindowSize', {
+        innerWidth: e.target.innerWidth,
+        innerHeight: e.target.innerHeight
+    });
+}
 
 
 

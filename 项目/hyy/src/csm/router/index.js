@@ -97,7 +97,8 @@ let routes = [
       hidden: true
     },
     component: routerView,
-    redirect: 'thingManage/list',
+    // redirect: 'thingManage/list',
+    redirect:'ceshi',
     name: '领用物品管理',
     children:[{
       path: 'list',
@@ -156,6 +157,22 @@ let routes = [
       title: '总部渠道管理'
     },
     component: (resolve) => require(['csm/views/channelManage/Headquarters.vue'], resolve),
+    name: '总部渠道管理',
+  },
+  {
+    path: 'cinemaChannelParam',
+    meta: {
+      title: '影院渠道参数设置'
+    },
+    component: (resolve) => require(['csm/views/channelManage/CinemaParam.vue'], resolve),
+    name: '影院渠道参数设置',
+  },
+  {
+    path: 'cinema',
+    meta: {
+      title: '总部渠道管理'
+    },
+    component: (resolve) => require(['csm/views/finance/workTime/public/singleCinema.vue'], resolve),
     name: '总部渠道管理',
   },
 ];

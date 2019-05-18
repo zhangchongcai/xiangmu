@@ -1,7 +1,5 @@
 <template>
   <div class="app-container">
-    <!-- <nav-menu></nav-menu>
-    <Header></Header> -->
     <div class="content-wrap">
       <router-view></router-view>
     </div>
@@ -9,11 +7,6 @@
 </template>
 <script>
 import '../assets/common.scss'
-import '../assets/reset-element.scss' 
-import '../assets/sale-total.scss'
-
-// import NavMenu from "./views/partical/NavMenu";
-// import Header from "./views/partical/Header";
 export default {
   name: "App",
   data() {
@@ -32,7 +25,5 @@ body,
   box-sizing: border-box;
   background: #eee;
   width: 100%;
-//   padding-left: 136px;
-//   padding-top: 60px;
 }
 </style>

@@ -19,14 +19,14 @@
       <ul class="listUl">
         <li class="first-li" @click="MeClick('0')" :class="{active:cur==0}">
             <div class="cont">
-              <h1>{{MemberTop.newMember}}</h1>
-              <p>新增会员人数</p>
+              <h1>{{MemberTop.newMember | capitalizePerson}}</h1>
+              <p>新增会员人数({{MemberTop.newMember | too}})</p>
             </div>
         </li>
         <li @click="MeClick('1')" :class="{active:cur==1}">
           <div>会员消费金额</div>
           <div>
-            <span>{{MemberTop.memberConsumeAmount | capitalizeFloor}}</span>元
+             <span>{{MemberTop.memberConsumeAmount | capitalizeOne}}</span>{{MemberTop.memberConsumeAmount | foo}}
           </div>
         </li>
         <li @click="MeClick('2')" :class="{active:cur==2}">
@@ -38,37 +38,46 @@
         <li @click="MeClick('3')" :class="{active:cur==3}">
           <div>开卡数量</div>
           <div>
-            <span>{{MemberTop.newCardCount}}</span>张
+            <span>{{MemberTop.newCardCount | capitalizeSheet}}</span>{{MemberTop.newCardCount | sheets}}
           </div>
         </li>
         <li @click="MeClick('4')" :class="{active:cur==4}">
           <div>储值金额</div>
           <div>
-            <span>{{MemberTop.totalStoreAmount}}</span>元
+            <span>{{MemberTop.totalStoreAmount | capitalizeOne}}</span>{{MemberTop.totalStoreAmount | foo}}
           </div>
         </li>
       </ul>
     </div>
     
     <!--新增会员人数Content-->
-    <div class="membership_Container" v-if="cur==0">
+    <div class="membership_Container ModuleKPI" v-if="cur==0">
       <!--KPI完成率-->
-        <div class="ModuleTitleLayout">
+        <div class="ModuleTitleLayout" v-if="flag">
           <div class="ModuleTitle">
             <div>
               KPI完成率
-              <i class="iconfont icon-danchuang-tishi"></i>
+              <el-tooltip class="item" effect="dark" placement="right-start">
+                <div slot="content" style="width:300px">
+                  <ul id="ulMain">
+                    <li>新增会员人数当日达成 : <span>{{CurrentMemberKPIDataCine.newMemberCurrent | capitalizePerson}}{{CurrentMemberKPIDataCine.newMemberCurrent | too}}</span></li>
+                    <li>环比前一日 : <span :class="[CurrentMemberKPIDataCine.memberChainDay > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[CurrentMemberKPIDataCine.memberChainDay > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{CurrentMemberKPIDataCine.memberChainDay}}%</span></li>
+                    <li>月至今达成 : <span>{{CurrentMemberKPIDataCine.memberMonthToNow | capitalizePerson}}{{CurrentMemberKPIDataCine.memberMonthToNow | too}}</span></li>
+                    <li>环比上月 : <span :class="[CurrentMemberKPIDataCine.memberChainMonth > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[CurrentMemberKPIDataCine.memberChainMonth > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{CurrentMemberKPIDataCine.memberChainMonth}}%</span></li>
+                    <li>本月目标为 : <span>{{CurrentMemberKPIDataCine.newMemberTarget | capitalizePerson}}</span>{{CurrentMemberKPIDataCine.newMemberTarget | too}}</li>
+                    <li>达成率 : <span>{{CurrentMemberKPIDataCine.newMemberRate}}</span>%</li>
+                    <li>与时间进度差距为 : <span :class="[CurrentMemberKPIDataCine.timeRate > 0? 'green':'red']">{{CurrentMemberKPIDataCine.timeRate}}%</span></li>
+                    <li>按目前进度,预计月底达成率为 : <span>{{CurrentMemberKPIDataCine.memberExpect}}</span>%</li>
+                    <li>与目标额差距 : <span :class="[CurrentMemberKPIDataCine.memberGap > 0? 'green':'red']">{{CurrentMemberKPIDataCine.memberGap}}</span>%</li>
+                  </ul>
+                </div>
+                <i class="iconfont icon-danchuang-tishi"></i>
+              </el-tooltip>
             </div>
-            <div class="last">截止:2018/02/21</div>
+            <div class="last">截止:{{this.startDate && this.endDate}}</div>
           </div>
           <div class="kip-wrap">
-            <div style="height:200px;">
-               <kip-view></kip-view>
-            </div>
-            <div class="flex" style="color:#666;font-size:12px;margin-top:30px">
-              <div>月至今达成：8456.765元</div>
-              <div>KPI值：9567.8元</div>
-            </div>
+            <member-dash-cine :MemKPIvalueCine="CurrentMemberKPIDataCine"></member-dash-cine>
           </div>
         </div>
       <!--新增会员人数 -->
@@ -87,7 +96,7 @@
     </div>
 
     <!--会员消费金额Content-->
-    <div class="membership_Container" v-if="cur==1">
+    <div class="membership_Container ModuleKPI" v-if="cur==1">
       <!--会员消费金额 -->
       <div class="ModuleTitleLayout">
         <div class="ModuleTitle">
@@ -98,13 +107,13 @@
           :data="ChartsAmount"
           :legend-visible="false"
           :settings="lineSettings"
-          :extend="lineExtend"
+          :extend="lineExtendMoneyTwo"
         ></ve-line>
       </div>
     </div>
 
     <!--会员消费占比Content-->
-    <div class="membership_Container" v-if="cur==2">
+    <div class="membership_Container ModuleKPI" v-if="cur==2">
       <!--会员消费占比趋势人数 -->
       <div class="ModuleTitleLayout">
         <div class="ModuleTitle">
@@ -115,13 +124,13 @@
           :data="ChartsProp"
           :legend-visible="false"
           :settings="lineSettings"
-          :extend="lineExtend"
+          :extend="lineExtendBI"
         ></ve-line>
       </div>
     </div>
 
     <!--开卡数量Content-->
-    <div class="membership_Container" v-if="cur==3">
+    <div class="membership_Container ModuleKPI" v-if="cur==3">
       <!--会员消费占比趋势人数 -->
       <div class="ModuleTitleLayout">
         <div class="ModuleTitle">
@@ -132,13 +141,13 @@
           :data="ChartsOpen"
           :legend-visible="false"
           :settings="lineSettings"
-          :extend="lineExtend"
+          :extend="lineExtendZhang"
         ></ve-line>
       </div>
     </div>
 
     <!--储值金额Content-->
-    <div class="membership_Container" v-if="cur==4">
+    <div class="membership_Container ModuleKPI" v-if="cur==4">
       <!--储值金额趋势 -->
       <div class="ModuleTitleLayout">
         <div class="ModuleTitle">
@@ -149,18 +158,23 @@
           :data="ChartsProfit"
           :legend-visible="false"
           :settings="lineSettings"
-          :extend="lineExtend"
+          :extend="lineExtendMoney"
         ></ve-line>
       </div>
     </div>
   </div>   
 </template>
 <script>
-import KipView from '../../partical/kpi'
+import MemberDashCine from './KPI/MemberDashCine'
 export default {
-  components:{KipView},
+  components:{
+    MemberDashCine
+  },
   name: "BoxOffice",
   props: {
+    MemberTotal:{
+      type: Number
+    },
     MemberTop: {
       type: Object
     },
@@ -168,20 +182,86 @@ export default {
       type: Object
     },
     cityId:{
-      type:String
+      type: Number
     },
     memberId:{
-      type:String
-    },
-    time:{
-      type:String
+      type: Number
     },
     MemberLineData:{
-      type:Object
+      type: Object
+    },
+    MemberKPIDataCine:{
+      type: Object
+    },
+    startDate:{
+      type: String
+    },
+    endDate:{
+      type: String
+    },
+    timeType:{
+      type: String
     }
   },
   data() {
+    this.lineExtend = {
+      'xAxis.0.axisLabel.rotate': 60,
+      xAxis:{
+        offset:10
+      },
+      tooltip: {
+        trigger: 'axis',
+        //在这里设置
+        formatter: '{a0} : {c0}人'
+      }
+    };
+     this.lineExtendBI = {
+      'xAxis.0.axisLabel.rotate': 60,
+      xAxis:{
+        offset:10
+      },
+      tooltip: {
+        trigger: 'axis',
+        //在这里设置
+        formatter: '{a0} : {c0}%'
+      }
+    };
+    this.lineExtendMoneyTwo = {
+      'xAxis.0.axisLabel.rotate': 60,
+      xAxis:{
+        offset:10
+      },
+      tooltip: {
+        trigger: 'axis',
+        //在这里设置
+        formatter: '{a0} : {c0}元'
+      }
+    };
+    this.lineExtendMoney = {
+      'xAxis.0.axisLabel.rotate': 60,
+      xAxis:{
+        offset:10
+      },
+      tooltip: {
+        trigger: 'axis',
+        //在这里设置
+        formatter: '{a0} : {c0}元'
+      }
+    };
+    this.lineExtendZhang = {
+      'xAxis.0.axisLabel.rotate': 60,
+      xAxis:{
+        offset:10
+      },
+      tooltip: {
+        trigger: 'axis',
+        //在这里设置
+        formatter: '{a0} : {c0}张'
+      }
+    };
     return {
+      CurrentMemberKPIDataCine:JSON.parse(JSON.stringify(this.MemberKPIDataCine)),
+      flag:true,
       cur:0,
       currentPage:1,// 当前页码
       pageSize:10,// 每页大小
@@ -218,27 +298,156 @@ export default {
           }
         }
       },
-      // 折线图扩展
-      lineExtend: {}
     };
+  },
+  watch: {
+    MemberKPIDataCine(val){
+      this.CurrentMemberKPIDataCine = val
+    }
   },
   filters: {
     capitalizeOne(value) {
-      if (!value) return "";
-      value = value / 10000;
-      return value.toFixed(2);
+      if (!value) return ""
+      let newValue = value.toString();
+
+      //判断逻辑
+      if(newValue.indexOf('.') != -1){
+        if(newValue.length < 8){
+          return newValue
+        }
+        else if(newValue.length >= 8 && newValue.length <= 11){
+
+          return (newValue / 10000).toFixed(2)
+        }
+        else if(newValue.length >= 12){
+          return ((newValue / 10000) / 10000).toFixed(2)
+        }
+      }
+      else
+      {
+        if(newValue.length < 5){
+          return newValue
+        }
+        else if(newValue.length >= 5 && newValue.length <= 8){
+          return (newValue / 10000).toFixed(2)
+        }
+        else if(newValue.length >= 9){
+          return ((newValue / 10000) / 10000).toFixed(2)
+        }
+      }
     },
-    capitalizeTwo(value) {
-      if (!value) return "";
-      value = value * 100;
-      return value.toFixed(2);
+    //处理万人计算保留两位小数
+    capitalizePerson(value) {
+      if (!value) return ""
+      let newValue = value.toString();
+
+      if(newValue.length < 5){
+        return newValue
+      }
+      else if(newValue.length >= 5 && newValue.length <= 8){
+
+        return (newValue / 10000).toFixed(2)
+      }
+      else if(newValue.length >= 9){
+        return ((newValue / 10000) / 10000).toFixed(2)
+      }
     },
-    capitalizeFloor(value) {
-      if (!value) return "";
-      return value.toFixed(2);
-    }
+    //处理万元计算
+    foo(value){
+      if (!value) return ""
+
+      let newValue = value.toString();
+      let foo = ''
+
+      if(newValue.indexOf('.') != -1){
+        if(newValue.length < 8){
+          foo = '元'
+          return foo
+        }
+        else if(newValue.length >= 8 && newValue.length <= 11){
+          foo = '万元'
+          return foo
+        }
+        else if(newValue.length >= 12){
+          foo = '亿元'
+          return foo
+        }
+      }
+      else{
+        if(newValue.length < 5){
+          foo = '元'
+          return foo
+        }
+        else if(newValue.length >= 5 && newValue.length <= 8){
+          foo = '万元'
+          return foo
+        }
+        else if(newValue.length >= 9){
+          foo = '亿元'
+          return foo
+        }
+      }
+    },
+    //处理万人单位计算
+    too(value){
+      if (!value) return ""
+
+      let newValue = value.toString();
+      let too = ''
+
+      if(newValue.length < 5){
+        too = '人'
+        return too
+      }
+      else if(newValue.length >= 5 && newValue.length <= 8){
+        too = '万人'
+        return too
+      }
+      else if(newValue.length >= 9){
+        too = '亿人'
+        return too
+      }
+    },
+    //处理万张单位计算
+    sheets(value){
+      if (!value) return ""
+
+      let newValue = value.toString();
+      let sheets = ''
+
+      if(newValue.length < 5){
+        sheets = '张'
+        return sheets
+      }
+      else if(newValue.length >= 5 && newValue.length <= 8){
+        sheets = '万张'
+        return sheets
+      }
+      else if(newValue.length >= 9){
+        sheets = '亿张'
+        return sheets
+      }
+    },
+    //处理开卡张数
+    capitalizeSheet(value) {
+      if (!value) return ""
+      let newValue = value.toString();
+
+      if(newValue.length < 5){
+        return newValue
+      }
+      else if(newValue.length >= 5 && newValue.length <= 8){
+        return (newValue / 10000).toFixed(2)
+      }
+      else if(newValue.length >= 9){
+        return ((newValue / 10000) / 10000).toFixed(2)
+      }
+    },
   },
   methods: {
+    foo(val){
+      this.flag = val
+    },
     tableRowClassName({ row, rowIndex }) {
       if (rowIndex === 1) {
         return "warning-row";
@@ -285,20 +494,26 @@ export default {
       this.$nextTick(() => {
         this.$camList.SwitchMemberTab({
           body: {
-            groupId: 1,
-            startDate: this.time,
-            endDate: this.time,
-            chainPerType: "day",
+            groupId: 44,
+            startDate: this.startDate,
+            endDate: this.endDate,
+            dateType: this.timeType,
             pageSize:this.pageSize,
             pageNo:this.currentPage,
             columnType:this.BoxType,
             cityId:this.Boxcityid,
-            cinemaId:this.BoxMemberId
+            cinemaId:this.BoxMemberId,
+            initNewMember:this.MemberTotal
           }
         })
-        .then(res => {
-          //获取总数据
-          if(this.BoxType === "member_consume_price"){
+        .then(response => {
+          let res = response.data;
+          if(this.BoxType === "new_member"){
+            //获取KPI
+            let ResKPI = res.memberKpiInfo;
+            this.CurrentMemberKPIDataCine = ResKPI
+          }
+          else if(this.BoxType === "member_consume_price"){
             //获取会员消费金额
             this.getAmountChart(res)            
           }
@@ -556,5 +771,20 @@ export default {
 }
 .icon-neiye-xiajiangjiantou{
   color:red;
+}
+.green{
+  color:green;
+}
+.red{
+  color:red;
+}
+#ulMain{
+  width:250px;
+  list-style-type:none;
+  padding:0px;
+  margin:0px;
+  li{
+    line-height:23px;
+  }
 }
 </style>

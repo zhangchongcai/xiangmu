@@ -1,10 +1,10 @@
 <template>
-    <div class="diydialog">
+    <div class="diydialog-filmsingle">
         <el-dialog
         title="选择影院"
-        :visible.sync="dialogVisible"
-        width="80%"
-        :before-close="handleClose">
+        :visible.sync="framedialogVisible"
+        :show-close="false"
+        width="70%">
         <div class="film-top">
             <el-form :inline="true" ref="ruleForm" label-width="85px" size="small" class="film-search">
                 <el-form-item label="影院编码：">
@@ -27,13 +27,12 @@
                         </el-option>
                     </el-select>
                 </el-form-item> -->
-                <el-button type="primary" @click="searchFunc" icon="el-icon-search" style="margin-top: 1px">搜索</el-button>
+                <el-button type="primary" @click="searchFunc" icon="el-icon-search" style="margin-top: 1px;margin-left:8px;">搜索</el-button>
             </el-form>
         </div>
-        <div class="film-body" style="max-height:320px;overflow:auto;">
-            <div class="aside_left">
+        <div class="film-body">
                 <!-- class="diy-header" -->
-                <el-table :data="filmList" @row-click= "showRow" @current-change="handleRowChange" ref="filmListRef" highlight-current-row style="width: 98%;margin-left:1%;">
+                <el-table :data="filmList" @row-click= "showRow" @current-change="handleRowChange"  height="308px" ref="filmListRef" highlight-current-row>
                     <!-- <el-table-column
                         type="selection"
                         width="55">
@@ -53,15 +52,14 @@
                     background
                     @size-change="handleSizeChange"
                     @current-change="handleCurrentChange"
-                    :current-page="currentPage"
+                    :current-page="pageNum"
                     :page-sizes="[10, 25, 50, 100]"
                     :page-size="pageSize"
                     layout="total, sizes, prev, pager, next, jumper"
                     :total="total">
                     </el-pagination>
                 </div>
-                
-            </div>
+
             <!-- <div class="aside_right">
                 <div class="choose-header">
                      <span style="float:left;">已选影院 {{multipleSelection.length}}</span>
@@ -83,17 +81,17 @@
             <el-button type="primary" @click="confirmData()">确 定</el-button> -->
             <!-- <div class="class" slot="dialogfooter"></div> -->
         </span>
-        
+
     </el-dialog>
     </div>
 </template>
 
 <script>
 import cinemaData from './cinema.js'
-import {listAuthCommCinemas} from 'frame_cpm/http/interface.js'
+import {authQueryUserCinemas} from 'frame_cpm/http/interface.js'
 export default {
     props: {
-        dialogVisible: {
+        framedialogVisible: {
             type:Boolean,
             default: true,
             required: true
@@ -101,11 +99,6 @@ export default {
         innerData:{
             type:Object,
             default:{},
-            required: true
-        },
-        isListprop: {
-            type:Boolean,
-            default: false,
             required: true
         }
     },
@@ -125,8 +118,8 @@ export default {
             areas:[],
             rules:{},
             total:0,
-            pageSize:20,
-            currentPage:1,
+            pageSize:10,
+            pageNum:1,
             selectedId: '',
 		    selectedRows:null
         }
@@ -139,7 +132,7 @@ export default {
     methods:{
         // closeDialog(){
         //     this.$emit('introduce',{
-        //         dialogVisible: false,
+        //         framedialogVisible: false,
         //     })
         // },
        handleRowChange(val) {
@@ -152,7 +145,7 @@ export default {
             let selectedRowsIndex = this.filmList.indexOf(row);
             this.selectedRows = row;
             this.selectedId=this.selectedRows.id;
-            _this.$nextTick(function () { 
+            _this.$nextTick(function () {
                 if(selectedRowsIndex != -1){
                     _this.$refs.filmListRef.setCurrentRow(_this.filmList[selectedRowsIndex]);
                 }
@@ -161,7 +154,7 @@ export default {
         confirmData(){
             let _this = this;
             // let cinemaIdss = this.multipleSelection.map(item=> item.id)
-            let cinemaIdss =this.selectedRows
+            let cinemaIdss = !!this.selectedRows?this.selectedRows:{}
             // let quanji = this.filmList.map(item=> item.id)
             // let paichuji = quanji.filter(key => !cinemaIdss.includes(key))
             // let params={
@@ -173,7 +166,7 @@ export default {
             // .then( ret => {
             //     if (ret && ret.code === 200) {
             //         // _this.success(ret.data)
-            //          _this.success('已取消授权影院'+paichuji.length+'家')    
+            //          _this.success('已取消授权影院'+paichuji.length+'家')
             //     } else {
             //         _this.error(ret.data)
             //     }
@@ -182,23 +175,15 @@ export default {
             // })
             console.log(cinemaIdss)
             _this.$emit('callBackSingle',{
-                dialogVisible: false,
-                data: cinemaIdss
-            }) 
-         
+                framedialogVisible: false,
+                data: cinemaIdss,
+                whereUse:this.$attrs.whereUse
+            })
+
         },
         //查询
         searchFunc(){
             this.listAuthCommCinemas();
-        },
-        handleClose(done) {
-            this.$emit('callBackSingle',{
-                dialogVisible: false,
-                dataList:[]
-            }) 
-            // this.$confirm('确认关闭？').then(_ => {
-            //     done();
-            // }).catch(_ => {});
         },
         selectable(row) {
             return row.approveStatus === 'WAIT_APPROVE'
@@ -268,7 +253,7 @@ export default {
                 }).catch( err => {
                     console.log(err)
                 })
-            }, 
+            },
             listAuthCommCinemas(){
                 // let params={
                 //     consumerId:175,
@@ -278,55 +263,66 @@ export default {
                 let _this =this
                 let params = this.innerData
                 let postObj = {
-                    fullName:this.searchAdition.fullName,
-                    code:this.searchAdition.code
+                    fullName: this.searchAdition.fullName,
+                    code: this.searchAdition.code,
+                    type: this.$attrs.type,
+                    pageSize: this.pageSize,
+                    pageNum: this.pageNum
                 }
-                // listAuthCommCinemas(postObj)
-                // .then( ret => {
-                //     if (ret && ret.code === 200) {
-                //         _this.filmList = ret.data
-                //         _this.total = ret.data.length
-                //         _this.filmList.map(item=>{
-                //             item.area = item.provinceName + item.cityName + item.areaName
-                //         })
-                //         _this.$nextTick(function () { 
-                //         for(let i=0;i<_this.filmList.length;i++){
-                //                 if(_this.filmList[i].id == params.id){
-                //                     _this.$refs.filmListRef.toggleRowSelection(_this.filmList[i],true)
-                //                 }
-                //             }
-                //         })
-                //     } else {}
-                // }).catch( err => {
-                //     console.log(err)
-                // })
-               this.filmList= cinemaData.commCinemas; 
-               let abc = cinemaData.commCinemas
-               this.total = abc.length
-               this.selectedId = params.id
-               this.selectedRows = this.filmList.filter(item=>params.id == item.id)[0]
-                _this.$nextTick(function () { 
-                    for(let i=0;i<_this.filmList.length;i++){
-                        if(_this.filmList[i].id == params.id){
-                            _this.$refs.filmListRef.setCurrentRow(_this.filmList[i]);
+                authQueryUserCinemas(postObj).then( ret => {
+                    if (ret && ret.code === 200) {
+                        _this.total = ret.data.total
+                        _this.filmList = ret.data.rows
+                        _this.selectedId = params.id
+                        if(!!params.id || !!_this.selectedRows){
+                            // _this.selectedRows = this.filmList.filter(item=>params.id == item.id)[0]
+                            let selectedSingleData = this.filmList.filter(item=>params.id == item.id)[0]
+                            if(!!selectedSingleData){
+                                _this.selectedRows = selectedSingleData
+                            }else{
+                                _this.selectedRows = params
+                            }
+                            _this.$nextTick(function () {
+                                for(let i=0;i<_this.filmList.length;i++){
+                                    if(_this.filmList[i].id == params.id){
+                                        _this.$refs.filmListRef.setCurrentRow(_this.filmList[i]);
+                                    }
+                                }
+                            })
                         }
+
+
+                    } else {
+
                     }
+                }).catch( err => {
+                    console.log(err)
                 })
+            //    this.filmList= cinemaData.commCinemas;
+            //    let abc = cinemaData.commCinemas
+            //    this.total = abc.length
+            //    this.selectedId = params.id
+            //    this.selectedRows = this.filmList.filter(item=>params.id == item.id)[0]
+            //     _this.$nextTick(function () {
+            //         for(let i=0;i<_this.filmList.length;i++){
+            //             if(_this.filmList[i].id == params.id){
+            //                 _this.$refs.filmListRef.setCurrentRow(_this.filmList[i]);
+            //             }
+            //         }
+            //     })
             },
             //当前页数数目改变
 			handleSizeChange(valua) {
 				this.pageSize = valua;
-				console.log(this.current);
 				this.listAuthCommCinemas();
 			},
 				//当前页改变
 			handleCurrentChange(valua) {
-				this.current = valua;
-				console.log(this.current);
+				this.pageNum = valua;
 				this.listAuthCommCinemas();
 			},
             submitForm(formName) {
-                
+
             },
 
     }
@@ -334,7 +330,10 @@ export default {
 </script>
 
 <style lang="scss">
-    .diydialog{
+    .diydialog-filmsingle{
+        .film-top{
+            margin-left:8px;
+        }
         .el-dialog {
             .el-dialog__body{
                 border-top:1px solid #ccc;
@@ -346,20 +345,23 @@ export default {
 </style>
 <style lang="scss" scoped>
     .film-body{
-        padding-top: 8px;
+        padding: 8px;
         .aside_left{
-            width: 88%;
-            float: left;
+            display: flex;
+            padding-left:10px;
+            padding-right: 10px;
+            height: 332px;
+            overflow: hidden;
         }
         .aside_right{
             width: 48%;
-            padding:1%; 
+            padding:1%;
             margin-left:-8px;
             float: left;
             border:1px solid #e5e5e5;
             border-left:0;
             .choose-header{
-                padding-bottom:12px; 
+                padding-bottom:12px;
             }
         }
         .selected-ul{

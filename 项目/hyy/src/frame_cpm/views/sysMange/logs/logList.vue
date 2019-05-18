@@ -1,5 +1,5 @@
 <template>
-    <div class="contentCenter">
+    <div class="content-wrapper">
         <div class="breadcrumb">
             <el-breadcrumb separator-class="el-icon-arrow-right">
                 <el-breadcrumb-item>系统设置</el-breadcrumb-item>
@@ -55,7 +55,7 @@
                 </el-table-column>
                 <el-table-column label="操作时间" width="180">
                     <template slot-scope="scope">
-                    <span>{{ scope.row.opTime }}</span>
+                        <span>{{ scope.row.opTime | renderTime}}</span>
                     </template>
                 </el-table-column>
                  <el-table-column label="IP">
@@ -111,6 +111,12 @@
     },
     created() {
         this.getList()
+    },
+    filters:{
+      renderTime(date) {
+        let dateee = new Date(date).toJSON();
+        return new Date(+new Date(dateee) + 8 * 3600 * 1000).toISOString().replace(/T/g, ' ').replace(/\.[\d]{3}Z/, '')
+      }
     },
     methods: {
       getList () {
@@ -177,7 +183,7 @@
 </script>
 
 <style scoped lang="scss">
-    .contentCenter {
+    .content-wrapper {
         height: 100%;
 
         .breadcrumb {

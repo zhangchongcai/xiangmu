@@ -22,7 +22,7 @@
               <el-input v-model="ruleForm.equityName"></el-input>
             </el-form-item>
             <el-form-item label="权益类型" :rules="{required:true}">
-              <el-select v-model="ruleForm.equityType" :disabled="$route.query.cardId" placeholder="请选择">
+              <el-select v-model="ruleForm.equityType" :disabled="$route.query.cardId?true:false" placeholder="请选择">
                 <el-option v-for="(item, index) in equityTypeList" :key="index" :label="item.name" :value="item.value"></el-option>
               </el-select>
             </el-form-item>
@@ -60,9 +60,18 @@
                 </span>
                 <div class="applicable-cinema-hall-wrap">
                   <div class="applicable-cinema-hall-inner">
-                    <el-form-item label="适用影院" required>
-                      <div class="select-btn" @click="handleSelectCinema">请选择影院</div>
-                      <el-tag size="small" closable>大地影院</el-tag>
+                    <el-form-item label="适用影院" :prop="'movieList.'+ index +'.cinemaList'" :rules="{
+                          required: true, validator: checkSaleCinema, trigger: 'change'
+                        }"
+                      class="shiyong_yingyuan">
+                      <div class="select-btn" v-show="!(domain.cinemaList && domain.cinemaList.length > 0)" @click="chooseCinema(index)">请选择影院</div>
+                      <div class="cinema-list" v-show="domain.cinemaList && domain.cinemaList.length > 0" @click="chooseCinema(index)">
+                        {{getArrCinemaListName(domain.cinemaList)}}
+                        <i class="el-tag__close el-icon-close myclose" @click.stop="clearIndexCinema(index)"></i>
+                      </div>
+                      <div class="select-btn" v-show="domain.cinemaList && domain.cinemaList.length > 0" @click="chooseCinema(index)">
+                        编辑
+                      </div>
                     </el-form-item>
                     <!-- 适用影厅 -->
                     <el-form-item label="适用影厅" :prop="'movieList.'+ index + '.hallList'" :rules="{
@@ -182,12 +191,21 @@
                   <div class="applicable-cinema-hall-inner">
                     <div class="unified-setup">
                       <!-- 卖品折扣 -->
-                      <el-form-item label="适用影院" :rules="{required: true, message: '适用影院必填', trigger: 'blur'}">
-                        <div class="select-btn" @click="handleSelectCinema">请选择影院</div>
-                        <el-tag size="small" closable>大地影院</el-tag>
+                      <el-form-item label="适用影院" class="shiyong_yingyuan" prop="goods.cinemaList" :rules="{required: true, validator: checkSaleCinema, trigger: 'blur'}">
+                        <div class="select-btn" v-show="!(ruleForm.goods.cinemaList && ruleForm.goods.cinemaList.length > 0)"
+                          @click="chooseCinema('卖品')">请选择影院</div>
+                        <div class="cinema-list" v-show="ruleForm.goods.cinemaList && ruleForm.goods.cinemaList.length > 0"
+                          @click="chooseCinema('卖品')">
+                          {{getArrCinemaListName(ruleForm.goods.cinemaList)}}
+                          <i class="el-tag__close el-icon-close myclose" @click.stop="clearIndexCinema('卖品')"></i>
+                        </div>
+                        <div class="select-btn" v-show="ruleForm.goods.cinemaList && ruleForm.goods.cinemaList.length > 0"
+                          @click="chooseCinema('卖品')">
+                          编辑
+                        </div>
                       </el-form-item>
                       <el-form-item label="适用卖品" :rules="{required: true, message: '卖品必填', trigger: 'blur'}">
-                        <div class="select-btn" @click="handleSelectCinema">请选择卖品</div>
+                        <div class="select-btn">请选择卖品</div>
                         <el-tag size="small" closable>大豆油</el-tag>
                       </el-form-item>
                       <el-form-item label="优惠方式" prop="goods" :rules="{
@@ -219,9 +237,9 @@
                           <el-col :span="5">
                             <el-form-item label-width="80px" label="销售单号" :prop="'ticketList.'+index+'.ticketNo'"
                               :rules="{
-                              required: true, validator: checkticketListTicketNo, trigger: 'blur'}"
+                              required: true, validator: checkticketListTicketNo, trigger: 'change'}"
                               class="maximum-subsidy-wrap">
-                              <el-input v-model="item.ticketNo" placeholder="销售单号" size="medium">
+                              <el-input readonly v-model="item.ticketNo" placeholder="销售单号" size="medium" @focus="showccmSaleList('dai',index)">
                               </el-input>
                             </el-form-item>
                           </el-col>
@@ -315,11 +333,11 @@
                               <el-form-item v-for="(voucheritem, index) in ruleForm.birthday.voucherList" :key="index"
                                 style="margin-top:14px">
                                 <el-row>
-                                  <el-col :span="12">
+                                  <el-col :span="14">
                                     <div class="grid-content bg-purple">
                                       <el-form-item label="销售单号" label-width="80px" :prop="'birthday.voucherList.'+index"
-                                        :rules="{required: true, validator: checkvoucherListTicketNo, trigger: 'blur'}">
-                                        <el-input v-model="voucheritem.ticketNo" placeholder="销售单号" style="width:150px"></el-input>
+                                        :rules="{required: true, validator: checkvoucherListTicketNo, trigger: 'change'}">
+                                        <el-input v-model="voucheritem.ticketNo" placeholder="销售单号" style="width:200px" readonly  @focus="showccmSaleList('birthdaydai',index)"></el-input>
                                       </el-form-item>
                                     </div>
                                   </el-col>
@@ -359,11 +377,11 @@
                               <el-form-item v-for="(cdkeyitem, index) in ruleForm.birthday.cdkeyList" :key="index"
                                 style="margin-top:14px">
                                 <el-row>
-                                  <el-col :span="12">
+                                  <el-col :span="14">
                                     <div class="grid-content bg-purple">
                                       <el-form-item label="销售单号" label-width="80px" :prop="'birthday.cdkeyList.'+index"
-                                        :rules="{required: true, validator: checkcdkeyListTicketNo, trigger: 'blur'}">
-                                        <el-input v-model="cdkeyitem.ticketNo" placeholder="销售单号" style="width:150px"></el-input>
+                                        :rules="{required: true, validator: checkcdkeyListTicketNo, trigger: 'change'}">
+                                        <el-input v-model="cdkeyitem.ticketNo" placeholder="销售单号" style="width:200px" readonly  @focus="showccmSaleList('birthdaycdk',index)"></el-input>
                                       </el-form-item>
                                     </div>
                                   </el-col>
@@ -418,19 +436,22 @@
     <div :class="this.ruleForm.equityType != 'consumer_type'?'scorll-right':''">
       <fixStepTool :stepData="stepData.stepList" class="_fixsteptool-member"></fixStepTool>
     </div>
-    <el-dialog style="padding:50px" width="50%" :visible="dialogVisible" :show-close="false" :close-on-click-modal="false">
-      <el-checkbox v-model="selectedCinema" style="margin:50px 0 0 50px">大地影院</el-checkbox>
-      <div style="margin:20px 0 30px 0;textAlign:center">
-        <el-button class="el-btn-custom" type="primary" @click="handleSure">确定</el-button>
-        <el-button class="el-btn-custom" @click="handleSure">取消</el-button>
+    <!-- 使用影院弹层 -->
+    <frame-multicinema :framedialogVisible.sync="dialogVisible" type="1" :whereUse="whereUse" :innerCinemaMultiData="innerCinemaMultiData"
+      :disabledData="disabledData" :isListprop="true" @callBack="handleCallBack" ref='frameMultiCinema'>
+      <div slot="footerId">
+        <el-button @click="closeDialogCinemaDialog()">取 消</el-button>
+        <el-button type="primary" @click="confirmCinemaDialog()">确 定</el-button>
       </div>
-    </el-dialog>
+    </frame-multicinema>
+    <!--选择销售单号弹窗-->
+    <ccmSaleList ref="ccmSaleList" :incomeData="incomeData" @ccmSaleListCallBack="ccmSaleListCallBack" />
   </div>
 </template>
 <script>
 import FixStepTool from "../../../components/fix-step-tool/fix-step-tool";
 import fixStepMixin from "../../../mixins/CRM/fixStepTool.js";
-
+import ccmSaleList from "../../../../ccm/alert/saleList/index";
 const weekOptions = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
 
 export default {
@@ -446,11 +467,6 @@ export default {
       } else if (!testName.test(value.toString().trim())) {
         callback(new Error("输入的名称含有不合法字符"));
       } else {
-        // this.ruleForm[rule.field] = value.toString().trim();
-        // callback();
-        if (this.$route.query.cardId) {
-          callback();
-        }
         this.$crmList
           .chekckEquitynameIsexist({
             equityName: value.toString().trim(),
@@ -521,9 +537,18 @@ export default {
     };
 
     return {
+      saleListStatus:"", //临时记载所选券类型
+      saleListIndex:"",//临时记载所选券Index
+      incomeData: {
+        couponType: "1", //弹窗显示类型 1代金券 0兑换码 2优惠券
+      },
+      whereUse: "1", //适用影院隔离
+      cinemaIndex: "0", //当前所处选择影院index
+      innerCinemaMultiData: [], //使用影院已选参数
+      disabledData: [], //适用影院禁选参数
+      multicinemaVisible: false, //适用影院显隐
       delCardProductRuleIdArray: [], //卡权益删除的id数组
       dialogVisible: false,
-      selectedCinema: false,
       activeNames: ["1", "2"],
       birthdayCardType: ["代金券", "兑换码"],
       equityTypeList: [
@@ -588,12 +613,7 @@ export default {
         },
         //卖品优惠规则
         goods: {
-          cinemaList: [
-            {
-              cinemaId: "1",
-              cinemaName: "大地"
-            }
-          ],
+          cinemaList: [],
           goodsList: [
             {
               goodsId: "1",
@@ -606,12 +626,7 @@ export default {
         movieList: [
           {
             //影票优惠规则
-            cinemaList: [
-              {
-                cinemaId: "1",
-                cinemaName: "大地影院"
-              }
-            ],
+            cinemaList: [],
             dayTimesJson: [["00:00:00", "23:59:59"]],
             hallList: [],
             lowPriceMark: "cinemaPay",
@@ -694,7 +709,8 @@ export default {
     };
   },
   components: {
-    fixStepTool: FixStepTool
+    fixStepTool: FixStepTool,
+    ccmSaleList
   },
   mounted() {
     this.$crmList
@@ -713,6 +729,134 @@ export default {
   },
   mixins: [fixStepMixin],
   methods: {
+    //营销单号返回数据
+    ccmSaleListCallBack(opt){
+      console.log("opt",opt.data)
+      var type = this.saleListStatus;
+      if(type == "dai"){
+        this.ruleForm.ticketList[this.saleListIndex].ticketNo = opt.data.applyCode
+      }else if(type == "birthdaydai"){
+        this.ruleForm.birthday.voucherList[this.saleListIndex].ticketNo = opt.data.applyCode
+      }else if(type == "birthdaycdk"){
+         this.ruleForm.birthday.cdkeyList[this.saleListIndex].ticketNo = opt.data.applyCode
+      }
+    },
+    //显示营销单号
+    showccmSaleList(type,index) {
+      this.saleListStatus = type;
+      this.saleListIndex = index;
+      if(type == "dai"){
+        this.incomeData.couponType = 1
+      }else if(type == "birthdaydai"){
+        this.incomeData.couponType = 1
+      }else if(type == "birthdaycdk"){
+        this.incomeData.couponType = 0
+      }
+      this.$refs.ccmSaleList.isShowDialog(true);
+    },
+    //展示当前适用影院合集
+    getArrCinemaListName(arr) {
+      if (!arr.length || arr.length == 0) {
+        return "请选择";
+      }
+      var newStrArr = [];
+      arr.map((item, index) => {
+        newStrArr.push(item.cinemaName);
+      });
+      return newStrArr.join(",");
+    },
+    //获取index除外其他所有列表的适用影院合集
+    getIndexOtherCinemaList(index) {
+      var allList = [];
+      for (let i = 0; i < this.ruleForm.movieList.length; i++) {
+        const element = this.ruleForm.movieList[i];
+        if (index != i) {
+          allList = allList.concat(element.cinemaList);
+        }
+      }
+      return allList;
+    },
+    //清空当前适用影院
+    clearIndexCinema(index) {
+      if (index == "卖品") {
+        this.ruleForm.goods.cinemaList = [];
+      } else {
+        this.ruleForm.movieList[index].cinemaList = [];
+      }
+    },
+    //适用影院 字段赋值ID->cinemaId
+    cinemaAddCinemaId(arr) {
+      if (!arr) {
+        return [];
+      }
+      arr.map((item, index) => {
+        item.id = item.cinemaId;
+        //  cinemaName: "大地影院"
+        return item;
+      });
+      return arr;
+    },
+    //适用影院 字段赋值cinemaId->ID
+    cinemaAddId(arr) {
+      if (!arr) {
+        return [];
+      }
+      arr.map((item, index) => {
+        item.cinemaId = item.id;
+        item.cinemaName = item.name;
+        return item;
+      });
+      return arr;
+    },
+    //适用影院
+    chooseCinema(index) {
+      this.cinemaIndex = index;
+      this.whereUse = index == "卖品" ? 100 : index;
+      if (index == "卖品") {
+        var editData = this.ruleForm.goods.cinemaList;
+        editData = editData ? this.cinemaAddCinemaId(editData) : [];
+        this.$set(this, "innerCinemaMultiData", editData);
+        this.$set(this, "disabledData", []);
+      } else {
+        var editDataIndex = this.ruleForm.movieList[index].cinemaList;
+        editDataIndex = editDataIndex
+          ? this.cinemaAddCinemaId(editDataIndex)
+          : [];
+        this.$set(this, "innerCinemaMultiData", editDataIndex);
+        this.$set(this, "disabledData", this.getIndexOtherCinemaList(index));
+      }
+      setTimeout(() => {
+        this.dialogVisible = true;
+        console.log(
+          "innerCinemaMultiData",
+          this.innerCinemaMultiData,
+          "disabledData"
+        );
+        this.$refs.frameMultiCinema.listAuthCommCinemas();
+      });
+    },
+    closeDialogCinemaDialog() {
+      this.dialogVisible = false;
+    },
+    confirmCinemaDialog() {
+      this.$refs.frameMultiCinema.confirmData();
+    },
+    handleCallBack(opt) {
+      var arr = opt.dataList;
+      if (this.cinemaIndex == "卖品") {
+        this.ruleForm.goods.cinemaList = this.cinemaAddId(arr);
+        this.$refs["ruleForm"].validateField(["goods.cinemaList"]);
+      } else {
+        this.ruleForm.movieList[this.cinemaIndex].cinemaList = this.cinemaAddId(
+          arr
+        );
+        this.$refs["ruleForm"].validateField([
+          "movieList." + this.cinemaIndex + ".cinemaList"
+        ]);
+      }
+      this.dialogVisible = false;
+    },
+    //适用影院 截止
     //图片拦截，格式
     beforeAvatarUpload(file) {},
     //图片上传返回处理
@@ -960,6 +1104,12 @@ export default {
         } else {
           callback();
         }
+      }
+      callback();
+    },
+    checkSaleCinema(rule, value, callback) {
+      if (value.length == 0) {
+        callback(new Error("适用影院必选"));
       }
       callback();
     },
@@ -1354,7 +1504,6 @@ export default {
         if (valid) {
           let data = JSON.parse(JSON.stringify(this.ruleForm));
           data = this.dataSendBack(data);
-          console.log(data);
           if (this.$route.query.cardId) {
             this.$crmList
               .editOwnRights(data)
@@ -1447,12 +1596,7 @@ export default {
     handleAddEquity() {
       this.ruleForm.movieList.push({
         //优惠规则
-        cinemaList: [
-          {
-            cinemaId: "1",
-            cinemaName: "大地影院"
-          }
-        ],
+        cinemaList: [],
         dayTimesJson: [["00:00:00", "23:59:59"]],
         goodsSaleData: "",
         goodsSaleType: "discountPrice",
@@ -1498,13 +1642,6 @@ export default {
     removeTimeInterval(index, indexTime, formName) {
       this.ruleForm.movieList[index].dayTimesJson.splice(indexTime, 1);
       this.$refs[formName].validate(() => {});
-    },
-    handleDiscountChange(val) {},
-    handleSelectCinema() {
-      this.dialogVisible = true;
-    },
-    handleSure() {
-      this.dialogVisible = false;
     }
   }
 };
@@ -1512,6 +1649,42 @@ export default {
 <style lang="scss">
 .add-own-rights-type {
   width: 100%;
+  .shiyong_yingyuan {
+    .el-form-item__error {
+      left: 105px !important;
+      top: 10% !important;
+    }
+  }
+  .cinema-list {
+    float: left;
+    max-width: 200px;
+    min-width: 100px;
+    padding-right: 20px;
+    padding-left: 10px;
+    margin-right: 10px;
+    height: 30px;
+    line-height: 30px;
+    position: relative;
+    display: inline-block;
+    background: rgb(230, 229, 229);
+    border: 1px solid #777777;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #333333;
+    letter-spacing: 0;
+    text-align: center;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    .myclose {
+      position: absolute;
+      right: 2px;
+      top: 8px;
+      color: #3b74ff;
+      font-weight: bold;
+    }
+  }
   // 面包屑
   .scorll-right .single-step:nth-of-type(2) {
     display: none;
@@ -1626,9 +1799,11 @@ export default {
           color: #666;
         }
         .select-btn {
+          display: inline-block;
+          float: left;
           width: 92px;
-          height: 32px;
-          line-height: 32px;
+          height: 30px;
+          line-height: 30px;
           background: #ffffff;
           border: 1px solid #3b74ff;
           border-radius: 4px;
@@ -1637,6 +1812,7 @@ export default {
           letter-spacing: 0;
           text-align: center;
           cursor: pointer;
+          margin-right: 10px;
         }
       }
       .add-equity-btn {
@@ -1774,5 +1950,4 @@ export default {
   }
 }
 </style>
-
 

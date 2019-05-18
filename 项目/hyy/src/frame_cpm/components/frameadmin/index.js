@@ -2,12 +2,12 @@ import Vue from 'vue'
 
 import multiCinema from './cinemaDialog/multiCinema2'
 import singleCinema from './cinemaDialog/singleCinema'
-import multiFilm from './filmDialog/multiFilm2'
-import singleFilm from './filmDialog/singleFilm'
+// import multiFilm from './filmDialog/multiFilm2'
+// import singleFilm from './filmDialog/singleFilm'
 // import ImageUpload from './imageUpload';
 // 注意 有些组件使用异步加载会有影响
-Vue.component('frame-multifilm', multiFilm)
-Vue.component('frame-singlefilm', singleFilm)
+// Vue.component('frame-multifilm', multiFilm)
+// Vue.component('frame-singlefilm', singleFilm)
 Vue.component('frame-multicinema', multiCinema)
 Vue.component('frame-singlecinema', singleCinema)
 // Vue.use(ImageUpload);

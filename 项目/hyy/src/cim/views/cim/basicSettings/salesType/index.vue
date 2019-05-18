@@ -99,6 +99,7 @@
 <script>
 import qs from "qs";
 import mixin from "cim/mixins/cim/paginationConfig.js";
+import { letterAndNumReg } from "cim/util/reg.js";
 
 export default {
   mixins: [mixin],
@@ -158,7 +159,7 @@ export default {
         code: [
           { required: true, message: "请输入大类编码", trigger: "blur" },
           {
-            pattern: this.$reg.letterAndNumReg,
+            pattern: letterAndNumReg,
             message: "请输入英文或数字!"
           }
         ],

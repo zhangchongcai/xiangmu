@@ -5,7 +5,7 @@
   -->
   <div class="owner-ship-detail">
     <!-- 内容区 - 折叠面板 -->
-    <el-collapse v-model="activeNames" @change="handleChange" class="owner-ship-detail-content">
+    <el-collapse v-model="activeNames"  class="owner-ship-detail-content">
       <!-- 权益信息 -->
       <el-collapse-item title="权益信息" name="1">
         <div class="equity-info">

@@ -17,7 +17,7 @@
       <div class="datacenter-btn-rightul">
         <button class="data-button" v-if="showStyleSave == true" @click="keepBtn">保存样式</button>
         <!-- 自定义模板下拉菜单 -->
-        <el-dropdown v-if="showStyleList" trigger="click" @click.native="handleMuneBtnClick(data)">
+        <el-dropdown v-if="showStyleList" trigger="click" @click.native="handleMuneBtnClick">
           <el-button type="primary">
             <span>样式</span>
             <i class="el-icon-arrow-down el-icon--right"></i>
@@ -55,8 +55,8 @@
         </el-dropdown>
         <button class="data-button" @click="setCommonBtn">自定义表头</button>
         <button class="data-button" @click="setgroupView">分组查看</button>
-        <button class="data-button" @click="printTable" v-if="this.styleGroupArr.length == 0">打印</button>
-        <button class="data-button" @click="groupDatatable" v-if="this.styleGroupArr.length != 0">打印</button>
+        <button class="data-button" @click="printTable" v-if="this.rightGroupArr.length == 0">打印</button>
+        <button class="data-button" @click="groupDatatable" v-if="this.rightGroupArr.length != 0">打印</button>
         <button
           class="data-button"
           ref="exportBtn"
@@ -64,6 +64,31 @@
           :disabled="isdisable"
         >导出Excel</button>
       </div>
+      <!-- 保存、更新模板定义样式名弹框 -->
+      <el-dialog
+        :title="dialogTitle"
+        :visible.sync="styleDialogVisible"
+        :lock-scroll="false"
+        :show-close="false"
+        width="30%"
+      >
+        <span v-if="saveOrUpdate === 'save'">保存当前报表样式，请为该样式定义一个新名称。</span>
+        <span v-if="saveOrUpdate === 'update'">更新当前报表样式，请为该样式定义一个新名称。</span>
+        <el-input v-model="inputStyleName" placeholder="请输入您要保存的样式名"></el-input>
+        <span slot="footer" class="dialog-footer">
+          <el-button
+            v-if="saveOrUpdate === 'save'"
+            type="primary"
+            @click="comfirmSaveStyle('save')"
+          >确 定</el-button>
+          <el-button
+            v-if="saveOrUpdate === 'update'"
+            type="primary"
+            @click="comfirmUpdateStyle('update')"
+          >确 定</el-button>
+          <el-button @click="cancleStyleNameDialog">取 消</el-button>
+        </span>
+      </el-dialog>
       <!-- 自定义表头弹框 -->
       <my-dialog
         :title="'自定义表头'"
@@ -100,7 +125,7 @@
         :title="'分组查看'"
         :dialogWidth="576"
         :dialogHeight="294"
-        :dialogContentHeight="200"
+        :dialogVisible="200"
         :isShow="groupView"
         :marginBottom="dialogHeaderMarginBottom"
         @handleBtnComfirmClick="QdGroupView"
@@ -120,9 +145,9 @@
               <div class="groupView-left-main">
                 <el-checkbox-group v-model="leftGroupsChecked" @change="handleCheckedCitiesChange">
                   <el-checkbox
-                    v-for="city in leftGroupsShow"
+                    v-for="(city, index) in leftGroupsShow"
                     :label="city"
-                    :key="city"
+                    :key="`city${index}`"
                   >{{city.groupColName}}</el-checkbox>
                 </el-checkbox-group>
               </div>
@@ -169,38 +194,12 @@
         </div>
       </my-dialog>
     </div>
-
-    <!-- 保存、更新模板定义样式名弹框 -->
-    <el-dialog
-      :title="dialogTitle"
-      :visible.sync="styleDialogVisible"
-      :before-close="handleClose('1')"
-      :lock-scroll="false"
-      width="30%"
-    >
-      <span v-if="saveOrUpdate === 'save'">保存当前报表的分组、标题样式，请为该样式定义一个新名称。</span>
-      <span v-if="saveOrUpdate === 'update'">更新当前报表的分组、标题样式，请为该样式定义一个新名称。</span>
-      <el-input v-model="inputStyleName" placeholder="请输入您要保存的样式名"></el-input>
-      <span slot="footer" class="dialog-footer">
-        <el-button
-          v-if="saveOrUpdate === 'save'"
-          type="primary"
-          @click="comfirmSaveStyle('save')"
-        >确 定</el-button>
-        <el-button
-          v-if="saveOrUpdate === 'update'"
-          type="primary"
-          @click="comfirmUpdateStyle('update')"
-        >确 定</el-button>
-        <el-button @click="cancleStyleNameDialog">取 消</el-button>
-      </span>
-    </el-dialog>
   </div>
 </template>
 <script>
 import datacenterBus from "../../assets/datacenterBus.js";
 import draggable from "vuedraggable";
-import Config from "../../http/config.js";
+import Config from "../../../frame_cpm/http/config.js";
 import MyDialog from "./dataCommon/myDialog.vue";
 import FormatDate from "../../util/formatDate.js";
 // 数组取差值
@@ -297,7 +296,10 @@ export default {
       //======================分组窗口元素========================
       // 是否显示分组查看窗口
       groupView: false,
-
+      //左边分组数据
+      leftGroupArr: [],
+      //右边分组数据
+      rightGroupArr: [],
       // 左边分组全选状态
       leftGroupsCheckAll: false,
       // 左边分组不是全选状态：-号显示
@@ -353,7 +355,8 @@ export default {
       //有筛选条件的数据
       searchData: [],
       styleDialogVisible: false,
-      dialogHeaderMarginBottom: 0
+      dialogHeaderMarginBottom: 0,
+      styleNameData: ''
     };
   },
   watch: {
@@ -361,11 +364,21 @@ export default {
       this.nowColArr = newVal;
     },
     getDataSucc(newVal, oldVal) {
-      console.log(typeof this.styleArr);
       if (this.styleArr != null && this.styleArr.length > 0) {
         this.showStyleSave = false;
         this.showStyleList = true;
       }
+    },
+    groupArr(newVal, oldVal) {
+      console.log(newVal, oldVal);
+      this.leftGroupArr = newVal;
+    },
+    styleGroupArr(newVal, oldVal) {
+      console.log(newVal, oldVal);
+      this.rightGroupArr = newVal;
+    },
+    styleName(newVal, oldVal) {
+      this.styleNameData = newVal;
     }
   },
   mounted() {
@@ -391,7 +404,6 @@ export default {
     pagesExport() {
       this.$confirm(
         "<i class='iconfont icon-danchuang-jingtanhao'></i>此操作将把数据导出为Excel表格, 是否继续?",
-        "提示",
         {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
@@ -476,6 +488,9 @@ export default {
                 customClass: "alert-message",
                 center: "true"
               });
+              this.$refs.exportBtn.style =
+                "border: 1px solid #3B74FF; color: #3B74FF";
+              self.isdisable = false;
             });
           this.$refs.exportBtn.style =
             "border: 1px solid #cedcff; color: #cedcff";
@@ -506,10 +521,7 @@ export default {
       this.nowColArr = app(this.nowColArr);
       //表头不显示的数据
       this.nownoColArr = app(this.nownoColArr);
-      // if(this.nowColArr.length == this.cunNewArray.length){
-      // 	this.leftGroupsShow = this.leftGroupsShow.conat(this.rightGroupsShow)
-      // 	this.rightGroupsShow = []
-      // }
+
       datacenterBus.$emit("styleColArr", this.nowColArr, this.nownoColArr);
       console.log(this.nowColArr, this.nownoColArr);
       this.colView = false;
@@ -517,15 +529,19 @@ export default {
       //如果移动了自定义列
       if (this.isColMove) {
         //右边分组移到左边
-        console.log(this.styleGroupArr);
-        let tempGroupArray = this.groupArr.concat(this.styleGroupArr);
+        console.log(this.rightGroupArr);
+        let tempGroupArray = this.leftGroupArr.concat(this.rightGroupArr);
         //左边分组重新排序
-        this.groupArr = tempGroupArray.sort(compare("seq"));
+        this.leftGroupArr = tempGroupArray.sort(compare("seq"));
         //右边分组清空
-        this.styleGroupArr = [];
+        this.rightGroupArr = [];
         // 向上级页面传值，渲染全部
-        datacenterBus.$emit("GroupArrEvent", this.groupArr, this.styleGroupArr);
-        console.log(this.groupArr, this.styleGroupArr);
+        datacenterBus.$emit(
+          "GroupArrEvent",
+          this.leftGroupArr,
+          this.rightGroupArr
+        );
+        console.log(this.leftGroupArr, this.rightGroupArr);
         //暂存按钮点击操作，等待页面元素渲染完成再执行
         Vue.nextTick(function() {
           //调用查询按钮点击事件
@@ -561,23 +577,23 @@ export default {
       //因为我们要根据列是否有显示来决定列是否能分组，直接赋值，容易造成分组数组丢失内容
       //所以这里要声明一个空数组来存放东西
       this.leftGroupsShow = [];
-      console.log(this.groupArr);
-      console.log(this.styleGroupArr);
+      console.log(this.leftGroupArr);
+      console.log(this.rightGroupArr);
       //循环整个不显示分组数组
-      for (var i = 0; i < this.groupArr.length; i++) {
+      for (var i = 0; i < this.leftGroupArr.length; i++) {
         var isGroupShow = true; //该分组是否显示，默认为true,即显示
         //循环遍历不显示的列头数组
         for (var j = 0; j < this.colArr.length; j++) {
           //根据业务逻辑，如果不显示的列头中，有该分组的key，则该分组也不显示
-          if (this.colArr[j].colKey == this.groupArr[i].groupColKey) {
+          if (this.colArr[j].colKey == this.leftGroupArr[i].groupColKey) {
             isGroupShow = false;
           }
         }
         //如果该分组没在不显示的列头中，则保存到要显示的左边分组数组中
-        if (isGroupShow) this.leftGroupsShow.push(this.groupArr[i]);
+        if (isGroupShow) this.leftGroupsShow.push(this.leftGroupArr[i]);
       }
 
-      this.rightGroupsShow = this.styleGroupArr;
+      this.rightGroupsShow = this.rightGroupArr;
       this.leftGroupsActive = this.leftGroupsShow;
       this.rightGroupsActive = this.rightGroupsShow;
 
@@ -596,7 +612,7 @@ export default {
       this.groupView = false;
     },
     QdGroupView: function() {
-      console.log('1231231')
+      console.log("1231231");
       this.isComfirmGroup = true;
       //分组详情展示
       this.groupColNameArr = JSON.parse(JSON.stringify(this.rightGroupsShow));
@@ -753,11 +769,11 @@ export default {
       let param = {
         styleUid: uId,
         reportCode: this.reportCode,
-        styleName: this.styleName,
+        styleName: this.styleNameData,
         isDef: this.isDef,
         styleColArr: this.styleColArr,
         styleExtQueryArr: this.styleExtQueryArr,
-        styleGroupArr: this.styleGroupArr
+        styleGroupArr: this.rightGroupArr
       };
       // 调用api， 保存样式接口
       this.$rptList
@@ -765,14 +781,15 @@ export default {
         .then(data => {
           //弹框提示保存结果
           if (data.code == "0") {
-            console.log(this.styleNameList, this.styleName);
+            console.log(this.styleNameList, this.styleNameData);
             // datacenterBus.$emit("getAllStyles", data.data);
 
             this.$message({
               message: data.message,
               iconClass: "iconfont icon-danchuang-wancheng",
               customClass: "alert-message",
-              center: "true"
+              center: "true",
+              duration: 0
             });
           } else {
             this.$message({
@@ -790,6 +807,7 @@ export default {
     //保存个人样式
     keepBtn: function() {
       if (this.styleStatus === true) {
+        console.log('save')
         this.styleDialogVisible = true;
         this.dialogTitle = "保存样式";
         this.saveOrUpdate = "save";
@@ -815,7 +833,7 @@ export default {
           center: "true"
         });
       } else {
-        this.styleName = this.inputStyleName;
+        this.styleNameData = this.inputStyleName;
         this.styleNameList.push(this.inputStyleName);
         this.styleDialogVisible = false;
         //发起请求保存样式
@@ -826,9 +844,9 @@ export default {
       }
     },
     handleClose(value) {
-      if (value === "1") {
-        this.styleDialogVisible = false;
-      }
+      // if (value === "1") {
+      //   this.styleDialogVisible = false;
+      // }
       if (value === "2") {
         this.colView = false;
       }
@@ -842,20 +860,17 @@ export default {
     },
     comfirmUpdateStyle(value) {
       this.styleDialogVisible = false;
-      this.styleName = this.inputStyleName;
+      this.styleNameData = this.inputStyleName;
       this.saveStyle(value);
     },
     handleUpdateClick() {
       let isSystem;
       this.styleArr.forEach(element => {
-        if (element.styleName === this.styleName) {
+        if (element.styleName === this.styleNameData) {
           isSystem = element.isSys;
         }
       });
-      console.log(isSystem);
       if (isSystem !== "true") {
-        console.log("121");
-        this.styleDialogVisible = true;
         this.styleDialogVisible = true;
         this.dialogTitle = "更新样式";
         this.saveOrUpdate = "update";
@@ -876,7 +891,7 @@ export default {
     handleDeleteClick() {
       let isSystem;
       this.styleArr.forEach(element => {
-        if (element.styleName === this.styleName) {
+        if (element.styleName === this.styleNameData) {
           isSystem = element.isSys;
         }
       });
@@ -888,7 +903,7 @@ export default {
           customClass: "alert-message",
           center: "true"
         });
-      } else if (this.styleName === "默认模板") {
+      } else if (this.styleNameData === "默认模板") {
         this.$message({
           message: "不能删除默认模板！",
           iconClass: "iconfont icon-danchuang-jingtanhao",
@@ -914,8 +929,8 @@ export default {
               }
               for (let i = 0; i < this.styleNameList.length; i++) {
                 if (
-                  this.styleNameList[i] === this.styleName &&
-                  this.styleName != "默认主题"
+                  this.styleNameList[i] === this.styleNameData &&
+                  this.styleNameData != "默认主题"
                 ) {
                   this.styleNameList.splice(i, 1);
                 }
@@ -963,10 +978,10 @@ export default {
         this.styleNameList = nameArr.reverse();
       } else {
         if (
-          this.styleNameList.indexOf(this.styleName) < 0 &&
-          this.styleName != "默认模板"
+          this.styleNameList.indexOf(this.styleNameData) < 0 &&
+          this.styleNameData != "默认模板"
         ) {
-          this.styleNameList.push(this.styleName);
+          this.styleNameList.push(this.styleNameData);
         }
       }
       console.log(this.styleNameList);
@@ -975,7 +990,7 @@ export default {
       //切换分组菜单中当前模板的样式
       let dropItem = this.$refs.dropItem;
       let dropDefault = this.$refs.dropDefault;
-      if (dropDefault.$el.innerHTML === this.styleName) {
+      if (dropDefault.$el.innerHTML === this.styleNameData) {
         dropDefault.$el.style.background = "#ebf1ff";
         dropDefault.$el.style.color = "#7890ff";
         dropItem.forEach(element => {
@@ -986,7 +1001,7 @@ export default {
         dropDefault.$el.style.background = "#ffffff";
         dropDefault.$el.style.color = "#606266";
         dropItem.forEach(element => {
-          if (element.$el.innerHTML === this.styleName) {
+          if (element.$el.innerHTML === this.styleNameData) {
             element.$el.style.background = "#ebf1ff";
             element.$el.style.color = "#7890ff";
           } else {

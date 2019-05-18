@@ -18,7 +18,9 @@ switch (domain) {
         break;
     default:
         // config.baseURL = 'http://dev.api.tthappy.cn/api';
-        config.baseURL = 'http://apitest.oristarcloud.com/analysis'
+        config.baseURL = 'http://apidev.oristarcloud.com' // 开发环境
+        // config.baseURL = 'http://172.16.0.22:4401'
+        // config.baseURL = 'http://apitest.oristarcloud.com/analysis' // 测试环境
         break;
 }
 export default config;  

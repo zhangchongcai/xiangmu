@@ -1,126 +1,118 @@
 <template>
   <!-- 指标配置弹窗 -->
   <div class="reset-target-dialog">
-    <el-dialog title="指标设置" :visible.sync="visible" width="50%" :before-close="handleClose">
+    <el-dialog title="指标设置" :visible.sync="show" width="50%" :before-close="handleClose">
       <div class="content">
         <div class="select">
-          <div class="label">选项库(2/33)</div>
+          <div class="label">选项库( {{selectList.length}} / {{total}})</div>
           <div class="detail">
-            <div class="detail-item" v-for="(item,index) in selectArr" :key="index">
+            <!-- 销售类 -->
+            <div class="detail-item">
                 <div class="type-name">
-                  {{item.type}}
+                  {{'销售类'}}
                 </div>
-                <el-checkbox-group v-model="selectList" class="type-item">
-                    <el-checkbox :label="type" v-for="(type) in item.value" :key="type" >
-                        {{type.name}}
+                <el-checkbox-group v-model="selectList" class="type-item" :max="6" @change="changeSelect">
+                    <el-checkbox :label="item" v-for="(item,index) in sale" :key="index" :checked="item.userBinding ==1?true:false">
+                        <span class="item">{{item.name}}</span>
+                    </el-checkbox>
+                </el-checkbox-group>
+            </div>
+            <!-- 利润类 -->
+            <div class="detail-item" >
+                <div class="type-name">
+                  {{'利润类'}}
+                </div>
+                <el-checkbox-group v-model="selectList" class="type-item" :max="6" @change="changeSelect">
+                    <el-checkbox :label="item" v-for="(item,index) in profit" :key="index" :checked="item.userBinding ==1?true:false">
+                        <span class="item">{{item.name}}</span>
+                    </el-checkbox>
+                </el-checkbox-group>
+            </div>
+            <!-- 效率类 -->
+            <div class="detail-item" >
+                <div class="type-name">
+                  {{'效率类'}}
+                </div>
+                <el-checkbox-group v-model="selectList" class="type-item" :max="6" @change="changeSelect">
+                    <el-checkbox :label="item" v-for="(item,index) in ratio" :key="index" :checked="item.userBinding ==1?true:false">
+                        <span class="item">{{item.name}}</span>
                     </el-checkbox>
                 </el-checkbox-group>
             </div>
           </div>
         </div>
         <div class="selected">
-          <div class="label">已选择</div>
+          <div class="label">
+            已选择({{selectList.length}} )
+          </div>
           <div class="detail">
-              <div v-for="(item,index) in selectList" :key="index">
+              <div v-for="(item,index) in selectList" :key="index" class="item">
                   {{item.name}}
               </div>
           </div>
         </div>
       </div>
         <div class="button-wrap">
-            <div class="auto-cancle-button" @click= "visible = false">取消</div>
-            <el-button type="primary" size="mini" @click="sure">确定</el-button>
+            <el-button type="primary" size="small" @click="sure">确定</el-button>
+            <el-button size="small" @click="close">取消</el-button>
         </div>
     </el-dialog>
   </div>
 </template>
 <script>
 export default {
+  props:['userId'],
   data() {
     return {
-      visible: false,
+      show: false,
       selectList:[],
-      selectArr: [
-        {
-          type: "销售类",
-          value: [
-            {
-              id: 1,
-              name: "销售额"
-            },
-            {
-              id: 2,
-              name: "销售单价"
-            },
-            {
-              id: 3,
-              name: "销售数量"
-            },
-            {
-              id: 4,
-              name: "客单价"
-            },
-            {
-              id: 5,
-              name: "件单价"
-            },
-            {
-              id: 6,
-              name: "客单量"
-            }
-          ]
-        },
-        {
-          type: "利润类",
-          value: [
-            {
-              id: 7,
-              name: "销售额"
-            },
-            {
-              id: 8,
-              name: "销售单价"
-            },
-            {
-              id: 9,
-              name: "销售数量"
-            },
-            {
-              id: 10,
-              name: "客单价"
-            },
-            {
-              id: 11,
-              name: "件单价"
-            },
-            {
-              id: 12,
-              name: "客单量"
-            }
-          ]
-        }
-      ],
-       selectedArr:[{
-           id:1,
-           name:'销售额'
-       },{
-           id:2,
-           name:'销售单价'
-       }]
+      profit:[],// 利润类
+      ratio:[], // 效率类
+      sale:[],// 销售类
     };
   },
+  computed:{
+    total(){
+      return this.profit.length*1 + this.ratio.length*1 + this.sale.length*1
+    }
+  },
   methods: {
+    sure(){
+        let ids = this.selectList.map(item=>{
+          return item.code
+        })
+       this.saveTarget(ids)
+    },
+    // 指标设置/保存
+    saveTarget(ids){
+      let params = {
+        body:{
+          userId:this.userId,
+          indicatorCodes:ids
+        } 
+      };
+      this.$camList.saleTargetSave(params).then(response =>{
+        this.$parent.getTargetView()
+        this.close() 
+      })
+    },  
     handleClose() {
       this.visible = false;
     },
-    sure(){
-        console.log(this.selectList,'选择的list')
+    close(){
+      this.selectList = [];
+      this.profit = [];
+      this.ratio = [];
+      this.sale = [];
+      this.show = false;
+    },
+    changeSelect(id){
+      // console.log(id)
     }
   }
 };
 </script>
 <style scoped lang="scss">
-
 .auto-cancle-button{
     width:90px;
     line-height: 32px;
@@ -156,10 +148,22 @@ export default {
     padding: 0 14px;
     width: 50%;
     border-right: 1px solid #e5e5e5;
+    .item{
+      font-size:8px;
+    }
   }
   .selected {
     padding: 0 14px;
     width: 50%;
+    .item{
+      cursor:pointer;
+      padding:4px;
+      font-size:8px;
+      cursor:pointer;
+      &:hover{
+          background:  #F5F5F5
+      }
+    }
   }
   .detail {
     padding:16px 0;

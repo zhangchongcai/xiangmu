@@ -1,5 +1,5 @@
 <template>
-    <div class="contentCenter">
+    <div class="content-wrapper">
         <div class="breadcrumb">
             <el-breadcrumb separator-class="el-icon-arrow-right">
                 <el-breadcrumb-item>系统管理</el-breadcrumb-item>
@@ -54,25 +54,17 @@
                 </el-pagination>
             </div>
         </div>
-        <resoucedialog :dialogVisible="editManagerDialogFormVisible" :bitianxiang="bitianxiangObj" :isListprop="true" @introduce="introduceSelf" ref='newResouceRef' roleTitle="添加管理人">
-            <div slot="footerId">
-                <el-button @click="closeDialog(false)">取 消</el-button>
-                <el-button type="primary" @click="confirmNewResource()">确 定</el-button>
-            </div>
-        </resoucedialog>
     </div>
 </template>
 
 <script>
-    import resouceDialog from './resouceDialog'
     import {roleList,deleteRole} from 'frame_cpm/http/interface.js'
   export default {
     name: "roleMange",
-      components:{
-        'resoucedialog': resouceDialog
-      },
+
       data() {
         return {
+            detailFlag:false,
             listQuery: {
                 pageNum: 1,
                 pageSize: 10,
@@ -120,19 +112,8 @@
 
       },
       methods: {
-        introduceSelf (opt) {
-            this.editManagerDialogFormVisible = opt.dialogVisible;
-        },
-        editManagerDialog(data){
-            this.editManagerDialogFormVisible=true
-            // this.navigatorText = node.data.productVersion
-        },
-
-        closeDialog(){
-            this.editManagerDialogFormVisible=false
-        },
         tocreate(){
-            this.$router.push({path: 'createRole'})
+            this.$router.push({path: 'createRole',query:{level:'new'}})
         },
         handleEdit(data){
             localStorage.setItem('roleEdit',JSON.stringify(data))
@@ -143,11 +124,12 @@
         handleClick(data){
             localStorage.setItem('roleEdit',JSON.stringify(data))
             let isJustSee = true,
-            roleUid = data.uid,
-            isEdit = true;
-            this.$router.push({path: 'createRole',query:{isJustSee,roleUid,isEdit}})
+            roleUid = data.uid
+            this.$router.push({path: 'seeRole',query:{isJustSee,roleUid}})
         },
-        editManager(){
+        goBack() {
+            this.detailFlag = false
+            this.$router.push('index')
 
         },
         handleDelete(data){
@@ -214,11 +196,8 @@
   }
 </script>
 
-<style  lang="scss" scoped>
-
-</style>
 <style  lang="scss">
-.contentCenter{
+.content-wrapper{
     height: 100%;
     .breadcrumb{
         padding:9px 0 9px 3px;

@@ -4,8 +4,8 @@
         <!-- 搜索栏 -->
         <searchLan class="margin-bottom-10" :modelName="searchConfig.name" :config="searchConfig.elements" :searchLevelButton="searchConfig.isShowLevel" @pressSearch="search" @searchValueChange="setSearch"></searchLan>
         <!-- 表格内容 -->
-        <el-table class="margin-bottom-10" :ref="table.ref" :data="table.data" :border="table.border" highlight-current-row :style="{width: table.width}" @current-change="tableCurrentChange">
-            <el-table-column type="selection" width="55" :fixed="'left'" :align="table.itemAlign"></el-table-column>
+        <el-table class="margin-bottom-10" :ref="table.ref" :data="table.data" :border="table.border" highlight-current-row :style="{width: table.width}" @row-click="tableCurrentChange">
+            <!-- <el-table-column type="selection" width="55" :fixed="'left'" :align="table.itemAlign"></el-table-column> -->
             <template v-for="item in table.title">
                 <el-table-column :show-overflow-tooltip="table.itemTooltip" :align="table.itemAlign" :key="item.title" :prop="item.prop" :label="item.label" :width="item.width" :fixed="item.fixed">
                     <template slot-scope="scope">
@@ -30,7 +30,7 @@
         </el-row>
         <div slot="footer" class="dialog-footer">
             <el-row class="flex-base flex-center">
-                <el-button type="primary" @click="emitFn">确 定</el-button>
+                <el-button type="primary" @click="emitFn()">确 定</el-button>
                 <el-button @click="dialog.visible = false">取 消</el-button>
             </el-row>
         </div>
@@ -41,13 +41,41 @@
 <script>
 import searchLan from '../../components/search/index.vue';
 export default {
+    props: {
+        incomeData: {
+            type: Object,
+            default: null
+        }
+    },
     components: {
         searchLan
+    },
+    created() {
+        let data = this.incomeData;
+
+        if (typeof data != 'object') {
+            return TypeError('传入参数不是一个对象!');
+        }
+        let elements = JSON.parse(JSON.stringify(this.searchConfig.elements));
+
+        if (JSON.stringify(data) != 'null') {
+            let keys = Object.keys(data);
+            for (let i = 0; i < keys.length; i++) {
+                let itemVal = data[`${keys[i]}`];
+                for (let y = 0; y < elements.length; y++) {
+                    if (elements[y].keyName == keys[i]) {
+                        console.log(keys[i], itemVal, elements[y].keyName, elements[y].value)
+                        elements[y].value = itemVal;
+                    }
+                }
+            }
+            this.searchConfig.elements = elements;
+        }
     },
     data() {
         return {
             dialog: {
-                visible: true,
+                visible: false,
                 title: '查询票券批次',
                 width: '85%'
             },
@@ -100,13 +128,13 @@ export default {
                         value: ''
                     }, {
                         label: '兑换券',
-                        value: '2'
+                        value: '0'
                     }, {
                         label: '优惠券',
-                        value: '3'
+                        value: '2'
                     }, {
                         label: '代金券',
-                        value: '4'
+                        value: '1'
                     }]
                 }, {
                     keyName: 'salesMode',
@@ -229,10 +257,11 @@ export default {
     },
     methods: {
         /**
-         * @function showDialog - 显示弹窗
+         * @function isShowDialog - 控制弹窗显示
+         * @param {Bollean} isShow - 显示:true, 隐藏：false
          */
-        showDialog() {
-            this.dialog.visible = true;
+        isShowDialog(isShow) {
+           this.dialog.visible = isShow;
         },
         /**
          * @function search - 搜索
@@ -281,7 +310,6 @@ export default {
          */
         getData(params) {
             this.$ccmList.alertSaleList(params).then(data => {
-                console.log(data);
                 let type = 'warning';
                 let message = '查询票券批次错误，请稍后重试';
                 if (data.flag == '2') {
@@ -331,11 +359,11 @@ export default {
          */
         emitFn() {
             let param = this.currentRow;
-            console.log(param)
             if (param) {
-                this.$emit('callBack', {
+                this.$emit('ccmSaleListCallBack', {
                     data: param
                 });
+                this.dialog.visible = false;
             } else {
                 this.$message({
                     type: 'warning',
@@ -406,9 +434,9 @@ export default {
          */
         couponTypeText(couponType) {
             let keys = {
-                2: '兑换券',
-                3: '优惠券',
-                4: '代金券'
+                0: '兑换券',
+                2: '优惠券',
+                1: '代金券'
             }
             return keys[`${couponType}`];
         }

@@ -11,11 +11,12 @@
         <el-form-item label="销售属性名称">
           <el-input v-model="queryData.name" placeholder="请输内容" prefix-icon="el-icon-search"></el-input>
         </el-form-item>
-        <el-form-item label="状态">
-          <el-select v-model="queryData.status">
+        <el-form-item label="属性类型">
+          <el-select v-model="queryData.attrType">
             <el-option label="全部" value></el-option>
-            <el-option label="启用" value="1"></el-option>
-            <el-option label="停止" value="0"></el-option>
+            <el-option label="关键属性" value="1"></el-option>
+            <el-option label="销售属性" value="2"></el-option>
+            <el-option label="扩展属性" value="3"></el-option>
           </el-select>
         </el-form-item>
 
@@ -24,9 +25,9 @@
         </el-form-item>
       </el-form>
     </div>
-    <div class="common-new-built">
+    <!-- <div class="common-new-built">
       <el-button type="primary" size="small" plain @click="handleNewBuilt">新建</el-button>
-    </div>
+    </div> -->
     <div>
       <el-table :data="tableData" stripe v-loading="tableLoding">
         <el-table-column
@@ -36,12 +37,12 @@
           :label="item.label"
           :formatter="item.formatter"
         ></el-table-column>
-        <el-table-column label="操作">
+        <!-- <el-table-column label="操作">
           <template slot-scope="{row,$index}">
             <el-button type="text" size="small" @click.stop="handleModification($index, row)">修改</el-button>
             <el-button type="text" size="small" @click.stop="handleDlete($index, row)">删除</el-button>
           </template>
-        </el-table-column>
+        </el-table-column> -->
       </el-table>
       <div class="page-wrap">
         <el-pagination
@@ -125,27 +126,53 @@ export default {
     return {
       //查询数据
       queryData: {
-        name: null,
-        status: null,
+        name: '',
+        attrType: '',
         page: 1,
         pageSize: 10
       },
       //表头
       tableColumn: [
         {
+          label: "属性编码",
+          key: "code",
+        },
+        {
+          label: "属性类型",
+          key: "attrType",
+          formatter(row, column, cellValue) {
+              let result = "";
+              switch (row.attrType) {
+                case 1:
+                  result = "关键属性";
+                  break;
+                case 2:
+                  result = "销售属性";
+                  break;
+                case 3:
+                  result = "扩展属性";
+                  break;
+              }
+              return result;
+            }
+        },
+        {
           label: "属性名称",
           key: "name"
         },
         {
-          label: "类型",
-          key: "attrType",
+          label: "输入类型",
+          key: "valueType",
           formatter(row, column, cellValue) {
             let result = "";
-            switch (row.attrType) {
+            switch (row.valueType) {
               case 1:
-                result = "单选";
+                result = "普通";
                 break;
               case 2:
+                result = "单选";
+                break;
+              case 3:
                 result = "多选";
                 break;
             }
@@ -155,26 +182,7 @@ export default {
         {
           label: "属性值",
           key: "attrValue",
-          formatter(row, column, cellValue) {
-            return row.attrValue.join("/");
-          }
         },
-        {
-          label: "状态",
-          key: "status",
-          formatter(row, column, cellValue) {
-            let result = "";
-            switch (row.status) {
-              case 0:
-                result = "停用";
-                break;
-              case 1:
-                result = "启用";
-                break;
-            }
-            return result;
-          }
-        }
       ],
       //表格数据
       tableData: [],
@@ -216,20 +224,18 @@ export default {
     },
     // 查询列表
     getSalesAttributes(param) {
-      this.tableLoding = true;
-      this.$api
-        .selectSalesAttribute(qs.stringify(param))
+      // this.tableLoding = true;
+      this.$cimList
+        .selectSalesAttribute(param)
         .then(resData => {
           if (resData.code == 200) {
+            // this.tableData = resData.data.list;
             this.tableData = resData.data.list.map(item => {
-              if (item.attributeItemEntity) {
-                item.attrValue = item.attributeItemEntity
+              if (item.attributeItemEntityList) {
+                item.attrValue = item.attributeItemEntityList
                   .map(attrItem => {
                     return attrItem.attrValue;
-                  })
-                  .filter(item => {
-                    return item;
-                  });
+                  }).join('/')
               }
               return item;
             });
@@ -246,7 +252,7 @@ export default {
     },
     // 新建
     saveSlesAttribute(param) {
-      this.$api.saveSlesAttribute(param).then(resData => {
+      this.$cimList.saveSlesAttribute(param).then(resData => {
         if (resData.code == 200) {
           this.onQuery();
         }
@@ -254,7 +260,7 @@ export default {
     },
     // 修改
     updateSalesAttribute(param) {
-      this.$api.updateSalesAttribute(param).then(resData => {
+      this.$cimList.updateSalesAttribute(param).then(resData => {
         if (resData.code == 200) {
           this.onQuery();
         }
@@ -262,7 +268,7 @@ export default {
     },
     // 删除
     deleteSalesAttribute(param) {
-      this.$api.deleteSalesAttribute(qs.stringify(param)).then(resData => {
+      this.$cimList.deleteSalesAttribute(qs.stringify(param)).then(resData => {
         if (resData.code == 200) {
           this.onQuery();
         }

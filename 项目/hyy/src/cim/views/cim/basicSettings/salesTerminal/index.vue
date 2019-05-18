@@ -214,13 +214,13 @@ export default {
     },
     // 查询
     onQuery() {
-      this.getTerminalQueryPage(this.queryData);
+      this.getTerminalQueryPage({});
       // console.log(this.queryData);
     },
     // 获取终端列表
     getTerminalQueryPage(param) {
       this.tableLoding = true;
-      this.$api
+      this.$cimList
         .terminalQueryPage(param)
         .then(resData => {
           if (resData.code == 200) {
@@ -244,7 +244,7 @@ export default {
     },
     // 修改
     terminalUpdate(param) {
-      this.$api.terminalUpdate(param).then(resData => {
+      this.$cimList.terminalUpdate(param).then(resData => {
         if (resData.code == 200) {
           this.onQuery();
         }
@@ -252,7 +252,7 @@ export default {
     },
     // 销售地址查询
     getSalePlaceAll(param) {
-      this.$api.salePlaceAll(param).then(resData => {
+      this.$cimList.salePlaceAll(param).then(resData => {
         if (resData.code == 200) {
           this.salePlaces = resData.data;
         }
@@ -260,7 +260,7 @@ export default {
     },
     // 货架查询
     getTerminalRackAll(param) {
-      this.$api.terminalRackAll(param).then(resData => {
+      this.$cimList.terminalRackAll(param).then(resData => {
         if (resData.code == 200) {
           this.storageRacks = resData.data;
         }

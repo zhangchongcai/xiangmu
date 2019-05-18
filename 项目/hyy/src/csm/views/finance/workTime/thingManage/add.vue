@@ -37,7 +37,7 @@
         </el-row>
       </el-form>
     </div>
-    <el-dialog title="影院选择" :visible.sync="selectTreeValue" width="576px" :before-close="handleClose"
+    <el-dialog title="影院选择" :visible.sync="selectTreeValue" width="448px" :before-close="handleClose"
       :lock-scroll="false">
       <el-tree @node-click="nodeClick" :data="newselectValue" show-checkbox default-expand-all node-key="index"
         ref="tree" highlight-current v-loading="this.loading" :props="defaultProps"></el-tree>
@@ -94,7 +94,6 @@
         let cinemaUID = [];
         let orgNameArray = [];
         let orgName = [];
-
         value.forEach(function (val) {
           if (val.cinemaUID != null) {
             cinemaUIDnewArray.push({
@@ -396,6 +395,46 @@
       text-align: center;
       padding-top: 16px;
       box-sizing: border-box;
+    }
+  }
+  /deep/ .el-dialog{
+    .el-dialog__header{
+      padding: 16px 20px 12px;
+      &::after{
+        display: block;
+        content: "";
+        width:408px;
+        height: 1px;
+        margin-top: 5px;
+        background-color: #E5E5E5;
+      }
+      .el-dialog__close{
+        font-size: 18px;
+      }
+    }
+    .el-dialog__body{
+      height: 460px;
+      overflow-y: scroll;
+      .el-tree-node__label{
+        font-size: 12px;
+        color: #666666;   
+      }
+    }
+    .el-dialog__footer{
+      padding: 0 0 12px;
+      &::before{
+        display: block;
+        content: "";
+        width:448px;
+        height: 1px;
+        margin-bottom: 12px;
+        background-color: #E5E5E5;
+      }
+    }
+    button{
+      span{
+        font-size: 12px;
+      }
     }
   }
 </style>

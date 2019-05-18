@@ -112,6 +112,7 @@
     import {checkMobile} from "../../util/inputDataCheck";
     import resetPassword from "./common/resetPwd";
     import forgetPassword from "./common/ForgotPwd";
+    import {getUrl} from 'frame_cpm/http/interface.js'
     export default {
         data() {
             return {
@@ -307,8 +308,8 @@
                 _this.$cpmList
                     .LoginApi(paramMap)
                     .then(ret => {
-                        if(ret&&ret.code==200) {
-                            localStorage.setItem("token", ret.data.token);
+                        if(ret&&ret.result) {
+                          localStorage.setItem("token", ret.data.token);
                             localStorage.setItem("user", JSON.stringify(ret.data));
                             _this.$store.commit('updateLoginUser',ret.data)
                             _this.$store.commit('updateLoginToken',ret.data.token)
@@ -318,11 +319,24 @@
                                     cancelButtonText: '取消',
                                     type: 'warning'
                                 }).then(() => {
-                                  localStorage.setItem('changeCode','1-1')
-                                  _this.$router.push("/home");
+                                  localStorage.setItem('changeCode','a')
+                                  getUrl().then(ret=>{
+                                    if(ret.code==200) {
+                                      localStorage.setItem('defaultPath',ret.data)
+                                      this.$router.push(ret.data)
+                                    }
+                                  }).catch(error=>{
+                                  })
                                 }).catch(() => {
-                                  _this.$router.push("/home");
+                                  getUrl().then(ret=>{
+                                    if(ret.code==200) {
+                                      localStorage.setItem('defaultPath',ret.data)
+                                      this.$router.push(ret.data)
+                                    }
+                                  }).catch(error=>{
+                                  })
                                 });
+
                             } else {
                                 if (_this.checked) {
                                     localStorage.setItem(
@@ -336,14 +350,22 @@
                                 } else {
                                     localStorage.removeItem("userLocation");
                                 }
-                                _this.$router.push("/home");
+                                getUrl().then(ret=>{
+                                    if(ret.code==200) {
+                                      localStorage.setItem('defaultPath',ret.data)
+                                      this.$router.push(ret.data)
+                                    }
+                                }).catch(error=>{
+                                })
                             }
-                        }else{
+                        }else if(ret.msg){
                           _this.error(ret.msg)
+                        }else{
+                          _this.error('服务器内部错误')
                         }
                     })
                     .catch((error) => {
-                      _this.error(error.msg);
+                      _this.error('服务器内部错误');
                     });
             },
             handleClick(tab, event) {
@@ -707,48 +729,49 @@
             margin-top: -5px;
 
         }
+        .el-step.is-center .el-step__main{
+            // text-align:left;
+        }
+        .el-step__icon.is-text{
+            border-color:#303133;
+            color:#303133;
+        }
+        .el-step__head.is-finish .el-step__icon.is-text , .forgot-pwd .content .el-step__head.is-success .el-step__icon.is-text{
+            color: #ffa037;
+            border-color: #ffa037;
+            font-weight:bold;
+        }
+        .el-step__title.is-wait{
+            color:#303133;
+            font-weight:bold;
+        }
+        .el-tabs__active-bar {
+            width: 70px !important;
+            height: 3px;
+            background-color: #3B74FF;
+            margin-left: 8%;
+        }
+        .el-tabs__nav-wrap::after {
+            z-index: 2;
+            opacity: 0.5;
+        }
+        .el-tabs__nav-scroll {
+            margin-top: 30px;
+        }
+        .el-tabs__nav-next, .el-tabs__nav-prev {
+            display: none;
+        }
+        .el-tabs__nav {
+            width: 100%;
+            height: 36px;
+        }
+        .el-tabs__header {
+            width: 280px;
+            margin: 0 auto;
+        }
+        .login-bg .psw_login .el-input__icon {
+            border: 0 !important;
+        }
     }
-.el-step.is-center .el-step__main{
-    // text-align:left;
-}
-.el-step__icon.is-text{
-    border-color:#303133;
-    color:#303133;
-}
-.el-step__head.is-finish .el-step__icon.is-text , .forgot-pwd .content .el-step__head.is-success .el-step__icon.is-text{
-    color: #ffa037;
-    border-color: #ffa037;
-    font-weight:bold;
-}
-.el-step__title.is-wait{
-    color:#303133;
-    font-weight:bold;
-}
-    .el-tabs__active-bar {
-        width: 70px !important;
-        height: 3px;
-        background-color: #3B74FF;
-        margin-left: 8%;
-    }
-    .el-tabs__nav-wrap::after {
-        z-index: 2;
-        opacity: 0.5;
-    }
-    .el-tabs__nav-scroll {
-        margin-top: 30px;
-    }
-    .el-tabs__nav-next, .el-tabs__nav-prev {
-        display: none;
-    }
-    .el-tabs__nav {
-        width: 100%;
-        height: 36px;
-    }
-    .el-tabs__header {
-        width: 280px;
-        margin: 0 auto;
-    }
-    .login-bg .psw_login .el-input__icon {
-        border: 0 !important;
-    }
+
 </style>

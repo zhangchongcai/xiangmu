@@ -16,14 +16,7 @@
             <el-input v-model="remark" placeholder="备注信息" clearable></el-input>
         </div>
       </div>
-      <!--<div class="addOrg-wrap">-->
-        <!--<el-button type="text" @click='addOrgInforFun'>-->
-        <!--<i class="iconfont icon-neiye-tianjia"></i>-->
-        <!--添加-->
-        <!--</el-button>-->
-     <!--</div>-->
     </div>
-
     <div class="confirm-cancel">
 	    <el-button @click="cancel(false)">取 消</el-button>
 	    <el-button type="primary" @click="addNextOrgFun()">确 定</el-button>
@@ -75,10 +68,14 @@ export default {
     //新建组织
     addNextOrgFun(){
       let self = this;
+      if (this.name == "") {
+        this.error("请输入组织名称");
+        return false;
+      }
       let data ={
         pUid: this.lastOrgData.id? this.lastOrgData.id:0,
         name: this.name,
-        remark:this.remark//[...self.formData],
+        remark:this.remark
       }
         addOrg(data)
           .then(ret => {
@@ -99,21 +96,6 @@ export default {
           });
 
     },
-    // addOrgInforFun(){
-    //     let item={name:"",remark:''}
-    //    if(this.formData.length>2){
-    //        return
-    //    }else{
-    //         this.formData.push(item)
-    //    }
-    // },
-    // //change formdata
-    // formdataFun(){
-    //     console.log('dddddddddd')
-    //     let itemArr = [{name:"",remark:''}]
-    //     this.formData=itemArr
-    //
-    // },
   },
   created() {
 

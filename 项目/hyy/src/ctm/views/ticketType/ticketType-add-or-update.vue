@@ -2,7 +2,7 @@
 <div class="ticketType">
     <div class="breadcrumb">
       <el-breadcrumb separator-class="el-icon-arrow-right">
-        <el-breadcrumb-item :to="{ path: '/' }">票类管理</el-breadcrumb-item>
+        <el-breadcrumb-item > <span>票类管理</span> </el-breadcrumb-item>
         <el-breadcrumb-item>{{dataForm.uid ? '修改' : '新建'}}票类</el-breadcrumb-item>
       </el-breadcrumb>
     </div>
