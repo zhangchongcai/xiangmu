@@ -146,6 +146,10 @@ export default function $axios(options) {
         }
         // let result = null ;
         //根据返回的code值来做不同的处理(和后端约定)
+        if(data.data === "" || data.data === null){
+          Message.error(`Error:接口数据不能为空！`);
+          data.data = {}
+        }
         switch (data.code) {
           case 200:
             return data.data;

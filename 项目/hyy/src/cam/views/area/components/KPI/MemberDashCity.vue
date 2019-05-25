@@ -9,8 +9,8 @@
     >
     </ve-gauge>
     <ul class="ulContainer">
-        <li>月至今达成 : {{BoxRate | capitalizeOne}}{{BoxRate | foo}}</li>
-        <li>KPI值 : {{BoxKPItotal | capitalizeOne}}{{BoxKPItotal | foo}}</li>
+        <li>月至今达成 : {{BoxRate | capitalizeOne}}{{BoxRate | too}}</li>
+        <li>KPI值 : {{BoxKPItotal | capitalizeOne}}{{BoxKPItotal | too}}</li>
     </ul>
   </div>
 </template>
@@ -173,7 +173,6 @@ export default {
       let newValue = value.toString();
       //判断逻辑
       if(newValue.indexOf('.') != -1){
-        console.log('有小数点');
         if(newValue.length < 8){
           return newValue
         }
@@ -187,7 +186,6 @@ export default {
       }
       else
       {
-        console.log('没有小数点');
         if(newValue.length < 5){
           return newValue
         }
@@ -223,7 +221,6 @@ export default {
       let foo = ''
 
       if(newValue.indexOf('.') != -1){
-        console.log('是有小数点');
         if(newValue.length < 8){
           foo = '元'
           return foo
@@ -238,7 +235,6 @@ export default {
         }
       }
       else{
-        console.log('没有小数点');
         if(newValue.length < 5){
           foo = '元'
           return foo
@@ -285,7 +281,7 @@ export default {
       //取到时间进度
       let tool1 = MemberKPIvalue.timeRate, tool2 = MemberKPIvalue.newMemberRate
       //取值title
-      this.BoxRate = MemberKPIvalue.newMemberCurrent
+      this.BoxRate = MemberKPIvalue.memberMonthToNow
       this.BoxKPItotal = MemberKPIvalue.newMemberTarget
       //从新复制
       this.gaugeData = {

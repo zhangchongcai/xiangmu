@@ -105,7 +105,7 @@
                 label="票类价格">
                 <template slot-scope="scope">
                     <el-popover trigger="hover" placement="bottom">
-                        <div style="padding: 10px" v-for="item in scope.row.baseTicketList">
+                        <div style="padding: 10px" v-for="(item, index) in scope.row.baseTicketList" :key="index">
                             <span style="display: inline-block; min-width: 70px">{{item.ticketName}}</span>
                             <span>￥{{item.price}}</span>
                         </div>

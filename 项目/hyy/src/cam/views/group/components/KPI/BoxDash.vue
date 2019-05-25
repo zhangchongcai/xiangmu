@@ -271,15 +271,6 @@ export default {
         too = '亿人'
         return too
       }
-    },
-    capitalizeTwo(value) {
-      if (!value) return "";
-      value = value * 100;
-      return value.toFixed(2);
-    },
-    capitalizeFloor(value) {
-      if (!value) return "";
-      return value.toFixed(2);
     }
   },
   watch: {
@@ -294,7 +285,7 @@ export default {
     //票房KPI
     getBoxKpiData(BoxKPIvalue){
       //取到时间进度
-      let tool1 = BoxKPIvalue.timeRate, tool2 = (BoxKPIvalue.boxOfficeRate / 10000).toFixed(2)
+      let tool1 = BoxKPIvalue.timeRate, tool2 = BoxKPIvalue.boxOfficeRate
       
       //取值title
       this.BoxRate = BoxKPIvalue.boxOfficeTarget

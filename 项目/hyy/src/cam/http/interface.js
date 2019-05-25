@@ -336,5 +336,5 @@ export default {
     addCompeteCinema,
     sortCompeteCinema,
     goHome,
-    goSaleHome
+    goSaleHome,
 };

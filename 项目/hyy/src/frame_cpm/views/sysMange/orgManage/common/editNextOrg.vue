@@ -2,7 +2,7 @@
   <div class="role-list-wrap-1">
     <div class="modal-search">
       <div class="search-wrap ">
-        <span  >上级组织：</span>
+        <span>上级组织：</span>
         <el-input
           v-model="parentOrgData.label"
           placeholder="请输入内容"
@@ -17,13 +17,13 @@
             placeholder="请输入内容"
             clearable
             ></el-input>
-            <div class="childen-search">
-                <el-input
-                v-model="lastOrgData.remark"
-                placeholder="备注信息"
-                clearable
-                ></el-input>
-            </div>
+            <!--<div class="childen-search">-->
+                <!--<el-input-->
+                <!--v-model="lastOrgData.remark"-->
+                <!--placeholder="备注信息"-->
+                <!--clearable-->
+                <!--&gt;</el-input>-->
+            <!--</div>-->
         </template>
 
       </div>
@@ -52,7 +52,6 @@ export default {
       status: "",
       bf:'',
       tenantLicenses:'',
-      formData:[{name:"",remark:'',}]
     };
   },
   props: ['dialogVisible_editNextOrgChange','getOrgList','lastOrgData','parentOrgData'],
@@ -62,6 +61,7 @@ export default {
   },
   methods: {
     cancel(){
+        this.$emit('getOrgList');
         this.$emit('dialogVisible_editNextOrgChange',false)
     },
 
@@ -85,7 +85,7 @@ export default {
         return false;
       }
       item.name = self.lastOrgData.text
-      item.remark = self.lastOrgData.remark
+      // item.remark = self.lastOrgData.remark
       item.uid =  self.lastOrgData.id
       let data ={
         orgJson:item,
@@ -94,7 +94,7 @@ export default {
           .then(ret => {
               if(ret.code == 200){
                self.$message({
-                        message: '新建成功',
+                        message: '修改成功',
                         type: 'success'
                         });
                 this.$emit('getOrgList');
@@ -104,7 +104,7 @@ export default {
                   self.$message(ret.msg);
             }
           })
-          .catch((err) => {
+          .catch(() => {
             self.$message('服务器繁忙，稍等再试');
           });
 

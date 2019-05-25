@@ -24,12 +24,12 @@
             </div>
           </div>
     </div>
-   
+
     <div class="confirm-cancel">
 	    <el-button @click="cancel(false)">取 消</el-button>
 	    <el-button type="primary" @click="chosenOneOrg()">确 定</el-button>
     </div>
-    
+
   </div>
 </template>
 <script>
@@ -70,26 +70,26 @@ export default {
                 self.$message(ret.msg);
             }
         })
-        .catch((err) => {
-          console.log('后台报错')
+        .catch(() => {
+          console.log('网络问题，请稍后再试')
         });
     },
     //获取组织
     handleNodeClick(data) {
-         this.resultOneOrg=data
+        this.resultOneOrg=data
     },
      //绑定组织
     chosenOneOrg(){
       let self = this;
       this.$emit('getOneOrgChosen', self.resultOneOrg)
-      this.$emit('dialogVisible_orgListChange',false)  
+      this.$emit('dialogVisible_orgListChange',false)
     },
     //刷新数据
     getDatas(val) {
       let self = this;
-     
+
     },
-   
+
   },
   created() {
       this.getOrgList()
@@ -130,7 +130,7 @@ export default {
       width: 100%;
       height: 100%;
       padding-left: 25px;
-      margin-top: 39px; 
+      margin-top: 39px;
       display: inline-block;
       .header-wrap{
         .search-wrap {
@@ -163,9 +163,9 @@ export default {
           background:#f0f0f0 ;
           font-size: 12px;
         }
-        
+
       }
-      
+
     }
     // *************************
     .search-wrap {

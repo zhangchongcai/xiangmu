@@ -1,5 +1,5 @@
 import { createDecipher } from "crypto";
-import frameSinglecinema  from 'frame_cpm/components/frameadmin/cinemaDialog/singleCinema.vue'
+import frameSinglecinema  from "frame_cpm/dialogs/cinemaDialog/singleCinema"
 
 
 export default {

@@ -12,7 +12,8 @@ let routes = [{
       },
       component: resolve =>
         require([
-          "../components/crmCardType.vue"
+          // "../dialogs/crmCardType.vue"
+          "../views/member/test/test2.vue"
           // "../views/member/test/test.vue"
         ], resolve),
       name: "会员测试页面"

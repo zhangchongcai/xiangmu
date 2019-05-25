@@ -1,7 +1,7 @@
 <template>
-    <div class="goods">
+    <div class="goods" >
         <!-- 卖票 -->
-        <div class="sell_ticket" v-if="cartData.goodsList.length">
+        <div class="sell_ticket" v-if="cartData.goodsList && cartData.goodsList.length">
             <p class="warp_title" v-if="goodTitleshow">电影票：{{cartData.goodsList.length}}</p>
             <div class="ticket-warp" >
                 <div class="ticket-title">
@@ -63,44 +63,56 @@
             </div>
         </div>
         <!-- 卖品 -->
-        <div class="sell_good" v-if="cartData.goodsList.length">
-            <p class="warp_title" v-if="goodTitleshow">卖品：4</p>
+        <div class="sell_good" >
+            <p class="warp_title" v-if="goodTitleshow">卖品：{{dataGoodsList.length}}</p>
             <ul class="good-warp">
-                <li class="row-item">
+                <!-- <li class="row-item">
                     <ul class="item-warp">
-                        <li><span>三人乐享套餐</span> </li>
-                        <li ><span class="money">42.00元</span></li>
-                        <li class="color-blue" v-show="hiddenAction"><span class="change_self" @click="replaceGoods">更换</span> <span class="iconfont iconshanchu"></span></li>
+                        <li><span>{{testData.name}}</span> </li>
+                        <li ><span class="money">{{testData.price + '元'}}</span></li>
+                        <li class="color-blue" v-show="hiddenAction"><span class="change_self" @click="replaceGoods(testData.contents)">更换</span> <span class="iconfont iconshanchu"></span></li>
                     </ul>
-                    <div class="color-gray introduction"><span>大爆米x1,大可乐x3,中薯条x3</span> </div>
-                </li>
-                <li v-for="(item,index) in goodsList" :key="index"   
+                    <div class="color-gray introduction"><span v-for="(item, index) in testData.contents" :key="index">{{item.skuName + '✖' + item.merCount + '    '}}</span> </div>
+                </li> -->
+                <li v-for="(item,index) in dataGoodsList" :key="index"   
                 class="row-item" 
                 ref="liCon" 
-                :style="{height:liConHeight+'vh'}"
+                :style="{height:item.saleMer.merType == 4 ? 'auto' : liConHeight+'vh'}"
                 >
                     <ul class="item-warp">
-                        <li><span>{{item.content}}</span></li>
+                        <li><span>{{item.saleMer.merName}}</span></li>
                         <li >
                             <span class="color-orange money">
-                            <span>{{item.price}}.00元</span>    
-                            <span class="el-icon-arrow-right" :class="item.openFlag?'rotate':''" @click="open(item,index)"></span>
+                            <span>{{item.salePrice*item.saleNum}}.00元</span>    
+                            <span  v-if="item.saleMer.merType!=4 &&item.saleNum>1" class="el-icon-arrow-right" :class="item.openFlag?'rotate':''" @click="open(item,index)"></span>
                             </span>
                         </li>    
                         <li v-show="hiddenAction">
-                            <span class="change_self pointer" v-if="0">更换</span>
-                            <el-input-number size="mini" :min="1" v-model="item.num" v-else @focus="handerNumber(item,index)"></el-input-number>
+                            <span class="change_self pointer" v-if="item.saleMer.merType == 4">更换</span>
+                            <el-input-number size="mini" :min="1" v-model="item.saleNum" v-else @focus="handerNumber(item,index)"></el-input-number>
                             <span class="iconfont iconshanchu color-blue pointer"></span>
                         </li>
                     </ul>
-                    <div class="introduction">
+                    <!-- <div class="introduction" >
                         <span>大爆谷×１，大可乐×3，中薯条×3</span>
+                    </div> -->
+                    <div class="color-gray introduction" v-if="item.saleMer.merType == 4">
+                        <span 
+                        v-for="(subItem, subIndex) in item.saleMer.merItemList" 
+                        :key="subIndex"
+                       >
+                       <template  v-if=" subItem.merType !=12">
+                           {{subItem.merName + '✖' + subItem.needCount + '    '}}
+                       </template>
+                       </span>
                     </div>
-                    <div class="inSon" v-for="n in 4" :key="n" style="background:#EFF3FF">
-                        <span>大爆米花</span>
-                        <span>30.00元</span>
-                        <span class="iconfont color-blue iconshanchu"></span>
-                    </div>
+                    <template v-if="item.saleMer.merType != 4 && item.saleNum > 1">
+                       <div   class="inSon" v-for="n in item.saleNum" :key="n" style="background:#EFF3FF">
+                            <span>{{item.saleMer.merName}}</span>
+                            <span>{{item.salePrice}}.00元</span>
+                            <span class="iconfont color-blue iconshanchu"></span>
+                        </div>
+                    </template>
                 </li>
                 
             </ul>
@@ -113,7 +125,7 @@
     </div>
 </template>
 <script>
-import {mapMutations , mapGetters} from 'vuex'
+import {mapMutations , mapGetters,mapState} from 'vuex'
 import {CHANGE_TICKETS_TRIGER, SHOW_REPLACE_GOODS , SHOW_CART_KEYBOARD , GET_CART_DATA , GET_KIND_PRICE , DEL_SEAT , RENDER_SELECTION_AFTER_RELEASE} from 'types'
 import {clearAllTicket,delTicket,findCart,releaseSeat} from 'src/http/apis.js'
 export default {
@@ -128,10 +140,37 @@ export default {
     },
     data() {
         return {
-            liConHeight: 7.5, // 文字的高度
+            liConHeight: 4, // 文字的高度
+            testData: {       //廖梦飞测试数据
+                cinemaUid: "123123",
+                merUid: "12345678",
+                name: "家庭三人套餐",
+                price: 88.88,
+                contents: [
+                    {
+                         skuName: "可乐（中）",
+                         merCount: 1,
+                         itemSkuUid: "测试sku009",
+                    },
+                    {
+                        skuName: "爆米花（大）",
+                        itemSkuUid: "测试sku014",
+                        merCount: 1
+                    },
+                    {
+                        itemSkuUid: "测试sku003",
+                        skuName: "咖啡",
+                        merCount: 1
+                    }
+                ]    
+                                    
+            }
         }
     },
     computed : {
+        ...mapState({
+            dataGoodsList : state => state.cart.goodsData.list 
+        }),
         ...mapGetters([
             'allowSingleSold',
             'channelCode',
@@ -163,7 +202,7 @@ export default {
             // var height = liCon.offsetHeight
             var height = liCon.style.height.slice(0,-2)
             if (height == this.liConHeight) { // 展开
-                console.log(height)
+                // console.log(height)
                 liCon.style.height = 'auto'
                 height = liCon.offsetHeight
                 liCon.style.height = this.liConHeight + 'vh'
@@ -187,10 +226,11 @@ export default {
             let {billCode} = this.cartData
             let {seatCode} = item.timeSeat
             let _groupCode = item.timeSeat.groupCode
+            // debugger
             let {goodsList} = this.cartData
             let dataArr = []
             if(!this.allowSingleSold) { //不可单卖的删除
-            console.log(goodsList)
+            // console.log(goodsList)
                 goodsList.forEach(seat => {
                     if(seat.timeSeat.groupCode == _groupCode){
                         let {timeSeat} = seat
@@ -221,42 +261,42 @@ export default {
                     ],
                     "cinemaCode":this.cinemaCode,
                     "planCode":this.currentPlanCode,
-                    "lockSeatKey":seat.timeSeat.lockSeatKey,
-                    "seatCode":seat.timeSeat.seatCode,
-                    "groupCode":timeSeat.groupCode
+                    "lockSeatKey":item.timeSeat.lockSeatKey,
+                    "seatCode":item.timeSeat.seatCode,
+                    "groupCode":item.timeSeat.groupCode
                 }
                 dataArr.push(data)
             }
-            console.log(dataArr)
-            delTicket(dataArr).then(res => {
-                console.log(res.data)
+            // console.log(dataArr)
+            delTicket(dataArr[0]).then(res => {
+                // console.log(res.data)
                 if(res.code==200) {
-                    findCart({"billCode":billCode}).then(res => {
-                        this.GET_CART_DATA(JSON.parse(JSON.stringify(res.data)))
-                        this.GET_KIND_PRICE(JSON.parse(JSON.stringify(res.data)))
-
-                        this.DEL_SEAT(_groupCode)//前台位置颜色解锁
-                        let data = {
-                            channelCode: this.channelCode,
-                            cinemaCode: this.cinemaCode,
-                            saleBillCode: billCode,
-                            timeSeatList: dataArr
-                        }
-                        //释放座位
+                    //释放座位
+                         let data = {
+                                channelCode: this.channelCode,
+                                cinemaCode: this.cinemaCode,
+                                saleBillCode: billCode,
+                                timeSeatList: dataArr
+                            }
                         releaseSeat(data).then(res => {
-                            console.log(res)
+                            // console.log(res)
                             this.RENDER_SELECTION_AFTER_RELEASE(res.data)
-                            
+                            findCart({"billCode":billCode}).then(res => {
+                                this.GET_CART_DATA(res.data)
+
+                                this.GET_KIND_PRICE(res.data)
+                                this.allowSingleSold ? this.DEL_SEAT(seatCode) : this.DEL_SEAT(_groupCode)
+                            })
                         })
-                    })
                     
                 }
             })
         },
         //换卖品
-        replaceGoods() {
-            console.log('换卖品')
-            this.SHOW_REPLACE_GOODS()
+        replaceGoods(contents) {
+            // console.log('换卖品')
+            // this.SHOW_REPLACE_GOODS()
+            this.SHOW_REPLACE_GOODS(contents)
         },
         //商品数量加减
         handerNumber(item,ind) {

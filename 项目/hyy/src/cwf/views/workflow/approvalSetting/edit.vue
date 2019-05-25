@@ -13,7 +13,7 @@
                                         <el-input  v-model="editParams.name" placeholder="请输入内容" ></el-input>
                                     </el-form-item>
                                 </el-form>
-                                <el-form :rules="addParamsRules" ref="ruleForm" :model="addParams" v-if="showAdd">
+                                <el-form :rules="rules" ref="ruleForm" :model="addParams" v-if="showAdd">
                                     <el-form-item prop="name">
                                         <el-input  v-model="addParams.name" placeholder="请输入内容" ></el-input>
                                     </el-form-item>
@@ -45,7 +45,7 @@
                             <el-step  title="审批人：" v-for="(item,index) in editParams.processList" :key="index"></el-step>
                         </el-steps>
                         <el-steps class="step-item-icon" direction="vertical" space="100px" v-if="showAdd">
-                            <el-step  title="审批人：" v-for="(item,index) in this.addParams.processList" :key="index"></el-step>
+                            <el-step  title="审批人：" v-for="(item,index) in addParams.processList" :key="index"></el-step>
                         </el-steps>
                         <el-steps class="step-item-icon" direction="vertical" space="100px" v-if="showCheck">
                             <el-step  title="审批人：" v-for="(item,index) in dataInfo.processList" :key="index"></el-step>
@@ -109,67 +109,23 @@ export default {
                 }],
                 
             },
-            addParamsRules:{
+            rules:{
                 name:[{ 
                     required: true,
                     message: '请输入审批流程名称', 
                     trigger: 'blur' 
-                }],
+                }]
                 
             },
-            editParams:{},
-            addParams:{},
-            userOptions: [{
-                value: 'u1',
-                label: '黄金糕1'
-                }, {
-                value: 'u2',
-                label: '双皮奶1'
-                }, {
-                value: 'u3',
-                label: '蚵仔煎1'
-                }, {
-                value: '选项41',
-                label: '龙须面1'
-                }, {
-                value: '选项51',
-                label: '北京烤鸭1'
-            }],
-            roleOptions:[{
-                value: 'r1',
-                label: '黄金糕'
-                }, {
-                value: 'r2',
-                label: '双皮奶'
-                }, {
-                value: 'r3',
-                label: '蚵仔煎'
-                }, {
-                value: '选项4',
-                label: '龙须面'
-                }, {
-                value: '选项5',
-                label: '北京烤鸭'
-                },
-                {
-                    value: '受理人1',
-                    label: '受理人1'
-                },
-                {
-                    value: '受理人2',
-                    label: '受理人2'
-                },
-                {
-                    value: '受理人3',
-                    label: '受理人3'
-                }
-            ],
-            input:{
-
+            editParams:{
+                name:"",
             },
+            addParams:{
+                name:"",
+            },
+            userOptions: [],
+            roleOptions:[],
             contentText:"查看",
-            radio:"",
-            textarea:"",
             showCheck:false,
             showEdit:false,
             showAdd:false,
@@ -191,14 +147,15 @@ export default {
                 if(this.dataInfo){
                     console.log(this.dataInfo)
                     this.editParams.id=this.dataInfo.id
-                    this.editParams.name=this.dataInfo.name
+                    this.editParams.name=this.dataInfo.name||""
                     this.editParams.processList=[]
+                    this.editParams.tenantId=805852
                     this.dataInfo.processList.forEach(element => {
                         this.editParams.processList.push({
                             assigneeId:element.assigneeId,
                             assigneeName:element.assigneeName,
                             assigneeType:element.assigneeType,
-                            id:111
+                            processId:element.processId
                         })
                     });
             }
@@ -206,11 +163,12 @@ export default {
             if(this.showType=="add"){
                 this.contentText="新建"
                 this.showAdd=true
-                this.addParams.name=this.dataInfo.name
+                this.addParams.name=this.dataInfo.name || ""
                 this.addParams.noteNum=this.dataInfo.noteNum
                 this.addParams.tenantId=this.dataInfo.tenantId
                 this.addParams.status=this.dataInfo.status
                 this.addParams.processList=[]
+                this.addParams.tenantId=805852
                 this.dataInfo.processList.forEach(element => {
                     this.addParams.processList.push({
                         assigneeId:element.assigneeId,
@@ -218,7 +176,7 @@ export default {
                         assigneeType:element.assigneeType,
                         nextNoteNum:element.nextNoteNum,
                         noteNum:element.noteNum,
-                        tenantId:111
+                        tenantId:805852
                     })
                 });
 
@@ -250,8 +208,9 @@ export default {
         addApprovalProcess(params){
             this.$cwfList.addApprovalProcess(params).then(data => {
                 if (data && data.code === 200) {
+                    this.close("update")
                     this.$message({
-                        message: "查询成功",
+                        message: "新增成功",
                         type: "success",
                         duration: 1000
                     });
@@ -267,10 +226,12 @@ export default {
             })
         },
         editApprovalProcess(params){
+            console.log(JSON.stringify(params))
              this.$cwfList.editApprovalProcess(params).then(data => {
                 if (data && data.code === 200) {
+                    this.close("update")
                     this.$message({
-                        message: "查询成功",
+                        message: "编辑成功",
                         type: "success",
                         duration: 1000
                     });
@@ -285,7 +246,7 @@ export default {
                 console.log(err)
             })
         },
-        close(){
+        close(update){
             this.dialogVisible = false
             this.showCheck=false
             this.showEdit=false
@@ -294,8 +255,11 @@ export default {
                 roleValue:{},
                 userValue:{}
             }
-            
-            this.$emit("close")
+            if(update){
+                this.$emit("close",update)
+            }else{
+                this.$emit("close")
+            }
         },
         closeBack(){
             this.dialogVisible = false
@@ -333,12 +297,14 @@ export default {
             this.showSelectBox=false
         },
         submitDataRes(strdData){
-            console.log(strdData)
+            console.log("strdData",strdData)
             if(this.showType=="edit"){
-                this.editParams.processList[this.currentItemIndex].assigneeName=strdData
+                this.editParams.processList[this.currentItemIndex].assigneeId=strdData.assigneeId
+                this.editParams.processList[this.currentItemIndex].assigneeName=strdData.assigneeName
             }
             if(this.showType=="add"){
-                this.addParams.processList[this.currentItemIndex].assigneeName=strdData
+                this.addParams.processList[this.currentItemIndex].assigneeId=strdData.assigneeId
+                this.addParams.processList[this.currentItemIndex].assigneeName=strdData.assigneeName
             }
         },
         changeNoteNum(value){
@@ -358,7 +324,7 @@ export default {
                     assigneeType:0,
                     nextNoteNum:nextNoteNum,
                     noteNum:i+1,
-                    tenantId:111
+                    tenantId:805852
                })
             }
             this.addParams.processList=list

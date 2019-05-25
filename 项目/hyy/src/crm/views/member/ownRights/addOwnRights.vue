@@ -204,9 +204,18 @@
                           编辑
                         </div>
                       </el-form-item>
-                      <el-form-item label="适用卖品" :rules="{required: true, message: '卖品必填', trigger: 'blur'}">
-                        <div class="select-btn">请选择卖品</div>
-                        <el-tag size="small" closable>大豆油</el-tag>
+                      <el-form-item label="适用卖品" class="shiyong_yingyuan" prop="goods.goodsList" :rules="{required: true, validator: checkSaleName, trigger: 'change'}">
+                        <div class="select-btn" v-show="!(ruleForm.goods.goodsList && ruleForm.goods.goodsList.length > 0)"
+                          @click="chooseGoods()">请选择卖品</div>
+                        <div class="cinema-list" v-show="ruleForm.goods.goodsList && ruleForm.goods.goodsList.length > 0"
+                          @click="chooseGoods()">
+                          {{getArrGoodsName(ruleForm.goods.goodsList)}}
+                          <i class="el-tag__close el-icon-close myclose" @click.stop="clearGoods('卖品')"></i>
+                        </div>
+                        <div class="select-btn" v-show="ruleForm.goods.goodsList && ruleForm.goods.goodsList.length > 0"
+                          @click="chooseGoods()">
+                          编辑
+                        </div>
                       </el-form-item>
                       <el-form-item label="优惠方式" prop="goods" :rules="{
                               required: true, validator: checkSalePreferentialWay, trigger: 'blur'
@@ -337,7 +346,8 @@
                                     <div class="grid-content bg-purple">
                                       <el-form-item label="销售单号" label-width="80px" :prop="'birthday.voucherList.'+index"
                                         :rules="{required: true, validator: checkvoucherListTicketNo, trigger: 'change'}">
-                                        <el-input v-model="voucheritem.ticketNo" placeholder="销售单号" style="width:200px" readonly  @focus="showccmSaleList('birthdaydai',index)"></el-input>
+                                        <el-input v-model="voucheritem.ticketNo" placeholder="销售单号" style="width:200px"
+                                          readonly @focus="showccmSaleList('birthdaydai',index)"></el-input>
                                       </el-form-item>
                                     </div>
                                   </el-col>
@@ -381,7 +391,8 @@
                                     <div class="grid-content bg-purple">
                                       <el-form-item label="销售单号" label-width="80px" :prop="'birthday.cdkeyList.'+index"
                                         :rules="{required: true, validator: checkcdkeyListTicketNo, trigger: 'change'}">
-                                        <el-input v-model="cdkeyitem.ticketNo" placeholder="销售单号" style="width:200px" readonly  @focus="showccmSaleList('birthdaycdk',index)"></el-input>
+                                        <el-input v-model="cdkeyitem.ticketNo" placeholder="销售单号" style="width:200px"
+                                          readonly @focus="showccmSaleList('birthdaycdk',index)"></el-input>
                                       </el-form-item>
                                     </div>
                                   </el-col>
@@ -446,12 +457,16 @@
     </frame-multicinema>
     <!--选择销售单号弹窗-->
     <ccmSaleList ref="ccmSaleList" :incomeData="incomeData" @ccmSaleListCallBack="ccmSaleListCallBack" />
+    <!--选择卖品弹窗-->
+    <cimSelectedGoods ref="cimSelectedGoods" :dialogFeedbackData="dialogFeedbackData" :dialogVisible.sync="selectedGoodsDialogVisible"
+      @cimSelectedGoodsDialogCallBack="selectedGoodsDialogCallBack" />
   </div>
 </template>
 <script>
 import FixStepTool from "../../../components/fix-step-tool/fix-step-tool";
 import fixStepMixin from "../../../mixins/CRM/fixStepTool.js";
 import ccmSaleList from "../../../../ccm/alert/saleList/index";
+import cimSelectedGoods from "../../../../cim/dialogs/cimSelectedGoods/index";
 const weekOptions = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
 
 export default {
@@ -470,9 +485,7 @@ export default {
         this.$crmList
           .chekckEquitynameIsexist({
             equityName: value.toString().trim(),
-            id: this.$route.query.cardTypeId
-              ? this.$route.query.cardTypeId
-              : "",
+            equityId: this.$route.query.cardId ? this.$route.query.cardId : "",
             tenantId: this.$store.state.loginUser.consumerId
           })
           .then(data => {
@@ -537,10 +550,12 @@ export default {
     };
 
     return {
-      saleListStatus:"", //临时记载所选券类型
-      saleListIndex:"",//临时记载所选券Index
+      selectedGoodsDialogVisible: false, //卖品弹窗显示隐藏
+      dialogFeedbackData: [], //卖品弹窗回显数据
+      saleListStatus: "", //临时记载所选券类型
+      saleListIndex: "", //临时记载所选券Index
       incomeData: {
-        couponType: "1", //弹窗显示类型 1代金券 0兑换码 2优惠券
+        couponType: "1" //弹窗显示类型 1代金券 0兑换码 2优惠券
       },
       whereUse: "1", //适用影院隔离
       cinemaIndex: "0", //当前所处选择影院index
@@ -614,12 +629,7 @@ export default {
         //卖品优惠规则
         goods: {
           cinemaList: [],
-          goodsList: [
-            {
-              goodsId: "1",
-              goodsName: "大豆油"
-            }
-          ],
+          goodsList: [],
           goodsSaleData: "",
           goodsSaleType: "discountPrice"
         },
@@ -710,17 +720,22 @@ export default {
   },
   components: {
     fixStepTool: FixStepTool,
-    ccmSaleList
+    ccmSaleList,
+    cimSelectedGoods
   },
   mounted() {
     this.$crmList
       .screenList({ tenantId: this.$store.state.loginUser.consumerId })
       .then(res => {
-        this.Standards = res;
+        if (res) {
+          this.Standards = res;
+        }
         this.$crmList
           .hallList({ tenantId: this.$store.state.loginUser.consumerId })
           .then(res => {
-            this.CinemaHalls = res;
+            if (res) {
+              this.CinemaHalls = res;
+            }
             this.$route.query.cardId
               ? this.getcardTypeInfo(this.$route.query.cardId)
               : this.selectAll(0);
@@ -729,28 +744,38 @@ export default {
   },
   mixins: [fixStepMixin],
   methods: {
+    //卖品弹窗返回数据
+    selectedGoodsDialogCallBack(opt) {
+      if (opt.data) {
+        this.ruleForm.goods.goodsList = this.goodsAddGoodsCodeAndName(opt.data);
+        this.$refs["ruleForm"].validateField(["goods.goodsList"]);
+      }
+    },
     //营销单号返回数据
-    ccmSaleListCallBack(opt){
-      console.log("opt",opt.data)
+    ccmSaleListCallBack(opt) {
+      console.log("opt", opt.data);
       var type = this.saleListStatus;
-      if(type == "dai"){
-        this.ruleForm.ticketList[this.saleListIndex].ticketNo = opt.data.applyCode
-      }else if(type == "birthdaydai"){
-        this.ruleForm.birthday.voucherList[this.saleListIndex].ticketNo = opt.data.applyCode
-      }else if(type == "birthdaycdk"){
-         this.ruleForm.birthday.cdkeyList[this.saleListIndex].ticketNo = opt.data.applyCode
+      if (type == "dai") {
+        this.ruleForm.ticketList[this.saleListIndex].ticketNo =
+          opt.data.applyCode;
+      } else if (type == "birthdaydai") {
+        this.ruleForm.birthday.voucherList[this.saleListIndex].ticketNo =
+          opt.data.applyCode;
+      } else if (type == "birthdaycdk") {
+        this.ruleForm.birthday.cdkeyList[this.saleListIndex].ticketNo =
+          opt.data.applyCode;
       }
     },
     //显示营销单号
-    showccmSaleList(type,index) {
+    showccmSaleList(type, index) {
       this.saleListStatus = type;
       this.saleListIndex = index;
-      if(type == "dai"){
-        this.incomeData.couponType = 1
-      }else if(type == "birthdaydai"){
-        this.incomeData.couponType = 1
-      }else if(type == "birthdaycdk"){
-        this.incomeData.couponType = 0
+      if (type == "dai") {
+        this.incomeData.couponType = 1;
+      } else if (type == "birthdaydai") {
+        this.incomeData.couponType = 1;
+      } else if (type == "birthdaycdk") {
+        this.incomeData.couponType = 0;
       }
       this.$refs.ccmSaleList.isShowDialog(true);
     },
@@ -761,7 +786,7 @@ export default {
       }
       var newStrArr = [];
       arr.map((item, index) => {
-        newStrArr.push(item.cinemaName);
+        newStrArr.push(item.cinemaName ? item.cinemaName : item.name);
       });
       return newStrArr.join(",");
     },
@@ -796,6 +821,32 @@ export default {
       });
       return arr;
     },
+    //适用卖品 字段赋值添加Code Name
+    goodsAddGoodsCodeAndName(arr) {
+      if (!arr) {
+        return [];
+      }
+      arr.map((item, index) => {
+        item.goodsCode = item.merCode;
+        item.goodsName = item.merName;
+        //  cinemaName: "大地影院"
+        return item;
+      });
+      return arr;
+    },
+    //适用卖品 字段赋值添加Code Name
+    goodsAddGoodsMerCodeAndName(arr) {
+      if (!arr) {
+        return [];
+      }
+      arr.map((item, index) => {
+        item.merCode = item.goodsCode;
+        item.merName = item.goodsName;
+        //  cinemaName: "大地影院"
+        return item;
+      });
+      return arr;
+    },
     //适用影院 字段赋值cinemaId->ID
     cinemaAddId(arr) {
       if (!arr) {
@@ -807,6 +858,31 @@ export default {
         return item;
       });
       return arr;
+    },
+    //清空卖品商品列表
+    clearGoods() {
+      this.ruleForm.goods.goodsList = [];
+      this.dialogFeedbackData = [];
+    },
+    //适用卖品名称展示
+    getArrGoodsName(arr) {
+      if (!arr.length || arr.length == 0) {
+        return "请选择";
+      }
+      var newStrArr = [];
+      arr.map((item, index) => {
+        newStrArr.push(item.goodsName ? item.goodsName : item.merName);
+      });
+      return newStrArr.join(",");
+    },
+    //适用卖品选择
+    chooseGoods() {
+      this.selectedGoodsDialogVisible = true;
+      this.ruleForm.goods.goodsList = this.goodsAddGoodsMerCodeAndName(
+        this.ruleForm.goods.goodsList
+      );
+      this.dialogFeedbackData = this.ruleForm.goods.goodsList;
+      console.log("回显数据_____________", "dasd", this.dialogFeedbackData);
     },
     //适用影院
     chooseCinema(index) {
@@ -842,7 +918,7 @@ export default {
       this.$refs.frameMultiCinema.confirmData();
     },
     handleCallBack(opt) {
-      var arr = opt.dataList;
+      var arr = new Array(...opt.dataList);
       if (this.cinemaIndex == "卖品") {
         this.ruleForm.goods.cinemaList = this.cinemaAddId(arr);
         this.$refs["ruleForm"].validateField(["goods.cinemaList"]);
@@ -1107,9 +1183,17 @@ export default {
       }
       callback();
     },
+    //适用影院必填验证
     checkSaleCinema(rule, value, callback) {
       if (value.length == 0) {
         callback(new Error("适用影院必选"));
+      }
+      callback();
+    },
+    //适用卖品必填验证
+    checkSaleName(rule, value, callback) {
+      if (value.length == 0) {
+        callback(new Error("适用卖品必选"));
       }
       callback();
     },

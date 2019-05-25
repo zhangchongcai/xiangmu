@@ -1,7 +1,7 @@
 <template>
     <div class="login-container" style="background: url(/static/imgs/loginbg.png);">
           <div class="header-info">
-              <img style="width: 86px; height: 44px" src="/static/imgs/logo.png" alt="oristar">
+              <img style="width: 8.3vw;" src="/static/imgs/logo.png" alt="oristar">
 
               <span>
                 <img style="margin: 0 4px 0 20px" src="/static/imgs/phone.png" alt="热线">
@@ -15,10 +15,24 @@
           <form class="login" @submit.prevent="showData">
              <h1 class="login-name">零售POS终端</h1>
              <h3 class="login-tip">请直接刷卡或输入账号密码登录</h3>
-             <input class="login-input" v-model="info.cinemaLicence" type="text" placeholder="请输入许可证号"/>
-             <input class="login-input" v-model="info.user_name" type="text" placeholder="请输入用户名称" @focus="showKeyBoard('user_name')" />
-             <input style="margin-top: 0" class="login-input" v-model="info.password" type="password" placeholder="请输入密码" @focus="showKeyBoard('password')" />
-             <input type="submit" class="login-btn" value="登录" />
+             <div class="login-input-box">
+                 <input class="login-input" v-model="info.macCode" type="text" placeholder="请输入硬件识别码"/>
+             </div>
+             <div class="login-input-box">
+                 <input class="login-input" v-model="info.cinemaLicence" type="text" placeholder="请输入许可证号"/>
+             </div>
+             <div class="login-input-box">
+                 <img class="icon-img" src="/static/imgs/username.png" alt="用户">
+                 <input class="login-input" v-model="info.user_name" type="text" placeholder="请输入用户名称" @focus="showKeyBoard('user_name')" />
+             </div>
+             <div class="login-input-box">
+                 <img class="icon-img" src="/static/imgs/password.png" alt="密码">
+                 <input style="margin-top: 0" class="login-input" v-model="info.password" type="password" placeholder="请输入密码" @focus="showKeyBoard('password')" />
+             </div>
+             <div class="login-input-box" style="display: flex; justify-content: space-between">
+                 <input type="submit" class="login-btn" value="登录" />
+                 <input type="button" class="login-btn close-btn" value="关闭" @click="closePos" />
+             </div>
           </form>
 
           <key-board v-model="info[modelStr]" :type="modelStr == 'user_name' ? 'text' : 'password'" @confirm="fillContent" ref="keyboard"></key-board>
@@ -26,6 +40,7 @@
 </template>
 
 <script>
+import util from 'src/http/app.js'
 import {loginPos} from 'src/http/apis.js'
 import {mapMutations} from 'vuex'
 import {SAVE_CINEMA_INFO, SAVE_USER_INFO} from 'types'
@@ -37,7 +52,8 @@ export default {
             info: {
                 user_name: '',
                 password: '',
-                cinemaLicence: 'b931c317c9303855'
+                cinemaLicence: '1e67a45f65e4ba51',
+                macCode: 'ABC321'
             }
             
         }
@@ -63,24 +79,32 @@ export default {
         },
 
         showData() {
-          let formData = new FormData()
-          formData.append("user_name", this.info.user_name);
-          formData.append("password", this.info.password);
-          formData.append("cinemaLicence", this.info.cinemaLicence);
-          loginPos(this.info).then(res => {
-            //   console.log(res)
-              if(res.code == 200) {
-                //   this.SAVE_CINEMA_INFO(res.data)
-                  this.SAVE_USER_INFO(res.data)
-                  this.$router.push({path: '/home'})
-              }else {
-                this.$message({
-                                showClose: true,
-                                message: res.msg,
-                                type: 'error'
-                            });
-              }
-          })
+          if(this.info.user_name && this.info.password) {
+              loginPos(this.info).then(res => {
+                if(res.code == 200) {
+                    this.SAVE_USER_INFO(res.data)
+                    this.SAVE_CINEMA_INFO(res.data)
+                    this.$router.push({path: '/home'})
+                }else {
+                    this.$message({
+                                    showClose: true,
+                                    message: res.msg,
+                                    type: 'error'
+                                });
+                }
+            })
+          }else {
+              this.$message({
+                            showClose: true,
+                            message: '请填写用户名和密码',
+                            type: 'error'
+                        });
+          }
+          
+        },
+
+        closePos() {
+            util.quit()
         }
     },
 
@@ -113,6 +137,7 @@ export default {
           position: absolute;
           top: 200px;
           left: 5vw;
+          width: 42.2vw;
       }
 
       .login {
@@ -122,12 +147,11 @@ export default {
           display: flex;
           flex-direction: column;
           width: 31%;
-          height: 44.5%;
+          height: 54%;
           background: #ffffff;
           border-radius: 4px;
 
           .login-name {
-              font-family: 'MicrosoftYaHei';
               font-size: $font-size22;
               font-weight: bolder;
               color: $font-color-blue;
@@ -142,14 +166,28 @@ export default {
               margin-left: 2vw;
           }
 
+          .login-input-box {
+              box-sizing: border-box;
+              width: 27.5vw;
+              height: 40px;
+              border-radius: 2px;
+              margin: 1.2vh auto;
+              position: relative;
+
+              .icon-img {
+                  position: absolute;
+                  left: 8px;
+                  top: 8px;
+              }
+          }
+
           .login-input {
               box-sizing: border-box;
               width: 27.5vw;
               height: 40px;
               line-height: 40px;
-              padding: 0 20px;
+              padding: 0 40px;
               border-radius: 2px;
-              margin: 1.2vh auto;
               outline: none;
               border: 1px solid $font-color6;
 
@@ -159,19 +197,25 @@ export default {
           }
 
           .login-btn {
-              width: 27.5vw;
+              width: 12.5vw;
               height: 40px;
               line-height: 40px;
               margin: 0 auto;
               outline: none;
               border: none;
               color: $font-color-white;
-              background: $font-color-blue;
+              background: $font-color-blue; 
               border-radius: 4px;
 
               &:active {
                   opacity: 0.88;
               }
+          }
+
+          .close-btn {
+              color: $font-color6;
+              background: $font-color-white;
+              border: 1px solid #bcbcbc;
           }
       }
   }

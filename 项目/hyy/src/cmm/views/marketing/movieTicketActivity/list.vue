@@ -101,7 +101,7 @@ export default {
                     type: 'input',
                     value: '',
                     alertButton: true,
-                    alertCompontsName: '',
+                    alertCompontsName: 'multiCinema',
                 }, {
                     keyName: 'executeMode',
                     name: '执行策略',

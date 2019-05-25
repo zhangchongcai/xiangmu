@@ -236,11 +236,11 @@ export const ticketelementList = params => {
   })
 }
 
-export const ticketList = params => {
+export const ticketList = (limit,data) => {
   return axios({
-      url: '/ticket/ticketsample/page',
+      url: '/ticket/ticketsample/page?'+ `page=${limit.page}&pageSize=${limit.pageSize}`,
       method: 'post',
-      params
+      data
   })
 }
 export const ticketsampleDel = params => {

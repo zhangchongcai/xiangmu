@@ -19,14 +19,17 @@
       </ul>
       <ul class="footLayer">
         <li class="today" @click="today">今天</li>
-        <li><el-button type="primary" @click="confirm">确定</el-button></li>
+        <li>
+          <el-button type="info" @click="close">取消</el-button>
+          <el-button type="primary" @click="confirm">确定</el-button>
+        </li>
       </ul>
     </div>
   </div>
 </template> 
 <script>
 import {mapGetters, mapMutations} from 'vuex'
-import {SET_CURRENT_DATE} from 'types'
+import {SET_CURRENT_DATE, SHOW_DATE_PICKER} from 'types'
 export default {
   props:['date', 'isShow'],
   data(){
@@ -45,7 +48,8 @@ export default {
   },
   methods: {
     ...mapMutations([
-      SET_CURRENT_DATE
+      SET_CURRENT_DATE,
+      SHOW_DATE_PICKER
     ]),
     initData(val){
       let date = val ? new Date(val) :new Date();
@@ -124,6 +128,9 @@ export default {
       this.activeObj = this.initArrObj(time);
       this.selectObj = this.initArrObj(time);
     },
+    close() {
+      this.SHOW_DATE_PICKER()
+    },
     confirm(){
       this.$emit('confirm',this.activeObj)
     }
@@ -140,12 +147,15 @@ export default {
   right: 0;
   z-index: 100000;
   background: rgba(0,0,0,0.4);
+  -webkit-transform: translateZ(0);
   .dateLayer{
-    position: relative;
+    position: absolute;
+    user-select: none;
     width: 32.8vw;
-    margin: 0 auto;
+    left: 50%;
     top:50%;
-    transform: translateY(-50%);
+    transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
     .title{
       @include bg_color($btn-background-color-theme);
       color:$font-color-white;
@@ -182,6 +192,12 @@ export default {
         font-size: $font-size18;
         color:#666 ;
         padding: 1.5vh 0;
+
+        &:hover{
+          @include bg_color($btn-background-color-theme);
+          color:#fff;
+          cursor: pointer;
+        }
       }
       .on{
         @include bg_color($btn-background-color-theme);

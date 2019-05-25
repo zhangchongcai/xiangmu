@@ -8,18 +8,13 @@
       @searchUser="searchUser" @chooseUser="chooseUser">
     </getAgency>
     <!-- 多选 -->
-    <span class="ceshi">多选框</span>
+    <!-- <span class="ceshi">多选框  影厅类型：CI_HALL_TYPE</span>
     <div class="multiple_select">
-      <el-select v-model="value" placeholder="请选择" popper-class="el_select" @change="changeSelect" multiple>
-        <!-- <el-option ref="select_option">
-          <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange"></el-checkbox>
-          <span style="color: #8492a6; font-size: 13px">全选</span>
-        </el-option> -->
+      <el-select v-model="value" placeholder="请选择" popper-class="el_select" @change="changeSelect" multiple  @focus="getdealType('CI_HALL_TYPE',2)">
         <el-option v-for="item in cities" :key="item.id" :label="item.label" :value="item.label">
-          <span style="color: #8492a6; font-size: 13px">{{ item.label }}</span>
         </el-option>
       </el-select>
-    </div>
+    </div> -->
 
     <!-- 交易单类型：MER_INTERFACE_STORE_BILL_SUBJECT
     交易类型(含会员)：POS_SALE_BILL_BILL_TYPE_HAS_MEMBER
@@ -44,11 +39,13 @@
     </el-select>
     <!-- 影厅类型 -->
     <span>影厅类型</span>
-    <el-select v-model="value3" placeholder="请选择" @focus="getdealType('CI_HALL_TYPE',2)">
-      <el-option label="全部" value=""></el-option>
-      <el-option v-for="(item,index) in options[2]" :key="2+index" :label="item.keyName" :value="item.id">
-      </el-option>
-    </el-select>
+    <div class="multiple_select">
+      <el-select v-model="value3" placeholder="请选择" @focus="getdealType('CI_HALL_TYPE',2)" multiple  @change="changeSelect">
+        <!-- <el-option label="全部" value=""></el-option> -->
+        <el-option v-for="(item,index) in options[2]" :key="2+index" :label="item.keyName" :value="item.keyName">
+        </el-option>
+      </el-select>
+    </div>
     <!-- 渠道 -->
     <span>渠道</span>
     <el-select v-model="value4" placeholder="请选择" @focus="getdealType('POS_CHANNEL_TYPE',3)">
@@ -111,7 +108,7 @@
         value4: '',
         value5: '',
         options: [
-          []
+          [],[],[]
         ],
         cinemaName:"",
         cinemaUID:""
@@ -178,10 +175,6 @@
         el.style.textOverflow = "ellipsis";
         el.textContent = String(val).replace(/,/g, "、")
       },
-      // getSelected(val) {
-      //   console.log(val);
-      // },
-      // getdealType("1",10,"POS_SALE_BILL_BILL_TYPE_HAS_MEMBER") {
       getdealType(name, index) {
         this.$csmList.getMoudelData("1", 100, name)
           .then(data => {

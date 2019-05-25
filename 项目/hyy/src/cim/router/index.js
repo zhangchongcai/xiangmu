@@ -55,18 +55,18 @@ let routes = [
 {
     path: 'goodsCategories/index',
     meta: {
-        title: '类别管理'
+        title: '类目管理'
     },
     component: (resolve) => require(['cim/views/cim/basicSettings/goodsCategories/index'], resolve),
-    name: '类别管理'
+    name: '类目管理'
 },
 {
     path: 'goodsCategoriesManagement/index',
     meta: {
-        title: '类别管理'
+        title: '商品分类管理'
     },
     component: (resolve) => require(['cim/views/cim/basicSettings/goodsCategoriesManagement/index'], resolve),
-    name: '类别管理'
+    name: '商品分类管理'
 },
 {
     path: 'goodsUnit/index',
@@ -161,7 +161,8 @@ let routes = [
             name: '套餐'
         },
     ],
-},// 商品资料---门店商品管理
+},
+// 商品资料---门店商品管理
 {
     path: 'commodityInformationStore',
     name: '门店商品管理',
@@ -220,6 +221,353 @@ let routes = [
             },
             component: (resolve) => require(['cim/views/cim/goodsInformation/storequartersGoods/setMeal/common.vue'], resolve),
             name: '套餐'
+        },
+    ],
+},
+ // 采购管理
+{
+    path: 'procurement',
+    name: '采购管理',
+    meta: {
+        title: '采购管理'
+    },
+    component: (resolve) => require(['cim/views/cim/procurement/index'], resolve),
+    redirect: 'procurement',
+    children: [
+        // 供应商管理
+        {
+            path: 'suppliers',
+            meta: {
+                title: '供应商管理'
+            },
+            component: (resolve) => require(['cim/views/cim/procurement/suppliers/index'], resolve),
+            name: '供应商管理',
+            redirect: 'suppliers/list',
+            children: [
+                {
+                    path: 'list',
+                    meta: {
+                        title: '供应商管理'
+                    },
+                    component: (resolve) => require(['cim/views/cim/procurement/suppliers/list'], resolve),
+                    name: '供应商管理'
+                },
+                {
+                    path: 'common',
+                    meta: {
+                        title: '供应商管理'
+                    },
+                    component: (resolve) => require(['cim/views/cim/procurement/suppliers/common'], resolve),
+                    name: '供应商管理'
+                },
+            ]
+        },
+        // 采购单管理
+        {
+            path: 'purchaseNote',
+            meta: {
+                title: '采购单管理'
+            },
+            component: (resolve) => require(['cim/views/cim/procurement/suppliers/index'], resolve),
+            name: '采购单管理',
+            redirect: 'purchaseNote/list',
+            children: [
+                {
+                    path: 'list',
+                    meta: {
+                        title: '采购单管理'
+                    },
+                    component: (resolve) => require(['cim/views/cim/procurement/purchaseNote/list'], resolve),
+                    name: '采购单管理'
+                },
+                {
+                    path: 'common',
+                    meta: {
+                        title: '采购单管理'
+                    },
+                    component: (resolve) => require(['cim/views/cim/procurement/purchaseNote/common'], resolve),
+                    name: '采购单管理'
+                },
+            ]
+        },
+        // 采购入库单管理
+        {
+            path: 'purchaseStorage',
+            meta: {
+                title: '采购入库单管理'
+            },
+            component: (resolve) => require(['cim/views/cim/procurement/purchaseStorage/index'], resolve),
+            name: '采购入库单管理',
+            redirect: 'purchaseStorage/list',
+            children: [
+                {
+                    path: 'list',
+                    meta: {
+                        title: '采购入库单管理'
+                    },
+                    component: (resolve) => require(['cim/views/cim/procurement/purchaseStorage/list'], resolve),
+                    name: '采购入库单管理'
+                },
+                {
+                    path: 'common',
+                    meta: {
+                        title: '采购入库单管理'
+                    },
+                    component: (resolve) => require(['cim/views/cim/procurement/purchaseStorage/common'], resolve),
+                    name: '采购入库单管理'
+                },
+            ]
+        },
+        // 采购退货单管理
+        {
+            path: 'purchaseReturn',
+            meta: {
+                title: '采购退货单管理'
+            },
+            component: (resolve) => require(['cim/views/cim/procurement/purchaseReturn/index'], resolve),
+            name: '采购退货单管理',
+            redirect: 'purchaseReturn/list',
+            children: [
+                {
+                    path: 'list',
+                    meta: {
+                        title: '采购单退货管理'
+                    },
+                    component: (resolve) => require(['cim/views/cim/procurement/purchaseReturn/list'], resolve),
+                    name: '采购退货单管理'
+                },
+                {
+                    path: 'common',
+                    meta: {
+                        title: '采购退货单管理'
+                    },
+                    component: (resolve) => require(['cim/views/cim/procurement/purchaseReturn/common'], resolve),
+                    name: '采购退货单管理'
+                },
+            ]
+        },
+    ],
+},
+//零售POS设置
+{
+    path: 'retailPosSetting/terminalGoods/index',
+    name: '零售POS设置',
+    meta: {
+        title: '零售POS设置'
+    },
+    component: (resolve) => require(['cim/views/cim/retailPosSetting/terminalGoods/index'], resolve),
+    // redirect: 'terminalGoods/index',
+    children: [
+        
+    ]
+},
+// 库存管理
+{
+    path: 'InventoryManagement',
+    name: '库存管理',
+    meta: {
+        title: '库存管理'
+    },
+    component: (resolve) => require(['cim/views/cim/InventoryManagement/index'], resolve),
+    redirect: 'InventoryManagement',
+    children: [
+        // 库存管理入库登记
+        {
+            path: 'goodsWarehousingIn',
+            meta: {
+                title: '库存管理入库登记'
+            },
+            component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingIn/index'], resolve),
+            name: '库存管理入库登记',
+            redirect: 'goodsWarehousingIn/list',
+            children: [
+                // 库存管理入库登记
+                {
+                    path: 'list',
+                    meta: {
+                        title: '库存管理入库登记'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingIn/list'], resolve),
+                    name: '库存管理入库登记'
+                },
+                {
+                    path: 'return',
+                    meta: {
+                        title: '新增领用退回入库'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingIn/return'], resolve),
+                    name: '新增领用退回入库'
+                },
+                {
+                    path: 'inventory',
+                    meta: {
+                        title: '新建盘点赔偿入库'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingIn/inventory'], resolve),
+                    name: '新建盘点赔偿入库'
+                },
+                {
+                    path: 'warehousing',
+                    meta: {
+                        title: '新建调拨入库'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingIn/warehousing'], resolve),
+                    name: '新建调拨入库'
+                },
+            ]
+        },
+        // 库存管理出库登记
+        {
+            path: 'goodsWarehousingOut',
+            meta: {
+                title: '库存管理出库登记'
+            },
+            component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingOut/index'], resolve),
+            name: '库存管理出库登记',
+            redirect: 'goodsWarehousingOut/list',
+            children: [
+                // 库存管理入库登记
+                {
+                    path: 'list',
+                    meta: {
+                        title: '库存管理出库登记'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingOut/list'], resolve),
+                    name: '库存管理出库登记'
+                },
+                {
+                    path: 'return',
+                    meta: {
+                        title: '新增领用退回入库'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingOut/return'], resolve),
+                    name: '新增领用退回入库'
+                },
+                {
+                    path: 'inventory',
+                    meta: {
+                        title: '新建盘点赔偿入库'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingOut/inventory'], resolve),
+                    name: '新建盘点赔偿入库'
+                },
+                {
+                    path: 'warehousing',
+                    meta: {
+                        title: '新建调拨入库'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingOut/warehousing'], resolve),
+                    name: '新建调拨入库'
+                },
+            ]
+        },
+        // 库存转移管理
+        {
+            path: 'inventoryTransfer',
+            meta: {
+                title: '库存转移管理'
+            },
+            component: (resolve) => require(['cim/views/cim/InventoryManagement/inventoryTransfer/index'], resolve),
+            name: '库存转移管理',
+            redirect: 'inventoryTransfer/list',
+            children: [
+                // 库存管理入库登记
+                {
+                    path: 'list',
+                    meta: {
+                        title: '库存转移管理'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/inventoryTransfer/list'], resolve),
+                    name: '库存转移管理'
+                },
+                {
+                    path: 'common',
+                    meta: {
+                        title: '新建库存转移'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/inventoryTransfer/common'], resolve),
+                    name: '新建库存转移'
+                }
+            ]
+        },
+        // 盘点方案管理
+        {
+            path: 'inventoryPlan',
+            meta: {
+                title: '盘点方案管理'
+            },
+            component: (resolve) => require(['cim/views/cim/InventoryManagement/inventoryPlan/index'], resolve),
+            name: '盘点方案管理',
+            redirect: 'inventoryPlan/list',
+            children: [
+                // 库存管理入库登记
+                {
+                    path: 'list',
+                    meta: {
+                        title: '盘点方案管理'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/inventoryPlan/list'], resolve),
+                    name: '盘点方案管理'
+                },
+                {
+                    path: 'common',
+                    meta: {
+                        title: '新建盘点方案'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/inventoryPlan/common'], resolve),
+                    name: '新建盘点方案'
+                }
+            ]
+        },
+        // 盘点单管理
+        {
+            path: 'inventoryManagement',
+            meta: {
+                title: '盘点单管理'
+            },
+            component: (resolve) => require(['cim/views/cim/InventoryManagement/inventoryManagement/index'], resolve),
+            name: '盘点单管理',
+            redirect: 'inventoryManagement/list',
+            children: [
+                // 库存管理入库登记
+                {
+                    path: 'list',
+                    meta: {
+                        title: '盘点单管理'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/inventoryManagement/list'], resolve),
+                    name: '盘点单管理'
+                },
+                {
+                    path: 'common',
+                    meta: {
+                        title: '新建盘点单'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/inventoryManagement/common'], resolve),
+                    name: '新建盘点单'
+                }
+            ]
+        },        
+        // 门店商品库存查询
+        {
+            path: 'storeInventoryQuery',
+            meta: {
+                title: '门店商品库存查询'
+            },
+            component: (resolve) => require(['cim/views/cim/InventoryManagement/storeInventoryQuery/index'], resolve),
+            name: '门店商品库存查询',
+            redirect: 'storeInventoryQuery/list',
+            children: [
+                // 库存管理入库登记
+                {
+                    path: 'list',
+                    meta: {
+                        title: '门店商品库存查询'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/storeInventoryQuery/list'], resolve),
+                    name: '门店商品库存查询'
+                }
+            ]
         },
     ],
 },

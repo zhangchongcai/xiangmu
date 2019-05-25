@@ -7,13 +7,18 @@
                 :currentData="currentData"
                 @change="valueChange"
         ></payType>
+        <tradeTicketType
+                ref="tradeTicketType"
+                @getData="getData"
+        ></tradeTicketType>
     </section>
 </template>
 
 <script>
     import payType from 'csm/components/payType/PayType.vue'
+    import tradeTicketType from 'csm/components/tradeTicketType/TradeTicketType.vue'
     export default {
-        components: {payType},
+        components: {payType, tradeTicketType},
         data() {
             return {
                 cinemaUidList: ['111111'],
@@ -27,6 +32,9 @@
             valueChange(newValue) {
                 console.log(newValue)
                 this.currentData = newValue
+            },
+            getData(val) {
+                console.log(val)
             }
         },
         mounted() {

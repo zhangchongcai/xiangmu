@@ -24,8 +24,8 @@
 <script>
 import FooterBar from './FooterBar'
 import FooterTip from './FooterTip'
-import {mapGetters, mapMutations} from 'vuex'
-import {SHOW_MORE_NAV} from 'types'
+import {mapGetters, mapMutations,mapState} from 'vuex'
+import {SHOW_MORE_NAV,EMPOWER_SET_SHOW,EMPOWER_SET_USER,EMPOWER_SET_PASSWORD} from 'types'
     export default {
         data() {
           return {
@@ -79,7 +79,7 @@ import {SHOW_MORE_NAV} from 'types'
                       path: 'myRanking'
                   },
                   {
-                      name: '广点通知',
+                      name: '广电通知',
                       path: 'noticeLists'
                   },
                   {
@@ -110,31 +110,55 @@ import {SHOW_MORE_NAV} from 'types'
            ...mapGetters([
                'showBar',
                'showMoreNav'
-           ])
+           ]),
+           ...mapState({
+            show : state => state.empower.show,
+            password : state => state.empower.password,
+            type : state => state.empower.type,
+            })
         },
         methods: {
           ...mapMutations([
-              SHOW_MORE_NAV
+              SHOW_MORE_NAV,
+              EMPOWER_SET_SHOW,
+              EMPOWER_SET_PASSWORD,
+              EMPOWER_SET_USER,
           ]),
 
           toThePath(path) {
+              switch(path){
+                  case 'openBox':
+                  this[EMPOWER_SET_USER]('');
+                  this[EMPOWER_SET_PASSWORD]('');  
+                  this[EMPOWER_SET_SHOW](true);
+                  break;
+                  default:
+                    this.$router.push({name:path});
+              }
               this.SHOW_MORE_NAV();
-              this.$router.push({name:path});
           }
         },
         components: {
             FooterBar,
             FooterTip
+        },
+        watch:{
+            show(newVal){
+                if(!newVal && this.password){
+                    console.log('开钱')
+                }
+            }
         }
     }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
     .index-page {
         width: 100vw;
         height: 100vh;
         .small-height {
-                height: calc(100% - 8.9vh);
+            height: 100vh;
+            overflow: hidden;
             }
         .large-height {
             height: 100%;
@@ -151,23 +175,18 @@ import {SHOW_MORE_NAV} from 'types'
                 box-sizing: border-box;
                 height: 6.3vh;
                 background-color: $themeColor;
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                z-index: 999;
                 padding: 0;
-
                 .more-nav {
                     width: calc(12.8vw * 5);
                     height: calc(6.3vh * 4);
                     @include bg_color($themeColor);
                     position: absolute;
-                    top: calc(-6.3vh * 4 - 1px);
+                    bottom: calc( 8.9vh + 1px);
                     right: 15.4vw;
                     display: flex;
                     justify-content: flex-start;
                     flex-wrap: wrap;
-
+                    z-index: 999;
                     .more-nav-item {
                         flex: 0 0 20%;
                         width: 20%;

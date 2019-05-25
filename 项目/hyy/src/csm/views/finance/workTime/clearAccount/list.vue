@@ -8,12 +8,12 @@
     </el-breadcrumb> -->
     <div class="searchAdition">
       <el-form :inline="true" class="demo-form-inline search-form" size="small" label-width="100px">
-        <el-form-item label="收银员:">
-          <el-input v-model="searchAdition.workerName" @focus="dialogTableVisible1 = true"></el-input>
-          
+        <el-form-item label="影院选择:">
+          <el-input v-model="cinemaName" @focus="openCinema()"></el-input>
         </el-form-item>
         <el-form-item label="制单人:">
-          <el-input v-model="searchAdition.createUserName" @focus="dialogTableVisible2 = true"></el-input>
+          <!-- <el-input v-model="searchAdition.createUserName" @focus="dialogTableVisible2 = true"></el-input> -->
+          <el-input v-model="searchAdition.createUserName" @focus="openDialog" ref="inputCreate"></el-input>
         <!-- 弹出层2 -->
           <el-dialog title="查找制单人" :visible.sync="dialogTableVisible2">
             <el-form :model="searchAdition" label-width="60px" :inline="true">
@@ -52,6 +52,9 @@
               end-placeholder="yyyy-MM-dd" :picker-options="pickerOptions" @change="chooseTime"></el-date-picker>
           </div>
         </el-form-item>
+         <el-form-item label="收银员:">
+          <el-input v-model="searchAdition.workerName" @focus="dialogTableVisible1 = true"></el-input>
+        </el-form-item>
         <el-form-item label="单据状态:">
           <el-select v-model="searchAdition.status">
             <el-option label="全部" value>全部</el-option>
@@ -77,18 +80,19 @@
           <el-table-column prop="workerName" label="收银员"></el-table-column>
           <el-table-column prop="createUserName" label="制单人" width="150" show-overflow-tooltip></el-table-column>
           <el-table-column prop="createTime" label="制作时间" width="200" show-overflow-tooltip></el-table-column>
+          <el-table-column prop="workEndTime" label="班次结束时间" width="200" show-overflow-tooltip></el-table-column> 
           <el-table-column prop="preAmount" label="备用金领用"  width="100" show-overflow-tooltip></el-table-column>
           <el-table-column prop="thingCount" label="卡劵领用" show-overflow-tooltip></el-table-column>
           <el-table-column prop="status" label="状态" show-overflow-tooltip></el-table-column>
           <el-table-column prop="workStartTime" label="班次起始时间" width="200" show-overflow-tooltip></el-table-column>
           <el-table-column prop="updateUserName" label="清机人" width="150" show-overflow-tooltip></el-table-column>
-          <el-table-column label="操作"  width="260"  fixed="right">
+          <el-table-column label="操作"  width="300"  fixed="right">
             <template slot-scope="scope">
-              <span class="icon-color" @click="detail(scope.row)">查看</span>
-              <span class="icon-color" @click="adjust(scope.row)" v-show="scope.row.detail">追加领用</span>
-              <span class="icon-color" @click="workClose(scope.row)" v-show="scope.row.adjust">清机结算</span>
-              <span class="icon-color" @click="cinema_edit(scope.row.uid)">导出</span>
-              <span class="icon-color" @click="wall_edit(scope.row.uid)">打印</span>
+              <el-button size='small' type="text" @click="detail(scope.row)">查看</el-button>
+              <el-button size='small' type="text" @click="adjust(scope.row)" v-show="scope.row.detail">追加领用</el-button>
+              <el-button size='small' type="text" @click="workClose(scope.row)" v-show="scope.row.adjust">清机结算</el-button>
+              <el-button size='small' type="text" @click="cinema_edit(scope.row.uid)">导出</el-button>
+              <el-button size='small' type="text" @click="wall_edit(scope.row.uid)">打印</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -134,6 +138,7 @@
             </div>
           </el-dialog>
           <singeCinema ref="singeCinema" @callback="callback" @firstCinema="firstCinema"></singeCinema>
+          <mydialog ref="searchDialog" @callback="chooseWorker" @searchWorker="searchWorker"></mydialog>
   </div>
 </template>
 <script type="text/javascript">
@@ -149,9 +154,11 @@
     return year + "-" + month + "-" + date;  
   } 
   import singeCinema from '../publicModule/singeCinema'
+  import mydialog from "../public/searchDialog";
   export default {
     components: {
-      singeCinema
+      singeCinema,
+      mydialog
     },
     data() {
       return {
@@ -191,19 +198,31 @@
         gridData2: [],
         templateRadio: '',
         createName: '',
+        cinemaName:'',  // 影院选择的名字  可以通过这个判断是否选择了影院
+        stopRepeated:true
       };
     },
     methods: {
       // 上班登记
       account_add() {
-        this.$router.push('add')
+        !this.cinemaName ?  this.$alert('请先选择影院', '提示', {
+          confirmButtonText: '确定',
+        }):  this.$router.push({
+          path:'add',
+          query:{
+            cinemaUid:this.searchAdition.cinemaUid
+             //this.searchAdition.cinemaUid = val.cinemaUID
+          }
+        })
+       
       },
       detail(row){
         this.$router.push({
           path: "detail",
           query: {
             uid: row.uid,
-            timeCode:row.timeCode
+            timeCode:row.timeCode,
+            cinemaUid:this.searchAdition.cinemaUid
           }
         });
       },
@@ -215,7 +234,8 @@
             timeCode:row.timeCode,
             workerName:row.workerName,
             workStartTime:row.workStartTime,
-            uid: row.uid
+            uid: row.uid,
+            cinemaUid:this.searchAdition.cinemaUid
           }
         });
       },
@@ -237,7 +257,9 @@
       },
       //查询
       search() {
-        this.getList();
+        !this.cinemaName ?  this.$alert('请先选择影院', '提示', {
+          confirmButtonText: '确定',
+        }): this.getList();
       },
        // 清除时间
       chooseTime(val) {
@@ -293,6 +315,26 @@
         console.log(this.current);
         this.getList();
       },
+      openDialog(event){
+        event.srcElement.blur()
+        if(!this.cinemaName){
+          this.$alert('请先选择影院', '提示', {
+            confirmButtonText: '确定',
+          })
+        }else{
+          this.getWorker()
+          this.$refs.searchDialog.dialogTableVisible = true;
+          this.$refs.searchDialog.title = "查找制单人";
+          this.$refs.searchDialog.searchDialog = "worker";
+        }
+      },
+      chooseWorker(obj){
+        console.log(obj)
+        this.searchAdition.createUserName = obj.userName
+      },
+      searchWorker(current,userName,userAccount){
+        this.getWorker(current,userName,userAccount)
+      },
       /**
        * 弹出层函数
        *  */
@@ -328,27 +370,26 @@
       },
       // 确定选择
       chooseUser2() {
-        
           this.searchAdition.createUserName = this.search2.createName;
           this.dialogTableVisible2 = false;
           this.templateRadio = Number
           this.search2.createName = ''
       },
       // 获取收银员
-      getWorker(){
+      getWorker(current,userName,userAccount){
         let limit = {
-          current: this.current,
-          size: this.pageSize,
-          userName:this.search1.userName,
-          userAccount:this.search1.userAccount
+          current,
+          // size: this.pageSize,
+          size:1,
+          userName,
+          userAccount,
+          cinemaUid:this.searchAdition.cinemaUid
         };
         this.$csmList.getWorker(Object.assign({}, limit))
           .then(data => {
             if(data && data.code === 200){
-              this.gridData1 = []
-              this.gridData1.push(...data.data.records)
-              this.dialog.total = data.data.total;
-              console.log(this.gridData1)
+              this.$refs.searchDialog.gridData = data.data.records
+              this.$refs.searchDialog.pageData = data.data
             }
           })
       },
@@ -369,7 +410,7 @@
           })
       },
       // 打开影院
-       openCinema(){
+      openCinema(){
         this.$refs.singeCinema.opendialog = true;
       },
       callback(val){
@@ -378,9 +419,9 @@
         this.searchAdition.cinemaUid = val.cinemaUID
       },
       firstCinema(val){
-        // this.$set(this.searchAdition,"cinemaUID",val.cinemaUID)
-        this.searchAdition.cinemaUid = val.cinemaUID;
-        this.searchAdition.cinemaUid &&  this.getList();
+      //   // this.$set(this.searchAdition,"cinemaUID",val.cinemaUID)
+      //   this.searchAdition.cinemaUid = val.cinemaUID;
+      //   this.searchAdition.cinemaUid &&  this.getList();
       }
     },
     watch:{
@@ -388,7 +429,7 @@
         this.templateRadio = Number
         this.search1.userName = ''
         this.search1.userAccount = ''
-        this.getWorker()
+        // this.getWorker()
       },
      
       dialogTableVisible2(){
@@ -399,9 +440,7 @@
     
     },
     created() {
-      this.getList();
-      this.getWorker();
-      this.getCreater();
+      this.cinemaName && this.getList();
     }
   };
 </script>

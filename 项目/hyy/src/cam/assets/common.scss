@@ -1,8 +1,14 @@
 .pr30 {
     padding-right: 30px;
 }
+.mt10{
+    margin-top:10px;
+}
 .mt20{
     margin-top:20px;
+}
+.mt30{
+    margin-top:30px;
 }
 .right {
     float: right;
@@ -30,7 +36,12 @@
 .text-blue {
     color: #3b74ff;
 }
-
+.text-green{
+    color:green
+}
+.text-red{
+    color:#FE6081
+}
 .flex {
     display: flex;
     justify-content: space-between;

@@ -3,12 +3,13 @@
 
         <singleCinema
                 ref="frameSingleCinema"
-                :framedialogVisible="singleCinemaVisible"
+                :framedialogVisible.sync="singleCinemaVisible"
                 :type="singleCinemaType"
-                :innerData="innerData">
+                :innerData="innerData"
+                @callBackSingle="callBackSingle">
             <div slot="footerId">
                 <el-button @click="singleCinemaVisible = false">取 消</el-button>
-                <el-button type="primary" @click="singleCinemaVisible = false">确 定</el-button>
+                <el-button type="primary" @click="$refs.frameSingleCinema.confirmData(), singleCinemaVisible = false">确 定</el-button>
             </div>
         </singleCinema>
 
@@ -25,8 +26,7 @@
 
         <el-form v-show="showType === 'table'" :inline="true" :model="formData" class="demo-form-inline search-form" size="small">
             <el-form-item>
-                <el-button type="primary" @click="singleCinemaVisible = true">确 定</el-button>
-
+                <el-button @click="singleCinemaVisible = true, $refs.frameSingleCinema.listAuthCommCinemas()">{{ cinemaName }}</el-button>
             </el-form-item>
             <el-form-item label="场次日期：">
                 <el-date-picker
@@ -163,7 +163,7 @@
                         show-overflow-tooltip>
                     <template slot-scope="scope">
                         <el-popover trigger="hover" placement="bottom" v-if="scope.row.baseTicketList && scope.row.baseTicketList.length > 0">
-                            <div style="padding: 10px" v-for="item in scope.row.baseTicketList">
+                            <div style="padding: 10px" v-for="(item, index) in scope.row.baseTicketList" :key="index">
                                 <span style="display: inline-block; min-width: 70px">{{item.ticketName}}</span>
                                 <span>￥{{item.price}}</span>
                             </div>
@@ -176,7 +176,7 @@
                         show-overflow-tooltip>
                     <template slot-scope="scope">
                         <el-popover trigger="hover" placement="bottom" v-if="scope.row.favTicketList && scope.row.favTicketList.length > 0">
-                            <div style="padding: 10px" v-for="item in scope.row.favTicketList">
+                            <div style="padding: 10px" v-for="(item, index) in scope.row.favTicketList" :key="index">
                                 <span style="display: inline-block; min-width: 70px">{{item.channelName}}</span>
                                 <span>￥{{item.price}}</span>
                             </div>
@@ -266,6 +266,7 @@
                 innerData: {
                     id: '',
                 },
+                cinemaName: '',
 
                 checkAll: false,
                 isIndeterminate: false,
@@ -336,6 +337,21 @@
         },
         methods: {
 
+            callBackSingle(data) {
+                console.log(data, '-----> data')
+                this.cinemaName = data.data.name
+                this.formData.cinemaUid = data.data.id
+                this.innerData.id = data.data.id
+
+                this.search()
+
+                this.baseParam = {
+                    planDate: this.baseParam.planDate,
+                    uidCinema: data.data.id
+                }
+
+            },
+
             moviePlanDateChange(val) {
                 this.baseParam = {
                     planDate: val,
@@ -361,7 +377,7 @@
                 console.log(uid)
                 this.$router.push({
                     path: '/ticket/moviePlan/detail',
-                    query: { mode: 'view', uid }
+                    query: { mode: 'view', uid, referer: encodeURIComponent(this.$route.fullPath) }
                 })
             },
 
@@ -517,7 +533,9 @@
                 console.log(res)
                 if(res.code === 200) {
                     this.formData.cinemaUid = res.data.cinemaUid
-                    this.innerData.id = res.data.cinemaUid
+                    this.innerData.id = Number(res.data.cinemaUid)
+                    this.cinemaName = res.data.cinemaName
+
                     this.search()
                     this.getByName()
 

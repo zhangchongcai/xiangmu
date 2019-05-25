@@ -1,4 +1,5 @@
 <template>
+<div>
     <div class="footer-bar">
          <img class="items logo" src="/static/imgs/logo.png" alt="ORISTAR">
          <span class="items">
@@ -14,7 +15,7 @@
                  <i class="default-style iconfont iconmaipin"></i>
                  <span class="default-style item-name">卖品</span>
              </li>
-             <li class="action-items">
+             <li class="action-items"  @click="$router.push({name: 'memberHome'})">
                  <i class="default-style iconfont iconhuiyuan"></i>
                  <span class="default-style item-name">会员</span>
              </li>
@@ -38,17 +39,39 @@
                  <span class="default-style item-name">设置</span>
              </li>
              <li class="action-items">
-                 <i class="default-style iconfont icontuichu" @click="quit"></i>
+                 <i class="default-style iconfont icontuichu" @click="dialogVisible=true"></i>
              </li>
          </ul>
+         
     </div>
+    <el-dialog
+            title="提示"
+            :visible.sync="dialogVisible"
+            width="30%"
+            >
+            <div class="outInfo">
+                <i class="iconfont icontishigantanhao"></i>
+                <span>确认注销当前用户？</span>
+            </div>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="dialogVisible = false">取 消</el-button>
+                <el-button type="primary" @click="quit">确 定</el-button>
+            </span>
+        </el-dialog>
+</div>
 </template>
 
 <script>
 import {mapMutations} from 'vuex'
 import {SHOW_MORE_NAV} from 'types'
+import { userLogout } from 'http/apis'
 import util from "../../../http/app";
 export default {
+    data(){
+        return{
+            dialogVisible:false,
+        }
+    },
     methods: {
         ...mapMutations([
             SHOW_MORE_NAV
@@ -66,15 +89,21 @@ export default {
             this.SHOW_MORE_NAV()
         },
         //退出窗口
-        quit(){
-            util.quit()  
+        async quit(){
+            const data = await userLogout({})
+            if(data.code !=200) return this.$message.error(data.msg);
+            localStorage.removeItem('token')
+            this.dialogVisible = false
+            this.$message.success(data.msg);
+            this.$router.replace({name:'login'})
+            // util.quit()  
             // console.log("111")
         }
     }
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scope>
     .footer-bar {
         width: 100vw;
         height: 6.3vh;
@@ -126,5 +155,15 @@ export default {
                 }
             }
         }
+        
     }
+    .outInfo{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+            i{
+                color:#436AC8;
+                font-size: 27px;
+            }
+        }
 </style>

@@ -350,6 +350,7 @@ export default {
 };
 </script>
 
+
 <style scoped>
 .datacenter-query-ul li {
   margin-top: 0px;
@@ -396,13 +397,9 @@ export default {
   padding-top: 20px;
 }
 .block {
-  /* position: absolute;
-  bottom: 68px;
-  left: 50%;
-  margin-left: -105px; */
   display: flex;
   justify-content: center;
-  align-items:center;
+  align-items: center;
   margin-bottom: 53px;
 }
 .el-pagination {

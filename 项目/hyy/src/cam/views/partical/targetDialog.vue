@@ -42,13 +42,20 @@
           </div>
         </div>
         <div class="selected">
-          <div class="label">
+          <div class="label flex">
             已选择({{selectList.length}} )
+            <div class="tip">拖拽可进行排序</div>
           </div>
           <div class="detail">
-              <div v-for="(item,index) in selectList" :key="index" class="item">
-                  {{item.name}}
-              </div>
+             <draggable v-model="selectList" group="people" @start="drag=true" @end="drag=false">
+               <transition-group>
+                 <div class="selected-item flex" v-for="(item,index) in selectList" :key="index">
+                   <div class="item-name">{{item.name}}</div>
+                   <div>  
+                     <i class="iconfont icon-danchuang-tuodongpaixu"></i></div>
+                  </div>
+               </transition-group>
+            </draggable>
           </div>
         </div>
       </div>
@@ -60,6 +67,7 @@
   </div>
 </template>
 <script>
+import draggable from 'vuedraggable'
 export default {
   props:['userId'],
   data() {
@@ -78,9 +86,13 @@ export default {
   },
   methods: {
     sure(){
-        let ids = this.selectList.map(item=>{
-          return item.code
-        })
+      if(this.selectList.length <1){
+        this.$message({type:'warning',message:'至少选择一个指标'})
+        return 
+      }
+      let ids = this.selectList.map(item=>{
+        return item.code
+      })
        this.saveTarget(ids)
     },
     // 指标设置/保存
@@ -155,15 +167,25 @@ export default {
   .selected {
     padding: 0 14px;
     width: 50%;
-    .item{
+    .label{
+      font-size:12px;
+      .tip{
+        font-size:12px;
+        color:'#9b9b9b'
+      }
+    }
+    .selected-item{
       cursor:pointer;
       padding:4px;
-      font-size:8px;
       cursor:pointer;
       &:hover{
           background:  #F5F5F5
+      } 
+      .item-name{
+        font-size:12px;
       }
     }
+
   }
   .detail {
     padding:16px 0;

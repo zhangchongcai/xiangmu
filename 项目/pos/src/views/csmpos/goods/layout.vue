@@ -4,7 +4,7 @@
             <div class="nav-warp">
                 <div class="carousel-container"  ref="navScroll" >
                     <ul class="carousel" ref="carousel">
-                        <li v-for="(item,ind) in data" :key="ind" :class='["carousel-item",ind==oneMenu? "oneMenue_activ" : ""]' @click="handlerOnemenu(ind)">
+                        <li v-for="(item,ind) in data" :key="ind" :class='["carousel-item",ind==oneMenu? "oneMenue_activ" : ""]' @click="handlerOnemenu(ind,item)">
                             {{item.name}}
                             <span class="el-icon-arrow-down el-icon--right" v-show="ind==oneMenu && data[oneMenu].children.length"></span>   
                         </li>
@@ -17,9 +17,9 @@
             </div>
             <div class="two-nav" v-if="towMenuShow && data[oneMenu].children.length" >
                 <div class="nav-warp">
-                    <div class="carousel-container">
+                    <div class="carousel-container" ref="twoNavScroll">
                         <ul class="carousel" ref="carouselSed">
-                            <li v-for="(item,ind) in data[oneMenu].children" :key="ind" :class='["carousel-item",ind==towMenuSele? "tow-active" : ""]' @click="handlerTwomenu(ind)">
+                            <li v-for="(item,ind) in data[oneMenu].children" :key="ind" :class='["carousel-item",ind==towMenuSele? "tow-active" : ""]' @click="handlerTwomenu(ind,item)">
                                 <span class="el-dropdown-link" v-if="item.children.length == 0">
                                     {{item.name}}<i class="el-icon-arrow-down el-icon--right" v-show="ind==towMenuSele && item.children.length"></i>
                                 </span>
@@ -31,15 +31,15 @@
                                         <el-dropdown-item  
                                         v-for="(subItem,subIndex) in item.children" 
                                         :key="subIndex"
-                                        :command="subItem.name" style="font-size:1.2vw">{{subItem.name}}</el-dropdown-item>
+                                        :command="subItem" style="font-size:1.2vw">{{subItem.name}}</el-dropdown-item>
                                     </el-dropdown-menu>
                                 </el-dropdown>
                             </li>
                         </ul>
                     </div>
                     <div class="btn">
-                        <el-button plain class="el-icon-arrow-left nav-button"   :disabled="sedLeftDisabled" @click="handleCarouselSed(true)"></el-button>
-                        <el-button plain class="el-icon-arrow-right nav-button"  :disabled="sedRightDisabled"  @click="handleCarouselSed(false)"></el-button>
+                        <el-button plain class="el-icon-arrow-left nav-button"   :disabled="twoScroll && twoScroll.x == 0" @click="handleCarouselSed(true)"></el-button>
+                        <el-button plain class="el-icon-arrow-right nav-button"  :disabled="twoScroll && twoScroll.x == twoScroll.maxScrollX"  @click="handleCarouselSed(false)"></el-button>
                     </div>
                 </div>
             </div>
@@ -49,9 +49,12 @@
                 <div class="breadcrumb">
                     <div>
                         <el-breadcrumb separator="/">
-                            <el-breadcrumb-item >套餐</el-breadcrumb-item>
-                            <el-breadcrumb-item>三级套餐</el-breadcrumb-item>
-                            <el-breadcrumb-item ><span class="last-breadcrumb">三口之家套餐</span> </el-breadcrumb-item>
+                            <el-breadcrumb-item  
+                            v-for="(item,index) in breadcrumbArr"
+                            :key="index" >
+                            <span :class="index == breadcrumbArr.length-1 ? 'last-breadcrumb':''">{{item}}</span> 
+                            </el-breadcrumb-item>
+
                         </el-breadcrumb>
                     </div>
                     <div class="modul-warp">
@@ -64,28 +67,30 @@
                 <ul class="good-list">
                     <li :class='["good-item",ind==isSelectGoods?"border":""]'
                     :style="goodListsale?'width:15.7vw':''" 
-                    @click="SelectIntroduce($event,ind)"
+                    @click="addCart($event,ind)"
                     v-for="(item,ind) in listData" 
                     ref="goodsItem"
                     :key="ind" 
                     >
                         <div class="good-img" v-show="!isFont" >
-                            <img :src="item.picUrl" alt="">
+                            <img :src="item.imgUrl" alt="">
                         </div>
                         <div :class='["introduce",ind==isSelectGoods?"isSelectGoods":""]' :style="!isFont?'border-top:none':''">
-                            <p class>{{item.name}}</p>
-                            <p class>¥{{item.price}}</p>
+                            <p class>{{[1,2].includes(item.merType)?item.skuSellEntity.name:item.name}}</p>
+                            <p class>¥{{[1,2].includes(item.merType)?item.skuSellEntity.price:item.price}}</p>
                         </div>
                     </li>
                 </ul>
 
                 <div class="footer">
-                    <div class="pagation">
-                        <div href="javascriopt::void(0)" @click="pagination('pre')" class="pagebtn iconfont iconzuojiantouda"></div>
-                        <span>{{currentPage}}/{{goodsList.length/8}}</span>
-                        <div href="javascript::void(0)" @click="pagination('next')" class="pagebtn iconfont iconyoujiantouda"></div>
+                    <div class="pagation" >
+                        <template v-if="listData.length">
+                            <el-button size="medium" :disabled="currentPage==1" @click="pagination('pre')"  class="pagebtn"><i class="iconfont iconzuojiantouda"></i> </el-button>
+                            <span>{{currentPage}}/{{Math.ceil(totalNum/pageSize)}}</span>
+                            <el-button size="medium" :disabled="currentPage==Math.ceil(totalNum/pageSize)"  @click="pagination('next')" class="pagebtn"><i class="iconfont iconyoujiantouda"></i> </el-button>
+                        </template>
                     </div>
-                    <span class="totall">总计：{{goodsList.length}}件商品</span>
+                    <span class="totall">总计：{{totalNum}}件商品</span>
                 </div>
             </div>
             <!-- 购物车 -->
@@ -116,9 +121,9 @@ import ReplaceGoods from 'src/components/dialog/ReplaceGoods'
 import KeyNumberBoard from 'components/dialog/CartNumberKeyBoard'
 import SettlementWindow from 'components/settlement/SettlementWindow'
 import BScroll from 'better-scroll'
-import {mapGetters} from 'vuex'
-import {SHOW_MORE_TICKETS} from 'types'
-import { productExhibitionClassIfy, productExhibitionHomeDefault,} from 'http/apis'
+import {mapGetters,mapMutations} from 'vuex'
+import {SHOW_MORE_TICKETS,GET_CART_BILLCODE,CART_SET_GOODS_DATA,GET_KIND_PRICE} from 'types'
+import { productExhibitionClassIfy, productExhibitionHomeDefault,addCart,initCart,findCart} from 'http/apis'
 const clickoutside = {
     // 初始化指令
     bind(el, binding, vnode) {
@@ -177,118 +182,141 @@ export default {
 
             sedLeftDisabled: false,
             sedRightDisabled: true,
-            //商品
-            goodsList:[
-                { name:'三人乐享套餐',price:'22.00'}, { name:'去微软套餐',price:'12.00'},
-                { name:'绕太阳套餐',price:'24.00'}, { name:'儿童套餐',price:'78.00'},
-                { name:'三人乐享套餐',price:'22.00'}, { name:'去微软套餐',price:'12.00'},
-                { name:'规范的套餐',price:'42.00'}, { name:'体验套餐',price:'43.00'},
-                { name:'规范的套餐',price:'42.00'}, { name:'体验套餐',price:'43.00'},
-                { name:'阿道夫套餐',price:'12.00'}, { name:'法国和套餐',price:'65.00'},
-                { name:'三人乐享套餐',price:'22.00'}, { name:'去微软套餐',price:'12.00'},
-                { name:'阿道夫套餐',price:'12.00'}, { name:'法国和套餐',price:'65.00'}, 
-                { name:'阿道夫套餐',price:'12.00'}, { name:'法国和套餐',price:'65.00'},
-                { name:'规范的套餐',price:'42.00'}, { name:'体验套餐',price:'43.00'},
-                { name:'绕太阳套餐',price:'24.00'}, { name:'儿童套餐',price:'78.00'},
-                { name:'绕太阳套餐',price:'24.00'}, { name:'儿童套餐',price:'78.00'},
-            ],
-            //分页
-            pagationGoodslist:[
-                { name:'三人乐享套餐',price:'22.00'}, { name:'去微软套餐',price:'12.00'},
-                { name:'阿道夫套餐',price:'12.00'}, { name:'法国和套餐',price:'65.00'},
-                { name:'规范的套餐',price:'42.00'}, { name:'体验套餐',price:'43.00'},
-                { name:'绕太阳套餐',price:'24.00'}, { name:'儿童套餐',price:'78.00'},
-            ],
+
             listData:[],
             currentPage:1,
-            pageSize:8, //默认八个
             isSelectGoods: 0,
             //换票类
             dialogList:[],
             data:[],
             scroll:null,
-            
+            twoScroll:null,
+            navUid:'',
+            breadcrumbArr:['全部'],
+            totalNum:0,
         };
     },
     computed: {
         ...mapGetters([
-            'changingTicket'
-        ])
+            'changingTicket',
+            'billCode',
+            'channelCode',
+            'cinemaName',
+            'cinemaCode',
+            'cinemaUid',
+            'channelCode',
+            'terminalId',
+        ]),
+        pageSize(){
+            if(this.isFont && this.goodListsale) return 6*7
+            if(this.isFont && !this.goodListsale) return 4*7
+            if(!this.isFont && this.goodListsale) return 6*2
+            if(!this.isFont && !this.goodListsale) return 4*2
+        }
     },
     methods: {
+        ...mapMutations({
+            GET_CART_BILLCODE,
+            CART_SET_GOODS_DATA
+        }),
         navChange(type){
-            console.log(window.innerWidth,this.scroll)
             if(type){
                 this.scroll.scrollTo(this.scroll.x+window.innerWidth*(11.7/100),0)
-                console.log(this.scroll.x)
             }else{
                 this.scroll.scrollTo(this.scroll.x + -(window.innerWidth*(11.7/100)),0)
-                console.log(this.scroll.x)
             }
         },
-        handleCarousel(isLeft) {
-            let current = this.$refs.carousel.style.transform.replace(/[^0-9\-.,]/g,"");
-            // let width = this.$refs.carousel.childNodes[0].offsetWidth + 1 * 5;
-            console.log(current,'当前');
-            let width =Number(11.7) ; //11.3 + 0.4
-            let itemNum = this.$refs.carousel.childNodes.length;
-            if (isLeft) {
-                // console.log('对比',((itemNum - 8) * -width).toFixed(1),-current)
-                // 左
-                if (((itemNum - 8) * -width).toFixed(1) == current || itemNum < 7) {
-                    this.leftDisabled = true;
-                }
-                if ((itemNum - 7) * width == -current) {
-                    this.rightDisabled = true;
-                }
-                    // this.rightDisabled = false;
-                    this.$refs.carousel.style.transform = `translateX(${Number(current) - width}vw)`;
-            } else {
-                // 右
-                if (-current <= width) {
-                    this.rightDisabled = true;
-                }
-                if (current >= 0) {
-                    return;
-                }
-                this.leftDisabled = false;
-                this.$refs.carousel.style.transform = `translateX(${Number(current) + width}vw)`;
+        async initCart(){
+            const data = await initCart({
+                // channelCode:this.channelCode, //渠道编码	,
+                // channelName:'132',//渠道名称
+                // channelUid:'132',//渠道uid
+                // cinemaCode:this.cinemaCode,//影院编码	
+                // cinemaName:this.cinemaName,//影院名称
+                // cinemaUid:'123456',//影院uid
+                netSaleFlag:'0',
+                remark:'一些说明',
+            })
+            if(data.code == 200){
+                this[GET_CART_BILLCODE](data.data)
             }
+        },
+        async addCart(e,ind){
+            if(!this.billCode){
+                await this.initCart()
+            }
+            this.SelectIntroduce(e,ind)
         },
         handleCarouselSed(isLeft) {
-            let current = this.$refs.carouselSed.style.transform.replace(/[^0-9\-.,]/g,"");
-            // console.log(current,'当前');
-            let width =Number(13.3);
-            let itemNum = this.$refs.carouselSed.childNodes.length;
-            if (isLeft) {
-                // 左
-                if (((itemNum - 8) * width.toFixed(1)) == -current ) {
-                    this.sedLeftDisabled = true;
-                }
-                if ((itemNum - 7) * width ==-current || itemNum < 7) {
-                    this.rightDisabled = true;
-                    return;
-                }
-                this.sedRightDisabled = false;
-                this.$refs.carouselSed.style.transform = `translateX(${Number(current) - width}vw)`;
-            } else {
-                // 右
-                if (-current <= width) {
-                    this.sedRightDisabled = true;
-                }
-                if (current >= 0) {
-                    return;
-                }
-                this.sedLeftDisabled = false;
-                this.$refs.carouselSed.style.transform = `translateX(${Number(current) + width}vw)`;
+            // let width =Number(13.3);
+            if(isLeft){
+                this.twoScroll.scrollTo(this.twoScroll.x+window.innerWidth*(13.3/100),0)
+            }else{
+                this.twoScroll.scrollTo(this.twoScroll.x + -(window.innerWidth*(13.3/100)),0)
             }
         },
         //图片、文字模式
         modulChange(modul) {
             this.isFont = modul;
-            console.log(this.isFont);
         },
-        SelectIntroduce(e,ind) {
+        async SelectIntroduce(e,ind) {
+            console.log(this.listData[ind])
+            const item = this.listData[ind];
+            let obj = {};
+            
+            obj.saleNum = 1;
+
+            if([1,2].includes(item.merType)){
+                obj.salePrice = item.skuSellEntity.price;
+                obj.originalPrice = item.skuSellEntity.price;
+            }else{
+                obj.salePrice = item.price;
+                obj.originalPrice = item.price;
+            }
+            obj.saleMer = {};
+            
+            obj.saleMer.brandUid = item.brandUid;
+            obj.saleMer.merCode = item.code;
+            obj.saleMer.merUid = item.merUid;
+            obj.saleMer.merSpec = item.merSpec;
+            obj.saleMer.merType = item.merType;
+            obj.saleMer.merName = item.name;
+            obj.saleMer.unitUid = item.unitUid;
+            if(item.merType != 4){
+                obj.saleMer.skuCode = item.skuSellEntity.code;
+                obj.saleMer.skuUid = item.skuSellEntity.skuUid;
+            }
+            if(item.merType == 2){ //合成品
+                obj.saleMer.merItemList = [];
+                item.compoundList.map((mapItem)=>{
+                    obj.saleMer.merItemList.push(this.specialGoodMap(mapItem,item.merUid));
+                })
+            }
+            if(item.merType == 4){ //套餐
+                obj.saleMer.merItemList = [];
+                for(let i = 0; i< item.cinemaSetMealItemList.length;i++){
+                    let mapItem = item.cinemaSetMealItemList[i]
+                    obj.saleMer.merItemList.push(this.specialGoodMap(mapItem,item.merUid,item.merType));
+                    if(mapItem.cinemaMakeItemEntityList){
+                        mapItem.cinemaMakeItemEntityList.map((map)=>{
+                            map.parentSkuUid = mapItem.skuSellEntity.skuUid
+                            obj.saleMer.merItemList.push(this.specialGoodMap(map,mapItem.merUid,)); 
+                        })
+                    }
+                }
+            }
+            const data = await addCart({
+                billCode:this.billCode,
+                merGoodsList:[obj],
+                opType:'0'
+            })
+            if(data.code != 200) return this.$message.error(data.msg);
+            const cartData = await  findCart({
+                billCode:this.billCode,
+            })
+            if(cartData.code != 200) return this.$message.error(cartData.msg);
+            this[CART_SET_GOODS_DATA](cartData.data.merGoodsList)
+            this[GET_KIND_PRICE](cartData.data)
             this.isSelectGoods = ind;
             let span = document.createElement("span");
             span.className = "iconfont iconhuiyuan"
@@ -299,20 +327,10 @@ export default {
             span.style.zIndex=99
             document.body.appendChild(span)
             let origin = document.querySelector("#origin");
-            console.log(origin)
             var x1 = span.getBoundingClientRect().left;
             var y1 = span.getBoundingClientRect().top;
-            console.log(x1,y1)
             var x2 = origin.getBoundingClientRect().left;
             var y2 = origin.getBoundingClientRect().top;
-                console.log(x2,y2)
-            //平移抛物经过原点，可以得到c==0
-            //已知a
-            var a = 0.002;
-            // if(a)
-            var b = (y2-y1 - a*(x2-x1)*(x2-x1))/(x2-x1);
-            var timer = null;
-            var count = 0;
             let maxX = x2 - x1 ;
             let maxY = y2 - y1 ;
             span.style.left = x1 + maxX + "px";
@@ -320,40 +338,59 @@ export default {
             setTimeout(() => {
                 document.body.removeChild(span)
             },700)
-            // timer = setInterval( _=> {
-            //     var xx = span.getBoundingClientRect().left;
-            //     var yy = span.getBoundingClientRect().top;
-            //     // count+=10;
-            //     // var x = count;
-            //     // var y = a*x*x + b*x;
-            //     // span.style.left = x1 + x + "px";
-            //     // span.style.top = y1 + y + "px";
-            //     // span.style.transform = `translate3d(${x}px,${y}px,0)`
-            //     span.style.left = xx + (maxX/70) + "px";
-            //     span.style.top = yy + (maxY/70) + "px";
-            //     if(span.getBoundingClientRect().top >y2){
-            //         clearInterval(timer);
-            //         document.body.removeChild(span)
-            //     }
-            // },10)
-
-
+            
+        },
+        specialGoodMap(mapItem,parentMerUid,type){//组合 合成品，套餐对象.
+            let subObj = {};
+            subObj.brandUid = mapItem.brandUid;
+            subObj.merCode = mapItem.merCode;
+            subObj.merName = mapItem.merName;
+            subObj.merType = mapItem.merType;
+            subObj.origenalPrice = mapItem.price;
+            subObj.salePrice = mapItem.price;
+            subObj.skuCode = mapItem.skuCode;
+            subObj.skuUid =  type!=4 ? mapItem.skuUid:mapItem.skuSellEntity.skuUid;
+            subObj.unitUid = mapItem.unitUid;
+            subObj.parentMerUid = parentMerUid;
+            subObj.merSpec = mapItem.merSpec;
+            subObj.merUid = mapItem.merUid;
+            subObj.needCount = mapItem.merCount;
+            if(subObj.merType == 5){
+                subObj.needCount = mapItem.needCount;
+                subObj.rateAmount = mapItem.rateAmount;
+                subObj.parentSkuUid = mapItem.parentSkuUid;
+            }
+            return subObj;
         },
         //一级菜单
-        handlerOnemenu(ind) {
+        handlerOnemenu(ind,obj) {
             this.oneMenu = ind;
             this.towMenuShow = true;
+            this.$nextTick(()=>{
+                if(this.data[this.oneMenu].children.length){
+                    this.twoScroll = new BScroll(this.$refs.twoNavScroll,{
+                        scrollY:false,
+                        scrollX:true,
+                        click:true,
+                    })
+                }
+            })
+            this.navUid = obj.uid
+            this.breadcrumbArr = [obj.name]
         },
         //二级菜单
-        handlerTwomenu(ind) {
+        handlerTwomenu(ind,obj) {
             this.towMenuSele = ind;
+            this.navUid = obj.uid
+            this.breadcrumbArr = [this.breadcrumbArr[0],obj.name]
         }, 
         handlerOutside() {
             this.towMenuShow = false;
             this.towMenuSele = null;
         },
         handleDropdwon(command) {
-            console.log(command)
+            this.navUid = command.uid;
+            this.breadcrumbArr = [...this.breadcrumbArr,command.name]
         },
         //点击伸缩购物车
         handerDetail() {
@@ -375,15 +412,12 @@ export default {
         },
         //分页
         pagination(type) {
-            let len = this.goodsList.length;
-            if(len>this.pageSize){
-                if(type=='next'){
-                    this.currentPage = this.currentPage+1 > Math.ceil(len / this.pageSize) ? this.currentPage :++this.currentPage
-                    this.pagationGoodslist = this.goodsList.slice((this.currentPage-1)*this.pageSize,this.currentPage*this.pageSize)
-                }else if(type=='pre'){
-                    this.currentPage = this.currentPage-1 <= 0? this.currentPage : --this.currentPage
-                    this.pagationGoodslist = this.goodsList.slice(this.currentPage*this.pageSize,(this.currentPage+1)*this.pageSize)
-                }
+            if(type == 'next'){
+                this.currentPage++
+                this.getListData();
+            }else{
+                this.currentPage--;
+                this.getListData()
             }
         } ,
         selecDialogItem(item) {
@@ -402,14 +436,13 @@ export default {
                         children:[]
                     }
                     arr.push(dataObj)
-                    console.debug
                     this.changeData(obj.list[i].children,arr[i].children) 
                 }
             }
         },
         async getNavData(){
             const data = await productExhibitionClassIfy({
-                cinemaUid:123465,
+                cinemaUid:this.cinemaUid,
             }) 
 
             console.log(data);
@@ -417,11 +450,18 @@ export default {
         },
         async getListData(){
             const data = await productExhibitionHomeDefault({
-                cinemaUid:'123123',
+                cinemaUid:this.cinemaUid,
+                terminalCode:this.terminalId,
+                categoryUid:this.navUid,
+                pageSize:this.pageSize,
+                currentPage : this.currentPage,
             })
-            this.listData = data.data
+            this.listData = data.data.data;
+            this.currentPage = data.data.currentPage;
+            this.totalNum = data.data.totalNum;
             console.log(data)
-        }
+        },
+        
     },
     created() {
     },
@@ -433,9 +473,16 @@ export default {
             scrollX:true,
             click:true,
         })
-        console.log(this.scroll)
-    //   this.changeData(data.data.children)
-
+    },
+    watch:{
+        pageSize(){
+            this.currentPage = 1;
+            this.getListData();
+        },
+        navUid(){
+            this.currentPage = 1;
+            this.getListData()
+        }
     }
 };
 </script>
@@ -524,16 +571,15 @@ export default {
                 display: flex;
                 height: 100%;
                 .carousel-container {
-                    background: #ffffff;
-                    display: inline-block;
                     margin: 0 auto;
                     height: 100%;
-                    max-width:93.1vw;
                     overflow: hidden;
+                    flex:1;
                     .carousel {
                         display: inline-block;
                         white-space: nowrap;
                         transition: transform 1s;
+                        background: #fff;
                         .carousel-item {
                             position: relative;
                             width: 13.3vw;                            
@@ -712,10 +758,7 @@ export default {
                     margin: 0 auto;
                     .pagebtn{
                         width: 6.3vw;
-                        height: 3.4vh;
                         text-align: center;
-                        line-height: 3.4vh;
-                        cursor: pointer;
                         border: #3b74ff 1px solid;
                         border-radius: 2px;
                         font-size: $font-size12;

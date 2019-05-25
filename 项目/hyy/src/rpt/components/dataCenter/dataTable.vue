@@ -1,9 +1,9 @@
 <template>
-  <div class="datacenter-main" v-loading="tableLoading">
+  <div class="datacenter-main">
     <el-table
       class="table"
       stripe
-      row-key='id'
+      row-key="id"
       :border="true"
       :data="noGroupTableData"
       highlight-current-row
@@ -13,6 +13,8 @@
       ref="datatable"
       :header-cell-style="{background:'#E7EBFF',height:'38px !important'}"
       @scroll.native="handleScroll"
+      v-loading="tableLoading"
+      :style="{width: `${widthTotal}px`, height: `616px`}"
     >
       <template v-for="(item, index) in styleColArr">
         <el-table-column
@@ -28,10 +30,9 @@
       class="el-table-newbox"
       v-if="styleGroupArr.length > 0"
       ref="groupDatatable"
-      v-loading="tableLoading"
       style="height: 662px;"
     >
-      <table class="el-table" ref="tableWrapper">
+      <table class="el-table" ref="tableWrapper" v-loading="tableLoading">
         <thead ref="groupThead">
           <tr>
             <template v-for="(item,index) in styleColArr">
@@ -212,6 +213,7 @@
       :colData="colData"
       @sendSelectStatus="getSelectStatus"
       @sendDialog1Visible="getDialog1Visible"
+      @sendAdvancedData="getAdvancedData"
     ></table-dialog>
     <table-dialog1
       :dialogVisible1="dialogVisible1"
@@ -219,6 +221,7 @@
       :colKey="colKey"
       :tableName="tableName"
       :reportCode="reportCode"
+      :advancedData="advancedData"
       @showDetailDialog="showDetailDialog"
       @sendSelectStatus="getSelectStatus"
     ></table-dialog1>
@@ -285,9 +288,12 @@ export default {
       itemValue: "",
       count: 0,
       widthArr: [],
+      widthTotal: "",
       colspan: "",
       noGroupTableData: [],
-      noGroupStyleColArr: []
+      noGroupStyleColArr: [],
+      //高级筛选数据
+      advancedData: []
     };
   },
   components: {
@@ -299,7 +305,7 @@ export default {
       handler(newVal, oldVal) {
         newVal.forEach((element, index) => {
           element.id = index;
-        })
+        });
         this.noGroupTableData = JSON.parse(JSON.stringify(newVal));
       },
       deep: true
@@ -312,8 +318,7 @@ export default {
     }
   },
   methods: {
-    handleScroll() {
-    },
+    handleScroll() {},
     showChildTr: function(a, b, c, d) {
       datacenterBus.$emit("tableLoading");
       this.cValue1 = { queryColKey: b, queryColValue: c, operation: "=" };
@@ -464,7 +469,7 @@ export default {
         .showReportData(param)
         .then(data => {
           var tableData = JSON.parse(data.data);
-          datacenterBus.$emit("tableDataArrEventNoGroup", tableData, sortArray);
+          this.$emit("tableDataArrEventNoGroup", tableData, sortArray);
         })
         .catch(msg => {
           console.log(msg);
@@ -569,6 +574,15 @@ export default {
     getDialog1Visible() {
       this.dialogVisible1 = false;
     },
+    getAdvancedData(data) {
+      console.log(data);
+      data.forEach(element => {
+        if (element.isAdvanced === true) {
+          this.advancedData.push(element)
+        }
+      });
+      console.log(this.advancedData);
+    },
     //控制表格筛选查询按钮样式
     getSelectStatus(data) {
       this.selectStatus = data;
@@ -577,7 +591,7 @@ export default {
         searchBtn.style.color = "#3b74ff";
       }
       if (this.selectStatus.select === false) {
-        searchBtn.style.color = "rgb(192, 196, 204)";
+        searchBtn.style.color = "rgb(102, 102, 102)";
         searchBtn.style.fontWeight = "normal";
       }
     },
@@ -686,6 +700,9 @@ export default {
     this.styleColArr.forEach(element1 => {
       widthSum += element1.width;
     });
+    this.widthTotal = widthSum;
+
+    dataCenterMain[0].scrollLeft = 0;
     //固定未分组查询表格表头和合计行
     dataCenterMain[0].addEventListener("scroll", () => {
       if (dataCenterMain.length != 0 && newBox.length == 0) {
@@ -715,7 +732,7 @@ export default {
           "px;";
         if (scrollTop + clientHeight <= scrollHeight) {
           this.$refs.groupThead.style = styleParams;
-          this.$refs.tableWrapper.style = "width:" + widthSum + "px;";
+          this.$refs.tableWrapper.style = `width:${widthSum}px`;
           this.$refs.summaryWrapper.style = styleParams;
           if (this.count === 1) {
             groupTbody[0].style = "position: absolute; top: 38px;";
@@ -730,6 +747,6 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 @import url("../../assets/style/dataTable.css");
 </style>

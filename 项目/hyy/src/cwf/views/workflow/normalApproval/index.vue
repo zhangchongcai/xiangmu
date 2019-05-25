@@ -67,45 +67,7 @@ export default {
                     name: '单据类型',
                     type: 'select',
                     value: '',
-                    options: [
-                        {
-                            label: '票券销售申请单',
-                            value: '票券销售申请单'
-                        }, {
-                            label: '预充值卡',
-                            value: '预充值卡'
-                        },{
-                            label: '营销活动',
-                            value: '营销活动'
-                        }, {
-                            label: '卖品申购单',
-                            value: '卖品申购单'
-                        }, {
-                            label: '卖品盘点单',
-                            value: '卖品盘点单'
-                        },{
-                            label: '卖品订货单',
-                            value: '卖品订货单'
-                        }, {
-                            label: '卖品退货单',
-                            value: '卖品退货单'
-                        }, {
-                            label: '调拨申请单',
-                            value: '调拨申请单'
-                        }, {
-                            label: '商品零售价调整单',
-                            value: '商品零售价调整单'
-                        }, {
-                            label: '套餐零售价调整单',
-                            value: '套餐零售价调整单'
-                        }, {
-                            label: '采购入库单',
-                            value: '采购入库单'
-                        }, {
-                            label: '赠送入库单',
-                            value: '赠送入库单'
-                        }
-                    ]
+                    options: []
                 },
                 {
                     keyName: 'statusRespons',
@@ -231,8 +193,54 @@ export default {
     },
      created() {
          this.search();
+         
+         this.getBillSettingList()
     },
     methods: {
+         //获取单据设置列表
+        getBillSettingList(){
+            let params={
+                global:1,
+                orginizationId:0,
+                tenantId:805852
+            }
+            this.$cwfList.getBillSettingList(params).then(data => {
+                if (data && data.code === 200) {
+                    // this.tableData=data.data.businessTypeList
+                    
+                    this.resetSearchParams(data.data.businessTypeList)
+                    this.$message({
+                        message: "查询成功",
+                        type: "success",
+                        duration: 1000
+                    });
+                } else {
+                    this.$message({
+                        message: data.msg,
+                        type: "warning",
+                        duration: 1000
+                    });
+                }
+            }).catch(err => {
+                console.log(err)
+            })
+        },
+        resetSearchParams(list){
+            this.searchConfig.forEach(item=>{
+                if(item.keyName=="bizTypeName"){
+                    list.forEach(element => {
+                        item.options.push({
+                            label: element.businessName,
+                            value: element.businessNo
+                        })
+                    });
+                }
+            })
+
+           
+            console.log(this.searchConfig)
+           
+        },
         //搜索
         search() {
             let _param = this.setParam();
@@ -251,7 +259,7 @@ export default {
                     statusRespons.push(parseInt(this.searchParam.statusRespons))
                     
                 }else{
-                    statusRespons=[1]
+                    statusRespons=[1,2,3]
                 }
                 
                 let dataParams = {
@@ -351,16 +359,23 @@ export default {
             this.checkInfo=scope.row
             this.showApproval=true
         },
+         /* 审批审批单 */
         approvalSetting(scope){
             console.log("approvalInfo",scope)
             this.approvalInfo=scope.row
             this.showApprovalSetting=true
         },
+        //关闭查看审批单
         approvalDetailClose(){
             this.showApproval=false
         },
-        approvalSettingClose(){
+        //关闭审批审批单
+        approvalSettingClose(update){
             this.showApprovalSetting=false
+            if(update){
+                this.search();
+            }
+            
         },
         /**
          * @function handleSizeChange - 修改分页大小

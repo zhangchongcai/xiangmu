@@ -21,7 +21,7 @@
               </el-select>
             </el-form-item>
             <el-form-item label="权益说明" prop="equityRemark">
-              <el-input type="textarea" resize="none" maxlength="50" :rows="3" v-model="ruleForm.equityRemark"></el-input>
+              <el-input type="textarea" resize="none" maxlength="500" :rows="3" v-model="ruleForm.equityRemark"></el-input>
             </el-form-item>
             <el-form-item label="icon" prop="logoPic">
               <div style="float:left">
@@ -42,12 +42,12 @@
         <!-- 会员卡权益 -->
         <el-collapse-item :title="stepData.stepList[1]?stepData.stepList[1].name:''" name="2">
           <div class="card-equity">
-            <el-form-item label="商品：" required>
+            <el-form-item label="商品：" prop="goods">
               <div class="select-btn" @click="handleAddEquityDialog">添加商品</div>
               <div class="equity-item-wrap">
                 <div class="shangpin-one" v-for="(item, index) of ruleForm.goods" :key="index">
                   <div class="shangpin-name">{{item.goodsName}}</div>
-                  <el-form-item label="发放数量" :prop="'goods.'+index+'.grantNum'" :rules="{required: true, validator: grantNumzhengshu, trigger: 'blur'}">
+                  <el-form-item label="发放数量" :prop="'goods.'+index" :rules="{required: true, validator: grantNumzhengshu, trigger: 'blur'}">
                     <el-input v-model="item.grantNum" style="width:100px"></el-input>
                   </el-form-item>
                   <div class="shangpin-remove" @click="handleDeleteEquity(index)">删除</div>
@@ -66,10 +66,10 @@
                 <el-radio v-model="ruleForm.grantType" label="grant_week">每周</el-radio>
                 <el-radio v-model="ruleForm.grantType" label="grant_month">每月</el-radio>
               </div>
-              <div class="time-input">
+              <div class="time-input" v-show="ruleForm.grantType != 'grant_unlimited'">
                 <el-input v-model="ruleForm.grantNum"></el-input>
               </div>
-              <div class="damwei">
+              <div class="damwei"  v-show="ruleForm.grantType != 'grant_unlimited'">
                 份
               </div>
             </div>
@@ -172,13 +172,23 @@ export default {
     };
     var zhengshu = (rule, value, callback) => {
       var int = /^\d+$/;
-      if (!int.test(value.toString().replace(/\s/g, ""))) {
-        callback(new Error("请输入整数"));
-      } else if (value == 0) {
-        callback(new Error("请输入正整数"));
+      if (this.ruleForm.grantType != "grant_unlimited") {
+        if (!int.test(value.toString().replace(/\s/g, ""))) {
+          callback(new Error("请输入整数"));
+        } else if (value == 0) {
+          callback(new Error("请输入正整数"));
+        } else {
+          callback();
+        }
       } else {
         callback();
       }
+    };
+    var goodsIsEmpty = (rule, value, callback) => {
+      if (value.length == 0) {
+        callback(new Error("商品不能为空"));
+      }
+      callback();
     };
     return {
       multipleSelectionItem: [], //临时选择的自有权益
@@ -194,7 +204,7 @@ export default {
         { name: "身份类", value: "identity_type" }
       ], //权益类型列表
       equityCategoryList: [
-        { name: "兑换码", value: "cdkey" },
+        // { name: "兑换码", value: "cdkey" },
         { name: "优惠券", value: "coupons" }
       ], //权益类别列表
       stepData: {
@@ -218,7 +228,7 @@ export default {
         equityName: "", //权益名称
         equityType: "", //权益类型
         equityCategory: "", //权益类别
-        status: "start", //卡状态
+        goodsStatus: "has_been_on", //卡状态
         equityNo: "", //权益ID
         current: 1,
         size: 20,
@@ -229,7 +239,7 @@ export default {
         equityName: "", //权益卡名称
         equityRemark: "", //权益卡备注
         equityType: "consumer_type", //权益类型
-        equityCategory: "cdkey", //权益类别
+        equityCategory: "coupons", //权益类别
         logoPic: "",
         isBuy: "0", //是否需要购买 默认不需要
         goods: [],
@@ -237,6 +247,7 @@ export default {
         grantType: "grant_unlimited"
       },
       rules: {
+        goods: [{ required: true, validator: goodsIsEmpty, trigger: "change" }],
         grantNum: [{ required: true, validator: zhengshu, trigger: "blur" }],
         logoPic: [
           { required: true, message: "权益icon必填", trigger: "change" }
@@ -248,7 +259,7 @@ export default {
           { max: 20, message: "长度不可超过20个字符", trigger: "blur" },
           { required: true, validator: checkCardName, trigger: "blur" }
         ],
-        remark: [{ max: 50, message: "长度不可超过50个字符", trigger: "blur" }]
+        remark: [{ max: 50, message: "长度不可超过500个字符", trigger: "blur" }]
       }
     };
   },
@@ -266,11 +277,17 @@ export default {
     //发放数量验证
     grantNumzhengshu(rule, value, callback) {
       var int = /^\d+$/;
-      if (!int.test(value.toString().replace(/\s/g, ""))) {
+      if (value.grantNum == null) {
+        value.grantNum = "";
+      }
+      if (!int.test(value.grantNum.toString().replace(/\s/g, ""))) {
         callback(new Error("请输入整数"));
       } else if (value == 0) {
         callback(new Error("请输入正整数"));
       } else {
+        if(value.inventoryNum && value.grantNum-0 > value.inventoryNum-0){
+          callback(new Error("不能大于库存"+value.inventoryNum));
+        }
         callback();
       }
     },
@@ -525,12 +542,6 @@ export default {
   .jiange-zhouqi-err {
     .el-form-item__error {
       left: 313px !important;
-    }
-  }
-  .shiyong_yingyuan {
-    .el-form-item__error {
-      left: 105px !important;
-      top: 10% !important;
     }
   }
   .fafang-time {

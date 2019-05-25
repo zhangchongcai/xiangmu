@@ -5,7 +5,6 @@ export default {
         showBar: true,
         seatSelection: [],
         isExtend: false,
-        showReplacegoods:false,
         datePicker: false,
         fullOrder: false,
         showMoreNav: false,
@@ -30,11 +29,21 @@ export default {
         allSeat: [],
         currentDateStr: '',
         allowSingleSold: false,
+        ticketsStatus: {
+            totalSeat: 0,
+            isSell: 0,
+            mallSell: 0,
+            netSell: 0,
+            isLocked: 0,
+            isHeld: 0,
+            cantNotSell: 0,
+            noTaken: 0,
+            isBroken: 0
+        }
     },
     mutations: {
         //间隔3s请求一次座位状态
         [TYPES.CHECK_CURRENT_SEAT_STATUS] : (state, obj) => {
-            console.log("触发")
 
            obj.timeSeatStatusList.forEach(item => {
                state.allSeat.forEach(seat => {
@@ -67,6 +76,12 @@ export default {
                 break;
               }
             })
+
+            state.ticketsStatus.mallSell = obj.sceneSaleNum
+            state.ticketsStatus.isLocked = obj.lockNum
+            state.ticketsStatus.isHeld = obj.reserveNum
+            state.ticketsStatus.netSell = obj.netSaleNum
+            state.ticketsStatus.isSell = state.ticketsStatus.totalSeat - state.ticketsStatus.isBroken - obj.saleNum - obj.reserveNum - obj.lockNum
         },
 
         [TYPES.SAVE_ALL_FILM_DATA] : (state, filmArr) => {
@@ -88,7 +103,7 @@ export default {
         [TYPES.DEL_SEAT] : (state, seatId) => {
                 state.seatSelection = state.seatSelection.filter(item => {
                 //    return groupCode != item.groupCode
-                   if(state.allowSingleSold) {
+                   if(Number(state.allowSingleSold)) {
                        return seatId != item.seatCode
                    }else {
                        return seatId != item.groupCode
@@ -109,9 +124,6 @@ export default {
         },
         [TYPES.SAVE_ALL_PAY] : (state, arr) => {
             state.allPayWays = arr
-        },
-        [TYPES.SHOW_REPLACE_GOODS] : (state) => {
-            state.showReplacegoods = !state.showReplacegoods
         },
         [TYPES.SHOW_DATE_PICKER] : (state) => {
             state.datePicker = !state.datePicker
@@ -220,6 +232,16 @@ export default {
             state.checkResult = !state.checkResult
         },
         [TYPES.SAVE_CURRENT_PLAN_SEAT] : (state, seatsArr) => {
+           if(seatsArr.length) {
+            seatsArr.sort((a, b) => {
+                return a.ulX - b.ulX
+            })
+            let minX = parseFloat(seatsArr[0].ulX)
+            
+            seatsArr.sort((a, b) => {
+                return a.ulY - b.ulY
+            })
+            let minY = parseFloat(seatsArr[0].ulY)
             state.allSeat = seatsArr.map((item) => {
                 let obj = {
                   cinemaCode: item.cinemaCode,
@@ -232,9 +254,8 @@ export default {
                   row: item.seatRow,
                   type: item.seatType,
                   width: item.width,
-                  x: parseInt(item.seatCol) * parseInt(item.width),
-                  y: parseInt(item.seatRow) * parseInt(item.width),
-                //   is_sel: false,
+                  x: parseInt(item.ulX - minX) * 2.7,
+                  y: parseInt(item.ulY - minY) * 2.7,
                   status: item.status,
                   imageType: item.imageType,
                   seat_name: `${item.seatRow}排${item.seatCol}座`
@@ -291,8 +312,35 @@ export default {
                     break;
                     case 9:
                     item.seatIcon = 'iconanmozuoyi';
-                  }
+                  }  
                 })
+                state.ticketsStatus.totalSeat =  state.allSeat.length
+                let brokenArr = state.allSeat.filter(item => {
+                    return item.status == 0
+                })
+                let soldArr = state.allSeat.filter(item => {
+                    return item.status == 2
+                })
+                let lockArr = state.allSeat.filter(item => {
+                    return item.status == 3
+                })
+                state.ticketsStatus.isBroken = brokenArr.length
+                state.ticketsStatus.mallSell = soldArr.length
+                state.ticketsStatus.isLocked = lockArr.length
+                state.ticketsStatus.isSell = state.ticketsStatus.totalSeat - state.ticketsStatus.isBroken - state.ticketsStatus.mallSell - state.ticketsStatus.isLocked
+                
+           }else {
+            state.allSeat = []
+            state.filmData = []
+            state.filmTimeData = []
+            state.filmHallData = []
+            state.filmHallContentsArr = []
+            state.filmOrderContentsArr = []
+            state.allfilmData = []
+            state.allTimeData = []
+            state.allHallData = []
+            state.allTickets = []
+           }
         },
         [TYPES.SET_CURRENT_DATE] : (state, str) => {
             state.currentDateStr = str
@@ -368,7 +416,7 @@ export default {
     getters: {
         // 判断是否可以单买
         allowSingleSold(state) {
-            return state.allowSingleSold
+            return Number(state.allowSingleSold)
         },
         currentPlanCode(state) {
            return state.currentPlanCode
@@ -391,9 +439,6 @@ export default {
         isExtends(state) {
             return state.isExtend
         },
-        showReplacegoods(state) {
-            return state.showReplacegoods
-         },
         fullOrder(state) {
            return state.fullOrder
         },
@@ -464,6 +509,9 @@ export default {
             }
 
             return selectedPages;
+        },
+        ticketsStatus(state) {
+            return state.ticketsStatus
         }
     }
 }

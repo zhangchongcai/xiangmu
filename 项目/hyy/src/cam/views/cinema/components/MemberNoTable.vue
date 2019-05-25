@@ -61,14 +61,14 @@
                 <div slot="content" style="width:300px">
                   <ul id="ulMain">
                     <li>新增会员人数当日达成 : <span>{{CurrentMemberKPIDataCine.newMemberCurrent | capitalizePerson}}{{CurrentMemberKPIDataCine.newMemberCurrent | too}}</span></li>
-                    <li>环比前一日 : <span :class="[CurrentMemberKPIDataCine.memberChainDay > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[CurrentMemberKPIDataCine.memberChainDay > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{CurrentMemberKPIDataCine.memberChainDay}}%</span></li>
+                    <li>环比前一日 : <span :class="[CurrentMemberKPIDataCine.memberChainDay > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[CurrentMemberKPIDataCine.memberChainDay > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{CurrentMemberKPIDataCine.memberChainDay | woo}}%</span></li>
                     <li>月至今达成 : <span>{{CurrentMemberKPIDataCine.memberMonthToNow | capitalizePerson}}{{CurrentMemberKPIDataCine.memberMonthToNow | too}}</span></li>
-                    <li>环比上月 : <span :class="[CurrentMemberKPIDataCine.memberChainMonth > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[CurrentMemberKPIDataCine.memberChainMonth > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{CurrentMemberKPIDataCine.memberChainMonth}}%</span></li>
+                    <li>环比上月 : <span :class="[CurrentMemberKPIDataCine.memberChainMonth > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[CurrentMemberKPIDataCine.memberChainMonth > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{CurrentMemberKPIDataCine.memberChainMonth | woo}}%</span></li>
                     <li>本月目标为 : <span>{{CurrentMemberKPIDataCine.newMemberTarget | capitalizePerson}}</span>{{CurrentMemberKPIDataCine.newMemberTarget | too}}</li>
-                    <li>达成率 : <span>{{CurrentMemberKPIDataCine.newMemberRate}}</span>%</li>
-                    <li>与时间进度差距为 : <span :class="[CurrentMemberKPIDataCine.timeRate > 0? 'green':'red']">{{CurrentMemberKPIDataCine.timeRate}}%</span></li>
-                    <li>按目前进度,预计月底达成率为 : <span>{{CurrentMemberKPIDataCine.memberExpect}}</span>%</li>
-                    <li>与目标额差距 : <span :class="[CurrentMemberKPIDataCine.memberGap > 0? 'green':'red']">{{CurrentMemberKPIDataCine.memberGap}}</span>%</li>
+                    <li>达成率 : <span>{{CurrentMemberKPIDataCine.newMemberRate | woo}}</span>%</li>
+                    <li>与时间进度差距为 : <span :class="[CurrentMemberKPIDataCine.timeRateGap > 0? 'green':'red']">{{CurrentMemberKPIDataCine.timeRateGap | woo}}%</span></li>
+                    <li>按目前进度,预计月底达成率为 : <span>{{CurrentMemberKPIDataCine.memberExpect | woo}}</span>%</li>
+                    <li>与目标额差距 : <span :class="[CurrentMemberKPIDataCine.memberGap > 0? 'green':'red']">{{CurrentMemberKPIDataCine.memberGap | woo}}</span>%</li>
                   </ul>
                 </div>
                 <i class="iconfont icon-danchuang-tishi"></i>
@@ -306,17 +306,21 @@ export default {
     }
   },
   filters: {
+    woo(value){
+      if (!value) return ""
+      return value.toFixed(2)
+    },
+    //处理万元单位
     capitalizeOne(value) {
       if (!value) return ""
       let newValue = value.toString();
-
       //判断逻辑
       if(newValue.indexOf('.') != -1){
-        if(newValue.length < 8){
-          return newValue
+        
+        if(newValue.length < 7){
+          return Number(newValue + '0').toFixed(2)
         }
-        else if(newValue.length >= 8 && newValue.length <= 11){
-
+        else if(newValue.length >= 7 && newValue.length <= 11){
           return (newValue / 10000).toFixed(2)
         }
         else if(newValue.length >= 12){
@@ -326,7 +330,7 @@ export default {
       else
       {
         if(newValue.length < 5){
-          return newValue
+          return Number(newValue + '.00').toFixed(2)
         }
         else if(newValue.length >= 5 && newValue.length <= 8){
           return (newValue / 10000).toFixed(2)
@@ -360,11 +364,11 @@ export default {
       let foo = ''
 
       if(newValue.indexOf('.') != -1){
-        if(newValue.length < 8){
+        if(newValue.length < 7){
           foo = '元'
           return foo
         }
-        else if(newValue.length >= 8 && newValue.length <= 11){
+        else if(newValue.length >= 7 && newValue.length <= 11){
           foo = '万元'
           return foo
         }
@@ -374,7 +378,7 @@ export default {
         }
       }
       else{
-        if(newValue.length < 5){
+        if(newValue.length < 4){
           foo = '元'
           return foo
         }
@@ -445,6 +449,9 @@ export default {
     },
   },
   methods: {
+    active(){
+      this.cur= 0
+    },
     foo(val){
       this.flag = val
     },
@@ -509,9 +516,10 @@ export default {
         .then(response => {
           let res = response.data;
           if(this.BoxType === "new_member"){
-            //获取KPI
-            let ResKPI = res.memberKpiInfo;
-            this.CurrentMemberKPIDataCine = ResKPI
+            if(res.memberKpiInfo){
+              //获取KPI
+              this.CurrentMemberKPIDataCine = res.memberKpiInfo;
+            }
           }
           else if(this.BoxType === "member_consume_price"){
             //获取会员消费金额
@@ -727,6 +735,8 @@ export default {
   color: #3b74ff;
   font-size: 12px;
   margin-left: 10px;
+  position: relative;
+  top:-2px;
 }
 .ModuleTable {
   width: 93%;

@@ -50,10 +50,10 @@ const ctmRoutes = [{
 		children: [{
 			path: 'control',
 			meta: {
-				title: '上报监控'
+				title: '票房上报'
 			},
 			component: (resolve) => require(['ctm/views/boxOfficeReport/Control'], resolve),
-			name: '上报监控',
+			name: '票房上报',
 		}]
 	},
 	{
@@ -110,7 +110,7 @@ const ctmRoutes = [{
 				path: 'list',
 				meta: {
 					title: '影院影片库列表',
-					hidden: true
+					// hidden: true
 				},
 				component: (resolve) => require(['ctm/views/movieManage/cinemaMovie/common/List'], resolve),
 				name: '影院影片库列表',
@@ -119,7 +119,7 @@ const ctmRoutes = [{
 				path: 'edit',
 				meta: {
 					title: '影院影片库编辑',
-					hidden: true
+					// hidden: true
 				},
 				component: (resolve) => require(['ctm/views/movieManage/cinemaMovie/common/Edit'], resolve),
 				name: '影院影片库编辑',
@@ -127,11 +127,11 @@ const ctmRoutes = [{
 			{
 				path: 'scan',
 				meta: {
-					title: '查看影片庫信息',
-					hidden: true
+					title: '查看影片库信息',
+					// hidden: true
 				},
 				component: (resolve) => require(['ctm/views/movieManage/cinemaMovie/common/Scan'], resolve),
-				name: '查看影片庫信息',
+				name: '查看影片库信息',
 			}
 
 		]
@@ -156,8 +156,8 @@ const ctmRoutes = [{
 			{
 				path: 'list',
 				meta: {
-					title: '影片列表',
-					hidden: true,
+					title: '总部影片列表',
+					// hidden: true,
 				},
 				component: (resolve) => require(['ctm/views/movieManage/groupMovie/common/List'], resolve)
 			},
@@ -165,7 +165,7 @@ const ctmRoutes = [{
 				path: 'scan',
 				meta: {
 					title: '查看影片信息',
-					hidden: true,
+					// hidden: true,
 				},
 				component: (resolve) => require(['ctm/views/movieManage/groupMovie/common/Scan'], resolve)
 			}

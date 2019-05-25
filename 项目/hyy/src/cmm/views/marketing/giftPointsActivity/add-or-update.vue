@@ -136,7 +136,7 @@
                         <el-option label="包含" value="normalIn"></el-option>
                         <el-option label="不包含" value="normalNotIn"></el-option>
                     </el-select>
-                    <el-input class="chooseWidth1" v-model="basicDataForm.tradingMerchantInput" readonly></el-input>
+                    <el-input class="chooseWidth1" v-model="basicDataForm.tradingMerchantInput" ></el-input>
                     <el-button type="primary" style="margin-left:10px;" @click="tradingMerchantClick()" plain>选择</el-button>
                 </el-form-item>
                 <el-form-item label="会员等级:">
@@ -144,7 +144,7 @@
                         <el-option label="全部会员" value="AllMember"></el-option>
                         <el-option label="指定会员等级" value="normalIn"></el-option>
                     </el-select>
-                    <el-input class="chooseWidth1" v-if="basicDataForm.membershipLevel=='normalIn'" v-model="basicDataForm.membershipLevelInput" readonly></el-input>
+                    <el-input class="chooseWidth1" v-if="basicDataForm.membershipLevel=='normalIn'" v-model="basicDataForm.membershipLevelInput" ></el-input>
                     <el-button type="primary" v-if="basicDataForm.membershipLevel=='normalIn'" style="margin-left:10px;" @click="membershipLevelClick()" plain>选择</el-button>
                 </el-form-item>
                 <el-form-item label="支付方式:">
@@ -153,7 +153,7 @@
                         <el-option label="包含" value="normalIn"></el-option>
                         <el-option label="不包含" value="normalNotIn"></el-option>
                     </el-select>
-                    <el-input class="chooseWidth1" v-if="basicDataForm.payType!=''" v-model="basicDataForm.payTypeInput" readonly></el-input>
+                    <el-input class="chooseWidth1" v-if="basicDataForm.payType!=''" v-model="basicDataForm.payTypeInput" ></el-input>
                     <el-button type="primary" v-if="basicDataForm.payType!=''" style="margin-left:10px;" @click="payTypeClick()" plain>选择</el-button>
                 </el-form-item>
             </el-collapse-item>

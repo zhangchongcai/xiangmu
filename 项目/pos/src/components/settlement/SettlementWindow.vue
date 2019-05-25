@@ -1,5 +1,8 @@
 <template>
-    <div v-if="payDialog" class="outter-wrapper">
+    <div v-if="payDialog" class="outter-wrapper" v-loading="loading"
+    element-loading-text="支付结算中..."
+    element-loading-spinner="el-icon-loading"
+    element-loading-background="rgba(0, 0, 0, 0.8)">
         <div class="settlement-container">
             <div class="settlement-header">
               支付
@@ -48,10 +51,10 @@
                        <components :is="componentsName" @closePay="PAY_DIALOG_TRIGER" @payIt="payIt"></components>
                    </div>
 
-                   <div v-if="payResult" class="pay-result">
+                   <div v-if="payData.payedAmount != 0" class="pay-result">
                         <span>已支付:
                             <span class="pay-name">{{payMethod.currentPayMethod}}</span>
-                            <span class="pay-price">{{payNum.realPayNum - payNum.realChange}}元</span>
+                            <span class="pay-price">{{payData.payedAmount}}元</span>
                         </span>
                     </div>
                </div>
@@ -70,7 +73,7 @@
 <script>
 import {mapGetters, mapMutations} from 'vuex'
 import {PAY_DIALOG_TRIGER, MORE_PAY_TRIGER, PAY_METHOD_TRIGER, GET_KIND_PRICE, SET_RETURN_PAY, SET_PAY_RESULT,GET_CART_BILLCODE, CLEAR_SELECTION, GET_CART_DATA} from 'types'
-import {payIt, findCart, saveSaleBill, settleIt, clearAllTicket} from 'src/http/apis.js'
+import {payIt, findCart, saveSaleBill, settleIt, clearAllTicket, syncFlow} from 'src/http/apis.js'
 import CouponComp from 'components/settlement/CouponComp'
 import WeComp from 'components/settlement/WeComp'
 import AliComp from 'components/settlement/AliComp'
@@ -79,7 +82,7 @@ import VipComp from 'components/settlement/VipComp'
 import CashComp from 'components/settlement/CashComp'
 import ScoreComp from 'components/settlement/ScoreComp'
 import HoldComp from 'components/settlement/HoldComp'
-import UnionPay from 'components/settlement/unionPay'
+import UnionPay from 'components/settlement/UnionPay'
 import MorePay from 'components/dialog/MorePay'
 import CheckCoupon from 'components/settlement/CheckCoupon'
 import GoodsDetil from 'components/cart/DetailGood'
@@ -89,7 +92,7 @@ export default {
     data() {
         return {
           activities: [],
-
+          loading: false,
           currentPayIndex: 0,
           componentsTypeName: 'coupon'
         }
@@ -106,8 +109,8 @@ export default {
            'billCode',
            'cinemaUid',
            'billCodeUid',
-           'terminalCode',
-           'currentPlanCode',
+           'terminalId',
+           'currentFilmId',
            'payResult',
            'configData'
        ]),
@@ -126,25 +129,34 @@ export default {
            return result;
        },
 
+        // XRMB 现金
+        // 0X03 会员卡
+        // XUNP 银行卡
+        // 0X09 票券
+        // 0X08 留座
+        // INCRM 积分
+        // WLDS 网络代售
+        // 0X10 影院补贴
+
        componentsName() {
-           switch(this.payMethod.currentPayMethod) {
-               case '微信' || '':
+           switch(this.payMethod.currentPayMethodId) {
+               case '微信':
                return 'WeComp';
                case '支付宝':
                return 'AliComp';
-               case '银行卡支付':
+               case 'XUNP':
                return 'CardComp';
                case '银联支付':
                return 'UnionPay'
-               case '会员卡':
+               case '0X03':
                return 'VipComp';
-               case '现金支付':
+               case 'XRMB':
                return 'CashComp';
-               case '积分兑换':
+               case 'INCRM':
                return 'ScoreComp';
-               case 'hold':
+               case '0X08':
                return 'HoldComp';
-               case '票券':
+               case '0X09':
                return 'CouponComp'
            }
        }
@@ -162,97 +174,138 @@ export default {
            CLEAR_SELECTION,
            GET_CART_DATA
         ]),
-        payIt() {  //确定支付，由子组件触发事件
-          saveSaleBill({billCode: this.billCode}).then(res => {
-              if(res.code == 200) {
-                  payIt({
-                        cinemaUid: this.cinemaUid,
-                        saleBillCode: this.billCode,
-                        saleBillUid: this.billCodeUid,
-                        payTypeCode: this.payMethod.currentPayMethodId,
-                        body: "票美人鱼(3D)影票、可口可乐、爆米花",
-                        payTypeName: this.payMethod.currentPayMethod,
-                        returnAmount: this.payNum.realChange,
-                        payAmount: Number(this.payNum.realPayNum),
-                        authCode: this.payNum.authCode
-                    }).then(res => {
-                        if(res.code == 200 && res.data.status == 1) {
-                            this.SET_RETURN_PAY(res.data.returnAmount)
-                            this.SET_PAY_RESULT()
-                        findCart({billCode: this.billCode}).then(res => {
-                                        if(res.code == 200) {
-                                            this.GET_KIND_PRICE(res.data)
-                                            if(res.data.notPayAmount <= 0) {
-                                                this.CLEAR_SELECTION()
-                                                this.GET_CART_DATA({goodsList: []})
-                                                settleIt({
-                                                    billCode: this.billCode,
-                                                    cinemaUid: this.cinemaUid,
-                                                    original_price: this.payData.originalAmount,
-                                                    plan_id: '6033851d-d764-45b0-839e-a8762299c24b',
-                                                    saleBillUid: this.billCodeUid,
-                                                    terminalCode: this.terminalCode,
-                                                    total_price: this.payData.originalAmount
-                                                }).then(res => {
-                                                    if(res.status == 200) {
-                                                        this.$message({
-                                                            showClose: true,
-                                                            message: "购买成功！谢谢",
-                                                            type: 'success'
-                                                        });
-                                                        //结算成功后清空购物车
-                                                        clearAllTicket({
-                                                            billCode: this.billCode
-                                                        }).then(res => {
-                                                            this.GET_CART_BILLCODE('')
-                                                        })
-                                                        this.PAY_DIALOG_TRIGER()
-                                                        // res.data.cinemaTicketInfo.forEach(item => {
-                                                        //     console.log(JSON.stringify(item))
-                                                        //     util.printTicket('film_print',item,this.configData,args=> {
-                                                        //         console.log('打印数据：',args,'配置信息：',this.configData)
-                                                        //     })
-                                                        // })
-                                                        console.log(JSON.stringify(res.data.trade_voucher_info))
-                                                        console.log('取货凭证：')
-                                                        console.log(JSON.stringify(res.data.get_voucher_info))
-                                                    }
-                                                })
-                                            }
-                                        }else {
-                                            this.$message({
-                                                        showClose: true,
-                                                        message: res.msg,
-                                                        type: 'error'
-                                                    });
-                                        }
-                                    })
-                        }else {
-                           this.$message({
-                                        showClose: true,
-                                        message: res.msg,
-                                        type: 'error'
-                                    });
-                           this.$ws.send({
-                               cinemaUid: this.cinemaUid,
-                               outTradeNo: this.billCode,
-                               queryType: this.payMethod.currentPayMethodId,
-                               saleBillPayUid: this.billCodeUid,
-                               terminalCode: this.terminalCode,
-                               tradeNo: '',
-                           })
-                        }
-                    })
-              }else {
-                  this.$message({
-                                    showClose: true,
-                                    message: res.msg,
-                                    type: 'error'
-                                });
-              }
-          })
+        //错误提示
+        wrongTip(res) {
+            this.loading = false
+            this.$message({
+                        showClose: true,
+                        message: res.msg,
+                        type: 'error'
+                    });
         },
-
+        async payIt() {  //确定支付，由子组件触发事件
+          this.loading = true
+          let saveData = await saveSaleBill({billCode: this.billCode}), payData, findCartData, settlementData;
+          if(saveData.code == 200) {
+              payData = await payIt({
+                cinemaUid: this.cinemaUid,
+                saleBillCode: this.billCode,
+                saleBillUid: this.billCodeUid,
+                payTypeCode: this.payMethod.currentPayMethodId,
+                body: "票美人鱼(3D)影票、可口可乐、爆米花",
+                payTypeName: this.payMethod.currentPayMethod,
+                returnAmount: this.payNum.realChange,
+                payAmount: Number(this.payNum.realPayNum),
+                authCode: this.payNum.authCode
+              })
+          }else {
+              this.wrongTip(saveData)
+          }
+          if(payData.code == 200 && payData.data.status == 1) {
+            this.SET_RETURN_PAY(payData.data.returnAmount)
+            this.SET_PAY_RESULT()
+            findCartData = await findCart({billCode: this.billCode})
+          }else {
+            this.wrongTip(payData)
+            this.$ws.send({
+                cinemaUid: this.cinemaUid,
+                outTradeNo: this.billCode,
+                queryType: this.payMethod.currentPayMethodId,
+                saleBillPayUid: this.billCodeUid,
+                terminalCode: this.terminalId,
+                tradeNo: ''
+            })
+          }
+          if(findCartData.code == 200) {
+              this.GET_KIND_PRICE(findCartData.data)
+              if(findCartData.data.notPayAmount <= 0) {
+                 this.CLEAR_SELECTION()
+                 this.GET_CART_DATA({goodsList: []})
+                 settlementData = await settleIt({
+                    billCode: this.billCode,
+                    cinemaUid: this.cinemaUid,
+                    original_price: this.payData.originalAmount,
+                    plan_id: this.currentFilmId,
+                    saleBillUid: this.billCodeUid,
+                    terminalCode: this.terminalId,
+                    total_price: this.payData.originalAmount
+                 })
+              }else {
+                    this.loading = false
+                    this.$message({
+                                showClose: true,
+                                message: "请完成剩余支付",
+                                type: 'warning'
+                            });
+                }
+          }else {
+              this.wrongTip(findCartData)
+          }
+          if(settlementData.status == 200) {
+                this.$message({
+                    showClose: true,
+                    message: "购买成功！谢谢",
+                    type: 'success'
+                });
+                //结算成功后清空购物车
+                await clearAllTicket({
+                    billCode: this.billCode
+                }).then(res => {
+                    this.GET_CART_BILLCODE('')
+                })
+                syncFlow({saleBillUid: this.billCodeUid})
+                this.PAY_DIALOG_TRIGER()
+                this.loading = false
+                let cti = settlementData.data.cinemaTicketInfo
+                let index =  0 
+                let successPrintArr=[]
+                this.printTicket(cti , index , successPrintArr)
+                // console.log(JSON.stringify(settlementData.data.trade_voucher_info))
+                // console.log('取货凭证：')
+                // console.log(JSON.stringify(settlementData.data.get_voucher_info))
+          }else {
+              this.wrongTip(settlementData)
+          }
+        },
+        printTicket(cti,index,successPrintArr) {
+            let cel = cti[index]
+            util.printTicket('film_print',cel,this.configData,args=> {
+                console.log('打印：',index,'影票 ')
+                console.log("数据：",cel)
+                if(args[0]==0){
+                    alert(args, typeof(args))
+                    successPrintArr.push(cel.ticketUid)
+                    this.$message({
+                                showClose: true,
+                                message: `打印完成第${index+1}张影票`,
+                                type: 'success',
+                                duration:1000
+                            });
+                }else{
+                    this.$message.error({
+                                type:'error',
+                                showClose: true,
+                                message:`打印第${index+1}张影票失败`,
+                                duration:0
+                    })
+                }
+                // alert(args)
+                index++
+                if(index<cti.length){
+                    console.log('打印影票')
+                    this.printTicket(cti,index,successPrintArr)
+                }else{
+                    //打印完成
+                    console.log(successPrintArr,)
+                    this.$message({
+                                message:'打印结束！',
+                                showClose: true,
+                                type:'success',
+                                duration:3000
+                        })
+                }
+            })
+        },
         closePay() {
            this.PAY_DIALOG_TRIGER()
            this.SET_PAY_RESULT()

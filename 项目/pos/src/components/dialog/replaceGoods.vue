@@ -1,15 +1,15 @@
 <template>
-    <div class="replaceDialog">
+    <div v-if="replacegoods.length" class="replaceDialog">
         <el-dialog
             title="更换"
             :visible.sync="dialogVisible"
             width="77.3vw"
             >
             <div class="title">两人分享套餐</div>
-            <ul class="dialog-goods">
-                <li class="item-warp" v-for="(item,ind) in replaceArray" :key="ind" @click="handerItem(item,ind)">
+            <ul v-if="replacegoods.length" class="dialog-goods">
+                <li class="item-warp" v-for="(item,ind) in replacegoods" :key="ind" @click="handerItem(item,ind)">
                     <div   :class="['row-item',status==ind?'active':'']">
-                        {{item.name}}
+                        {{item.skuName}}
                     </div>
                     <div class="label" v-if="status==ind">
                         <span class="iconfont iconsanjiaoxing-up"></span>
@@ -17,8 +17,8 @@
                 </li>
             </ul>
             <ul class="replace">
-                <div>可口可乐（中）可更换</div>
-                <li v-for="(item,ind) in replaceArray" :key="ind" href='javascript:void(0)' class="row-item">
+                <div>{{replacegoods[status].skuName}}可更换</div>
+                <li v-for="(item,ind) in isReplacedArray[status].skuList" :key="ind" href='javascript:void(0)' class="row-item">
                     {{item.name}}
                 </li>
             </ul>
@@ -29,6 +29,7 @@
     </div>
 </template>
 <script>
+import {replaceGood} from 'http/apis'
 import {SHOW_REPLACE_GOODS} from 'types'
 import {mapMutations,mapGetters} from 'vuex'
 export default {
@@ -38,29 +39,13 @@ export default {
     data() {
         return {
             status:0,
-            replaceArray:[
-                {
-                    name:'可口可乐（小）',
-                    val:'1'
-                },
-                {
-                    name:'可口可乐（中）',
-                    val:'1'
-                },
-                {
-                    name:'可口可乐（大）',
-                    val:'1'
-                },
-                {
-                    name:'爆米花（中）',
-                    val:'1'
-                }
-            ]
+            isReplacedArray: []
         }
     },
     computed: {
         ...mapGetters([
-            'showReplacegoods'
+            'showReplacegoods',
+            'replacegoods'
         ]),
         dialogVisible: {
             get() {
@@ -76,12 +61,19 @@ export default {
             SHOW_REPLACE_GOODS
         ]),
         handerItem(item,ind) {
-            console.log(ind)
-            this.status = ind
+               console.log(ind)
+               this.status = ind
         },
     },
-    created() {
-       
+    mounted() {
+       replaceGood({
+           cinemaUid:"123123",    //影院Uid, 以后改成从Vuex中获得
+		   comboUid:"12345678"    //套餐商品Uid 以后改成从Vuex中获得
+       }).then(res => {
+           if(res.code == 200) {
+               this.isReplacedArray = res.data
+           }
+       })
     }
 }
 </script>
@@ -149,6 +141,9 @@ export default {
             border-radius: 2px;
             margin-right: .8vw;
             font-size: $font-size12;
+        }
+        .noSel {
+            cursor: not-allowed;
         }
         .active{
             background: #3B74FF;

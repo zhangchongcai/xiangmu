@@ -8,6 +8,7 @@
     </div>
     <div class="tittle"></div>
     <el-form
+      ref="ruleForm"
       :inline="true"
       :model="queryData"
       label-position="left"
@@ -31,16 +32,24 @@
         </el-row>
         <el-row>
           <el-col :span="8">
-            <el-form-item
-              label="商品分类"
-            >
+            <el-form-item label="商品分类">
               <span>{{queryData.catName}}</span>
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="速记代码" prop="shorthandCode">
+            <el-form-item
+              label="速记代码"
+              prop="shorthandCode"
+              :rules="[{ required: true, message: '速记代码不能为空',trigger: 'change' }]"
+            >
               <span v-if="routeQuery.type==3">{{queryData.shorthandCode}}</span>
-              <el-input placeholder class="basic-input" v-else v-model="queryData.shorthandCode"></el-input>
+              <el-input
+                placeholder
+                type="number"
+                class="basic-input"
+                v-else
+                v-model="queryData.shorthandCode"
+              ></el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -57,7 +66,7 @@
           </el-col>
           <el-col :span="8">
             <el-form-item prop="aliasName" label="销售别名">
-                <span v-if="routeQuery.type==3">{{queryData.aliasName}}</span>
+              <span v-if="routeQuery.type==3">{{queryData.aliasName}}</span>
               <el-input v-else class="basic-input" v-model="queryData.aliasName"></el-input>
             </el-form-item>
           </el-col>
@@ -75,7 +84,7 @@
               label="基本单位"
               :rules="[{ required: true, message: '基本单位不能为空',trigger: 'change' }]"
             >
-               <span v-if="routeQuery.type==3">{{queryData.unitName}}</span>
+              <span v-if="routeQuery.type==3">{{queryData.unitName}}</span>
               <el-select v-else v-model="queryData.unitUid" placeholder="请选择" class="basic-input">
                 <el-option
                   v-for="item in unitOptions"
@@ -90,8 +99,14 @@
         <el-row>
           <el-col :span="8">
             <el-form-item label="商品描述" prop="remark">
-               <span v-if="routeQuery.type==3">{{queryData.remark}}</span>
-              <el-input v-else class="basic-input" v-model="queryData.remark" type="textarea" :rows="4"></el-input>
+              <span v-if="routeQuery.type==3">{{queryData.remark}}</span>
+              <el-input
+                v-else
+                class="basic-input"
+                v-model="queryData.remark"
+                type="textarea"
+                :rows="4"
+              ></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="8" class="good-img-col">
@@ -114,9 +129,9 @@
 
       <!-- 原材料信息 start-->
       <div>
-        <div class="sub-tittle" >原材料信息</div>
+        <div class="sub-tittle">原材料信息</div>
         <div class="text-right" v-if="routeQuery.type!=3">
-          <el-button @click="addRawMaterialDialog=true">添加原材料及包装</el-button>
+          <el-button @click="selectedGoodsDialogVisible=true">添加原材料及包装</el-button>
         </div>
         <div
           class="recipe-box"
@@ -144,10 +159,16 @@
               <el-col :span="4">
                 <el-form-item label="售价" :rules="[{ required: true, message: '售价不能为空'}]">
                   <span v-if="routeQuery.type==3">{{item.price}}</span>
-                  <el-input v-else class="price-inp" type="number" v-model="item.price"></el-input>
+                  <el-input
+                    v-else
+                    class="price-inp"
+                    type="number"
+                    v-model="item.price"
+                    @keyup.native="handleNumber"
+                  ></el-input>
                 </el-form-item>
               </el-col>
-              <el-col :span="4" class="text-right"  v-if="routeQuery.type!=3">
+              <el-col :span="4" class="text-right" v-if="routeQuery.type!=3">
                 <el-button
                   v-if="groupIndex >0"
                   type="text"
@@ -158,7 +179,7 @@
             </el-row>
           </el-form>
           <div>
-            <el-table :data="item.makeItemVoList" stripe empty-text="暂无记录"  v-loading="tableLoding">
+            <el-table :data="item.makeItemVoList" stripe v-loading="tableLoding">
               <el-table-column
                 v-for="item in recipeTableColumn"
                 :key="item.key"
@@ -171,14 +192,15 @@
                 <template slot-scope="{row}" name="header">
                   <div v-if="item.edit">
                     <span v-if="routeQuery.type==3">{{row[item.key]}}</span>
-                    <el-input v-else size="small" v-model="row[item.key]" placeholder></el-input>
+                    <el-input v-else size="small" type="number" v-model="row[item.key]" placeholder></el-input>
                   </div>
                   <div v-else-if="item.bothEdit">
                     <span>上限</span>
-                    <span v-if="routeQuery.type==3">{{row[item.key].max}} - </span>
+                    <span v-if="routeQuery.type==3">{{row[item.key].max}} -</span>
                     <el-input
                       size="small"
                       v-else
+                      type="number"
                       class="both-edit-inp"
                       v-model="row[item.key].max"
                       placeholder
@@ -188,6 +210,7 @@
                     <el-input
                       v-else
                       size="small"
+                      type="number"
                       class="both-edit-inp"
                       v-model="row[item.key].min"
                       placeholder
@@ -212,13 +235,13 @@
           </div>
         </div>
 
-        <div  v-if="routeQuery.type!=3">
+        <div v-if="routeQuery.type!=3">
           <el-button
             icon="el-icon-circle-plus-outline"
             @click="handleAddrRecipeGroup"
             type="text"
           >添加配方</el-button>
-        </diV>
+        </div>
       </div>
       <!-- 原材料信息 end-->
 
@@ -228,7 +251,7 @@
         <el-row>
           <el-col :span="8">
             <el-form-item label="销售状态" prop="canSale">
-               <span v-if="routeQuery.type==3">{{queryData.canSale == 1 ? '允许':'禁止'}}</span>
+              <span v-if="routeQuery.type==3">{{queryData.canSale == 1 ? '允许':'禁止'}}</span>
               <el-radio-group v-else v-model="queryData.canSale">
                 <el-radio label="1">允许</el-radio>
                 <el-radio label="0">禁止</el-radio>
@@ -239,7 +262,7 @@
         <el-row class="putaway-timer">
           <el-col :span="8">
             <el-form-item prop="upTime" label="上架时间">
-               <span v-if="routeQuery.type==3">{{queryData.upTime}}</span>
+              <span v-if="routeQuery.type==3">{{queryData.upTime}}</span>
               <el-date-picker
                 v-else
                 class="date-picker"
@@ -255,7 +278,7 @@
             <el-form-item prop="downTime" label="下架时间">
               <span v-if="routeQuery.type==3">{{queryData.downTime ? queryData.downTime : '不限制'}}</span>
               <div v-else>
-                <el-select  v-model="queryData.downTimeType" placeholder="请选择" class="endTime-input">
+                <el-select v-model="queryData.downTimeType" placeholder="请选择" class="endTime-input">
                   <el-option key="0" label="不限制" value="0"></el-option>
                   <el-option key="1" label="指定时间" value="1"></el-option>
                 </el-select>
@@ -276,25 +299,47 @@
           <el-col :span="8">
             <el-form-item label="适用门店">
               <span v-if="routeQuery.type==3">{{saleCinemaType(queryData.saleCinema) }}</span>
-              <apply-stores
-                v-else
-                title="适用门店"
-                :defaultSelected="queryData.saleCinema"
-                :radios="applyStoresRadios"
-                @onCheckedNodes="handleStoresCheckedNodes"
-              ></apply-stores>
+              <el-select v-model="queryData.saleCinema" placeholder="请选择" class="apply-select">
+                <el-option
+                  v-for="item in applyStoresRadios"
+                  :key="item.type"
+                  :label="item.label"
+                  :value="item.type"
+                ></el-option>
+              </el-select>
+              <span class="apply-tag" v-if="queryData.saleCinema!='1'">
+                <el-input
+                  class="input apply-stores-input"
+                  placeholder="请选择"
+                  v-model="selectedStoreName"
+                >
+                  <i slot="suffix" class="el-icon-close icon" @click.stop="handleDeleteCinemas"></i>
+                </el-input>
+                <el-button @click.stop="handleDialog('myCinemalDialog')">选择</el-button>
+              </span>
             </el-form-item>
           </el-col>
           <el-col :span="10">
             <el-form-item label="适用渠道">
               <span v-if="routeQuery.type==3">{{queryData.saleChannel==1?"全部渠道":"指定渠道"}}</span>
-              <apply-channel
-                v-else
-                title="适用渠道"
-                :defaultSelected="queryData.saleChannel"
-                :radios="applyChannelRadios"
-                @onCheckedNodes="handleChannelCheckedNodes"
-              ></apply-channel>
+              <el-select v-model="queryData.saleChannel" placeholder="请选择" class="apply-select">
+                <el-option
+                  v-for="item in applyChannelRadios"
+                  :key="item.type"
+                  :label="item.label"
+                  :value="item.type"
+                ></el-option>
+              </el-select>
+              <span class="apply-tag" v-if="queryData.saleChannel!='1'">
+                <el-input
+                  class="input apply-stores-input"
+                  placeholder="请选择"
+                  v-model="selectedChannelName"
+                >
+                  <i slot="suffix" class="el-icon-close icon" @click.stop="handleDeleteChanne"></i>
+                </el-input>
+                <el-button @click.stop="handleDialog('myChannelDialog')">选择</el-button>
+              </span>
             </el-form-item>
           </el-col>
         </el-row>
@@ -311,143 +356,21 @@
         </el-row>
       </div>
       <!-- 销售信息 end-->
-      <div class="submit-box">
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
+      <div class="submit-box" v-if="routeQuery.type!=3">
+        <el-button type="primary" @click="handleSubmit">保 存</el-button>
         <el-button @click="handleCancel">取 消</el-button>
       </div>
     </el-form>
-
-    <!-- 添加原材料 -->
-    <el-dialog
-      class="change-dialog"
-      width="70%"
-      title="选择原材料及包装"
-      :visible.sync="addRawMaterialDialog"
-    >
-      <div>
-        <el-row>
-          <el-col :span="6">
-            <el-tree :data="categoryTrees" :props="defaultProps"  @node-click="handleaCtegoryTrees"></el-tree>
-          </el-col>
-          <el-col :span="18">
-            <div>
-              <el-form
-                :inline="true"
-                :model="materialQueryData"
-                label-position="right"
-                label-suffix=":"
-              >
-                <el-row>
-                  <el-col :span="10">
-                    <el-form-item label="商品名称">
-                      <el-input
-                        placeholder
-                        class="change-dialog-inp"
-                        v-model="materialQueryData.name"
-                      ></el-input>
-                    </el-form-item>
-                  </el-col>
-                  <el-col :span="10">
-                    <el-form-item label="商品编码">
-                      <el-input
-                        placeholder
-                        class="change-dialog-inp"
-                        v-model="materialQueryData.code"
-                      ></el-input>
-                    </el-form-item>
-                  </el-col>
-                  <el-col :span="2">
-                    <el-form-item label>
-                      <el-button icon="el-icon-search" @click="onQuery">查询</el-button>
-                    </el-form-item>
-                  </el-col>
-                </el-row>
-                <el-row>
-                  <el-col :span="10">
-                    <el-form-item label="速记代码">
-                      <el-input
-                        placeholder
-                        class="change-dialog-inp"
-                        v-model="materialQueryData.shorthandCode"
-                      ></el-input>
-                    </el-form-item>
-                  </el-col>
-                  <el-col :span="10">
-                    <el-form-item label="SKU编码">
-                      <el-input
-                        placeholder
-                        class="change-dialog-inp"
-                        v-model="materialQueryData.skuCode"
-                      ></el-input>
-                    </el-form-item>
-                  </el-col>
-                </el-row>
-              </el-form>
-            </div>
-            <div>
-              <el-row>
-                <el-col :span="18">
-                  <div class="table-box">
-                    <el-table
-                      ref="materialTable"
-                      :data="materialTableData"
-                      height="300"
-                      @selection-change="handleSelectionMaterial"
-                      stripe
-                      empty-text="暂无记录"
-                      v-loading="tableLoding"
-                    >
-                      <el-table-column type="selection" width="40"></el-table-column>
-                      <el-table-column
-                        v-for="item in materialTableColumn"
-                        :key="item.key"
-                        :prop="item.key"
-                        :label="item.label"
-                        :formatter="item.formatter"
-                      ></el-table-column>
-                    </el-table>
-                    <div class="page-wrap">
-                      <el-pagination
-                        @size-change="handleSizeChange"
-                        @current-change="handleCurrentChange"
-                        :current-page="queryData.currentPage"
-                        :page-size="queryData.pageSize"
-                        :background="pgbackground"
-                        :page-sizes="pageSizes"
-                        :layout="pgLayout"
-                        :total="total"
-                      ></el-pagination>
-                    </div>
-                  </div>
-                </el-col>
-                <el-col :span="6">
-                  <div class="empty-box">
-                    <div class="clearfix">
-                      <span class="selected-content f-l">已选内容</span>
-                      <el-button type="text" class="f-r" @click="handleEmptyMaterials">清 空</el-button>
-                    </div>
-                    <hr>
-                    <ul class="empty-content">
-                      <li v-for="(item,index) in selectedMaterials" :key="item.code">
-                        <el-tag
-                          size="small"
-                          @close="handleDelMaterial(item,index)"
-                          closable
-                        >{{item.name}}</el-tag>
-                      </li>
-                    </ul>
-                  </div>
-                </el-col>
-              </el-row>
-            </div>
-          </el-col>
-        </el-row>
-      </div>
-      <span slot="footer">
-        <el-button @click="addRawMaterialDialog = false">取 消</el-button>
-        <el-button type="primary" @click="handleModificationSubmit">确 定</el-button>
-      </span>
-    </el-dialog>
+    <!-- 选择影院弹窗 -->
+    <cinemal-dialog ref="myCinemalDialog" @onSumit="onCinemalSumit" multiple :title="'选择适应门店'"></cinemal-dialog>
+    <!-- 选择渠道弹窗 -->
+    <channel-dialog ref="myChannelDialog" @onSumit="onChanneSumit" multiple :title="'选择适应渠道'"></channel-dialog>
+    <!-- 选择商品 -->
+    <selected-goods
+      :dialogVisible.sync="selectedGoodsDialogVisible"
+      :dialogFeedbackData="goodList"
+      @cimSelectedGoodsDialogCallBack="selectedGoodsDialogCallBack"
+    ></selected-goods>
   </div>
 </template>
 
@@ -457,6 +380,9 @@ import moment from "moment";
 import mixin from "cim/mixins/cim/paginationConfig.js";
 import applyStores from "cim/components/applyStores/applyStores.vue";
 import applyChannel from "cim/components/applyChannel/applyChannel.vue";
+import selectedGoods from "cim/dialogs/cimSelectedGoods/index.vue";
+import cinemalDialog from "cim/components/cinemalDialog/cinemaDialog.vue";
+import channelDialog from "cim/components/channelDialog/channelDialog.vue";
 
 export default {
   mixins: [mixin],
@@ -475,13 +401,14 @@ export default {
         spec: "", //商品规格
         unitUid: "", //基本单位
         remark: "", //商品描述
-        imgUrl: "https://ss1.bdstatic.com/70cFuXSh_Q1YnxGkpoWK1HF6hhy/it/u=1306880214,1632905597&fm=26&gp=0.jpg", //商品图片
+        imgUrl:
+          "https://ss1.bdstatic.com/70cFuXSh_Q1YnxGkpoWK1HF6hhy/it/u=1306880214,1632905597&fm=26&gp=0.jpg", //商品图片
         // 原材料信息 //门店和总部的对象不一样
         combinationSkuVoList: [
           {
             id: Math.random(),
             name: "标准配方",
-            price: '',
+            price: "",
             code: "",
             makeItemVoList: [
               // {
@@ -502,10 +429,10 @@ export default {
         upTime: moment().format("YYYY-MM-DD HH:mm"), //上架时间
         downTimeType: "0", //下架时间类型
         downTime: "", //下架时间
-        saleCinema: "1", //适用门店 1全部门店 0指定门店 2排除门店
-        cinemasList	:[],
-        saleChannel: "1", //适用渠道 1全部渠道 0指定渠道
-        channelsList:[],
+        saleCinema: "0", //适用门店 1全部门店 0指定门店 2排除门店
+        cinemasList: [{ cinemaUid: 913452 }],
+        saleChannel: "0", //适用渠道 1全部渠道 0指定渠道
+        channelsList: [{ channelUid: 377161 }],
         isSaleAsSetMeal: "1" //是否只允许套餐内售卖
       },
       // 原材料信息表头
@@ -566,128 +493,12 @@ export default {
           }
         }
       ],
-      // 原材料查询数据
-      materialQueryData: {
-        mercatUid: "", //商品分类id
-        name: "",
-        code: "",
-        shorthandCode: "",
-        skuCode: "",
-        page: 1,
-        pageSize: 10
-      },
-      // 添加原材料表头
-      materialTableColumn: [
-        {
-          label: "商品名称",
-          key: "name"
-        },
-        {
-          label: "商品编码",
-          key: "code"
-        },
-        {
-          label: "SKU编码",
-          key: "skuCode"
-        },
-        {
-          label: "速记代码",
-          key: "shorthandCode"
-        },
-        {
-          label: "商品规格",
-          key: "attrValue"
-        },
-        {
-          label: "基本单位",
-          key: "unitName"
-        }
-      ],
-      materialTableData: [],
-      selectedMaterials: [],
-      value: "",
-      addRawMaterialDialog: false, //添加原材料弹窗
-      defaultProps: {
-        children: "children",
-        label: "name"
-      },
-      unitOptions:[],
-      options: [
-        {
-          value: "选项1",
-          label: "黄金糕"
-        },
-        {
-          value: "选项2",
-          label: "双皮奶"
-        },
-        {
-          value: "选项3",
-          label: "蚵仔煎"
-        },
-        {
-          value: "选项4",
-          label: "龙须面"
-        },
-        {
-          value: "选项5",
-          label: "北京烤鸭"
-        }
-      ],
-      categoryTrees:[],
-      currentSelectedUid:'',
-      sourceTreeData: [
-        {
-          id: 1,
-          label: "一级 1",
-          children: [
-            {
-              id: 4,
-              label: "二级 1-1",
-              children: [
-                {
-                  id: 9,
-                  label: "中大影院"
-                },
-                {
-                  id: 10,
-                  label: "客村影院"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          id: 2,
-          label: "一级 2",
-          children: [
-            {
-              id: 5,
-              label: "大学城影院"
-            },
-            {
-              id: 6,
-              label: "二级 2-2"
-            }
-          ]
-        },
-        {
-          id: 3,
-          label: "一级 3",
-          children: [
-            {
-              id: 7,
-              label: "二级 3-1"
-            },
-            {
-              id: 8,
-              label: "二级 3-2"
-            }
-          ]
-        }
-      ],
+      selectedGoodsDialogVisible: false, //添加原材料弹窗
+      goodList: [],
+      unitOptions: [],
       tableLoding: false,
       total: 0,
+      selectedStoreName: "",
       applyStoresRadios: [
         {
           label: "全部门店",
@@ -695,31 +506,14 @@ export default {
         },
         {
           label: "指定门店",
-          type: "0",
-          name: "中大影院,客村影院",
-          value: [
-            {
-              id: 9,
-              label: "中大影院"
-            },
-            {
-              id: 10,
-              label: "客村影院"
-            }
-          ]
+          type: "0"
         },
         {
           label: "排除门店",
-          type: "2",
-          name: "大学城影院",
-          value: [
-            {
-              id: 5,
-              label: "大学城影院"
-            }
-          ]
+          type: "2"
         }
       ],
+      selectedChannelName: "",
       applyChannelRadios: [
         {
           label: "全部渠道",
@@ -727,21 +521,10 @@ export default {
         },
         {
           label: "指定渠道",
-          type: "0",
-          name: "渠道一,渠道二",
-          value: [
-            {
-              id: 9,
-              label: "渠道一"
-            },
-            {
-              id: 10,
-              label: "渠道二"
-            }
-          ]
+          type: "0"
         }
       ],
-      trycombinationSkuData:{},
+      trycombinationSkuData: {}
     };
   },
   mounted() {
@@ -750,26 +533,26 @@ export default {
   },
 
   methods: {
+    handleNumber() {
+      this.famount = this.famount.replace(/[^\.\d]/g, "");
+      this.famount = this.famount.replace(".", "");
+    },
     init() {
-      this.setCheckedKys(this.applyStoresRadios);
-      this.setCheckedKys(this.applyChannelRadios);
-      this.synproFindUnitList({mercatUid:this.routeMerData.uid})
-      this.getCategoryTrees({});
       switch (this.routeQuery.type) {
         // 新建
-        case '1':
+        case "1":
+          this.synproFindUnitList({ catUid: this.routeMerData.uid });
           this.queryData.code = this.routeMerData.proCode;
           this.queryData.catUid = this.routeMerData.uid;
           this.queryData.catName = this.routeMerData.uidname;
           break;
         //修改
-        case '2':
-
-          this.synproQuerySyntheticProduct({code:this.routeMerData.merCode})
+        case "2":
+          this.synproQuerySyntheticProduct({ code: this.routeMerData.merCode });
           break;
         //查看
-        case '3':
-          this.synproQuerySyntheticProduct({code:this.routeMerData.merCode})
+        case "3":
+          this.synproQuerySyntheticProduct({ code: this.routeMerData.merCode });
           break;
       }
     },
@@ -783,62 +566,26 @@ export default {
         }
       });
     },
-    setCheckedKys(radios) {
-      radios.forEach(item => {
-        if (item.value) {
-          item.checkedKys = item.value.map(valueItem => {
-            return valueItem.id;
-          });
-        }
-      });
-    },
     // 查询
-    onQuery() {
-      console.log(this.materialQueryData);
-
-       this.findSemifinishedMater(this.materialQueryData);
-    },
-     // 获取分类列表
-    getCategoryTrees(param) {
-      this.$cimList.headquartersGoods.setmeaLoadCategoies(param).then(resData => {
-        if (resData.code == 200) {
-          this.categoryTrees = resData.data.children;
-        }
-      });
-// var resData = {"code":200,"timestamp":1557042879527,"msg":"操作成功","status":"Ok","data":{"uid":"0","seq":1,"name":"卖品","parentUid":null,"isLeaf":0,"children":[{"uid":"51c40ea1-9597-4a0e-baa1-6a05e21933b8","seq":1,"name":"饮料","parentUid":"0","isLeaf":0,"children":[{"uid":"fcba706a-998a-46e1-aaa9-3c4d8958799d","seq":1,"name":"果汁","parentUid":"51c40ea1-9597-4a0e-baa1-6a05e21933b8","isLeaf":1,"children":[]}]},{"uid":"d86ca2d9-3b26-4db2-9f30-82e594749b35","seq":2,"name":"零食","parentUid":"0","isLeaf":0,"children":[]},{"uid":"a3dedd87-1b0f-4d0d-89dd-7d949e3ac58c","seq":3,"name":"3D镜片","parentUid":"0","isLeaf":1,"children":[]},{"uid":"4esds65a8-5d8d-5c9d-41dg-8k454f5ff4a","seq":4,"name":"套餐","parentUid":"0","isLeaf":1,"children":[]}]}}
-//       this.categoryTrees =[resData.data][0].children;
-    },
-    // 获取原材料列表
-    findSemifinishedMater(param) {
-      this.$cimList.headquartersGoods
-        .synproFindSemifinishedMater(param)
-        .then(resData => {
-          if (resData.code == 200) {
-            this.materialTableData = resData.data.list;
-            this.total = resData.data.total;
-          }
-        })
-        .catch(err => {});
-    },
+    onQuery() {},
     // 获取基本单位
     synproFindUnitList(param) {
       this.$cimList.headquartersGoods
-        .synproFindUnitList(param)
+        .merUnitList(param)
         .then(resData => {
           if (resData.code == 200) {
-            this.unitOptions = resData.data
+            this.unitOptions = resData.data;
           }
         })
         .catch(err => {});
     },
     // 选择原材料组合sku信息接口
-    synproTrycombinationSku(param,callBack) {
-      callBack ? callBack : ()=>{}
+    synproTrycombinationSku(param, callBack) {
+      callBack ? callBack : () => {};
       this.$cimList.headquartersGoods
         .synproTrycombinationSku(param)
         .then(resData => {
           if (resData.code == 200) {
-            // this.trycombinationSkuData= resData.data
             callBack(resData.data);
           }
         })
@@ -851,12 +598,13 @@ export default {
         .then(resData => {
           if (resData.code == 200) {
             this.$message("新建成功!");
-          }else{
-            this.$message(resData.msg);
+            this.handleCancel();
+          } else {
+            this.$message(resData.data || resData.msg);
           }
         })
         .catch(err => {
-           this.$message("服务器错误");
+          this.$message(err.message);
         });
     },
     // 修改合成品
@@ -865,6 +613,10 @@ export default {
         .synproUpdateSyntheticProduct(param)
         .then(resData => {
           if (resData.code == 200) {
+            this.$message("修改成功!");
+            this.handleCancel();
+          } else {
+            this.$message(resData.data || resData.msg);
           }
         })
         .catch(err => {});
@@ -886,153 +638,115 @@ export default {
         .then(resData => {
           if (resData.code == 200) {
             this.queryData = resData.data;
-            this.queryData.canSale =  this.queryData.canSale.toString();
-            this.queryData.saleCinema =   this.queryData.saleCinema.toString();
-            this.queryData.saleChannel =  this.queryData.saleChannel.toString();
-            this.queryData.isSaleAsSetMeal =  this.queryData.isSaleAsSetMeal.toString();
-            this.selectedMaterials = this.queryData.combinationSkuVoList[0].makeItemVoList;
-            console.log("this.selectedMaterials",this.selectedMaterials)
-            if(this.queryData.downTime){
-                this.queryData.downTimeType = '1'
-            }else{
-                this.queryData.downTimeType = '0'
+            this.queryData.canSale = this.queryData.canSale.toString();
+            this.queryData.saleCinema = this.queryData.saleCinema.toString();
+            this.queryData.saleChannel = this.queryData.saleChannel.toString();
+            this.queryData.isSaleAsSetMeal = this.queryData.isSaleAsSetMeal.toString();
+            this.goodList = this.queryData.combinationSkuVoList[0].makeItemVoList;
+            this.synproFindUnitList({ catUid: this.queryData.catUid });
+            console.log("this.goodList", this.goodList);
+            if (this.queryData.downTime) {
+              this.queryData.downTimeType = "1";
+            } else {
+              this.queryData.downTimeType = "0";
             }
           }
         })
         .catch(err => {});
-    },
-    //门店查看合成品
-    synproqueryCinemaSynthetic(param) {
-      this.$cimList.storequartersGoods
-        .synproqueryCinemaSynthetic(param)
-        .then(resData => {
-          if (resData.code == 200) {
-            this.queryData = resData.data;
-            this.queryData.canSale =  this.queryData.canSale.toString();
-            this.queryData.isSaleAsSetMeal =  this.queryData.isSaleAsSetMeal.toString();
-            if(this.queryData.downTime){
-                this.queryData.downTimeType = '1'
-            }else{
-                this.queryData.downTimeType = '0'
-            }
-          }
-        })
-        .catch(err => {});
-    },
-      // 查询树
-    handleaCtegoryTrees(data) {
-      this.materialQueryData.mercatUid = data.uid;
-      this.findSemifinishedMater(this.materialQueryData);
-    },
-    // 选择添加原材料
-    handleSelectionMaterial(value) {
-      this.selectedMaterials = value;
-      console.log(value);
-    },
-    // 清空选择的原材料
-    handleEmptyMaterials() {
-      this.selectedMaterials = [];
-      this.$refs.materialTable.clearSelection();
-    },
-    // 删除单个选择的原材料
-    handleDelMaterial(row) {
-      // console.log(row)
-       // 情空选择的原材料以及包装
-      this.selectedMaterials = this.selectedMaterials.filter(item=>{
-          return item.skuCode != row.skuCode;
-      });
-      let tempArr = this.materialTableData.filter(item=>{
-          return item.skuCode == row.skuCode;
-      });
-      // this.$refs.materialTable.toggleRowSelection(tempArr[0]);
     },
     // 确定提交信息
     handleSubmit() {
       console.log(this.queryData);
-      if(this.routeQuery.type == 1){
-         this.saveSyntheticProduct(this.queryData);
-      }else if(this.routeQuery.type == 2){
-         this.updateSyntheticProduct(this.queryData);
-      }else if(this.routeQuery.type == 3){
-         //查看
-        
-      }
-      
-     
-      // this.synproUpdateCinemaSynthetic(this.queryData);
+      this.$refs["ruleForm"].validate(valid => {
+        if (valid) {
+          if (this.routeQuery.type == 1) {
+            this.saveSyntheticProduct(this.queryData);
+          } else if (this.routeQuery.type == 2) {
+            this.updateSyntheticProduct(this.queryData);
+          } else if (this.routeQuery.type == 3) {
+            //查看
+          }
+        } else {
+          this.$message("带*号的为必填项，请填写");
+          return false;
+        }
+      });
     },
     // 取消提交信息
     handleCancel() {
       this.$router.go(-1);
     },
-    handleModificationSubmit() {
-      this.addRawMaterialDialog = false;
-      // let skuCodes = this.selectedMaterials.map(item=>{
-      //   return item.skuUid
-      // }).join(',')
-      let skuIds = this.selectedMaterials.map(item=>{
-        return item.skuUid
-      }).join(',')
-      this.synproTrycombinationSku({
-        merCode:this.queryData.code,
-        skuCodes:'',//已经生成的合成品sku的code
-        skuIds: skuIds,//所选原材料的skuUid
-      },(data)=>{
-        this.queryData.combinationSkuVoList.forEach(item=>{
-          if(!item.code){
-            item.code= data.code;
+    selectedGoodsDialogCallBack(value) {
+      console.log(value);
+      if (value.btnType == 1) {
+        this.goodList = value.data;
+        this.addRawMaterialDialog = false;
+        let skuIds = this.goodList
+          .map(item => {
+            return item.skuUid;
+          })
+          .join(",");
+        let skuCodes = this.queryData.combinationSkuVoList
+          .map(item => {
+            return item.code;
+          })
+          .join(",");
+        this.synproTrycombinationSku(
+          {
+            merCode: this.queryData.code,
+            skuCodes: skuCodes, //已经生成的合成品sku的code
+            skuIds: skuIds //所选原材料的skuUid
+          },
+          data => {
+            this.queryData.combinationSkuVoList.forEach(item => {
+              if (!item.code) {
+                item.code = data.code;
+              }
+              item.id = Math.random();
+              item.makeItemVoList = JSON.parse(
+                JSON.stringify(data.makeItemVoList)
+              );
+            });
+            // console.log(data)
+            // console.log(this.queryData.combinationSkuVoList)
           }
-          item.id = Math.random();
-          item.makeItemVoList = JSON.parse(JSON.stringify(data.makeItemVoList));
-        })
-        // console.log(data)
-        // console.log(this.queryData.combinationSkuVoList)
-      })     
-    },
-    
-    handleSizeChange(val) {
-      this.materialQueryData.pageSize = val;
-      this.onQuery();
-    },
-    handleCurrentChange(val) {
-      this.materialQueryData.page = val;
-      this.onQuery();
+        );
+      }
     },
     // 添加配方分组
     handleAddrRecipeGroup() {
-      let skuCodes = this.queryData.combinationSkuVoList.map(item=>{
-        return item.code
-      }).join(',')
+      let skuCodes = this.queryData.combinationSkuVoList
+        .map(item => {
+          return item.code;
+        })
+        .join(",");
+      let skuIds = this.goodList
+        .map(item => {
+          return item.skuUid;
+        })
+        .join(",");
 
-      // if(this.queryData.combinationSkuVoList.length>0){
-      //   skuIds = this.queryData.combinationSkuVoList[0].makeItemVoList.map(item=>{
-      //     return item.skuUid
-      //   }).join(',')
-      // }
-      let skuIds = this.selectedMaterials.map(item=>{
-        return item.skuUid
-      }).join(',')
-      
       let tempObj = {
         id: Math.random(),
         name: "",
         price: "",
         code: "",
-        makeItemVoList: [
-        ]
-      }
+        makeItemVoList: []
+      };
 
-      this.synproTrycombinationSku({
-        merCode:this.queryData.code,
-        skuCodes:skuCodes,//已经生成的合成品sku的code
-        skuIds: skuIds,//所选原材料的skuUid
-      },(data)=>{
-        tempObj.code=data.code;
-        tempObj.makeItemVoList=data.makeItemVoList;
-        this.queryData.combinationSkuVoList.push(tempObj);
-        console.log(data)
-      })
-     
+      this.synproTrycombinationSku(
+        {
+          merCode: this.queryData.code,
+          skuCodes: skuCodes, //已经生成的合成品sku的code
+          skuIds: skuIds //所选原材料的skuUid
+        },
+        data => {
+          tempObj.code = data.code;
+          tempObj.makeItemVoList = data.makeItemVoList;
+          this.queryData.combinationSkuVoList.push(tempObj);
+          console.log(data);
+        }
+      );
     },
     // 删除配方分组
     handleDleteRecipeGroup(index) {
@@ -1041,39 +755,63 @@ export default {
     handleRecipeTableDlete(groupIndex, row, index) {
       console.log(groupIndex, row, index);
 
-      this.handleDelMaterial(row)
-      this.queryData.combinationSkuVoList.forEach(item=>{
-        item.makeItemVoList = item.makeItemVoList.filter(item=>{
-           return item.skuCode != row.skuCode;
-        })
-      })
-    },
-    //确定选择适用门店
-    handleStoresCheckedNodes(checkedValue) {
-      this.checkedNodes(this.applyStoresRadios, checkedValue);
-    },
-    //确定选择适用渠道
-    handleChannelCheckedNodes(checkedValue) {
-      this.checkedNodes(this.applyChannelRadios, checkedValue);
-    },
-    checkedNodes(radios, checkedValue) {
-      // console.log(radios);
-      console.log(checkedValue);
-      radios.forEach(item => {
-        if (item.type == checkedValue.type) {
-          if (checkedValue.value) {
-            item.value = checkedValue.value;
-            item.name = checkedValue.value
-              .map(valueItem => {
-                return valueItem.label;
-              })
-              .join(",");
-            item.checkedKys = checkedValue.value.map(valueItem => {
-              return valueItem.id;
-            });
-          }
-        }
+      this.handleDelMaterial(row);
+      this.queryData.combinationSkuVoList.forEach(item => {
+        item.makeItemVoList = item.makeItemVoList.filter(item => {
+          return item.skuCode != row.skuCode;
+        });
       });
+    },
+    // 删除单个选择的原材料
+    handleDelMaterial(row) {
+      // console.log(row)
+      // 情空选择的原材料以及包装
+      this.goodList = this.goodList.filter(item => {
+        return item.skuCode != row.skuCode;
+      });
+      // let tempArr = this.materialTableData.filter(item=>{
+      //     return item.skuCode == row.skuCode;
+      // });
+      // this.$refs.materialTable.toggleRowSelection(tempArr[0]);
+    },
+    handleDialog(name) {
+      this.$refs[name].handleDialog(true);
+    },
+    // 门店
+    onCinemalSumit(data = []) {
+      this.queryData.cinemas = data.map(item => {
+        return {
+          cinemaUid: item.uid
+        };
+      });
+      this.selectedStoreName = data
+        .map(item => {
+          return item.name;
+        })
+        .join(",");
+      console.log("门店数据", data);
+    },
+    // 渠道
+    onChanneSumit(data = []) {
+      this.queryData.channels = data.map(item => {
+        return {
+          channelUid: item.uid
+        };
+      });
+      this.selectedChannelName = data
+        .map(item => {
+          return item.name;
+        })
+        .join(",");
+      console.log("渠道数据", data);
+    },
+    //删除门店
+    handleDeleteCinemas() {
+      this.onCinemalSumit([]);
+    },
+    //删除渠道
+    handleDeleteChanne() {
+      this.onChanneSumit([]);
     },
     numeric(index) {
       index = index + 1;
@@ -1092,16 +830,16 @@ export default {
       ];
       return num[index];
     },
-    saleCinemaType(type){
+    saleCinemaType(type) {
       switch (type) {
-        case '0':
-           return "指定门店"
+        case "0":
+          return "指定门店";
           break;
-        case '1':
-           return "全部门店"
+        case "1":
+          return "全部门店";
           break;
-        case '2':
-           return "排除门店"
+        case "2":
+          return "排除门店";
           break;
       }
     }
@@ -1110,26 +848,26 @@ export default {
     routeQuery() {
       return this.$route.query;
     },
-    routeMerData(){
-       if(this.$route.query.data ){
-          return JSON.parse(this.$route.query.data);
-       }else{
-          return {}
-       }
+    routeMerData() {
+      if (this.$route.query.data) {
+        return JSON.parse(this.$route.query.data);
+      } else {
+        return {};
+      }
     },
     typeText() {
       //1新建，2修改，3查看
       switch (this.routeQuery.type) {
         // 单品
-        case '1':
+        case "1":
           return "新建";
           break;
         // 原材料
-        case '2':
+        case "2":
           return "修改";
           break;
         // 合成品
-        case '3':
+        case "3":
           return "查看";
           break;
       }
@@ -1137,7 +875,10 @@ export default {
   },
   components: {
     applyStores,
-    applyChannel
+    applyChannel,
+    selectedGoods,
+    cinemalDialog,
+    channelDialog
   }
 };
 </script>
@@ -1149,6 +890,9 @@ export default {
   min-width: 250px;
 }
 
+.apply-stores-input {
+  cursor: pointer;
+}
 .putaway-timer {
   .el-form-item__content {
     min-width: 150px;
@@ -1166,11 +910,11 @@ export default {
   text-align: center;
   font-size: 20px;
 }
-.change-dialog {
-  .el-form-item__content {
-    width: 60%;
-  }
-}
+// .change-dialog {
+//   .el-form-item__content {
+//     width: 60%;
+//   }
+// }
 .el-date-editor.el-input,
 .el-date-editor.el-input__inner {
   width: 180px;

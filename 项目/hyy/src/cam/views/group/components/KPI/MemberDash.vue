@@ -284,7 +284,7 @@ export default {
     //卖品KPI
     getMemKpiData(MemberKPIvalue){
       //取到时间进度
-      let tool1 = MemberKPIvalue.timeRate, tool2 = (MemberKPIvalue.newMemberRate / 10000).toFixed(2)
+      let tool1 = MemberKPIvalue.timeRate, tool2 = MemberKPIvalue.newMemberRate
       //取值title
       this.BoxRate = MemberKPIvalue.newMemberCurrent
       this.BoxKPItotal = MemberKPIvalue.newMemberTarget

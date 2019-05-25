@@ -34,7 +34,7 @@
                 <el-radio v-model="ruleForm.validityType" label="fixed_type">固定型</el-radio>
                 <el-date-picker style="width:360px" v-model="cooperationTime" :disabled="!(ruleForm.validityType == 'fixed_type')"
                   align="right" unlink-panels clearable range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期"
-                  type="datetimerange" :default-time="['00:00:00', '23:59:59']"></el-date-picker>
+                  type="datetimerange" value-format="yyyy-MM-dd HH:mm:ss" :default-time="['00:00:00', '23:59:59']"></el-date-picker>
               </div>
               <div class="ticket-preferential-restrictions-item">
                 <el-radio v-model="ruleForm.validityType" label="dynamic_type">动态型</el-radio>
@@ -45,9 +45,10 @@
             </el-form-item>
             <el-form-item label="上传优惠券：" prop="goodsTickets" class="goods-tickets">
               <div style="display:flex">
-                <div class="titcket-num">{{ruleForm.goodsTickets | formatGoodsTickets}}</div>
-                <el-upload class="upload-demo" :action="$store.state.crm.fileUploadUrl" :on-success="fileUploadSuccess" :show-file-list="false"
-                  :before-upload="beforeFileUpload" name="file">
+                <!-- <div class="titcket-num">{{ruleForm.goodsTickets | formatGoodsTickets}}</div> -->
+                <div class="titcket-num">{{ruleForm.goodsTickets[0].ticketNum}}</div>
+                <el-upload class="upload-demo" :action="$store.state.crm.fileUploadUrl" :on-success="fileUploadSuccess"
+                  :show-file-list="false" :before-upload="beforeFileUpload" name="file">
                   <div class="select-btn"><em>导入</em></div>
                   <!-- <div class="el-upload__tip">请上传EXCEL文档</div> -->
                 </el-upload>
@@ -171,13 +172,45 @@ export default {
       }
       if (!/^[1-9]\d*$/.test(value.toString().replace(/\s/g, ""))) {
         callback(new Error("请输入正整数"));
+      }
+      if (value.toString().replace(/\s/g, "") * 1 > 99999999) {
+        callback(new Error("最多不能超过8位数字"));
+      } else {
+        callback();
+      }
+    };
+    // 验证预警手机号
+    var checkWarningPhone = (rule, value, callback) => {
+      var testPhone = /^(1[3|4|5|6|7|8|9]\d{9}\;)*(1[3|4|5|6|7|8|9]\d{9})$/;
+      if (value == null) {
+        value == "";
+      }
+      if (value.toString().trim() == "") {
+        callback(new Error("请输入预警手机号"));
+      }
+      if (!testPhone.test(value.toString().trim())) {
+        callback(new Error('请输入预警手机号,多个手机号用英文";"号隔开'));
+      } else {
+        callback();
+      }
+    };
+    // 校验预警邮箱
+    var checkWarningEmail = (rule, value, callback) => {
+      var testEmail = /^((([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6}\;))*(([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})))$/;
+      if (value == null) {
+        value == "";
+      }
+      if (value.toString().trim() == "") {
+        callback(new Error("请输入预警邮箱地址"));
+      }
+      if (!testEmail.test(value.toString().trim())) {
+        callback(new Error('请输入预警邮箱地址,多个邮箱地址用英文";"号隔开'));
       } else {
         callback();
       }
     };
     // 校验有效期
     var checkValidityType = (rule, value, callback) => {
-      console.log("checkValidityType", this.cooperationTime);
       if (!this.ruleForm.timeNum) {
         this.ruleForm.timeNum = "";
       }
@@ -208,13 +241,18 @@ export default {
     };
     // 校验优惠券
     var checkTicketNum = (rule, value, callback) => {
-      if(value == null){
-        value = []
+      if (value == null) {
+        value = [
+          {
+            ticketPath: "", //文件路径
+            ticketNum: 0 //优惠券张数
+          }
+        ];
       }
-      if(value.length == 0){
+      if (value[0].ticketNum > 0) {
+        callback();
+      } else {
         callback(new Error("请上传优惠券"));
-      }else{
-        callback()
       }
     };
 
@@ -252,7 +290,12 @@ export default {
         timeNum: "", //动态时间
         startTime: "", //固定时间的开始时间
         endTime: "", //固定时间的结束时间
-        goodsTickets: [],//上传的优惠券文件地址
+        goodsTickets: [
+          {
+            ticketPath: "", //文件路径
+            ticketNum: 0 //优惠券张数
+          }
+        ], //上传的优惠券文件地址
         remark: "", //商品说明
         imgPath: "", //商品图片地址
         diffGoodsRule: {
@@ -313,10 +356,12 @@ export default {
           { required: true, validator: checkCostPrice, trigger: "blur" }
         ],
         "diffGoodsWarning.warningMobileNums": [
-          { required: true, message: "请输入预警手机号", trigger: "blur" }
+          { max: 500, message: "长度不可超过500个字符", trigger: "blur" },
+          { required: true, validator: checkWarningPhone, trigger: "blur" }
         ],
         "diffGoodsWarning.warningEmail": [
-          { required: true, message: "请输入预警邮箱地址", trigger: "blur" }
+          { max: 500, message: "长度不可超过500个字符", trigger: "blur" },
+          { required: true, validator: checkWarningEmail, trigger: "blur" }
         ]
       }
     };
@@ -328,24 +373,24 @@ export default {
   watch: {
     "ruleForm.goodsTickets": {
       handler(newVal, oldVal) {
-        if (newVal.length > 0) {
+        if (newVal[0].ticketNum > 0) {
           this.$refs["ruleForm"].clearValidate("goodsTickets");
         }
-      }
-    },
-    deep: true,
-    immediate: true
-  },
-  filters:{
-    formatGoodsTickets(value) {
-      if (value.length > 0) {
-            var totalNum = 0
-          for (var i = 0; i < value.length; i++) {
-            totalNum += parseInt(value[i].ticketNum)
-          }
-          return totalNum
-        }
+      },
+      deep: true
     }
+  },
+  filters: {
+    // 计算上传文件的总数
+    // formatGoodsTickets(value) {
+    //   if (value.length > 0) {
+    //         var totalNum = 0
+    //       for (var i = 0; i < value.length; i++) {
+    //         totalNum += parseInt(value[i].ticketNum)
+    //       }
+    //       return totalNum
+    //     }
+    // }
   },
   mounted() {
     // 请求商品类型
@@ -367,8 +412,15 @@ export default {
         .then(res => {
           if (res.validityType == "fixed_type") {
             this.ruleForm = res;
-            this.cooperationTime[0] = res.startTime;
-            this.cooperationTime[1] = res.endTime;
+            // this.cooperationTime = [res.startTime, res.endTime];
+            this.$set(this, "cooperationTime", [
+              new Date(res.startTime.replace(/-/g, "/")).formatDate(
+                "yyyy-MM-dd hh:mm:ss"
+              ),
+              new Date(res.endTime.replace(/-/g, "/")).formatDate(
+                "yyyy-MM-dd hh:mm:ss"
+              )
+            ]);
           } else if (res.validityType == "dynamic_type") {
             this.ruleForm = res;
           }
@@ -380,9 +432,6 @@ export default {
     changeTimeNum(val) {
       this.$set(this.ruleForm, "timeNum", val);
     },
-    changeCooperationTime(val) {
-      this.$set(this, "cooperationTime", val);
-    },
     // // 上传优惠券
     // handleExceed(files, fileList) {
     //   this.$message.warning(`当前限制选择 1 个文件，请删除后继续上传`);
@@ -390,11 +439,13 @@ export default {
     fileUploadSuccess(response, file, fileList) {
       //文件上传成功
       if (response.code == 200) {
-      this.$message.success('导入成功!')
-        this.ruleForm.goodsTickets.push({
-          ticketPath: response.data.path,
-          ticketNum: response.data.num
-        });
+        this.$message.success("导入成功!");
+        this.ruleForm.goodsTickets[0].ticketPath = response.data.path;
+        this.ruleForm.goodsTickets[0].ticketNum = response.data.num;
+        // this.ruleForm.goodsTickets.push({
+        //   ticketPath: response.data.path,
+        //   ticketNum: response.data.num
+        // });
       } else {
         this.$message.error(response.msg);
       }
@@ -439,12 +490,12 @@ export default {
         if (valid) {
           var data = this.ruleForm;
           if (data.validityType == "fixed_type") {
-            data.startTime = new Date(this.cooperationTime[0]).formatDate(
-              "yyyy-MM-dd hh:mm:ss"
-            );
-            data.endTime = new Date(this.cooperationTime[1]).formatDate(
-              "yyyy-MM-dd hh:mm:ss"
-            );
+            data.startTime = new Date(
+              this.cooperationTime[0].toString().replace(/-/g, "/")
+            ).formatDate("yyyy-MM-dd hh:mm:ss");
+            data.endTime = new Date(
+              this.cooperationTime[1].toString().replace(/-/g, "/")
+            ).formatDate("yyyy-MM-dd hh:mm:ss");
             data.timeNum = "";
           } else if (data.validityType == "dynamic_type") {
             data.startTime = "";

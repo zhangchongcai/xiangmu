@@ -143,6 +143,7 @@
         let limit = {
           page: this.current,
           pageSize: this.pageSize,
+          cinemaUid:this.$route.query.cinemaUid
         };
         this.$csmList.getVip(limit)
           .then(data => {
@@ -158,6 +159,7 @@
         let limit = {
           page: this.current,
           pageSize: this.pageSize,
+          cinemaUid:this.$route.query.cinemaUid
         };
         this.$csmList.getOtherthing(limit)
           .then(data => {

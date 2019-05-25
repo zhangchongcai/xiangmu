@@ -754,14 +754,6 @@ export default {
     width: 70%;
   }
 }
-
-
-.common-header{
-  padding: 24px;
-}
-.el-form-item{
-  margin-bottom:2px;
-}
 .bigBox .has-gutter tr th{
   background: #e7ebff !important; 
 }

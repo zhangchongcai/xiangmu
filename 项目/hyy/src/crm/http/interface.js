@@ -496,6 +496,14 @@ export const diffGoodsDetail = params => {
     params
   });
 };
+export const diffGoodsRefill = data => {
+  //修改商品状态
+  return axios({
+    url: modelUrl +"/diff/goods/refill",
+    method: "post",
+    data
+  });
+};
 /* --------- 异业商品 end --------- */
 /* --------- 异业权益 start --------- */
 export const diffEquityNameIsexist = params => {
@@ -533,6 +541,7 @@ export const diffEquityEdit = data => {
 /* --------- 异业权益 end --------- */
 
 export default {
+  diffGoodsRefill,
   diffGoodsDetailList ,
   memberLogListPage,
   diffGoodsUpdateStatus,

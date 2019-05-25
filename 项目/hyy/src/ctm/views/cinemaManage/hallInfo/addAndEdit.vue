@@ -3,7 +3,7 @@
         <div class="breadcrumb">
             <span>影院管理</span>
             <span>></span>
-            <span @click="toBack" style="color:#333;cursor:pointer"> 影院编辑</span>
+            <span @click="toBack" style="color:#666;cursor:pointer"> 影院编辑</span>
             <span>></span>
             <span>{{jsonData.uid ? '修改' : '新建'}}影厅</span>
         </div>
@@ -65,9 +65,7 @@ export default {
         //表单正则规则
         let wallName=(rule,value,callback)=>{
             let reg=/[0-9a-zA-Z]{4,9}/
-            if(!value){
-                return callback(new Error('不能为空！'))
-            }
+            
             var data = {
                 uid :this.$route.query.uid,
                 name:(this.jsonData.name).trim(),
@@ -110,6 +108,8 @@ export default {
                 if(!value) {
                     callback(new Error('不能为空！'))
                     return
+                }else if(parseInt(value).toString()=="NaN") {
+                    return callback(new Error('请输入数字！'))
                 }
                 var data = {
                     uid :this.$route.query.uid,

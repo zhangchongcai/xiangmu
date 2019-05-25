@@ -12,13 +12,19 @@ export default {
             {content:"三人家庭爆米花",price:35,num:1},
             {content:"三人家庭爆米花",price:45,num:1},
          ],
+         goodsData:{ //卖品信息
+            list:[],
+         },
          goodlistIndex:'',   //下标索引值
+         showReplacegoods:false,
+         replacegoods: [] //套餐中包含的产品
  
     },
 
     mutations : {
         //获取电影数组
         [TYPES.GET_CART_DATA] : (state,val) => {
+            console.log(val)
             state.cartData = val
         },
 
@@ -35,6 +41,15 @@ export default {
         [TYPES.SET_CART_NUMBER] : (state,val) => {
             state.goodsList[state.goodlistIndex].num = val
         },
+        [TYPES.SHOW_REPLACE_GOODS] : (state, contentArr) => {
+            state.showReplacegoods = !state.showReplacegoods
+            if(contentArr && contentArr.length) {
+                state.replacegoods = contentArr
+            }
+        },
+        [TYPES.CART_SET_GOODS_DATA] : (state,data) => {
+            state.goodsData.list = data
+        }
     },
 
 
@@ -52,6 +67,13 @@ export default {
         },
         getcartNumber(state) {
             return state.getcartNumber
+        },
+        //更换套餐内容
+        showReplacegoods(state) {
+            return state.showReplacegoods
+         },
+         replacegoods(state) {
+            return state.replacegoods
         }
     }
     

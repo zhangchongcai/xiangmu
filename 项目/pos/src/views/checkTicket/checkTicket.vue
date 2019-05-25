@@ -3,14 +3,14 @@
     <div class="pageTitle">验票</div>
     <div class="contentLayer">
       <div class="queryDateForm">
-        <div class="fromInput"><el-input v-model="value" placeholder="请输入内容" size="medium"></el-input></div>
+        <div class="fromInput"><el-input v-model="value" placeholder="扫描或输入影票编号/影票信息码" size="medium"></el-input></div>
         <el-button type="primary" size="medium" @click="getDate">查询</el-button>
         <el-button size="medium">清空</el-button>
       </div>
       <div class="tableLayer">
         <div class="ItemLayer">
           <div class="item">
-            <span class="labelSpan">影院编号:</span>
+            <span class="labelSpan">电影票编号:</span>
             <span class="keySpan">{{data.cinemaCode}}</span>
           </div>
           <div class="item">
@@ -50,7 +50,7 @@
             <span class="keySpan">{{data.channelName || '无'}}</span>
           </div>
           <div class="item">
-            <span class="labelSpan">代理服务费（元）：</span>
+            <span class="labelSpan">代售服务费（元）：</span>
             <span class="keySpan">{{data.servicePrice}}</span>
           </div>
           <div class="item">
@@ -73,7 +73,7 @@ import { movieTicketCheck } from 'http/apis'
 export default {
   data(){
     return{
-      value: '1112667039954132992',
+      value: '',
       seatTypes:['单人座','情侣座','三人座','残疾人座','按摩椅座','儿童座'],
       data:{}
     }
@@ -83,10 +83,10 @@ export default {
   
   methods: {
     async getDate(){
+      if(!this.value) return this.$message.warning('输入影票编号/影票信息码！');
       const data = await movieTicketCheck({
         cinemaTicketCode: this.value
       })
-      console.log(data);
       if(data.code == 200){
         this.data = data.data
       }else{

@@ -1,8 +1,8 @@
 <template>
     <div class="detail">
         <div class="ticketBox">
-            <div class="canva">
-                <canvas width="460px" height="360px" ref="canva"  ></canvas>
+            <div class="canva" id="print" ref="canvas">
+                <canvas width="460px" height="360px" ref="canva"  v-show="0"></canvas>
             </div>
         </div>
         <div class="content">
@@ -18,7 +18,8 @@
                 </tbody>
             </table>
             <div class="btn">
-                <el-button type="primary" @click="printTicket">打印票版</el-button>
+                <!-- <el-button type="primary" @click="printTicket">打印票版</el-button> -->
+                <el-button type="primary"  v-print="'#print'">打印票版</el-button>
                 <el-button type="primary" @click="back">返回</el-button>
             </div>    
         </div>
@@ -26,7 +27,18 @@
 </template>
 <script>
 import util from './app.js'
+import print from './vue-print'
+import Vue from 'vue'
+Vue.use(print)
+function convertCanvasToImage(canvas) {
+	var image = new Image();
+    image.src = canvas.toDataURL("image/png");
+    console.log(image)
+    document.documentElement.appendChild(image);
+	return image;
+} 
 export default {
+
     data(){
         return{
             //图片路径
@@ -198,7 +210,8 @@ export default {
                     this.data = data ;
                     // this.mouse_context.scale(1.4,1.4)          图像放大
                     this.repaintCanvas();
-                    
+                    let iamge = convertCanvasToImage(this.$refs.canva)
+                    this.$refs.canvas.appendChild(iamge)
                 }
             })
         },
@@ -232,6 +245,13 @@ export default {
                     console.log('成功回调',args)
                 })
             })
+        },
+        printTicket() {
+            
+        },
+        // canvas => img
+        canvasToimg(){
+            
         }
     },      
     created(){

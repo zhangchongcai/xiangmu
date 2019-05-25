@@ -5,7 +5,7 @@
       title="影院选择"
       :isShow="selectTreeValue"
       :dialogWidth="448"
-      :dialogHeight="580"
+      :dialogHeight="576"
       :dialogContentHeight="473"
       @handleBtnComfirmClick="confirmTreeBtn"
       @handleBtnCancelClick="cancelTreeBtn"
@@ -22,6 +22,7 @@
         highlight-current
         v-loading="this.loading"
         :props="defaultProps"
+        icon-class="iconfont icon-neiye-zhankaijiantou"
       ></el-tree>
       </div>
     </my-dialog>
@@ -172,11 +173,6 @@ function changeTreeJson(valArr) {
 }
 </script>
 
-<style Scoped>
-.el-tree {
-  color: #666666;
-}
-.el-tree-node__label {
-  font-size: 12px;
-}
+<style>
+
 </style>

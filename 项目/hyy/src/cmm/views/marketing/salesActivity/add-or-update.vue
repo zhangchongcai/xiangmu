@@ -130,7 +130,7 @@
                         <el-option label="包含" value="normalIn"></el-option>
                         <el-option label="不包含" value="normalNotIn"></el-option>
                     </el-select>
-                    <el-input class="chooseWidth1" v-model="basicDataForm.tradingMerchantInput" readonly></el-input>
+                    <el-input class="chooseWidth1" v-model="basicDataForm.tradingMerchantInput" ></el-input>
                     <el-button type="primary" style="margin-left:10px;" @click="tradingMerchantClick()" plain :disabled="disabled">选择</el-button>
                 </el-form-item>
                 <el-form-item label="消费者身份:">
@@ -140,7 +140,7 @@
                         <el-option label="指定会员等级" value="AppointMember"></el-option>
                         <el-option label="非会员" value="not_memberOperator"></el-option>
                     </el-select>
-                    <el-input class="chooseWidth1" v-if="basicDataForm.consumerIdentity=='AppointMember'" v-model="basicDataForm.consumerIdentityInput" readonly></el-input>
+                    <el-input class="chooseWidth1" v-if="basicDataForm.consumerIdentity=='AppointMember'" v-model="basicDataForm.consumerIdentityInput" ></el-input>
                     <el-button type="primary" v-if="basicDataForm.consumerIdentity=='AppointMember'" style="margin-left:10px;" @click="consumerIdentityClick()" plain :disabled="disabled">选择</el-button>
                 </el-form-item>
                 <el-form-item label="商品名称:">
@@ -149,7 +149,7 @@
                         <el-option label="包含" value="normalIn"></el-option>
                         <el-option label="不包含" value="normalNotIn"></el-option>
                     </el-select>
-                    <el-input class="chooseWidth1" v-if="basicDataForm.tradeName!=''" v-model="basicDataForm.tradeNameInput" readonly></el-input>
+                    <el-input class="chooseWidth1" v-if="basicDataForm.tradeName!=''" v-model="basicDataForm.tradeNameInput" ></el-input>
                     <el-button type="primary" v-if="basicDataForm.tradeName!=''" style="margin-left:10px;" @click="tradeNameClick()" plain :disabled="disabled">选择</el-button>
                 </el-form-item>
                 <el-form-item label="卖品单价:">
@@ -176,7 +176,7 @@
                         <el-option label="包含" value="normalIn"></el-option>
                         <el-option label="不包含" value="normalNotIn"></el-option>
                     </el-select>
-                    <el-input class="chooseWidth1" v-if="basicDataForm.payType!=''" v-model="basicDataForm.payTypeInput" readonly></el-input>
+                    <el-input class="chooseWidth1" v-if="basicDataForm.payType!=''" v-model="basicDataForm.payTypeInput" ></el-input>
                     <el-button type="primary" v-if="basicDataForm.payType!=''" class="margin-left-10" @click="payTypeClick()" plain :disabled="disabled">选择</el-button>
                 </el-form-item>
             </el-collapse-item>
@@ -184,7 +184,7 @@
             <!-- 设置优惠方案 -->
             <el-collapse-item title="设置优惠方案" name="3">
                 <el-form-item label="商品:" prop="goods">
-                    <el-input class="chooseWidth1" v-model="basicDataForm.goodsInput" readonly></el-input>
+                    <el-input class="chooseWidth1" v-model="basicDataForm.goodsInput" ></el-input>
                     <el-button type="primary" style="margin-left:10px;" @click="goodsClick()" plain :disabled="disabled">选择</el-button>
                 </el-form-item>
                 <!-- 打折 -->

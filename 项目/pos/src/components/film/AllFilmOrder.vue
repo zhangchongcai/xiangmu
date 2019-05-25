@@ -3,7 +3,7 @@
       <div class="item-container">
         <div class="film-order-container" @click="toFilmTab">
             <div class="film-name">
-                <span class="film-name-style">{{filmInfo.name}}</span>
+                <span :class="['film-name-style', isSelected ? 'name-selected' : '']">{{filmInfo.name}}</span>
                 <div class="arrow-style">
                     <i class="iconfont icon-arrow-right-noSelected"></i>
                 </div>
@@ -15,13 +15,13 @@
         </div>
 
         <div :class="['film-contents', currentFilmId == item.id ? 'selected' : '']" v-for="(item, index) in filmInfo.arr_plan_list.slice(0, 2)" :key="'hall' + index" @click="setHallIndex(index)">
-            <span class="play-time">
+            <span :class="['play-time', currentFilmId == item.id ? 'font-selected' : '']">
                 {{item.show_time.substring(10, 16)}}
             </span>
-            <span class="play-place">
+            <span :class="['play-place', currentFilmId == item.id ? 'font-selected' : '']">
                 {{item.hall_name}}
             </span>
-            <span class="play-sell">
+            <span :class="['play-sell', currentFilmId == item.id ? 'font-selected' : '']">
                 {{"已售" + item.soldnum  + "/" + item.seatnum}}
             </span>
             <i v-show="currentFilmId == item.id" class="iconfont selection-pos iconchangcixuanzhongzhuangtai"></i>
@@ -44,7 +44,12 @@ export default {
     computed: {
         ...mapGetters([
             'currentFilmId'
-        ])
+        ]),
+        isSelected() {
+            return this.filmInfo.arr_plan_list.some(item => {
+                return item.id == this.currentFilmId
+            })
+        }
     },
 
     methods: {
@@ -90,7 +95,7 @@ export default {
             padding: 1.6vh;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: space-between;
             @include color('border', $lightWhite-color);
             position: relative;
 
@@ -111,6 +116,9 @@ export default {
                 font-weight: bold;
                 margin-bottom: 4px;
             }
+            .name-selected {
+                color: $font-color-blue;
+            }
 
             .icon-arrow-right-noSelected {
                 color: #bbcfff;
@@ -128,13 +136,12 @@ export default {
                 margin-right: 2px;
                 text-align: center;
                 font-size: $font-size12;
-                transform: scale(0.95);
             }
         }
       }
 
       .selected {
-          box-shadow: 0 0 1px 1px inset $btn-background-color-theme;
+          box-shadow: 0 0 1px 1px inset $blue-color;
       }
 
       .film-contents {
@@ -169,6 +176,10 @@ export default {
                 .play-place, .play-sell {
                     font-size: $font-size12;
                     color: $font-color6;
+                }
+
+                .font-selected {
+                    color: $font-color-blue;
                 }
         }
     }

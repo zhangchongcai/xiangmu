@@ -6,24 +6,24 @@
                <div class="search">
                     <label style="margin-left:24px;">
                        影院名称：
-                        <el-input size="mini" style="width:160px" palceholder="请输入影院名称" v-model="cinemaName"></el-input>
+                        <el-input size="small" style="width:160px" palceholder="请输入影院名称" v-model="searchName"></el-input>
                    </label>
-                   <el-button style="margin-left:24px" type="primary" size="mini" @click="search">搜索</el-button>
+                   <el-button style="margin-left:24px" type="primary" size="small" @click="search">搜索</el-button>
                </div>
                <div class="select-wrap">
                     <div class="select none-border-table">
-                       <el-table :data="cinemaList">
-                             <el-table-column  min-width="30" >
+                       <el-table :data="cinemaList" height="400">
+                             <el-table-column  min-width="40" align="center">
                                 <template slot-scope="scope">
                                     <el-radio v-model="cinemaId" :label="scope.row.cinemaCode" @change="changeCinema(scope.row.cinemaName)">
                                         {{''}}
                                     </el-radio>
                                 </template>
                             </el-table-column>
-                            <el-table-column prop="cinemaName" label="影院名称" min-width="60" >
+                            <el-table-column prop="cinemaName" label="影院名称" min-width="110" >
                             </el-table-column>
-                            <el-table-column prop="cinemaCode" label="专资编码" min-width="120"></el-table-column>
-                            <el-table-column prop="address" label="城市地区" min-width="140"></el-table-column>
+                            <el-table-column prop="cinemaCode" label="专资编码" min-width="100"></el-table-column>
+                            <el-table-column prop="address" label="城市地区" min-width="220"></el-table-column>
                        </el-table>
                     </div>
                     <div class="center" style="padding:12px 0" v-if="cinemaList.length > 0">
@@ -52,6 +52,7 @@ export default {
         return {
             userId:this.$store.state.loginUser?this.$store.state.loginUser.uid:805852,
             show:false,
+            searchName:null,
             cinemaName:null,
             cinemaId:null,
             cinemaList:[],
@@ -66,7 +67,7 @@ export default {
             let params = {
                 body:{
                     userId:this.userId,
-                    cinemaName:this.cinemaName,
+                    cinemaName:this.searchName,
                     pageNo:this.page,
                     pageSize:this.pageSize
                 }
@@ -77,22 +78,29 @@ export default {
                 this.total = res.total;
             })
         }, 
-        // 搜索
+        // 2.搜索
         search(){
             this.initData()
         },
-        // 选择影院
+        // 3.选择影院
         changeCinema(name){
             this.cinemaName = name;
         },
-        // 确定
+        // 4.确定
         sure(){
             this.$emit('getList',{cinemaId:this.cinemaId,cinemaName:this.cinemaName});
-            this.show = false;
+            this.resetData()
         },
-        // 4.取消
+        // 5.取消
         handleClose(){
+            this.resetData()
+        },
+        // 6.重置
+        resetData(){
             this.cinemaId = null;
+            this.cinemaName = null;
+            this.searchName = null;
+            this.page = 1;
             this.show = false;
         },
         handleSizeChange(val) {
@@ -113,6 +121,12 @@ export default {
         font-size:12px;
         border-top:1px solid  #E5E5E5;
         padding-top:10px;
+        .search{
+            label{
+                font-size:12px;
+            }
+            
+        }
         .select-wrap{
             margin-top:10px;
             border:1px solid #E5E5E5;

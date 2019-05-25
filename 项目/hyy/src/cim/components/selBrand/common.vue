@@ -88,14 +88,7 @@ export default {
     }
   },
   mounted(){
-    // brandQueryData:function(val,oldval){
-      // this.init()
-    // }
-    // brandQueryData: function (val, oldVal) {
-    //     this.$nextTick(() => {
-    //       console.log('监听到已异步加载的fatherAjaxData数据 已有值');
-    //       console.log(val);
-    //     });
+
   },
   watch:{
     BRadio(val){

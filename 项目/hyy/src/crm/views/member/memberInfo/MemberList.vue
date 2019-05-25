@@ -19,9 +19,9 @@
         <el-input v-model="formData.memberIdOrPhone" @blur="()=>{formData.memberIdOrPhone = formData.memberIdOrPhone.trim()}"
           placeholder="会员ID/手机号" clearable></el-input>
       </el-form-item>
-      <el-form-item label="会员等级：" prop="status">
-        <el-select v-model="formData.status" placeholder="全部等级" clearable disabled>
-          <el-option v-for="item in rankOptions" :key="item.value" :label="item.label" :value="item.value"></el-option>
+      <el-form-item label="会员等级：" prop="levelId">
+        <el-select v-model="formData.levelId" placeholder="全部等级" clearable>
+          <el-option v-for="item in memberLevelRuleVOList" :key="item.levelNo" :label="item.levelName" :value="item.levelNo"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="来源：" prop="source">
@@ -149,16 +149,7 @@ export default {
           }
         ]
       },
-      rankOptions: [
-        {
-          label: "普通会员",
-          value: 0
-        },
-        {
-          label: "积分会员",
-          value: 1
-        }
-      ],
+      memberLevelRuleVOList: [],
       sourceOptions: [
         {
           label: "商务总部",
@@ -173,7 +164,7 @@ export default {
         date: [new Date().addMonths(-1), new Date()],
         startOpenDate: new Date().addDays(-30).formatDate("yyyy-MM-dd"),
         endOpenDate: new Date().addDays(-1).formatDate("yyyy-MM-dd"),
-        status: "", // 会员等级
+        levelId: "", // 会员等级
         source: "", // 会员来源
         memberIdOrPhone: "", //会员id或手机号
         size: 20, //分页大小
@@ -183,14 +174,16 @@ export default {
   },
   created() {
     this.channelList();
+    this.getLevelDetail();
     this.search();
   },
   filters: {
     formatMemberInfo(value) {
       // var value = { sex: "男", name: "张三", email: null };
-      value = JSON.parse(JSON.stringify(value))
-      console.log('value-----',value)
-      if(value == null) {return '-'}
+      value = JSON.parse(JSON.stringify(value));
+      if (value == null) {
+        return "-";
+      }
       var result = [];
       for (var key in value) {
         var lable = "";
@@ -213,6 +206,15 @@ export default {
           case "creditNum":
             lable = "身份证号：";
             break;
+          case "levelName":
+            lable = "会员等级：";
+            break;
+          case "scoreBalance":
+            value[key] = null;
+            break;
+          case "totalScore":
+            value[key] = null;
+            break;
         }
         if (value[key] != null) {
           result.push(lable + value[key]);
@@ -222,6 +224,14 @@ export default {
     }
   },
   methods: {
+    //获取会员等级
+    getLevelDetail() {
+      this.$crmList.getLevelDetail({ tenantId: this.tenantId }).then(res => {
+        this.memberLevelRuleVOList = res.memberLevelRuleVOList
+          ? res.memberLevelRuleVOList
+          : [{ levelNo: "1", levelName: "普通会员" }];
+      });
+    },
     channelList() {
       //会员来源
       let _this = this;
@@ -242,7 +252,7 @@ export default {
           size: _this.formData.size,
           startOpenDate: this.formData.date[0].formatDate("yyyy-MM-dd"),
           endOpenDate: this.formData.date[1].formatDate("yyyy-MM-dd"),
-          levelId: _this.formData.status,
+          levelId: _this.formData.levelId,
           memberIdOrMobileNum: _this.formData.memberIdOrPhone
         };
       _this.tipMessage = "数据加载中...";

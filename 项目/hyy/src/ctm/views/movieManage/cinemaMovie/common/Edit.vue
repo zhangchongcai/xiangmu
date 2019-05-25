@@ -240,8 +240,6 @@
                   ></el-option>
                 </el-select>
               </el-form-item>
-            
-              
           </div>
           
         </el-collapse-item>
@@ -251,53 +249,50 @@
         >
           <div class="basic-info">
             <div class="separate-accounts-wrap">
-               <el-form-item label="最低票价：">
+               <el-form-item label="最低票价：" prop="dateShowFirst">
                 <div v-for="(item,index) in priceList" style="margin-top:8px;" :key="index">
                   <div class="separate-accounts-price">
-                  <el-input
-                   size="small"
-                    v-model="item.minPrice"
-                  ></el-input>
-                  <span>元 ，</span>
+                    <el-input
+                    size="small"
+                      v-model="item.minPrice"
+                       @change="priceChange(item.minPrice,index)"
+                    ></el-input>
+                    <span>元 ，</span>
+                  </div>
+                  <div class="separate-accounts-date">
+                      <span>日期</span>
+                      <el-date-picker
+                        disabled
+                        v-model="item.dateStart"
+                        type="date"
+                        value-format="yyyy-MM-dd"
+                        placeholder="选择日期">
+                      </el-date-picker>
+                      <el-date-picker
+                          @change="priceDateEndFun($event,index)"
+                          :disabled="index == priceList.length*1-1"
+                          v-model="item.dateEnd"
+                          type="date"
+                          value-format="yyyy-MM-dd"
+                          placeholder="选择日期">
+                      </el-date-picker>
+                  </div>
+                  <span class="delete" @click="deleMinPrice(index)" v-if="priceList.length >1">删除</span>
                 </div>
-               
-                <div class="separate-accounts-date">
-                    <span>日期</span>
-                   <el-date-picker
-                    disabled
-                    v-model="item.dateStart"
-                    type="date"
-                    value-format="yyyy-MM-dd"
-                    placeholder="选择日期">
-                  </el-date-picker>
-                  <el-date-picker
-                      :disabled="index == priceList.length*1-1"
-                      v-model="item.dateEnd"
-                      type="date"
-                      value-format="yyyy-MM-dd"
-                      placeholder="选择日期">
-                  </el-date-picker>
-                </div>
-                 <span class="delete" @click="deleMinPrice(index)">删除</span>
-                </div>
-                 <div class="no-info" v-if="priceList.length==0">
+                <div class="no-info" v-if="priceList.length==0">
                   暂无
                 </div>
                 <span class="add" @click="addMinPrice()"><i class="iconfont icon-neiye-tianjia-"></i>添加</span>
-                
-                <!-- <div class="separate-accounts-action">
-                    <el-button size="mini" >添加</el-button>
-                </div> -->
               </el-form-item>
 
-              <el-form-item label="院方分账：">
+              <el-form-item label="院方分账：" prop="dateShowFirst">
                 
                 <div v-for="(item,index) in rateList" style="margin-top:8px;" :key=index>
                   <div class="separate-accounts-price">
                   <el-input
                    size="small"
                     v-model="item.rate"
-                   
+                    @change="accountChange(item.rate,index)"
                   ></el-input>
                   <span>% ，</span>
                 </div>
@@ -306,18 +301,21 @@
                     <span>日期</span>
                 <el-date-picker
                   v-model="item.dateStart"
+                   disabled
                   type="date"
                   value-format="yyyy-MM-dd"
                   placeholder="选择日期">
                 </el-date-picker>
                 <el-date-picker
-                    v-model="item.dateEnd"
-                    type="date"
-                    value-format="yyyy-MM-dd"
-                    placeholder="选择日期">
+                  @change="accountDateEndFun($event,index)"
+                  v-model="item.dateEnd"
+                  :disabled="index == rateList.length*1-1"
+                  type="date"
+                  value-format="yyyy-MM-dd"
+                  placeholder="选择日期">
                 </el-date-picker>
                 </div>  
-                <span class="delete" @click="deleAccounts(index)">删除</span>
+                <span class="delete" @click="deleAccounts(index)" v-if="rateList.length >1">删除</span>
                 </div>
                  <div class="no-info" v-if="rateList.length==0">
                   暂无
@@ -325,10 +323,6 @@
                 <span class="add" @click="addAccount()"><i class="iconfont icon-neiye-tianjia-" ></i>添加</span>
               </el-form-item>
             </div>
-
-             
-
-           
           </div>
         </el-collapse-item>
         <!-- <el-collapse-item
@@ -423,6 +417,18 @@ export default {
   data() {
     return {
       activeNames:['1','2','3'],
+      sum:1,
+      accountSum:1,
+      priceItem : {
+        dateEnd: '',
+        dateStart: '',
+        minPrice: '0',
+      },
+       accountItem :{
+        dateEnd: '',
+        dateStart: '',
+        rate: '0',
+      },
       sizeForm: {
         movieName: "",
         disVersion: "",
@@ -448,7 +454,6 @@ export default {
         activeNames: ["3"],
         dialogImageUrl: "",
         dialogVisible: false,
-       
     },
     leaveFlag:true,
       rateList:[],
@@ -470,10 +475,7 @@ export default {
                     }
                 ]
             },
-    
-    
          rules: {
-         
           frameNumber: [
             { required: true, message: '请输入电影帧数', trigger: 'blur' },
           ],
@@ -519,75 +521,248 @@ export default {
         fixStepTool: FixStepTool
     },
   methods: {
+    priceChange(val,index){
+      let newVal = parseFloat(val)
+      if(newVal<0){
+        this.priceList[index].minPrice=0
+        return
+      }
+      this.priceList[index].minPrice=newVal
+  },
+  accountChange(val,index){
+    let newVal = parseFloat(val)
+      if(newVal<0){
+        this.rateList[index].rate=0
+        return
+      }
+      this.rateList[index].rate=newVal
+  },
+    //计算日期差天数
+     getTime2Time($time1, $time2){
+      var time1 = arguments[0], time2 = arguments[1];
+      time1 = Date.parse(time1)/1000;
+      time2 = Date.parse(time2)/1000;
+      var time_ = time1 - time2;
+      return (time_/(3600*24));
+    },
+    priceDateEndFun($event,index){
+      if(this.priceList.length<=1){
+
+      }else{
+        this.priceList[index+1].dateStart= this.nowDayAddOneFun($event,1)
+      }
+    },
+    accountDateEndFun($event,index){
+      if(this.rateList.length<=1){
+
+      }else{
+        this.rateList[index+1].dateStart= this.nowDayAddOneFun($event,1)
+      }
+    },
     //首映日期改变最低票价启始时间
-    changeMinPriceStartTimeFun(){
-      console.log('执行了')
+    changeMinPriceStartTimeFun(val){
       let self = this
-      self.priceList[0].dateStart = this.sizeForm.dateShowFirst
-      self.rateList[0].dateStart = this.sizeForm.dateShowFirst
+      this.priceItem.dateStart = val
+      this.accountItem.dateStart = val
+      this.priceItem.dateEnd =self.sizeForm.dateShowOff
+      this.accountItem.dateEnd =self.sizeForm.dateShowOff
+     
+      self.priceList=[this.priceItem]
+      self.rateList=[this.accountItem]
+      self.sum = 1
+      self.accountSum = 1
+      
+      
     },
     //下映日期改变最低票价启始时间
-    changeMinPriceEndtTimeFun(){
-      console.log('执行了')
+    changeMinPriceEndtTimeFun(val){
       let self = this
-      self.priceList[0].dateEnd = this.sizeForm.dateShowOff
-      self.rateList[0].dateEnd = this.sizeForm.dateShowOff
+      this.priceItem.dateEnd = val
+      this.accountItem.dateEnd = val
+      this.priceItem.dateStart =self.sizeForm.dateShowFirst
+      this.accountItem.dateStart =self.sizeForm.dateShowFirst
+      self.priceList=[this.priceItem]
+      self.rateList=[this.accountItem]
+      self.sum = 1
+      self.accountSum = 1
+      
     },
      //新增最低票价和分账比列
     addMinPrice(){
       let self = this
+      if(!self.sizeForm.dateShowFirst){
+         this.$message({
+                message: '上映日期不能为空',
+                type: 'warning'
+              });
+        return
+      }
+      if(!self.sizeForm.dateShowOff){
+         this.$message({
+                message: '下映日期不能为空',
+                type: 'warning'
+              });
+        return
+      }
       let item={
           dateEnd: '',
           dateStart: '',
-          minPrice: '',
+          minPrice: 0,
       }
+      // console.log('sum:',this.sum)
+      //设置日期
+      //默认只有一条时
+      if(self.priceList.length==1){
+        if(self.sum == 1){
+          self.priceList[0].dateEnd = self.dayFun(self.sum)
+          item.dateStart = self.dayFun(self.sum+1);
+        }
+      }
+      if(self.priceList.length==2 && self.sum == 2){
+        self.priceList[1].dateEnd = self.nowDayAddOneFun(self.priceList[1].dateStart,1)
+        item.dateStart = self.nowDayAddOneFun(self.priceList[1].dateEnd,1)
+      }
+     //默认有两条时
+      if(self.priceList.length==2 && self.sum == 1){
+          self.priceList[1].dateEnd = self.nowDayAddOneFun(self.priceList[1].dateStart,1)
+          item.dateStart = self.nowDayAddOneFun(self.priceList[1].dateEnd,1)
+      }
+      item.dateEnd = self.sizeForm.dateShowOff
+      if(this.priceList.length>2){
+        this.$message({
+                message: '不能超过三条',
+                type: 'warning'
+              });
+        return
+      }
+      // //计算上映日期和下映日期差天数
+      //  if(this.getTime2Time(self.sizeForm.dateShowOff,self.sizeForm.dateShowFirst)<=2){
+      //   this.$message({
+      //           message: '下映日期太短',
+      //           type: 'warning'
+      //         });
+      //   return
+      // }
+      this.priceList.push(item)
+      if( this.sum<2){
+        this.sum++;
+      }
+    },
+    //抽离增加日期方法
+    dayFun(sum){
+      let self = this
+      let resultDate 
       //增加一天
-      
-      let addDay = new Date(self.sizeForm.dateShowFirst).getDate()+1
+      let addDay = new Date(self.sizeForm.dateShowFirst).getDate()+sum
       //当前日期
       let currentDate = new Date(self.sizeForm.dateShowFirst)
       //目标日期
-      let resultDate = new Date(currentDate.setDate(addDay))
-
-      //设置日期
-      if(self.priceList.length>2){
-
+      resultDate = new Date(currentDate.setDate(addDay))
+      return resultDate
+    },
+    //根据当前日期加一天
+    nowDayAddOneFun(current,type){
+      let self = this
+      let resultDate 
+      //增加一天
+      let addDay 
+      if(type){
+        addDay = new Date(current).getDate()+1
+      }else{
+        addDay = new Date(current).getDate()-1
       }
-      // self.priceList[self.priceList.length-1].dateEnd=self.sizeForm.dateShowOff
-      item.dateStart = resultDate
-      if(this.priceList.length>2){
-        return
-      }
-      this.priceList.push(item)
+      //当前日期
+      let currentDate = new Date(current)
+      //目标日期
+      resultDate = new Date(currentDate.setDate(addDay))
+      return resultDate
     },
     deleMinPrice(index){
        if( this.priceList.length<=1){
         return
       }
        this.priceList.splice(index,1)
+        if( this.sum>1){
+          this.sum--;
+        }
     },
     addAccount(){
+      let self = this
+      if(!self.sizeForm.dateShowFirst){
+         this.$message({
+                message: '上映日期不能为空',
+                type: 'warning'
+              });
+        return
+      }
+      if(!self.sizeForm.dateShowOff){
+         this.$message({
+                message: '下映日期不能为空',
+                type: 'warning'
+              });
+        return
+      }
       let item = {
         dateEnd: '',
         dateStart: '',
-        rate: '',
+        rate: 0,
       }
+      //设置日期
+      //默认只有一条时
+      if(self.rateList.length==1){
+        if(self.accountSum == 1){
+          self.rateList[0].dateEnd = self.dayFun(self.accountSum)
+          item.dateStart = self.dayFun(self.accountSum+1);
+        }
+      }
+      if(self.rateList.length==2 && self.accountSum == 2){
+          self.rateList[1].dateEnd = self.nowDayAddOneFun(self.rateList[1].dateStart,1)
+          item.dateStart = self.nowDayAddOneFun(self.rateList[1].dateEnd,1)
+      }
+     //默认有两条时
+      if(self.rateList.length==2 && self.accountSum == 1){
+          self.rateList[1].dateEnd = self.nowDayAddOneFun(self.rateList[1].dateStart,1)
+          item.dateStart = self.nowDayAddOneFun(self.rateList[1].dateEnd,1)
+      }
+      item.dateEnd = self.sizeForm.dateShowOff
       if(this.rateList.length>2){
+        this.$message({
+                message: '不能超过三条',
+                type: 'warning'
+              });
         return
       }
       this.rateList.push(item)
-      console.log('this.addAccount',this.rateList)
+      if( this.accountSum<2){
+        this.accountSum++;
+      }
     },
     deleAccounts(index){
       if( this.rateList.length<=1){
         return
       }
       this.rateList.splice(index,1)
+      this.accountSum--;
     },
+    formatDateTime(timeStamp, type) { // type: 0 全格式 1 仅日 2 仅时间
+      var date = new Date(timeStamp)
+      let y = date.getFullYear()
+      let m = date.getMonth() + 1
+      m = m < 10 ? `0${m}` : m
+      let d = date.getDate()
+      d = d < 10 ? `0${d}` : d
+      let h = date.getHours()
+      h = h < 10 ? `0${h}` : h
+      let mm = date.getMinutes()
+      mm = mm < 10 ? `0${mm}` : mm
+      let ss = date.getSeconds()
+      ss = ss < 10 ? `0${ss}` : ss
+      
+      return type == 0 ? `${y}-${m}-${d} ${h}:${mm}:${ss}` : type == 1 ? `${y}-${m}-${d}` : type == 2 ? `${h}:${mm}` : `${y}-${m}-${d} ${h}:${mm}`
+     },
     //提交form表单
     onSubmit(ruleForm) {
       this.$refs[ruleForm].validate((valid) => {
-        // console.log('valid',valid)
           if (valid) {
             let self = this;
             if(new Date(self.sizeForm.dateShowFirst).getTime() > new Date(self.sizeForm.dateShowOff).getTime()){
@@ -597,54 +772,34 @@ export default {
                 });
                 return
             }
-            if(self.sizeForm.datePublicShow.length<=10){
-              self.sizeForm.datePublicShow = self.sizeForm.datePublicShow+' '+'00:00:00'
-            }
-             if(self.sizeForm.dateShowFirst.length<=10){
-              self.sizeForm.dateShowFirst = self.sizeForm.dateShowFirst+' '+'00:00:00'
-            }
-             if(self.sizeForm.dateShowOff.length<=10){
-              self.sizeForm.dateShowOff = self.sizeForm.dateShowOff+' '+'00:00:00'
-            }
-           
+            self.sizeForm.datePublicShow = self.formatDateTime(self.sizeForm.datePublicShow,0)
+            self.sizeForm.dateShowFirst = self.formatDateTime(self.sizeForm.dateShowFirst,0)
+            self.sizeForm.dateShowOff = self.formatDateTime(self.sizeForm.dateShowOff,0)
 
             self.priceList.forEach((item,index)=>{
-              if(!(item.dateEnd && item.dateStart && item.minPrice)){
-                 this.$message({
-                  message: '新增的最低票价未成功',
-                  type: 'warning'
-                });
-                return
-              }
-              if(item.dateEnd.length<=10){
-                item.dateEnd = item.dateEnd+" "+"00:00:00"
-              }
-              if(item.dateStart.length<=10){
-                 item.dateStart = item.dateStart+" "+"00:00:00"
-              }
+              item.dateEnd = self.formatDateTime(item.dateEnd,0)
+              item.dateStart = self.formatDateTime(item.dateStart,0)
             })
             
             self.rateList.forEach((item,index)=>{
-              if(!(item.dateEnd && item.dateStart && item.rate)){
-                 this.$message({
-                  message: '新增的分账比例未成功',
-                  type: 'warning'
-                });
-                return
-              }
-               if(item.dateEnd.length<=10){
-                item.dateEnd = item.dateEnd+" "+"00:00:00"
-              }
-              if(item.dateStart.length<=10){
-                 item.dateStart = item.dateStart+" "+"00:00:00"
-              }
+              item.dateEnd = self.formatDateTime(item.dateEnd,0)
+              item.dateStart = self.formatDateTime(item.dateStart,0)
             })
-            //最低票价和分账比列在首映和下映之间
-            //  let resultTiemBoo = self.priceList.every((item,index)=>{
-            //    return new Date(item.dateStart).getTime()==new Date(self.sizeForm.dateShowFirst).getTime()
-            //  })
-            //  console.log('resultTiemBoo:',resultTiemBoo)
-            //  return
+            //最低票价和分账比列不能为零
+              if(self.priceList.some((item,index)=>{return(item.minPrice==0)})){
+                self.$message({
+                        message: '最低票价不能为0',
+                        type: 'warning'
+                      }); 
+                      return
+              }
+              if(self.rateList.some((item,index)=>{return(item.rate==0)})){
+                self.$message({
+                        message: '分账比列不能为0',
+                        type: 'warning'
+                      }); 
+                      return
+              }
             let data = 
             {
               //分账比列
@@ -655,7 +810,7 @@ export default {
             };
             console.log('data:',data)
             self.$ctmList
-              .cinemaStockEdit()
+              .cinemaStockEdit(data)
               .then(ret => {
                 if(ret.data){
                   this.$message({
@@ -699,13 +854,9 @@ export default {
                     });
                     
                 });    
-      // this.$router.push({
-      //   path: "list",
-      // });
     },  
     getDatas() {
       let self = this;
-      console.log('self.$route.query.uid_cinema',self.$route.query.uid_cinema)
       let data = {
          movie_code: self.$route.query.movieCode,
         uid_cinema:self.$route.query.uid_cinema
@@ -713,44 +864,48 @@ export default {
       self.$ctmList
         .cinemaStockScan(data)
         .then(ret => {
-          console.log("retsssssssssss", ret.data);
           if(ret.data){
             let result = ret.data;
             self.sizeForm = result.schMovie;
+            //如果分账比列 最低票价只有一条
+            if(result.priceList.length == 1){
+               result.priceList[0].dateStart= self.sizeForm.dateShowFirst
+               result.priceList[0].dateEnd= self.sizeForm.dateShowOff
+            }
+             if(result.rateList.length == 1){
+               console.log('44')
+               result.rateList[0].dateStart= self.sizeForm.dateShowFirst
+               result.rateList[0].dateEnd= self.sizeForm.dateShowOff
+            }
+            //如果沒有数据
+             if(result.priceList.length == 0){
+                let item = {
+                    dateEnd:  self.sizeForm.dateShowOff,
+                    dateStart: self.sizeForm.dateShowFirst,
+                    minPrice: 0,
+                  }
+                  result.priceList.push(item)
+            }
+             if(result.rateList.length == 0){
+               let item = {
+                    dateEnd:  self.sizeForm.dateShowOff,
+                    dateStart: self.sizeForm.dateShowFirst,
+                    rate: 0,
+                  }
+                  result.rateList.push(item)
+            }
             self.priceList = result.priceList;
             self.rateList = result.rateList;
           }
           
         })
-        .catch(() => {
-          console.log("哪里出错了，检擦一下哥哥");
+        .catch((err) => {
+          console.log("哪里出错了，检擦一下哥哥",err);
         });
     },
-    // handleRemove(file, fileList) {
-    //   console.log(file, fileList);
-    // },
-    // handlePictureCardPreview(file) {
-    //   this.dialogImageUrl = file.url;
-    //   this.dialogVisible = true;
-    // },
   },
   created(){
     this.getDatas()
-    this.$nextTick(()=>{
-      this.priceList=[{
-        dateStart:this.sizeForm.dateShowFirst,
-        dateEnd:this.sizeForm.dateShowOff
-      }]
-       this.rateList=[{
-        dateStart:this.sizeForm.dateShowFirst,
-        dateEnd:this.sizeForm.dateShowOff
-      }]
-      self.priceList[0].dateStart = this.sizeForm.dateShowFirst
-      self.rateList[0].dateStart = this.sizeForm.dateShowFirst
-
-      self.priceList[0].dateEnd = this.sizeForm.dateShowOff
-      self.rateList[0].dateEnd = this.sizeForm.dateShowOff
-    })
   }
 };
 </script>

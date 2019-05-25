@@ -84,6 +84,7 @@
                                 <div class="inputFrame nowrap">
                                     <el-input type="input" v-model="cinemaName"
                                     @focus="cinemaDialogShow"
+                                    readonly
                                     ></el-input>
                                 </div>
                             </div>
@@ -1054,8 +1055,8 @@ export default {
             data.ticketsampleChannelUids = this.channel_new;
 
             if(flag){
-                data.cineamUid = this.cinemaUid
-                data.cineamName = this.cinemaName
+                data.cinemaUid = this.cinemaUid.toString()
+                data.cinemaName = this.cinemaName
                 data.width = this.edi_ele.width*this.mmToPixel
                 data.height = this.edi_ele.height*this.mmToPixel
                 this.$ctmList.ticketelementAdd(data).then( data => {

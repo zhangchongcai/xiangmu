@@ -251,7 +251,14 @@ const sysRoutes = [
       },
       component: (resolve) => require(['../../views/demo/film/list.vue'], resolve),
       name: '影片组件实例',
-
+    },
+    {
+      path: 'test',
+      meta: {
+        title: "影片组件实例"
+      },
+      component: (resolve) => require(['../../views/demo/cinema/test.vue'], resolve),
+      name: '影片组件实例',
     }
     ]
   },

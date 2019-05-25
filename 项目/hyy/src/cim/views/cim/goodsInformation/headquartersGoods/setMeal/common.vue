@@ -8,6 +8,7 @@
     </div>
     <div class="tittle"></div>
     <el-form
+      ref="ruleForm"
       :inline="true"
       :model="queryData"
       label-position="left"
@@ -36,9 +37,19 @@
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="速记代码" prop="shorthandCode">
+            <el-form-item
+              label="速记代码"
+              prop="shorthandCode"
+              :rules="[{ required: true, message: '速记代码不能为空',trigger: 'change' }]"
+            >
               <span v-if="routeQuery.type==3">{{queryData.shorthandCode}}</span>
-              <el-input v-else placeholder class="basic-input" v-model="queryData.shorthandCode"></el-input>
+              <el-input
+                v-else
+                placeholder
+                type="number"
+                class="basic-input"
+                v-model="queryData.shorthandCode"
+              ></el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -95,7 +106,7 @@
       <div>
         <div class="sub-tittle">套餐信息</div>
         <div class="add-material clearfix">
-          <el-button class="right" v-if="routeQuery.type!=3" @click=" handleAddGoods">添加商品</el-button>
+          <el-button class="right" v-if="routeQuery.type!=3" @click="handleAddGoods">添加商品</el-button>
         </div>
         <div
           class="recipe-box"
@@ -104,10 +115,10 @@
           v-show="item.options.length>0"
         >
           <div class="add-material clearfix">
-            <div class="left" v-if="item.isOption != 0">{{item.name}} 可替换为以下商品</div>
+            <div class="left" v-if="item.isOption != 0">{{item.merName}} 可替换为以下商品</div>
           </div>
           <div>
-            <el-table :data="item.options" stripe empty-text="暂无记录" v-loading="tableLoding">
+            <el-table :data="item.options" v-loading="tableLoding">
               <el-table-column
                 v-for="item in formatRecipeTableColumn(item)"
                 :key="item.key"
@@ -124,10 +135,10 @@
                   </div>
                   <div v-else-if="item.bothEdit">
                     <div v-if="routeQuery.type==3">
-                        <span>{{row[item.key].flag==0 ? '加价':'减价'}}</span>
-                        <span>{{row[item.key].price}}</span>
+                      <span>{{row[item.key].flag==0 ? '加价':'减价'}}</span>
+                      <span>{{row[item.key].price}}</span>
                     </div>
-                    
+
                     <div v-else>
                       <el-select v-model="row[item.key].flag" placeholder class="both-edit-inp">
                         <el-option label="加价" value="0"></el-option>
@@ -173,7 +184,11 @@
         <div class="sub-tittle">销售信息</div>
         <el-row>
           <el-col :span="8">
-            <el-form-item prop="price" label="价格">
+            <el-form-item
+              prop="price"
+              label="售价"
+              :rules="[{ required: true, message: '售价不能为空',trigger: 'change' }]"
+            >
               <span v-if="routeQuery.type==3">{{queryData.price}}</span>
               <el-input v-else class="basic-input" v-model="queryData.price"></el-input>
             </el-form-item>
@@ -227,164 +242,68 @@
         <el-row>
           <el-col :span="8">
             <el-form-item label="适用门店">
-              <apply-stores
-                title="适用门店"
-                :defaultSelected="queryData.saleCinema"
-                :radios="applyStoresRadios"
-                @onCheckedNodes="handleStoresCheckedNodes"
-              ></apply-stores>
+              <el-select v-model="queryData.saleCinema" placeholder="请选择" class="apply-select">
+                <el-option
+                  v-for="item in applyStoresRadios"
+                  :key="item.type"
+                  :label="item.label"
+                  :value="item.type"
+                ></el-option>
+              </el-select>
+              <span class="apply-tag" v-if="queryData.saleCinema!='1'">
+                <el-input
+                  class="input apply-stores-input"
+                  placeholder="请选择"
+                  v-model="selectedStoreName"
+                >
+                  <i slot="suffix" class="el-icon-close icon" @click.stop="handleDeleteCinemas"></i>
+                </el-input>
+                <el-button @click.stop="handleDialog('myCinemalDialog')">选择</el-button>
+              </span>
             </el-form-item>
           </el-col>
           <el-col :span="10">
             <el-form-item label="适用渠道">
-              <apply-channel
-                title="适用渠道"
-                :defaultSelected="queryData.saleChannel"
-                :radios="applyChannelRadios"
-                @onCheckedNodes="handleChannelCheckedNodes"
-              ></apply-channel>
+              <el-select v-model="queryData.saleChannel" placeholder="请选择" class="apply-select">
+                <el-option
+                  v-for="item in applyChannelRadios"
+                  :key="item.type"
+                  :label="item.label"
+                  :value="item.type"
+                ></el-option>
+              </el-select>
+              <span class="apply-tag" v-if="queryData.saleChannel!='1'">
+                <el-input
+                  class="input apply-stores-input"
+                  placeholder="请选择"
+                  v-model="selectedChannelName"
+                >
+                  <i slot="suffix" class="el-icon-close icon" @click.stop="handleDeleteChanne"></i>
+                </el-input>
+                <el-button @click.stop="handleDialog('myChannelDialog')">选择</el-button>
+              </span>
             </el-form-item>
           </el-col>
         </el-row>
       </div>
       <!-- 销售信息 end-->
-      <div class="submit-box">
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
+      <div class="submit-box" v-if="routeQuery.type!=3">
+        <el-button type="primary" @click="handleSubmit">保 存</el-button>
         <el-button @click="handleCancel">取 消</el-button>
       </div>
     </el-form>
 
-    <!-- 添加套餐 -->
-    <el-dialog
-      class="change-dialog"
-      width="70%"
-      title="选择套餐及包装"
-      :visible.sync="addRawMaterialDialog"
-    >
-      <div>
-        <el-row>
-          <el-col :span="6">
-            <el-tree :data="categoryTrees" :props="defaultProps" @node-click="handleaCtegoryTrees"></el-tree>
-          </el-col>
-          <el-col :span="18">
-            <div>
-              <el-form
-                :inline="true"
-                :model="materialQueryData"
-                label-position="right"
-                label-suffix=":"
-              >
-                <el-row>
-                  <el-col :span="10">
-                    <el-form-item label="商品名称">
-                      <el-input
-                        placeholder
-                        class="change-dialog-inp"
-                        v-model="materialQueryData.name"
-                      ></el-input>
-                    </el-form-item>
-                  </el-col>
-                  <el-col :span="10">
-                    <el-form-item label="商品编码">
-                      <el-input
-                        placeholder
-                        class="change-dialog-inp"
-                        v-model="materialQueryData.merCode"
-                      ></el-input>
-                    </el-form-item>
-                  </el-col>
-                  <el-col :span="2">
-                    <el-form-item label>
-                      <el-button icon="el-icon-search" @click="onQuery">查询</el-button>
-                    </el-form-item>
-                  </el-col>
-                </el-row>
-                <el-row>
-                  <el-col :span="10">
-                    <el-form-item label="SKU编码">
-                      <el-input
-                        placeholder
-                        class="change-dialog-inp"
-                        v-model="materialQueryData.code"
-                      ></el-input>
-                    </el-form-item>
-                  </el-col>
-                  <el-col :span="10">
-                    <el-form-item label="速记代码">
-                      <el-input
-                        placeholder
-                        class="change-dialog-inp"
-                        v-model="materialQueryData.shorthandCode"
-                      ></el-input>
-                    </el-form-item>
-                  </el-col>
-                </el-row>
-              </el-form>
-            </div>
-            <div>
-              <el-row>
-                <el-col :span="18">
-                  <div class="table-box">
-                    <el-table
-                      ref="materialTable"
-                      :data="materialTableData"
-                      height="300"
-                      @selection-change="handleSelectionMaterial"
-                      stripe
-                      empty-text="暂无记录"
-                      v-loading="tableLoding"
-                    >
-                      <el-table-column type="selection" width="40"></el-table-column>
-                      <el-table-column
-                        v-for="item in materialTableColumn"
-                        :key="item.key"
-                        :prop="item.key"
-                        :label="item.label"
-                        :formatter="item.formatter"
-                      ></el-table-column>
-                    </el-table>
-                    <div class="page-wrap">
-                      <el-pagination
-                        @size-change="handleSizeChange"
-                        @current-change="handleCurrentChange"
-                        :current-page="queryData.currentPage"
-                        :page-size="queryData.pageSize"
-                        :background="pgbackground"
-                        :page-sizes="pageSizes"
-                        :layout="pgLayout"
-                        :total="total"
-                      ></el-pagination>
-                    </div>
-                  </div>
-                </el-col>
-                <el-col :span="6">
-                  <div class="empty-box">
-                    <div class="clearfix">
-                      <span class="selected-content f-l">已选内容</span>
-                      <el-button type="text" class="f-r" @click="handleEmptyMaterials">清 空</el-button>
-                    </div>
-                    <hr>
-                    <ul class="empty-content">
-                      <li v-for="(item,index) in selectedMaterials" :key="item.code">
-                        <el-tag
-                          size="small"
-                          @close="handleDelMaterial(item,index)"
-                          closable
-                        >{{item.name}}</el-tag>
-                      </li>
-                    </ul>
-                  </div>
-                </el-col>
-              </el-row>
-            </div>
-          </el-col>
-        </el-row>
-      </div>
-      <span slot="footer">
-        <el-button @click="addRawMaterialDialog = false">取 消</el-button>
-        <el-button type="primary" @click="handleModificationSubmit">确 定</el-button>
-      </span>
-    </el-dialog>
+    <!-- 选择影院弹窗 -->
+    <cinemal-dialog ref="myCinemalDialog" @onSumit="onCinemalSumit" multiple :title="'选择适应门店'"></cinemal-dialog>
+    <!-- 选择渠道弹窗 -->
+    <channel-dialog ref="myChannelDialog" @onSumit="onChanneSumit" multiple :title="'选择适应渠道'"></channel-dialog>
+    <!-- 选择商品 -->
+    <selected-goods
+      :title="'选择套餐及包装'"
+      :dialogVisible.sync="selectedGoodsDialogVisible"
+      :dialogFeedbackData="goodList"
+      @cimSelectedGoodsDialogCallBack="selectedGoodsDialogCallBack"
+    ></selected-goods>
   </div>
 </template>
 
@@ -394,6 +313,9 @@ import moment from "moment";
 import mixin from "cim/mixins/cim/paginationConfig.js";
 import applyStores from "cim/components/applyStores/applyStores.vue";
 import applyChannel from "cim/components/applyChannel/applyChannel.vue";
+import cinemalDialog from "cim/components/cinemalDialog/cinemaDialog.vue";
+import channelDialog from "cim/components/channelDialog/channelDialog.vue";
+import selectedGoods from "cim/dialogs/cimSelectedGoods/index.vue";
 
 export default {
   mixins: [mixin],
@@ -413,40 +335,7 @@ export default {
         imgUrl:
           "https://ss1.bdstatic.com/70cFuXSh_Q1YnxGkpoWK1HF6hhy/it/u=1306880214,1632905597&fm=26&gp=0.jpg", //商品图片
         // 套餐信息
-        dataList: [
-          // {
-          //   name: "可口可乐", //商品名称
-          //   code: "YCL001", //sku编码
-          //   merCode: "457457567555", //商品编码
-          //   shortCode: "124547", //速记代码
-          //   parentSkuCode: "457457567556",
-          //   itemCount: 1, //组成套餐商品或可选商品的数量
-          //   merCount: 1, //可选商品的套餐商品数量
-          //   spec: "500ml", //商品规格
-          //   isChange: 0,
-          //   parentSkuCode: "瓶", //基本单位
-          //   addFlag: "", //加价标志，0：加价，1：减价
-          //   addPrice: "", //正数为加价，负数为减价，默认为加价
-          //   price: "10", //价格
-          //   uid: ""
-          // },
-          // {
-          //   name: "打火机", //商品名称
-          //   code: "YCL001", //sku编码
-          //   merCode: "457457567155", //商品编码
-          //   parentSkuCode: "457457567556",
-          //   shortCode: "124547", //速记代码
-          //   itemCount: 1, //组成套餐商品或可选商品的数量
-          //   merCount: 1, //可选商品的套餐商品数量
-          //   spec: "500ml", //商品规格
-          //   isChange: 1,
-          //   parentSkuCode: "瓶", //基本单位
-          //   addFlag: "1", //加价标志，0：加价，1：减价
-          //   addPrice: "12", //正数为加价，负数为减价，默认为加价
-          //   price: "10", //价格
-          //   uid: ""
-          // },
-        ],
+        dataList: [],
         //销售信息
         price: "", //价格
         canSale: "1", //销售状态
@@ -462,7 +351,7 @@ export default {
       recipeTableColumn: [
         {
           label: "商品名称",
-          key: "name"
+          key: "merName"
         },
         {
           label: "商品编码",
@@ -470,15 +359,15 @@ export default {
         },
         {
           label: "SKU编码",
-          key: "code"
+          key: "skuCode"
         },
         {
           label: "速记代码",
-          key: "shortCode"
+          key: "shorthandCode"
         },
         {
           label: "商品规格",
-          key: "spec"
+          key: "merSpec"
         },
         {
           label: "数量",
@@ -487,7 +376,7 @@ export default {
         },
         {
           label: "基本单位",
-          key: "parentSkuCode"
+          key: "unitName"
         },
         {
           label: "售价",
@@ -511,116 +400,13 @@ export default {
         page: 1,
         pageSize: 10
       },
-      // 添加套餐表头
-      materialTableColumn: [
-        {
-          label: "商品名称",
-          key: "name"
-        },
-        {
-          label: "商品编码",
-          key: "merCode"
-        },
-        {
-          label: "SKU编码",
-          key: "code"
-        },
-        {
-          label: "速记代码",
-          key: "shortCode"
-        },
-        {
-          label: "商品规格",
-          key: "spec"
-        },
-        {
-          label: "基本单位",
-          key: "uniteName"
-        }
-      ],
       materialTableData: [],
-      selectedMaterials: [],
-      value: "",
-      addRawMaterialDialog: false, //添加套餐弹窗
-      defaultProps: {
-        children: "children",
-        label: "name"
-      },
-      options: [
-        {
-          value: "选项1",
-          label: "黄金糕"
-        },
-        {
-          value: "选项2",
-          label: "双皮奶"
-        },
-        {
-          value: "选项3",
-          label: "蚵仔煎"
-        },
-        {
-          value: "选项4",
-          label: "龙须面"
-        },
-        {
-          value: "选项5",
-          label: "北京烤鸭"
-        }
-      ],
-      categoryTrees: [],
-      sourceTreeData: [
-        {
-          id: 1,
-          label: "一级 1",
-          children: [
-            {
-              id: 4,
-              label: "二级 1-1",
-              children: [
-                {
-                  id: 9,
-                  label: "中大影院"
-                },
-                {
-                  id: 10,
-                  label: "客村影院"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          id: 2,
-          label: "一级 2",
-          children: [
-            {
-              id: 5,
-              label: "大学城影院"
-            },
-            {
-              id: 6,
-              label: "二级 2-2"
-            }
-          ]
-        },
-        {
-          id: 3,
-          label: "一级 3",
-          children: [
-            {
-              id: 7,
-              label: "二级 3-1"
-            },
-            {
-              id: 8,
-              label: "二级 3-2"
-            }
-          ]
-        }
-      ],
+      selectedGoodsDialogVisible: false, //添加套餐弹窗
+      goodList: [],
+
       tableLoding: false,
       total: 0,
+      selectedStoreName: "",
       applyStoresRadios: [
         {
           label: "全部门店",
@@ -628,31 +414,14 @@ export default {
         },
         {
           label: "指定门店",
-          type: "0",
-          name: "中大影院,客村影院",
-          value: [
-            {
-              id: 9,
-              label: "中大影院"
-            },
-            {
-              id: 10,
-              label: "客村影院"
-            }
-          ]
+          type: "0"
         },
         {
           label: "排除门店",
-          type: "2",
-          name: "大学城影院",
-          value: [
-            {
-              id: 5,
-              label: "大学城影院"
-            }
-          ]
+          type: "2"
         }
       ],
+      selectedChannelName: "",
       applyChannelRadios: [
         {
           label: "全部渠道",
@@ -660,34 +429,17 @@ export default {
         },
         {
           label: "指定渠道",
-          type: "0",
-          name: "渠道一,渠道二",
-          value: [
-            {
-              id: 9,
-              label: "渠道一"
-            },
-            {
-              id: 10,
-              label: "渠道二"
-            }
-          ]
+          type: "0"
         }
       ]
     };
   },
   mounted() {
     this.init();
-    // console.log(this.routeQuery);
-    console.log(this.routeMerData);
   },
 
   methods: {
     init() {
-      this.setCheckedKys(this.applyStoresRadios);
-      this.setCheckedKys(this.applyChannelRadios);
-      this.setmealLoadCategoies({});
-      // this.setmealQuery({ uid: "efa55a04-60d4-49e7-970e-04242157c1f5" })
       switch (this.routeQuery.type) {
         // 新建
         case "1":
@@ -706,24 +458,46 @@ export default {
           break;
       }
     },
-    renderHeader(h, { column, $index }) {
-      return h("div", {
-        attrs: {
-          class: "cell" //ele原来样式
-        },
-        domProps: {
-          innerHTML: '<span class="red">* </span>' + column.label
-        }
-      });
+    handleDialog(name) {
+      this.$refs[name].handleDialog(true);
     },
-    setCheckedKys(radios) {
-      radios.forEach(item => {
-        if (item.value) {
-          item.checkedKys = item.value.map(valueItem => {
-            return valueItem.id;
-          });
-        }
+    // 门店
+    onCinemalSumit(data) {
+      this.queryData.cinemas = data.map(item => {
+        return {
+          cinemaUid: item.uid,
+          uid: "" //套餐渠道的uid。为空新增，否则修改
+        };
       });
+      this.selectedStoreName = data
+        .map(item => {
+          return item.name;
+        })
+        .join(",");
+      console.log("门店数据", data);
+    },
+    // 渠道
+    onChanneSumit(data) {
+      this.queryData.channels = data.map(item => {
+        return {
+          channelUid: item.uid,
+          uid: "" //套餐渠道的uid。为空新增，否则修改
+        };
+      });
+      this.selectedChannelName = data
+        .map(item => {
+          return item.name;
+        })
+        .join(",");
+      console.log("渠道数据", data);
+    },
+    //删除门店
+    handleDeleteCinemas() {
+      this.onCinemalSumit([]);
+    },
+    //删除渠道
+    handleDeleteChanne() {
+      this.onChanneSumit([]);
     },
     // 查询
     onQuery() {
@@ -745,7 +519,12 @@ export default {
             } else {
               this.queryData.downTimeType = "0";
             }
-
+            if (this.queryData.saleChannel != null) {
+              this.queryData.saleChannel = this.queryData.saleChannel.toString();
+            }
+            if (this.queryData.saleCinema != null) {
+              this.queryData.saleCinema = this.queryData.saleCinema.toString();
+            }
             console.log("data", this.queryData);
           }
         })
@@ -757,24 +536,19 @@ export default {
         .setmealSave(param)
         .then(resData => {
           if (resData.code == 200) {
-            this.$message("新建成功");
-          }else{
+            if (this.routeQuery.type == 1) {
+              this.$message("新建成功");
+            } else {
+              this.$message("修改成功");
+            }
+            this.handleCancel();
+          } else {
             this.$message(resData.msg);
           }
         })
         .catch(err => {});
     },
-    // 查询分类
-    setmealLoadCategoies(param) {
-      this.$cimList.headquartersGoods
-        .setmealLoadCategoies(param)
-        .then(resData => {
-          if (resData.code == 200) {
-            this.categoryTrees = resData.data.children;
-          }
-        })
-        .catch(err => {});
-    },
+
     // 获取套餐商品及可选商品
     setmealLoadItems(param) {
       this.$cimList.headquartersGoods
@@ -787,47 +561,32 @@ export default {
         })
         .catch(err => {});
     },
-    // 选择添加套餐
-    handleSelectionMaterial(value) {
-      this.selectedMaterials = value;
-      console.log(value);
-    },
-    // 清空选择的套餐
-    handleEmptyMaterials() {
-      this.selectedMaterials = [];
-      this.$refs.materialTable.clearSelection();
-    },
-    // 删除单个选择的套餐
-    handleDelMaterial(row, index) {
-      this.selectedMaterials.splice(index, 1);
-      this.$refs.materialTable.toggleRowSelection(row);
-    },
-    // 查询树
-    handleaCtegoryTrees(data) {
-      // this.materialQueryData.classUid = data.uid;
-      this.setmealLoadItems({
-        classUid: data.uid,
-        page: this.materialQueryData.page,
-        pageSize: this.materialQueryData.pageSize
-      });
-    },
     // 确定提交信息
     handleSubmit() {
-      console.log(this.formattingDataList);
-      console.log(this.requestDataList(this.formattingDataList));
-      let tempArr = JSON.parse(JSON.stringify(this.queryData));
-      tempArr.dataList = this.requestDataList(this.formattingDataList);
-      console.log(tempArr);
-
-     if(this.routeQuery.type == 1){
-         this.setmealSave(tempArr);
-      }else if(this.routeQuery.type == 2){
-         this.setmealSave(tempArr);
-      }else if(this.routeQuery.type == 3){
-         //查看
-        
-      }
-     
+      console.log(this.queryData);
+      this.$refs["ruleForm"].validate(valid => {
+        if (valid) {
+          console.log(this.formattingDataList);
+          console.log(this.requestDataList(this.formattingDataList));
+          let tempArr = JSON.parse(JSON.stringify(this.queryData));
+          tempArr.dataList = this.requestDataList(this.formattingDataList);
+          console.log(tempArr);
+          if (tempArr.dataList.length > 0) {
+            if (this.routeQuery.type == 1) {
+              this.setmealSave(tempArr);
+            } else if (this.routeQuery.type == 2) {
+              this.setmealSave(tempArr);
+            } else if (this.routeQuery.type == 3) {
+              //查看
+            }
+          } else {
+            this.$message("请添加一个商品");
+          }
+        } else {
+          this.$message("带*号的为必填项，请填写");
+          return false;
+        }
+      });
     },
     // 处理请求参数
     requestDataList(data = []) {
@@ -840,12 +599,7 @@ export default {
       tempArr.map(item => {
         if (item.addOrMinus && item.addOrMinus.price) {
           item.addFlag = item.addOrMinus.flag;
-          //减价为负数
-          // if (item.addOrMinus.flag == 1) {
-          //   item.addPrice = "-" + item.addOrMinus.price;
-          // } else {
           item.addPrice = item.addOrMinus.price;
-          // }
         }
         return item;
       });
@@ -855,29 +609,46 @@ export default {
     handleCancel() {
       this.$router.go(-1);
     },
-    //确认提交修改
-    handleModificationSubmit() {
-      if (this.isMaySelected) {
-        let tempArr = JSON.parse(JSON.stringify(this.selectedMaterials));
-        tempArr = tempArr.map(item => {
-          item.parentSkuCode = this.isMaySelected.code;
-          item.isChange = 1;
-          item.uid = "";
-          return item;
-        });
 
-        this.queryData.dataList.push(...tempArr);
-      } else {
-        let tempArr = JSON.parse(JSON.stringify(this.selectedMaterials));
-        tempArr = tempArr.map(item => {
-          item.parentSkuCode = item.code;
-          item.uid = "";
-          return item;
-        });
-        this.queryData.dataList = tempArr;
+    //选择商品确认
+    selectedGoodsDialogCallBack(value) {
+      if (value.btnType == 1) {
+        let tempArr = value.data;
+        if (this.isMaySelected) {
+          //可选商品不能选择自己
+          tempArr = tempArr.filter(item => {
+            return item.skuCode != this.isMaySelected.skuCode;
+          });
+          // 组装
+          tempArr = tempArr.map(item => {
+            item.parentSkuCode = this.isMaySelected.skuCode;
+            item.isChange = 1;
+            item.uid = null;
+            return item;
+          });
+          this.queryData.dataList.push(...tempArr);
+        } else {
+          tempArr = tempArr.map(item => {
+            item.parentSkuCode = item.skuCode;
+            item.uid = null;
+            return item;
+          });
+          this.queryData.dataList.push(...tempArr);
+          this.queryData.dataList = this.unRepeat(this.queryData.dataList);
+        }
+        console.log("sadsa啊实打实", this.queryData.dataList);
       }
-      console.log(this.queryData.dataList);
-      this.addRawMaterialDialog = false;
+    },
+    //去重
+    unRepeat(arr) {
+      let hash = {};
+      return arr.reduce((item, next) => {
+        if (!hash[next.skuCode]) {
+          hash[next.skuCode] = true;
+          item.push(next);
+        }
+        return item;
+      }, []);
     },
     handleSizeChange(val) {
       this.queryData.pageSize = val;
@@ -887,32 +658,37 @@ export default {
       this.queryData.page = val;
       this.onQuery();
     },
-    // 删除配方分组
-    handleDleteRecipeGroup(index) {
-      this.queryData.combinationSkuVoList.splice(index, 1);
-    },
     // 添加商品
     handleAddGoods(value) {
       this.isMaySelected = null;
-      this.addRawMaterialDialog = true;
+      this.selectedGoodsDialogVisible = true;
+      this.goodList = [];
     },
     //添加可选商品
     handleAddOptionalItems(row, index) {
+      this.goodList = [];
+      console.log(this.goodList);
       this.isMaySelected = row;
-      this.addRawMaterialDialog = true;
-      this.handleEmptyMaterials();
+      this.selectedGoodsDialogVisible = true;
     },
+
+    // 删除商品
     handleRecipeTableDlete(groupIndex, row, index) {
-      console.log(groupIndex, row, index);
-      console.log(this.queryData.dataList);
-      this.queryData.dataList = this.queryData.dataList.filter(item => {
-        return item.code != row.code;
-      });
-      console.log(this.queryData.dataList);
-    },
-    //确定选择适用门店
-    handleStoresCheckedNodes(checkedValue) {
-      this.checkedNodes(this.applyStoresRadios, checkedValue);
+      this.$confirm("确认删除吗, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          this.queryData.dataList = this.queryData.dataList.filter(item => {
+            return item.merCode != row.merCode;
+          });
+          this.$message({
+            type: "success",
+            message: "删除成功!"
+          });
+        })
+        .catch(() => {});
     },
     //确定选择适用渠道
     handleChannelCheckedNodes(checkedValue) {
@@ -960,6 +736,16 @@ export default {
         optionList.pop();
       }
       return optionList;
+    },
+    renderHeader(h, { column, $index }) {
+      return h("div", {
+        attrs: {
+          class: "cell" //ele原来样式
+        },
+        domProps: {
+          innerHTML: '<span class="red">* </span>' + column.label
+        }
+      });
     }
   },
   computed: {
@@ -1034,7 +820,10 @@ export default {
   },
   components: {
     applyStores,
-    applyChannel
+    applyChannel,
+    selectedGoods,
+    cinemalDialog,
+    channelDialog
   }
 };
 </script>
@@ -1045,7 +834,6 @@ export default {
 .basic-input {
   min-width: 250px;
 }
-
 .putaway-timer {
   .el-form-item__content {
     min-width: 150px;

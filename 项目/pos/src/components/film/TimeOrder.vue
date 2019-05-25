@@ -1,10 +1,10 @@
 <template>
-    <div :class="['time-order-container', currentFilmId == filmInfo.id ? 'selected' : '']" @click="setFilmId(filmInfo.id, filmInfo.plan_code, filmInfo.allow_single_sold)">
-        <div class="time">
+    <div class="time-order-container" @click="setFilmId(filmInfo.id, filmInfo.plan_code, filmInfo.allow_single_sold)">
+        <div :class="['time', currentFilmId == filmInfo.id ? 'time-selected' : '']">
             {{filmInfo.show_time.substring(10, 16)}}
         </div>
-        <div class="detail">
-           <div class="detail-name">
+        <div :class="['detail', currentFilmId == filmInfo.id ? 'selected' : '']">
+           <div :class="['detail-name', currentFilmId == filmInfo.id ? 'font-selected' : '']">
                {{filmInfo.name}}
            </div>
            <div class="detail-info">
@@ -12,7 +12,7 @@
                    <span class="film-tip">{{filmInfo.play_effect}}</span>
                    <span class="film-tip">{{filmInfo.language}}</span>
                </span>
-               <span class="sell">{{"已售" + filmInfo.soldnum + "/"  + filmInfo.seatnum}}</span>
+               <span :class="['sell', currentFilmId == filmInfo.id ? 'font-selected' : '']">{{"已售" + filmInfo.soldnum + "/"  + filmInfo.seatnum}}</span>
                <i v-show="currentFilmId == filmInfo.id" class="iconfont selection-pos iconchangcixuanzhongzhuangtai"></i>
            </div>
         </div>
@@ -65,14 +65,6 @@ export default {
       user-select: none;
       cursor: pointer;
 
-      &.selected {
-            box-shadow: 0 0 1px 1px inset $btn-background-color-theme;
-        }
-
-    &:hover {
-                box-shadow: 0 0 1px 1px inset $btn-background-color-theme;
-            }
-
       .time {
           flex: 0 0 9.5vw;
           width: 9.5vw;
@@ -86,6 +78,10 @@ export default {
           color: $font-color3;
       }
 
+      .time-selected {
+          color: $blue-color;
+      }
+
       .detail {
           flex: 1;
           display: flex;
@@ -94,6 +90,14 @@ export default {
           justify-content: center;
           padding: 0 1.2vw;
           position: relative;
+
+          &.selected {
+            box-shadow: 0 0 1px 1px inset $btn-background-color-theme;
+        }
+
+            &:hover {
+                        box-shadow: 0 0 1px 1px inset $btn-background-color-theme;
+                    }
 
 
           .selection-pos {
@@ -125,7 +129,6 @@ export default {
                 margin-top: 2px;
                 text-align: center;
                 font-size: $font-size12;
-                transform: scale(0.95);
             }
 
             .sell {
@@ -135,6 +138,10 @@ export default {
           }
       }
   }
+
+  .font-selected {
+        color: $blue-color !important;
+    }
 </style>
 
 

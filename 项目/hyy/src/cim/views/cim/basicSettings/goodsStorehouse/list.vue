@@ -9,7 +9,10 @@
         label-suffix=":"
       >
         <el-form-item label="门店名称">
-          <el-input v-model="queryData.cinemaUid" placeholder="请输内容" prefix-icon="el-icon-search"></el-input>
+          <el-input v-model="queryData.cinemaName" placeholder="请选择门店" style="width:150px;">
+            <i class="el-icon-close el-input__icon" slot="suffix" @click="onCinemalSumit()"></i>
+          </el-input>
+          <el-button @click="selectCinemalDialog">选择</el-button>
         </el-form-item>
         <el-form-item label="仓库编码">
           <el-input v-model="queryData.code" placeholder="请输内容" prefix-icon="el-icon-search"></el-input>
@@ -39,11 +42,13 @@
           :key="item.key"
           :prop="item.key"
           :label="item.label"
+          :formatter="item.formatter"
+
         ></el-table-column>
         <el-table-column label="操作">
           <template slot-scope="{row,$index}">
             <el-button type="text" size="small" @click.stop="handleModification($index, row)">修改</el-button>
-            <el-button type="text" size="small" @click.stop="handleeDlete($index, row)">删除</el-button>
+            <el-button type="text" size="small" v-if="row.isDef != 1" @click.stop="handleeDlete($index, row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -72,14 +77,20 @@
         :rules="changeRules"
       >
         <el-form-item label="状态" prop="status">
-          <el-radio v-model="changeData.status" label="0">停用</el-radio>
           <el-radio v-model="changeData.status" label="1">启用</el-radio>
+          <el-radio v-model="changeData.status" label="0">停用</el-radio>
         </el-form-item>
-        <el-form-item label="门店名称" prop="cinemaUid">
-          <el-input v-model="changeData.cinemaUid"></el-input>
+        <el-form-item label="门店名称">
+          <div v-if="isNewBuile == true">
+            <el-input v-model="changeData.cinemaName" placeholder="请选择门店" style="width:150px;">
+              <i class="el-icon-close el-input__icon" slot="suffix" @click="onCinemalSumit1()"></i>
+            </el-input>
+            <el-button @click="selectCinemalDialog1">选择</el-button>
+          </div>
+            <span v-else>{{this.changeData.cinemaName}}</span>
         </el-form-item>
         <el-form-item label="仓库编码" prop="code">
-          <el-input v-model="changeData.code"></el-input>
+          <span>{{this.changeData.code}}</span>
         </el-form-item>
         <el-form-item label="仓库名称" prop="name">
           <el-input v-model="changeData.name"></el-input>
@@ -94,11 +105,16 @@
         <el-button type="primary" @click="handleModificationSubmit">确 定</el-button>
       </span>
     </el-dialog>
+    <!-- 选择影院弹窗 -->
+    <cinemal-dialog ref="myCinemalDialog" @onSumit="onCinemalSumit"></cinemal-dialog>
+    <!-- 选择影院弹窗 -->
+    <cinemal-dialog ref="myCinemalDialog1" @onSumit="onCinemalSumit1"></cinemal-dialog>
   </div>
 </template>
 
 <script>
 import qs from "qs";
+import cinemalDialog from "cim/components/cinemalDialog/cinemaDialog.vue";
 export default {
   data() {
     return {
@@ -109,6 +125,7 @@ export default {
         pageSize: 10,
         page: 1,
         cinemaUid:null,
+        cinemaName:null,
         name: null,
         code: null,
         status: null
@@ -134,46 +151,45 @@ export default {
         },
         {
           label: "状态",
-          key: "status"
+          key: "status",
+          formatter(row, column, cellValue) {
+            let result = "";
+            switch (row.status) {
+              case 1:
+                result = "启用";
+                break;
+              case 0:
+                result = "禁用";
+                break;
+            }
+            return result;
+          }
         }
       ],
-      tableData: [{
-            "id":1,
-            "uid":"ff5e4f86-fc77-40fb-a734-b3c0324b5165",
-            "tenantId":"TID000000",
-            "cinemaUid":"cuid001",
-            "code":"CK001",
-            "name":"测试仓库修改1",
-            "address":"测试仓库修改1地址",
-            "status":1,
-            "isDef":0,
-            "delFlag":0,
-            "createTime":"2019-03-29 11:57:20",
-            "createUserUid":"123456789",
-            "createUserName":"超级管理员",
-            "updateTime":"2019-03-29 13:58:50",
-            "updateUserUid":"123456789",
-            "updateUserName":"超级管理员"
-        }],
+      tableData: [],
       //新建or修改数据
       changeData: {
         status: "1",
         cinemaUid:null,
-        code: "CK005",
+        cinemaName:null,
+        code: null,
         name: null,
         address:null
       },
       isNewBuile: true,
       changeDialog: false,
-      changeRules: {
-        // cinemaUid: [{ required: true, message: "请输入门店名称", trigger: "blur" }],
-        // code: [{ required: true, message: "请输入仓库编码", trigger: "blur" }],
-        // name: [{ required: true, message: "请输入仓库名称", trigger: "blur" }]
+      changeRules:{
+        cinemaUid: [{ required: true, message: "请输入门店名称", trigger: "blur" }],
+        code: [{ required: true, message: "请输入仓库编码", trigger: "blur" }],
+        name: [{ required: true, message: "请输入仓库名称", trigger: "blur" }]
       }
     };
   },
   mounted() {
-    this.init();
+    // this.init();
+  },
+  components: {
+    cinemalDialog
   },
   methods: {
     // 初始化
@@ -183,8 +199,12 @@ export default {
     },
     // 查询
     onSubmit() {
-      this.queryDataIfNull(this.queryData)
-      this.queryStoreEvent(this.queryData)
+      if(this.queryData.cinemaName == null || this.queryData.cinemaName == ""){
+        this.$message("请选择门店");
+      }else{
+        this.queryDataIfNull(this.queryData)
+        this.queryStoreEvent(this.queryData)
+      }
     },
     // 对象属性是否为空 是改为null
     queryDataIfNull(obj){
@@ -210,15 +230,47 @@ export default {
             console.log(err)
           })
     },
+    selectCinemalDialog() {
+      this.$refs.myCinemalDialog.handleDialog(true);
+    },
+    selectCinemalDialog1() {
+      this.$refs.myCinemalDialog1.handleDialog(true);
+    },
+    // 选泽门店回调
+    onCinemalSumit(val = []) {
+      // alert(val)
+      if (val.length > 0) {
+        this.queryData.cinemaName = val[0].name;
+        this.queryData.cinemaUid = val[0].cinemaUid;
+      } else {
+        this.queryData.cinemaName = null;
+        this.queryData.cinemaUid = null;
+      }
+      console.log(val);
+    },
+    // 选泽门店回调
+    onCinemalSumit1(val = []) {
+      if (val.length > 0) {
+        this.changeData.cinemaName = val[0].name;
+        this.changeData.cinemaUid = val[0].cinemaUid;
+      } else {
+        this.changeData.cinemaName = null;
+        this.changeData.cinemaUid = null;
+      }
+      console.log(val);
+    },
     // 新增
     saveStoreEvent(data){
       this.$cimList.saveStorehouse(data).then( data => {
-        let _self = this
           if (data && data.code === 200) {
+            this.queryData.cinemaName = this.changeData.cinemaName
+            this.queryData.cinemaUid = this.changeData.cinemaUid
+            debugger
             this.queryDataIfNull(this.queryData)
             this.queryStoreEvent(this.queryData)
+            this.$message("新建成功");
           } else {
-
+            this.$message(data.msg);
           }
           }).catch( err => {
             console.log(err)
@@ -228,20 +280,25 @@ export default {
       let data = {
         status:this.changeData.status,
         cinemaUid:this.changeData.cinemaUid,
+        // cinemaName:this.changeData.cinemaName,
         name:this.changeData.name,
         code:this.changeData.code,
         address:this.changeData.address,
-        id:this.changeData.id
+        uid:this.changeData.uid
       }
-      // debugger
+      console.log(data)
+      debugger
       this.queryDataIfNull(data)
       this.$cimList.updateStorehouse(data).then( data => {
         let _self = this
           if (data && data.code === 200) {
+            _self.queryData.cinemaUid = _self.changeData.cinemaUid
+            _self.queryData.cinemaName = _self.changeData.cinemaName
             _self.queryDataIfNull(_self.queryData)
-            _sethis.queryStoreEvent(this.queryData)
+            _self.queryStoreEvent(_self.queryData)
+            _self.$message("修改成功");
           } else {
-
+            _self.$message(data.msg);
           }
           }).catch( err => {
             console.log(err)
@@ -250,29 +307,34 @@ export default {
     // 修改操作
     handleModification(index, row) {
       this.changeData.status = row.status.toString();
-      this.changeData.cinameUid = row.cinameUid;
+      this.changeData.cinemaUid = row.cinemaUid;
+      this.changeData.cinemaName = this.queryData.cinemaName;
       this.changeData.name = row.name;
       this.changeData.code = row.code;
       this.changeData.address = row.address;
       this.changeData.id = row.id;
+      this.changeData.uid = row.uid;
       this.changeDialog = true;
       this.isNewBuile = false;
     },
     // 删除操作
     handleeDlete(index, row) {
-      // debugger
-      this.$cimList.delStorehouse(row.id).then( data => {
-        let _self = this
+      let val = {
+        "uid":row.uid
+      }
+      this.$cimList.delStorehouse(val).then( data => {
           if (data && data.code === 200) {
-            _self.queryDataIfNull(_self.queryData)
-            _self.queryStoreEvent(_self.queryData)
+            this.queryDataIfNull(this.queryData)
+            this.queryStoreEvent(this.queryData)
+            this.$message("删除成功");
           }
           else {
-
+            this.$message(data.msg);
           }
           }).catch( err => {
             console.log(err)
           })
+      
     },
     //确认提交修改
     handleModificationSubmit() {
@@ -286,8 +348,8 @@ export default {
           } else {
             _self.updateStoreEvent();
           }
-          _self.queryDataIfNull(_self.queryData)
-          _self.queryStoreEvent(_self.queryData)
+          // _self.queryDataIfNull(_self.queryData)
+          // _self.queryStoreEvent(_self.queryData)
           _self.changeDialog = false;
         } else {
           console.log("error submit!!");
@@ -307,15 +369,33 @@ export default {
       console.log(`当前页: ${val}`);
     },
     handleNewBuilt() {
-      this.changeData={
-        status: "0",
-        cinemaUid:"cuidtest0055541",
-        code: "CK0052",
+      this.changeData ={
+        status: "1",
+        cinemaUid:null,
+        cinemaName:null,
         name: null,
-        address:null
+        address:null,
+        code:null
       },
+      this.resGetStorehouseCode()
       this.changeDialog = true;
       this.isNewBuile = true;
+    },
+    resGetStorehouseCode(){
+      let val = {
+          "uid":""
+      }
+      let _self = this
+      _self.$cimList
+        .storehouseGetStorehouse(val)
+        .then(res => {
+          if (res.code === 200) {
+            this.changeData.code = res.data.code
+          }else{
+            _self.$message(res.msg);
+          }
+        })
+        .catch(err => {});
     }
   }
 };
@@ -329,5 +409,8 @@ export default {
   .el-form-item__content {
     width: 70%;
   }
+}
+.common-new-built{
+  float:right;
 }
 </style>

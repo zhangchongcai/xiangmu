@@ -2,22 +2,23 @@
     <div class="reset-target-dialog">
         <el-dialog :visible="show" title="影院kpi编辑" class="reset-fix-dialog"
         :before-close="handleClose">
-            <div class="content ">
-                <el-form ref="kpiRef" label-width="140px" label-position="right" class="reset-form" 
+            <div class="content" v-if="infoData && infoData.cinemaCode">
+                <el-form ref="updateKpi" label-width="140px" label-position="right" class="reset-form" 
                     :model="infoData"
-                    :rules="rules"
+                    :rules="ruleForm"
                     >
                     <el-form-item label="影院名称:" class="reset-form-input">
                        <el-input size="small" v-model="infoData.cinemaName" disabled></el-input>
                     </el-form-item>
                     <el-form-item label="专资编码:" class="reset-form-input">
-                       <el-input size="small" v-model="infoData.id" disabled></el-input>
+                       <el-input size="small" v-model="infoData.cinemaCode" disabled></el-input>
                     </el-form-item>
                     <el-form-item label="时间选择:" class="reset-form-select">
                         <el-date-picker disabled size="small"
                             v-model="infoData.dateKey"
                             type="month"
-                            placeholder="选择月">
+                            placeholder="选择月"
+                            value-format="yyyy-MM-dd">
                         </el-date-picker>
                     </el-form-item>
                     <el-form-item label="票房收入目标:" class="reset-form-input" prop="boxOfficeTarget">
@@ -33,10 +34,10 @@
                         <el-input size="small" type="number" v-model="infoData.addMemberCount" :min="0"></el-input>
                     </el-form-item>
                     <el-form-item label="会员消费金额目标:" class="reset-form-input" prop="memberConsumeTarget">
-                        <el-input size="small" type="number" v-model="infoData.memberConsumeTarget" :min="0"></el-input>
+                        <el-input size="small" type="number" v-model.number="infoData.memberConsumeTarget" :min="0"></el-input>
                     </el-form-item>
                     <el-form-item label="票房市场份额目标:" class="reset-form-input" prop="marketShare">
-                        <el-input size="small" type="number" v-model="infoData.marketShare" :min="0"></el-input>
+                        <el-input size="small" type="number" v-model.number="infoData.marketShare" :min="0" :max="1"></el-input>
                     </el-form-item>
                 </el-form>
              </div>
@@ -49,53 +50,71 @@
 </template>
 <script>
 export default {
-    props:['info'],
     data(){
+        var validateNum = (rule,value,callback) => {
+            if(!value){
+                callback(new Error('目标值不能为空'))
+            }
+            if(!Number.isInteger(value*1)){
+                 callback(new Error('请输入数字值'))
+            }else {
+                if(value*1 < 0 ){
+                    callback(new Error('目标值不能为负值'))
+                }else if(value*1 > 9999999999){
+                    callback(new Error('目标值不能超过9999999999'))
+                }else{
+                    callback()
+                }
+            }
+        }
+        var validateMark = (rule,value,callback) => {
+            if(value == ''){
+                callback(new Error('份额目标值不能为空'))
+            }else if(value*1 < 0 ){
+                callback(new Error('份额目标值不能为负值'))
+            }else if(value*1 > 1){
+                callback(new Error('份额目标值不能超过1'))
+            }else{
+                callback()
+            }
+        }
         return {
             show:false, 
-            rules:{
+            infoData:null,
+            ruleForm:{
                 boxOfficeTarget:[{
                     required:true,
-                    message:'请输入票房收入目标'
+                    validator:validateNum
                 }],
                 sellGoodsTarget:[{
                     required:true,
-                    message:'请输入卖品收入目标'
+                    validator:validateNum
                 }],
                 audienceCountTarget:[{
                     required:true,
-                    message:'请输入观影人次目标'
+                    validator:validateNum 
                 }],
                 addMemberCount:[{
                     required:true,
-                    message:'请输入新增会员目标'
+                    validator:validateNum
                 }],
                 memberConsumeTarget:[{
                     required:true,
-                    message:'请输入会员消费金额目标'
+                    validator:validateNum
                 }],
                 marketShare:[{
                     required:true,
-                    message:'请输入票房市场份额目标'
+                    validator:validateMark,
                 }]
             }
         }
     },
-    computed:{
-        infoData(){
-           let data = Object.assign({},this.info);
-           return data;
-        }
-    },
-    created(){
-        console.log(this.infoData,'props')
-    },
     methods:{
         sure(){
-            this.$refs.kpiRef.validate(valid=>{
+            this.$refs.updateKpi.validate(valid => {
                 if(valid){
                     this.$emit('updateKpi',this.infoData)
-                }
+                }  
             })
         },
         handleClose(){

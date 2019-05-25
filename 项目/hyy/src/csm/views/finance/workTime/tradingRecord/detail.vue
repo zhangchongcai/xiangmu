@@ -207,7 +207,8 @@
     methods: {
       getDetail() {
         let limit = {
-          saleBillUid:this.$route.query.id
+          saleBillUid:this.$route.query.saleBillUid,
+          cinemaUid:this.$route.query.cinemaUid
         };
         this.$csmList.payDetail(Object.assign({}, limit))
           .then(data => {

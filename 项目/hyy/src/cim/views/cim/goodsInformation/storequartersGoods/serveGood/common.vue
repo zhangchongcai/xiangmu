@@ -14,7 +14,7 @@
         <el-row>
           <el-col :span="8">
             <el-form-item label="商品类型">
-              <span>{{routeMerData.name}}</span>
+              <span>服务商品</span>
             </el-form-item>
           </el-col>
           <el-col :span="8">
@@ -170,25 +170,22 @@
             <el-form-item prop="downTime" label="下架时间">
               <span
                 v-if="routeQuery.type==3"
-              >{{queryData.downTimeType ? queryData.downTimeType : '不限制'}}</span>
-              <el-select
-                v-else
-                v-model="queryData.downTimeType"
-                placeholder="请选择"
-                class="endTime-input"
-              >
-                <el-option key="0" label="不限制" value="0"></el-option>
-                <el-option key="1" label="指定时间" value="1"></el-option>
-              </el-select>
-              <el-date-picker
-                v-if="queryData.downTimeType==1"
-                format="yyyy-MM-dd HH:mm"
-                value-format="yyyy-MM-dd HH:mm"
-                class="date-picker"
-                v-model="queryData.downTime"
-                type="datetime"
-                placeholder="选择日期"
-              ></el-date-picker>
+              >{{queryData.downTime ? queryData.downTime : '不限制'}}</span>
+              <div v-else>
+                <el-select v-model="queryData.downTimeType" placeholder="请选择" class="endTime-input">
+                  <el-option key="0" label="不限制" value="0"></el-option>
+                  <el-option key="1" label="指定时间" value="1"></el-option>
+                </el-select>
+                <el-date-picker
+                  v-if="queryData.downTimeType==1"
+                  format="yyyy-MM-dd HH:mm"
+                  value-format="yyyy-MM-dd HH:mm"
+                  class="date-picker"
+                  v-model="queryData.downTime"
+                  type="datetime"
+                  placeholder="选择日期"
+                ></el-date-picker>
+              </div>
             </el-form-item>
           </el-col>
         </el-row>
@@ -279,7 +276,7 @@ export default {
         isSaleAsSetMeal: "1", //是否只允许套餐内售卖
         salePlace: "1" //销售地点 1全部 0指定 门店
       },
-      unitOptions: [],  //基本单位
+      unitOptions: [], //基本单位
       brandOptions: [], //品牌
       options: [
         {
@@ -374,9 +371,11 @@ export default {
       // 修改和查询
       if (this.routeQuery.type == 1) {
         // this.synproFindUnitList({ merClassUid: this.queryData.uid });
-        this.synproFindUnitList({ classUid: "1" });
-        this.classBrandQuery({ classUid: "1" });
+        // this.synproFindUnitList({ classUid: "1" });
+        // this.classBrandQuery({ classUid: "1" });
       } else {
+        this.synproFindUnitList({ classUid: this.queryData.uid });
+        this.classBrandQuery({ classUid: this.queryData.uid });
         this.cinemaServiceGoodsQuery({
           uid: this.queryData.uid
         });
@@ -397,19 +396,19 @@ export default {
     },
     // 获取基本单位
     synproFindUnitList(param) {
-      this.$cimList.headquartersGoods
-        .synproFindUnitList(param)
+      this.$cimList
+        .queryUnit(param)
         .then(resData => {
           if (resData.code == 200) {
-            this.unitOptions = resData.data;
+            this.unitOptions = resData.data.list;
           }
         })
         .catch(err => {});
     },
     // 获取品牌列表
     classBrandQuery(param) {
-      this.$cimList.headquartersGoods
-        .classBrandQuery(param)
+      this.$cimList
+        .findBrandList(param)
         .then(resData => {
           if (resData.code == 200) {
             this.brandOptions = resData.data.list;
@@ -441,6 +440,9 @@ export default {
         .merServiceGoodsSave(param)
         .then(resData => {
           if (resData.code == 200) {
+            this.$message("成功");
+          } else {
+            this.$message(resData.msg);
           }
         });
     },
@@ -457,6 +459,15 @@ export default {
             if (this.queryData.isSaleAsSetMeal != null) {
               this.queryData.isSaleAsSetMeal = this.queryData.isSaleAsSetMeal.toString();
             }
+            if (this.queryData.saleChannel != null) {
+              this.queryData.saleChannel = this.queryData.saleChannel.toString();
+            }
+            if (this.queryData.saleCinema != null) {
+              this.queryData.saleCinema = this.queryData.saleCinema.toString();
+              // if (this.queryData.saleCinema) {
+              //   this.applyStoresRadios;
+              // }
+            }
 
             if (this.queryData.downTime) {
               this.queryData.downTimeType = "1";
@@ -472,6 +483,9 @@ export default {
         .cinemaServiceGoodsUpdate(param)
         .then(resData => {
           if (resData.code == 200) {
+            this.$message("成功");
+          } else {
+            this.$message(resData.msg);
           }
         });
     },

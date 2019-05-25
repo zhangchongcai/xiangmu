@@ -33,7 +33,7 @@
                 <template v-if="form.baseInfo.salesMode.value == '3' || form.baseInfo.salesMode.value == '4'">
                     <el-form-item label="客户名称:" prop="baseInfo.custId.value" :rules="form.baseInfo.custId.rules">
                         <el-row>
-                            <el-input v-model="form.baseInfo.custId.text" class="input-type-124" :readonly="true" :clearable="true" @clear="clearInputValue('custId','baseInfo','both')"></el-input>
+                            <el-input v-model="form.baseInfo.custId.text" class="input-type-124"  :clearable="true" @clear="clearInputValue('custId','baseInfo','both')"></el-input>
                             <el-button type="primary" plain @click="selectInputValue('custId')">选择</el-button>
                         </el-row>
                     </el-form-item>
@@ -48,7 +48,7 @@
                 </template>
                 <el-form-item label="入账影院:" prop="baseInfo.incomeCinemaId.value" :rules="form.baseInfo.incomeCinemaId.rules">
                     <el-row>
-                        <el-input v-model="form.baseInfo.incomeCinemaId.text" class="input-type-124" :readonly="true"></el-input>
+                        <el-input v-model="form.baseInfo.incomeCinemaId.text" class="input-type-124" ></el-input>
                         <el-button type="primary" plain @click="selectInputValue('incomeCinemaId')">选择</el-button>
                     </el-row>
                 </el-form-item>
@@ -127,7 +127,7 @@
                         <template v-if="form.commonInfo.cinemaCode.value != ''">
                             <el-form-item prop="commonInfo.cinemarangev.value" :rules="form.commonInfo.cinemarangev.rules">
                                 <el-row class="flex-base">
-                                    <el-input class="input-type-124" :readonly="true" v-model="form.commonInfo.cinemarangev.text"></el-input>
+                                    <el-input class="input-type-124" v-model="form.commonInfo.cinemarangev.text"></el-input>
                                     <el-button class="margin-left-10" type="primary" plain @click="selectInputValue('cinemarangev')">选择</el-button>
                                 </el-row>
                             </el-form-item>
@@ -155,7 +155,7 @@
                         <template v-if="form.commonInfo.consumerTypeKey.value == 'normalIn'">
                             <el-row class="flex-base margin-left-10">
                                 <el-form-item prop="commonInfo.consumerType.value" :rules="form.commonInfo.consumerType.rules">
-                                    <el-input class="input-type-124" :readonly="true" v-model="form.commonInfo.consumerType.text"></el-input>
+                                    <el-input class="input-type-124"  v-model="form.commonInfo.consumerType.text"></el-input>
                                     <el-button class="margin-left-10" type="primary" plain @click="selectInputValue('consumerType')">选择</el-button>
                                 </el-form-item>
                             </el-row>

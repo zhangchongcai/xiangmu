@@ -1,6 +1,9 @@
 // 支付方式
 import payType from 'csm/components/payType/PayType.vue';
-
+import multiCinema from 'frame_cpm/components/frameadmin/cinemaDialog/multiCinema2.vue';
+import SelBrand from "cmm/dialogs/SelectBrand";  //品牌弹窗
+import selectedGoods from  'cmm/dialogs/SelectedGoods' //选择商品
+import MerClass from 'cmm/dialogs/MerClassDialog' //选择类别
 
 /**
  * @mixin alertHandle - 注册弹窗，处理弹窗回调
@@ -8,11 +11,26 @@ import payType from 'csm/components/payType/PayType.vue';
  */
 let alertHandle = {
     components: {
-        payType
+        payType,
+        multiCinema,
+        SelBrand,
+        selectedGoods,
+        MerClass
     },
     data() {
-        return {}
+        return {
+            // 品牌弹窗
+            brandQueryData: {
+                list: {
+                    id: ""
+                }
+            },
+            //选择商品
+            selectedGoodsDialogVisible:false,//必填显隐控制
+            dialogFeedbackData:'',//可选，回选数组，不传为不回选
+        }
     },
+
     /**
      * @function beforeCreate - 在实例初始化之后，数据观测 (data observer) 和 event/watcher 事件配置之前被调用
      */
@@ -108,11 +126,57 @@ let alertHandle = {
          */
         filmTypeClick() {},
         /**
+         * @function selectBrand  -选择品牌选择
+         */
+        selectBrand() {
+            this.$refs.brand.brandhandleClose(true)
+                // 调用子组件请求
+            this.$refs.brand.init()
+        },
+        //-回调
+        getBrandQueryData(val){
+            this.basicDataForm.brandId40.value = val.list.id
+            this.basicDataForm.brandId40.text = val.list.name
+            console.log('这里获取品牌数据 ',val)
+        },
+        /**
+         * @function selectBrand  -选择类别
+         */
+        selectType(data) {
+            this.$refs.MerClassDialog.openMerClassTree()
+            this.basicDataForm.classCode41.text = data.text;
+        },
+        //-回调
+        selectMerClassData(data) {
+            this.basicDataForm.classCode41.text = data.nameArr.join(',')
+            this.basicDataForm.classCode41.value = data.uidArr.join(',')
+        },
+        /**
+         * @function selectBrand  -选择商品名称 
+         */
+        selectGoodsName(data) {
+            console.log(data)
+            this.selectedGoodsDialogVisible = true
+            this.basicDataForm.merKey46.text = data.text;
+        },
+        //-回调
+        SelectedGoodsDialogCallBack(value){
+            let nameArr = []
+            value.data.map(item=>{nameArr.push(item.merName)})
+            let uidArr=[]
+            value.data.map(item=>{uidArr.push(item.uid)})
+            this.basicDataForm.merKey46.value = uidArr.join(',')
+            this.basicDataForm.merKey46.text = nameArr.join(',')
+            console.log(value,'数据数据数据')
+        },
+
+        /**
          * @function handleFilmType - 影片类型回调处理函数
          */
         handleFilmType() {},
         /**
          * @function tradeNameClick - 选择商品名称
+         * 
          */
         tradeNameClick() {
 
@@ -141,7 +205,12 @@ let alertHandle = {
          * @function handleMembershipLevel - 会员等级回调处理函数
          */
         handleMembershipLevel() {
-
+        },
+        /**
+         * @function payTypeClick - 支付方式
+         */
+        payTypeClick() {
+            this.$refs.payType.handleDialogVisible(true);
         },
         /**
          * @function payTypeClick - 支付方式
@@ -153,6 +222,30 @@ let alertHandle = {
          * @function handlePayTypeBack - 支付方式回调处理函数
          */
         handlePayTypeBack(data) {
+            console.log(data);
+        },
+        /**
+         * @function multiCinemaConfirmClick - 
+         */
+        multiCinemaConfirmClick() {
+            console.log(this.$refs.multiCinema.confirmData)
+            this.$refs.multiCinema.confirmData()
+            this.$refs.multiCinema.framedialogVisible = false;
+
+
+        },
+        /**
+         * @function multiCinemaClick - 
+         */
+        multiCinemaClick() {
+            // this.$refs.multiCinema.handleDialogVisible(true);
+            this.$refs.multiCinema.framedialogVisible = !this.$refs.multiCinema.framedialogVisible;
+
+        },
+        /**
+         * @function handleMultiCinemaBack - 
+         */
+        handleMultiCinemaBack(data) {
             console.log(data);
         },
     }

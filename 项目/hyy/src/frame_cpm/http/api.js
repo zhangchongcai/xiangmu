@@ -171,10 +171,17 @@ export default function $axios(options) {
                       return Promise.reject();
                       break;
               }*/
+              if (data.code == -1) {
+                Message({
+                  message: data.msg,
+                  type: 'warning'
+                });
+                window.location.href = '/login';
+              }
               if(data) {
-                  return data
+               return data
               }else {
-                  console.log('登陆错误')
+                 console.log('登陆错误')
               }
               //若不是正确的返回code，且已登录，就显示错误
               // const err = new Error(data.description);
@@ -240,7 +247,7 @@ export default function $axios(options) {
         instance(options)
           .then((res) => {
               resolve(res);
-              return false;
+              return false
           })
           .catch((error) => {
               reject(error);

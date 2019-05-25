@@ -35,7 +35,8 @@
           <el-table-column prop="cinemaName" label="适用影院" show-overflow-tooltip></el-table-column>
           <el-table-column label="操作" show-overflow-tooltip width="80" fixed="right">
             <template slot-scope="scope">
-              <span class="icon-color" @click="delateOther(scope.row.uid)">删除</span>
+              <el-button size='small' type="text" @click="delateOther(scope.row.uid)">删除</el-button>
+              <!-- <span class="icon-color" @click="delateOther(scope.row.uid)">删除</span> -->
             </template>
           </el-table-column>
         </el-table>

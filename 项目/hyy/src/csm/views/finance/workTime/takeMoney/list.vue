@@ -8,13 +8,13 @@
     </el-breadcrumb> -->
     <div class="searchAdition">
       <el-form :inline="true" class="demo-form-inline search-form" size="small" label-width="100px">
+        <el-form-item label="影院选择:">
+          <el-input v-model="cinemaName" @focus="openCinema()"></el-input>
+        </el-form-item>
         <el-form-item label="收银员:">
           <el-input v-model="searchAdition.workerName" @focus="dialogTableVisible1 = true"></el-input>
-
         </el-form-item>
-        <el-form-item label="抽钞人:">
-          <el-input v-model="searchAdition.extractUserName" @focus="dialogTableVisible2 = true"></el-input>
-        </el-form-item>
+        
         <el-form-item>
           <div class="search-time">
             <span class="like-lable">操作起始时间:</span>
@@ -22,6 +22,9 @@
               start-placeholder="yyyy-MM-dd" end-placeholder="yyyy-MM-dd" :picker-options="pickerOptions"
               @change="chooseTime"></el-date-picker>
           </div>
+        </el-form-item>
+        <el-form-item label="抽钞人:">
+          <el-input v-model="searchAdition.extractUserName" @focus="dialogTableVisible2 = true"></el-input>
         </el-form-item>
         <el-form-item label="终端编号:">
           <el-input v-model="searchAdition.terminalCode"></el-input>
@@ -170,6 +173,7 @@
         gridData2: [],
         templateRadio: '',
         createName: '',
+        cinemaName:''
       };
     },
     methods: {
@@ -377,9 +381,10 @@
 
     },
     created() {
-      this.getList();
-      this.getMoneyCashier();
-      this.getMoneyPerson();
+      this.cinemaName && this.getList();
+      // this.getList();
+      // this.getMoneyCashier();
+      // this.getMoneyPerson();
     }
   };
 </script>

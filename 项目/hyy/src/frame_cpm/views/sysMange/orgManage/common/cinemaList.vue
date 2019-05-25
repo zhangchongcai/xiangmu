@@ -19,7 +19,7 @@
           clearable
         ></el-input>
       </div>
-      <el-button type="primary" @click="getDatas()">查询</el-button>
+      <el-button type="primary" @click="search">查询</el-button>
     </div>
     <div class="role-list-content">
       <div class="modal-table">
@@ -90,11 +90,11 @@ export default {
   },
   methods: {
     //获取影院列表
-    getDatas() {
+    search() {
       let self = this;
       let data = {
-        code: "",
-        name: "",
+        code: this.cinemaCode,
+        name: this.cinemaName,
         start: '0',
         limit: '20'
       }
@@ -111,7 +111,7 @@ export default {
                 }
 
               })
-              .catch((err) => {
+              .catch(() => {
                 self.$message('服务器繁忙，稍后再试');
               });
     },
@@ -168,8 +168,8 @@ export default {
                 self.$emit('cancel',false);
             }
           })
-          .catch((err) => {
-            console.log('后台报错')
+          .catch(() => {
+            this.error('服务器错误，请稍后再试')
           });
     },
     handleSizeChange(val) {

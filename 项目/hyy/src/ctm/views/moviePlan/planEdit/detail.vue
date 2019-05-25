@@ -56,11 +56,10 @@
                                     placeholder="任意时间点">
                                 </el-time-picker> -->
                             </div>
-                           
                         </el-form-item>
                         <el-form-item label="审核状态：">
                             <span class="cinema-stock-edit-text">
-                                {{movieData.approveStatus == 'NOT_APPROVE' ? '未审核' : movieData.approveStatus == 'WAIT_APPROVE' ? '待审核' : '已审核'}}
+                                {{movieData.approveStatus == 'NOT_APPROVE' ? '未审核' : movieData.approveStatus == 'WAIT_APPROVE' ? '待审核' : movieData.approveStatus == 'REJECT' ? '已驳回' : '已审核'}}
                             </span>
                         </el-form-item>
                         <el-form-item label="对号入座：">
@@ -845,6 +844,7 @@ export default {
 
         return {
             planUid: '',
+            referer: '',
             curPlanDate: '',
             nextPlanDate: '',
             year: '',
@@ -963,27 +963,12 @@ export default {
     },
     mounted() {
         this.dataInit()
-        window.onbeforeunload =  (e) => {
-            if (this.$route.fullPath =="/ctm/moviePlan/detail") {
-                e = e || window.event
-                // 兼容IE8和Firefox 4之前的版本
-                if (e) {
-                    e.returnValue = '关闭提示'
-                }
-                // Chrome, Safari, Firefox 4+, Opera 12+ , IE 9+
-                return '关闭提示'
-            } else {
-                window.onbeforeunload = null
-            }
-        }
-
-        // this.getPriceSystem({movieUid: this.movieData.movieUid, planUid: this.movieData.uid})
-        
     },
     methods: {
         dataInit() {
             this.isEditMode = this.$route.query.mode ? this.$route.query.mode == 'edit' ? true : false : false
             this.planUid = this.$route.query.uid ? this.$route.query.uid : ''
+            this.referer = this.$route.query.referer ? decodeURIComponent(this.$route.query.referer) : ''
             // 获取导入价格方案里的两个list
             if (this.isEditMode) {
                 hallTypeList({name: 'SCH_MOVIE_DIS_VERSION'}).then(res => {
@@ -1008,7 +993,12 @@ export default {
                 planDate: `${this.year}-${this.month}-${this.day}`,
                 cinemaUid: this.movieData.cinemaUid
             }).then(res => {
-                this.hallData = res.data.filter(item => item.hallUid == this.movieData.hallUid && item.planUid != this.planUid)
+                let hallData = res.data.filter(item => item.hallUid == this.movieData.hallUid && item.planUid != this.planUid)
+                hallData.forEach(item => {
+                    item.showTimeStart = item.startTime.split(':')[0] < 6 ? `${this.nextPlanDate} ${item.startTime}` : `${this.curPlanDate} ${item.startTime}`
+                    item.showTimeEnd = item.endTime.split(':')[0] < 6 ? `${this.nextPlanDate} ${item.endTime}` : `${this.curPlanDate} ${item.endTime}`
+                })
+                this.hallData = hallData
             })
         },
         getmoviePlanDetail() {
@@ -1328,7 +1318,7 @@ export default {
                     this.ticketData.forEach(item => {
                         if (res.data.ttVoList && res.data.ttVoList.length) {
                             res.data.ttVoList.forEach(type => {
-                                if (item.uid == type.ttUid) {
+                                if (item.uid == type.ttUid && type.movieVersionName == this.movieData.disVersion) {
                                     item.price = type.price
                                     item.addFee = type.addFee
                                     item.switchStatus = true
@@ -1336,16 +1326,16 @@ export default {
                             })
                         }
                         if (!item.price) item.price = 0
-                        if (!item.addPrice) item.addPrice = 0
+                        if (!item.addFee) item.addFee = 0
                         item.price = parseFloat(item.price).toFixed(2)
-                        item.addPrice = parseFloat(item.addPrice).toFixed(2)
+                        item.addFee = parseFloat(item.addFee).toFixed(2)
                     })
 
                     this.channelData.forEach(item => {
                         if (res.data.priceNetSale && res.data.priceNetSale.length) {
                             res.data.priceNetSale.forEach(channel => {
-                                if (item.uid == type.uid) {
-                                    item.price = type.price
+                                if (item.uid == channel.uid && channel.movieVersionName == this.movieData.disVersion) {
+                                    item.price = channel.price
                                     item.switchStatus = true
                                 }
                             })
@@ -1375,7 +1365,18 @@ export default {
                 .catch(action => {
                     if (action != 'cancel') return
                     this.leaveFlag = false
-                    this.$router.push({path: 'layout', query: {date: this.curPlanDate}})
+                    this.$store.commit("tagNav/removeTagNav", {
+                        name: this.$route.name,
+                        path: this.$route.path,
+                        title: this.$route.meta.title,
+                        query: this.$route.query
+                    })
+                    if (this.referer) {
+                        this.$router.push({path: this.referer})
+                    } else {
+                        this.$router.push({path: 'layout', query: {date: this.curPlanDate}})
+                    }
+                        
                 })
         },
         savePlan() {
@@ -1468,10 +1469,19 @@ export default {
                     //     path: this.$route.path,
                     //     title: this.$route.meta.title
                     // })
+                    
                     setTimeout(() => {
-                        this.$router.push({path: 'layout'})
-                        // TODO 跳转至上个页面
-                        // this.$router.push({path: 'layout', query: {date: this.curPlanDate}})
+                        this.$store.commit("tagNav/removeTagNav", {
+                            name: this.$route.name,
+                            path: this.$route.path,
+                            title: this.$route.meta.title,
+                            query: this.$route.query
+                        })
+                        if (this.referer) {
+                            this.$router.push({path: this.referer})
+                        } else {
+                            this.$router.push({path: 'layout', query: {date: this.curPlanDate}})
+                        }
                     }, 1000)
                 }
             }).catch(res => {})
@@ -1483,36 +1493,25 @@ export default {
             //     title: this.$route.meta.titlexxxxx
             // })
             // this.$router.push({path: this.$store.state.tagNav.openedPageList[this.$store.state.tagNav.openedPageList.length-1].path, query: this.$store.state.tagNav.openedPageList[this.$store.state.tagNav.openedPageList.length-1].query})   
-            this.$router.push({path: 'layout', query: {date: this.curPlanDate}})
+            this.$store.commit("tagNav/removeTagNav", {
+                name: this.$route.name,
+                path: this.$route.path,
+                title: this.$route.meta.title,
+                query: this.$route.query
+            })
+            if (this.referer) {
+                this.$router.push({path: this.referer})
+            } else {
+                this.$router.push({path: 'layout', query: {date: this.curPlanDate}})
+            }
         }
     },
     components: {
         fixStepTool: FixStepTool
     },
     computed: {
-    },
-    destroyed() {
-      window.onbeforeunload = null
-      this.$store.commit('deleteCurrentRow')
-    },
-    beforeRouteLeave (to, from, next) {
-        if (!this.leaveFlag || !this.isEditMode) {
-            next()
-            return
-        }
-        const answer = window.confirm('确定不保存直接离开吗?')
-        if (answer) {
-            this.$store.commit("tagNav/removeTagNav", {
-                name: this.$route.name,
-                path: this.$route.path,
-                title: this.$route.meta.title
-            })
-            next()
-        } else {
-            next(false)
-        }
     }
-};
+}
 </script>
 
 <style lang="scss">

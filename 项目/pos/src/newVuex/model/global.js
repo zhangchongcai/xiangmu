@@ -7,13 +7,13 @@ export default {
        changingTicket: false, //更换票类对话框状态
        currentTicketItem:'',  //获取当前点击的票类项
        payDialog: false,  //支付弹窗状态
-       billCode: '',  //初始化获取code
+       billCode: '',  //初始化获取code 
        billCodeUid: '', //billUid用于支付
        cinemaUid: '', //影院uid用于支付
        channelCode: '1', //渠道编码
        cinemaCode: "75847291", //影院编码
        cinemaName: '人类研究所影院', //影院名称
-       terminalCode: "86242807", //终端编码
+       terminalId: "86242807", //终端编码
        payMethod: {
         currentPayMethod: '',  //当前选择的支付方式
         currentPayMethodId: '' //当前选择的支付方式id
@@ -38,10 +38,10 @@ export default {
     mutations: {
         //登录后获取影院信息
         [TYPES.SAVE_CINEMA_INFO] : (state) => {
-            // state.cinemaCode = localStorage.getItem('cinemaCode') || '75847291'
+            state.cinemaCode = localStorage.getItem('cinemaCode') || '75847291'
             state.cinemaUid = localStorage.getItem('cinemaUid') 
-            // state.cinemaName = localStorage.getItem('cinemaName') || '人类研究所影院'
-            state.terminalCode = localStorage.getItem('terminalCode')
+            state.cinemaName = localStorage.getItem('cinemaName') || '人类研究所影院'
+            state.terminalId = localStorage.getItem('terminalId')
         },
 
         //支付结果显示或者隐藏
@@ -129,8 +129,8 @@ export default {
         },
 
         //终端编码
-        terminalCode(state) {
-            return state.terminalCode
+        terminalId(state) {
+            return state.terminalId
         },
 
         //获得支付数据实际支付以及找零

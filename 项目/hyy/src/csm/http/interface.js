@@ -8,7 +8,7 @@ import axios from './api'
  * 清机结算
  */
 // 班次收银管理列表
-export const clearaccountList = (data,current,size) => {
+export const clearaccountList = (data, current, size) => {
   return axios({
     url: `/workTime/findByPage?current=${current}&size=${size}`,
     method: 'post',
@@ -112,7 +112,7 @@ export const actualCash = (params) => {
   })
 }
 // 清机结算（支付信息明细）
-export const payTotal = (data,current,size) => {
+export const payTotal = (data, current, size) => {
   return axios({
     url: `/workTime/selectSaleBillPayFlowList?current=${current}&size=${size}`,
     method: 'post',
@@ -120,7 +120,7 @@ export const payTotal = (data,current,size) => {
   })
 }
 // 清机结算（电影票销售）
-export const filmSell = (data,current,size) => {
+export const filmSell = (data, current, size) => {
   return axios({
     url: `/workTime/selectMovieTicketList?current=${current}&size=${size}`,
     method: 'post',
@@ -128,7 +128,7 @@ export const filmSell = (data,current,size) => {
   })
 }
 // 清机结算（卖品销售）
-export const goodsSell = (data,current,size) => {
+export const goodsSell = (data, current, size) => {
   return axios({
     url: `/workTime/selectSaleMerFlowList?current=${current}&size=${size}`,
     method: 'post',
@@ -136,7 +136,7 @@ export const goodsSell = (data,current,size) => {
   })
 }
 // 清机结算（会员卡销售）
-export const vipSell = (data,current,size) => {
+export const vipSell = (data, current, size) => {
   return axios({
     url: `/workTime/selectSaleMemberFlowList?current=${current}&size=${size}`,
     method: 'post',
@@ -144,7 +144,7 @@ export const vipSell = (data,current,size) => {
   })
 }
 // 清机结算（票券销售）
-export const ticketSell = (data,current,size) => {
+export const ticketSell = (data, current, size) => {
   return axios({
     url: `/workTime/selectSaleTicketFlowList?current=${current}&size=${size}`,
     method: 'post',
@@ -152,7 +152,7 @@ export const ticketSell = (data,current,size) => {
   })
 }
 // 清机结算（票券销售）
-export const otherSell = (data,current,size) => {
+export const otherSell = (data, current, size) => {
   return axios({
     url: `/workTime/selectSaleOtherFlowList?current=${current}&size=${size}`,
     method: 'post',
@@ -160,7 +160,7 @@ export const otherSell = (data,current,size) => {
   })
 }
 // 清机结算（资金调整单列表）
-export const adjustList = (data,current,size) => {
+export const adjustList = (data, current, size) => {
   return axios({
     url: `/fundChange/findByPage?current=${current}&size=${size}`,
     method: 'post',
@@ -210,9 +210,9 @@ export const tickettypeUpdate = data => {
  * 订单查询
  */
 // 订单列表页查询
-export const orderList = (data,current,size) => {
+export const orderList = (data, current, size) => {
   return axios({
-    baseURL:'http://192.168.100.118:2302',
+    // baseURL:'http://192.168.100.118:2302',
     url: `/saleBillSearch/selectSaleBillByPage?current=${current}&size=${size}`,
     method: 'post',
     data
@@ -221,6 +221,7 @@ export const orderList = (data,current,size) => {
 // 支付方式
 export const payType = (params) => {
   return axios({
+    // baseURL:'http://192.168.100.118:2302',
     url: '/payType/findAllForBillQuery',
     method: 'get',
     params
@@ -239,7 +240,7 @@ export const payDetail = (params) => {
  * 领用物品管理
  */
 // 物品列表页查询
-export const otherthingsList = (params,current,size) => {
+export const otherthingsList = (params, current, size) => {
   return axios({
     url: `/otherthing/findByPage?current=${current}&size=${size}`,
     method: 'get',
@@ -257,224 +258,246 @@ export const addOtherthing = (data) => {
 // 删除物品
 export const deleteOtherthing = (uid) => {
   return axios({
-      url: `/otherthing/delete/${uid}`,
-      method: 'delete',
+    url: `/otherthing/delete/${uid}`,
+    method: 'delete',
   });
 }
 // 获取电影影院
 export const getCinemaByParam = (params) => {
+  console.log(document.domain)
+  let domain = document.domain;
+  let baseURL = "";
+  switch (domain) {
+    case '127.0.0.1':
+      baseURL = 'http://apidev.oristarcloud.com'
+      break;
+    case "dev.oristarcloud.com":
+      baseURL = 'http://apidev.oristarcloud.com'
+
+      break;
+    case "test.oristarcloud.com":
+      baseURL = 'http://apitest.oristarcloud.com'
+      break;
+    default:
+      baseURL = 'http://apidev.oristarcloud.com';
+      break;
+  }
   return axios({
-      baseURL:'http://apidev.oristarcloud.com',
-      // url: '/condition/getCinemaByParam',
-      url: '/cpm/user/auth/queryUserCinemas',
-      method: 'get',
-      params
+    //🌲状结构
+    // baseURL:'http://apidev.oristarcloud.com/report',
+    // url: '/condition/getCinemaByParam',
+    // 表格结构 （正确数据）
+    // baseURL:'http://apidev.oristarcloud.com',
+    baseURL:baseURL,
+    url: '/cpm/user/auth/queryUserCinemas',
+    method: 'get',
+    params
   });
 }
 /*
-* 抽钞记录管理
-*/
+ * 抽钞记录管理
+ */
 // 物品列表页查询
-export const getMoneyList = (data,current,size) => {
- return axios({
-   url: `/extractFund/findTimeExtractFundByPage?current=${current}&size=${size}`,
-   method: 'post',
-   data
- })
+export const getMoneyList = (data, current, size) => {
+  return axios({
+    url: `/extractFund/findTimeExtractFundByPage?current=${current}&size=${size}`,
+    method: 'post',
+    data
+  })
 }
 // 抽钞记录查询-抽钞人列表
 export const getMoneyPerson = (params) => {
- return axios({
-   url: '/extractFund/findExtractUsersByPage/extracters',
-   method: 'get',
-   params
- })
+  return axios({
+    url: '/extractFund/findExtractUsersByPage/extracters',
+    method: 'get',
+    params
+  })
 }
 // 抽钞记录查询-收银员列表
 export const getMoneyCashier = (params) => {
- return axios({
-     url: `/extractFund/findExtractUsersByPage/workers`,
-     method: 'get',
-     params
- });
+  return axios({
+    url: `/extractFund/findExtractUsersByPage/workers`,
+    method: 'get',
+    params
+  });
 }
 
 /*** 公共组件接口 start ***/
 // 交易渠道/代理商
 export const getDitch = (data) => {
   return axios({
-      // baseURL:'http://192.168.100.23:2301',
-      baseURL:'http://apidev.oristarcloud.com',
-      url: `/ticket/base/channel/agent`,
-      method: 'post',
-      data
+    // baseURL:'http://192.168.100.23:2301',
+    baseURL: 'http://apidev.oristarcloud.com',
+    url: `/ticket/base/channel/agent`,
+    method: 'post',
+    data
   });
- }
+}
 // 页面控件类型
-export const getMoudelData = (page,pageSize,name) => {
+export const getMoudelData = (page, pageSize, name) => {
   return axios({
-      // baseURL:'http://192.168.100.23:2301',
-      baseURL:'http://apidev.oristarcloud.com',
-      url: `/ticket//dictionary/page?page=${page}&pageSize=${pageSize}&name=${name}`,
-      method: 'post',
+    // baseURL:'http://192.168.100.23:2301',
+    baseURL: 'http://apidev.oristarcloud.com',
+    url: `/ticket//dictionary/page?page=${page}&pageSize=${pageSize}&name=${name}`,
+    method: 'post',
   });
- }
+}
 /*** 公共组件接口 end ***/
 
 /*** 支付方式 start ***/
 // 条件分页检索支付方式
 export const findPayTypePage = (data) => {
   return axios({
-      url: `/payType/findByPage`,
-      method: 'post',
-      data
+    url: `/payType/findByPage`,
+    method: 'post',
+    data
   });
 };
 
 // 新建自定义支付方式
 export const savePayType = (data) => {
   return axios({
-      url: `/payType/save`,
-      method: 'post',
-      data
+    url: `/payType/save`,
+    method: 'post',
+    data
   });
 };
 
 // 删除自定义支付方式
 export const deletePayType = (data) => {
   return axios({
-      url: `/payType/delete/${data.uid}`,
-      method: 'delete',
-      data
+    url: `/payType/delete/${data.uid}`,
+    method: 'delete',
+    data
   });
 };
 
 // 启用/停用支付状态
 export const updatePayTypeStatus = (data) => {
   return axios({
-      url: `/payType/updateStatus/${data.uid}?status=${data.status}`,
-      method: 'get',
-      data
+    url: `/payType/updateStatus/${data.uid}?status=${data.status}`,
+    method: 'get',
+    data
   });
 };
 
 // 根据支付编码查询支付方式
 export const findPayTypeByCode = (data) => {
   return axios({
-      url: `/payType/findByCode/${data.code}`,
-      method: 'get',
-      data
+    url: `/payType/findByCode/${data.code}`,
+    method: 'get',
+    data
   });
 };
 
 // 修改自定义支付方式
 export const updatePayType = (data) => {
   return axios({
-      url: `/payType/update/${data.uid}`,
-      method: 'post',
-      data
+    url: `/payType/update/${data.uid}`,
+    method: 'post',
+    data
   });
 };
 
 // 获取有效的支付方式编码
 export const getPayTypeCode = (data) => {
   return axios({
-      url: `/payType/getPayTypeCode`,
-      method: 'get',
-      data
+    url: `/payType/getPayTypeCode`,
+    method: 'get',
+    data
   });
 };
 
 // 通过影院ids获取支付方式
 export const selectForTenant = data => {
-    return axios({
-        url: '/payType/selectForTenant',
-        method: 'post',
-        data
-    })
+  return axios({
+    url: '/payType/selectForTenant',
+    method: 'post',
+    data
+  })
 }
 /*** 支付方式 end ***/
 
 /*** 渠道管理 start ***/
 // 获取总部渠道列表
 export const getChannelList = (data) => {
-    return axios({
-        url: `/base/channel/list?page=${data.page}&pageSize=${data.pageSize}`,
-        method: 'post',
-        data
-    });
+  return axios({
+    url: `/base/channel/list?page=${data.page}&pageSize=${data.pageSize}`,
+    method: 'post',
+    data
+  });
 };
 // 获取影院渠道列表
 export const getCinemaChannelList = (params) => {
-    return axios({
-        url: `/cinema/base/channel/list`,
-        method: 'get',
-        params
-    });
+  return axios({
+    url: `/cinema/base/channel/list`,
+    method: 'get',
+    params
+  });
 };
 
 export const getChannelOtherList = (params) => {
-    return axios({
-        url: `/base/channel/other/list`,
-        method: 'get',
-        params
-    });
+  return axios({
+    url: `/base/channel/other/list`,
+    method: 'get',
+    params
+  });
 };
 
 export const addHeaderChannel = (data) => {
-    return axios({
-        url: `/base/channel/add`,
-        method: 'post',
-        data
-    });
+  return axios({
+    url: `/base/channel/add`,
+    method: 'post',
+    data
+  });
 };
 
 export const setChannelStatus = (params) => {
-    return axios({
-        url: `/base/channel/set/status`,
-        method: 'post',
-        params
-    });
+  return axios({
+    url: `/base/channel/set/status`,
+    method: 'post',
+    params
+  });
 };
 
-export const setChannelCinema = (params) => {
+export const setChannelCinema = (data) => {
     return axios({
         url: `/base/channel/set/cinema`,
         method: 'post',
-        params
+        data
     });
 };
 
 export const getChannelDetail = (params) => {
-    return axios({
-        url: `/cinema/channel/view`,
-        method: 'get',
-        params
-    });
+  return axios({
+    url: `/cinema/channel/view`,
+    method: 'get',
+    params
+  });
 };
 // 获取当前用户信息
 export const getUserInfo = (params) => {
-    return axios({
-        url: `/common/user`,
-        method: 'get',
-        params
-    });
+  return axios({
+    url: `/common/user`,
+    method: 'get',
+    params
+  });
 };
 // 查询影院树
 export const getCinemaTree = params => {
-    return axios({
-        url: '/cinema/tree',
-        method: 'get',
-        params
-    })
+  return axios({
+    url: '/cinema/tree',
+    method: 'get',
+    params
+  })
 }
 // 字典数据查询
 export const getDictionaryData = params => {
-    return axios({
-        url: '/dictionary/getByName',
-        method: 'get',
-        params
-    })
+  return axios({
+    url: '/dictionary/getByName',
+    method: 'get',
+    params
+  })
 }
 /*** 渠道管理 end ***/
 
@@ -535,17 +558,17 @@ export default {
   selectForTenant,
   /*** 支付方式 end ***/
 
-    /*** 渠道管理 start ***/
-    getChannelList,
-    getCinemaChannelList,
-    getChannelOtherList,
-    addHeaderChannel,
-    setChannelStatus,
-    setChannelCinema,
-    getChannelDetail,
-    getUserInfo,
-    getCinemaTree,
-    getDictionaryData,
-    /*** 渠道管理 end ***/
+  /*** 渠道管理 start ***/
+  getChannelList,
+  getCinemaChannelList,
+  getChannelOtherList,
+  addHeaderChannel,
+  setChannelStatus,
+  setChannelCinema,
+  getChannelDetail,
+  getUserInfo,
+  getCinemaTree,
+  getDictionaryData,
+  /*** 渠道管理 end ***/
 
 };

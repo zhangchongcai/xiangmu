@@ -3,7 +3,7 @@
         <el-dialog :visible="show" title="影院kpi创建" class="reset-fix-dialog"
             :before-close="handleClose">
             <div class="content ">
-                <el-form ref="kpiRef" label-width="140px" label-position="right" class="reset-form" 
+                <el-form  ref="kpiRef" label-width="140px" label-position="right" class="reset-form" 
                     :model="infoData"
                     :rules="rules"
                     >
@@ -17,34 +17,35 @@
                             @select="selectCinema"
                             ></el-autocomplete>
                     </el-form-item>
-                    <el-form-item label="专资编码:" class="reset-form-input" prop="id">
-                       <el-input size="small" v-model="infoData.id" readonly></el-input>
+                    <el-form-item label="专资编码:" class="reset-form-input" prop="cinemaCode">
+                       <el-input size="small" v-model="infoData.cinemaCode" readonly></el-input>
                     </el-form-item>
                     <el-form-item label="时间选择:" class="reset-form-select" prop="dateKey">
                         <el-date-picker  size="small"
                             v-model="infoData.dateKey"
                             type="month"
                             placeholder="选择月"
-                            value-format="yyyy-MM-dd">
+                            value-format="yyyy-MM"
+                           >
                         </el-date-picker>
                     </el-form-item>
                     <el-form-item label="票房收入目标:" class="reset-form-input" prop="boxOfficeTarget">
-                        <el-input size="small" type="number" v-model="infoData.boxOfficeTarget" :min="0"></el-input>
+                        <el-input size="small" type="number" v-model="infoData.boxOfficeTarget" :min="0" :max="9999999999"></el-input>
                     </el-form-item>
                     <el-form-item size="small" label="卖品收入目标:" class="reset-form-input" prop="sellGoodsTarget">
-                        <el-input type="number" v-model="infoData.sellGoodsTarget" :min="0"></el-input>
+                        <el-input type="number" v-model="infoData.sellGoodsTarget" :min="0" :max="9999999999"></el-input>
                     </el-form-item>
                     <el-form-item label="观影人次目标:" class="reset-form-input" prop="audienceCountTarget">
-                        <el-input size="small" type="number" v-model="infoData.audienceCountTarget" :min="0"></el-input>
+                        <el-input size="small" type="number" v-model="infoData.audienceCountTarget" :min="0" :max="9999999999"></el-input>
                     </el-form-item>
                     <el-form-item label="新增会员目标:" class="reset-form-input" prop="addMemberCount">
-                        <el-input size="small" type="number" v-model="infoData.addMemberCount" :min="0"></el-input>
+                        <el-input size="small" type="number" v-model="infoData.addMemberCount" :min="0" :max="9999999999"></el-input>
                     </el-form-item>
                     <el-form-item label="会员消费金额目标:" class="reset-form-input" prop="memberConsumeTarget">
-                        <el-input size="small" type="number" v-model="infoData.memberConsumeTarget" :min="0"></el-input>
+                        <el-input size="small" type="number" v-model="infoData.memberConsumeTarget" :min="0" :max="9999999999"></el-input>
                     </el-form-item>
                     <el-form-item label="票房市场份额目标:" class="reset-form-input" prop="marketShare">
-                        <el-input size="small" type="number" v-model="infoData.marketShare" :min="0"></el-input>
+                        <el-input size="small" type="number" v-model.trim="infoData.marketShare" :min="0" :max="9999999999"></el-input>
                     </el-form-item>
                 </el-form>
              </div>
@@ -58,15 +59,45 @@
 <script>
 export default {
     data(){
+        var validateNum = (rule,value,callback) => {
+            if(!value){
+                callback(new Error('目标值不能为空'))
+            }
+            if(!Number.isInteger(value*1)){
+                 callback(new Error('请输入数字值'))
+            }else {
+                if(value < 0 ){
+                    callback(new Error('目标值不能为负值'))
+                }else if(value > 9999999999){
+                    callback(new Error('目标值不能超过9999999999'))
+                }else{
+                    callback()
+                }
+            }
+        }
+        var validateMark = (rule,value,callback) => {
+            if(!value){
+                callback(new Error('份额目标值不能为空'))
+            }else if(value*1 < 0 ){
+                callback(new Error('份额目标值不能为负值'))
+            }else if(value*1 > 1){
+                callback(new Error('份额目标值不能超过1'))
+            }else{
+                callback()
+            }
+        }
         return {
             show:false,
             cinemaName:null,
             cinemaId:null,
+            setTimeoutId:null,
             options:[],
+            userId:this.$store.state.loginUser?this.$store.state.loginUser.uid:805852,
             infoData:{
                 userId:this.$store.state.loginUser?this.$store.state.loginUser.uid:805852,
                 cinemaName:null,
-                id:null,
+                cinemaCode:null,
+                cinemaid:null,
                 boxOfficeTarget:null,
                 sellGoodsTarget:null,
                 audienceCountTarget:null,
@@ -79,37 +110,33 @@ export default {
                     required:true,
                     message:'请输入影院名称',
                 }],
-                id:[{
-                    required:true, 
-                    message:'请输入影院id'
-                }],
                 dateKey:[{
                     required:true,
                     message:'请选择月份'
                 }],
                 boxOfficeTarget:[{
                     required:true,
-                    message:'请输入票房收入目标'
+                    validator:validateNum
                 }],
-                sellGoodsTarget:[{
+                sellGoodsTarget:[{ 
                     required:true,
-                    message:'请输入卖品收入目标'
+                    validator:validateNum
                 }],
                 audienceCountTarget:[{
                     required:true,
-                    message:'请输入观影人次目标'
+                    validator:validateNum
                 }],
                 addMemberCount:[{
                     required:true,
-                    message:'请输入新增会员目标'
+                    validator:validateNum
                 }],
                 memberConsumeTarget:[{
                     required:true,
-                    message:'请输入会员消费金额目标'
+                    validator:validateNum
                 }],
                 marketShare:[{
                     required:true,
-                    message:'请输入票房市场份额目标'
+                    validator:validateMark
                 }]
             }
         }
@@ -117,37 +144,43 @@ export default {
     methods:{
         // 影院列表(未设置kpi)
         getCinema(str,cb){
-           setTimeout(()=>{
+            this.infoData.cinemaCode = null;
+            clearTimeout(this.setTimeoutId);
+            this.setTimeoutId = setTimeout(()=>{
             let params = {
                 body:{
                     userId:this.userId,
                     cinemaName:str,
-                    consumerId:805852,
+                    // consumerId:null,
                     pageNo:1,
                     pageSize:10,
                 }
             };
-           
             this.$camList.getUnbindKpiCinema(params).then(response=>{
                 this.options = response.data
-                let resData = this.options.map(item=>{
-                    return {
-                        "value":item.cinemaName,
-                        "id":item.id
-                    }
-                })
-                cb(resData)
+                if(this.options.length > 0 ){
+                    let resData = this.options.map(item=>{
+                        return {
+                            value:item.cinemaName,
+                            cinemaCode:item.cinemaCode,
+                            cinemaid:item.cinemaid
+                        }
+                    })
+                    cb(resData)
+                }
+                
             })
            },200) 
         },
         // 选择影院
         selectCinema(item){
+            this.infoData.cinemaCode = item.cinemaCode;
             this.infoData.cinemaName = item.value,
-            this.infoData.id = item.id
+            this.infoData.cinemaid = item.cinemaid;
         },  
         // 创建kpi
         sure(){
-            this.$refs.kpiRef.validate(valid => {
+            this.$refs.kpiRef.validate((valid) => {
                 if(valid){
                     this.$emit('createKpi',this.infoData)
                 }

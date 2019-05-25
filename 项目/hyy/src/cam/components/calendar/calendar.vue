@@ -1,8 +1,6 @@
 <template>
-    <section class="self-el-section-warp" :style="style">
-        <div class="calendarInputWarp" @click.prevent.stop="handleCalendarInputClick($event)">
-            <!-- <el-input v-model="input" placeholder="请选择日期" @focus="handleCalendarInputClick($event)"></el-input> -->
-            <!-- <input type="text" class="calendarMainInputClass" :placeholder="placeholder" /> -->
+    <section class="self-el-section-warp" :style="autoStyle">
+        <div class="calendarInputWarp" @click.stop.prevent="handleCalendarInputClick($event)">
             <el-input v-model="choisedData" placeholder="请选择日期"  clearable readonly suffix-icon="el-icon-date"></el-input>
         </div>
         <!-- <div class="calendarContentWarp" v-clickoutside="handleClose" v-cloak :class="(show ? 'calendarContentWarpOpened' : '')">        -->
@@ -27,19 +25,21 @@ import CustomComponent from './custom'
 export default {
     props:{
         value: {
-            type: Object , 
+            // type: Object , 
             default: '' , 
             required : true 
         } , 
         dateType: {
             type: Array  , 
-            default:['天', '周', '月', '年'], 
+            default:()=>{
+                return ['天', '周', '月', '年']
+            }
         } , 
         placeholder:{
             default: '' , 
             required : false
         } , 
-        style: {
+        autoStyle: {
             type: String , 
             default: ''  , 
             required : false 
@@ -157,8 +157,7 @@ export default {
                     returnVal = "day";
                     break;
             }
-
-            this.$emit('input' , val) ; 
+            this.$emit('input' , val); 
             this.$emit('emitCalendarType' , returnVal);
             this.$emit('change',{startTime:startTime,endTime:endTime});
         }
@@ -341,7 +340,7 @@ export default {
                                 width:30px;
                                 height:30px;
                                 line-height: 30px;
-                                border-radius: 10px;
+                                border-radius: 4px;
                                 color:#333;
                                 transition: all .2s cubic-bezier(0.645, 0.045, 0.355, 1);
                             }

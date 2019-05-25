@@ -31,7 +31,7 @@
                     <el-form-item label="公司名称：" prop="company">
                         <el-input v-model="cinemaData.company"></el-input>
                     </el-form-item>
-                    <el-form-item label="所属影院：" prop="cinemas">
+                    <el-form-item label="所属影线：" prop="cinemas">
                         <el-input v-model="cinemaData.cinemas"></el-input>
                     </el-form-item>
                     <el-form-item label="影院联系人：" prop="contactMan">
@@ -68,35 +68,49 @@
                         <el-input v-model="cinemaData.email"></el-input>
                     </el-form-item>
                     <!--联动选择地区-->
-                    <el-form-item label="所属城市：" prop="area">
-                        <el-select size="small" style="width: 100px"
-                                v-model="cinemaData.area.pcode"
-                                placeholder="请选择省份"
-                                v-on:change="getProv($event)"
+                    <div class="PCA">
+                        <el-form-item label="所属城市：" prop="area">
+                            <el-select size="small" style="width: 100px;display:inline-block"
+                                    v-model="cinemaData.area.pcode"
+                                    placeholder="请选择省份"
+                                    v-on:change="getProv($event)"
+                                    >
+                                <el-option
+                                        v-for="item in provs"
+                                        :label="item.areaName"
+                                        :value="item.areaCode"
+                                        :key = item.value
+                                        >
+                                </el-option>
+                            </el-select>
+                            <el-select size="small" style="width: 100px;display:inline-block"
+                                v-model="cinemaData.area.ccode"
+                                placeholder="请选择城市"
+                                v-on:change="getCity($event)"
                                 >
-                            <el-option
-                                    v-for="item in provs"
-                                    :label="item.areaName"
-                                    :value="item.areaCode"
-                                    :key = item.value
-                                    >
-                            </el-option>
-                        </el-select>
-                        <el-select size="small" style="width: 100px"
-                            v-model="cinemaData.area.cname"
-                            placeholder="请选择城市"
-                            v-on:change="getCity($event)"
-                            >
-                            <el-option
-                                    v-for="item in citys"
-                                    :label="item.areaName"
-                                    :value="item.areaCode"
-                                    :key="item.value"
-                                    >
-                            </el-option>
-                        </el-select>
-                        
-                    </el-form-item>
+                                <el-option
+                                        v-for="item in citys"
+                                        :label="item.areaName"
+                                        :value="item.areaCode"
+                                        :key="item.value"
+                                        >
+                                </el-option>
+                            </el-select>
+                            <el-select size="small" style="width: 100px;display:inline-block"
+                                v-model="cinemaData.area.acode"
+                                placeholder="请选择区域"
+                                v-on:change="getAreas($event)"
+                                >
+                                <el-option
+                                        v-for="item in areas"
+                                        :label="item.areaName"
+                                        :value="item.areaCode"
+                                        :key="item.value"
+                                        >
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                    </div>
                         
                     <el-form-item label="影院地址：" prop="address">
                         <el-input v-model="cinemaData.address"></el-input>
@@ -198,7 +212,7 @@ import HallinfoList from '../hallInfo/List.vue'
             let mgcode_limit=(rule,value,callback)=> {
                 console.log(value.length)
                 this.cinemaData.mgCode = this.cinemaData.mgCode.replace(/[^\w]/g, '')
-                if(this.cinemaData.mgCode.length<4){callback(new Error('请输入四位数字'))
+                if(this.cinemaData.mgCode.length<6){callback(new Error('请输入六位数字'))
                 }else{
                     callback();
                 }
@@ -207,6 +221,7 @@ import HallinfoList from '../hallInfo/List.vue'
                 status:false,
                 provs:[],
                 citys: [],
+                areas:[],
                 selectProv: '',
                 selectCity: '',
                 uid:'', //  影院id
@@ -223,6 +238,8 @@ import HallinfoList from '../hallInfo/List.vue'
                         cname:'',
                         pcode:'',
                         pname:'',
+                        acode:'',
+                        aname:''
                     },
                     cinemas:'',     //所属影线
                     code:'',        //影院编码
@@ -295,7 +312,7 @@ import HallinfoList from '../hallInfo/List.vue'
             }
         },
         methods:{
-            //获取城市数据
+            //保存省 获取城市数据
             getProv(prov) {
                 var item = this.provs.filter(item=>{
                     return item.areaCode==prov
@@ -303,16 +320,30 @@ import HallinfoList from '../hallInfo/List.vue'
                 // console.log(item)
                 this.cinemaData.area.pcode=item[0].areaCode
                 this.cinemaData.area.pname=item[0].areaName
-                this.cinemaData.area.cname=""
+                this.cinemaData.area.ccode=""
+                this.cinemaData.area.acode=""
                 this.getname(prov)
             },
-            //保存城市数据
-            getCity(city) {
+            //保存城市 获取区域数据
+            getCity(code) {
+                console.log(code)
                 var item = this.citys.filter(item=> {
-                    return item.areaCode==city
+                    return item.areaCode==code
                 });
                 this.cinemaData.area.ccode=item[0].areaCode
                 this.cinemaData.area.cname=item[0].areaName
+                this.cinemaData.area.acode=""
+                this.$ctmList.getPname(code).then( res => {
+                    this.areas = res.data
+                })
+            },
+            //保存区域数据
+            getAreas(city) {
+                var item = this.areas.filter(item=> {
+                    return item.areaCode==city
+                });
+                this.cinemaData.area.acode=item[0].areaCode
+                this.cinemaData.area.aname=item[0].areaName
             },
             //修改保存
             submitForm(formName) {
@@ -334,7 +365,7 @@ import HallinfoList from '../hallInfo/List.vue'
                             } else {
                                 this.$message({
                                     message: '操作失败！',
-                                    type: 'success',
+                                    type: 'error',
                                     duration: 1000,
                                     onClose: () => {
                                     }
@@ -354,20 +385,31 @@ import HallinfoList from '../hallInfo/List.vue'
                 this.$ctmList.cinemaGetInfo(this.uid).then((response)=> {
                     //城市名字分割
                     let data = response.data//获得数据
-                    var code = data.areaCode || "000000:000000"
+                    var code = data.areaCode || "000000:000000:000000"
                     code = code.split(':')
-                    var erea = data.areaName ||  "北京:北京"
+                    var erea = data.areaName ||  "北京:北京:北京"
                     erea = erea.split(':') 
                     data.area = data.area || {}
                     data.area.pcode = code[0]
                     data.area.ccode = code[1]
+                    data.area.acode = code[2]
                     data.area.pname = erea[0]
                     data.area.cname = erea[1]
+                    data.area.aname = erea[2]
+                    //有省级获取城市数据
+                    if(data.area.pcode){
+                        this.getname(data.area.pcode)
+                    }
+                    //有城市获取区域数据
+                    if(data.area.ccode){
+                        this.$ctmList.getPname(data.area.ccode).then( res => {
+                            this.areas = res.data
+                        })
+                    }
                     this.cinemaData = data
                     this.cinemaData.usbkey = data.usbkey? data.usbkey : ''
                     this.status = data.status==1?true : false
                     this.cinemaData.status= Number(data.status)
-                    getname(code[0]);
                     console.log(this.cinemaData)
 
                 })
@@ -378,12 +420,12 @@ import HallinfoList from '../hallInfo/List.vue'
             //获取联动城市方法
             getname(code){
                 var parentCode=code?code:"000000";
-                this.$ctmList.getPname(parentCode).then( data => {
-                        if (data && data.code === 200) {
+                this.$ctmList.getPname(parentCode).then( res => {
+                        if (res && res.code === 200) {
                             if(!code){
-                                this.provs = data.data
+                                this.provs = res.data
                             }else{
-                                this.citys = data.data
+                                this.citys = res.data
                             }
                         } else {}
                     }).catch( err => {
@@ -499,6 +541,11 @@ import HallinfoList from '../hallInfo/List.vue'
         width: 300px;
         .el-radio{
             color:#666
+        }
+    }
+    .PCA{
+        .el-form-item__content{
+            width: 350px
         }
     }
     .el-textarea__inner{

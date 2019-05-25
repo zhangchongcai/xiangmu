@@ -175,8 +175,8 @@
               </el-form-item>
               <el-form-item label="免密支付：" prop="freeConsumption">
                 <el-select v-model="ruleForm.freeConsumption" placeholder="请选择">
-                  <el-option label="允许免密支付" :value="true"></el-option>
-                  <el-option label="不允许免密支付" :value="false"></el-option>
+                  <el-option label="允许免密支付" :value="1"></el-option>
+                  <el-option label="不允许免密支付" :value="0"></el-option>
                 </el-select>
               </el-form-item>
             </template>
@@ -222,10 +222,10 @@
             <!-- 储值卡 和 权益卡 可售渠道 -->
             <el-form-item label="可售渠道：" prop="salableChannel" class="salable-channel" v-if="ruleForm.cardTypeCode != 'cobranded_card'">
               <div class="salable-channel-item-wrap">
-                <el-checkbox label="影城前台" name="salableChannel" v-model="frontDesk"></el-checkbox>
+                <!-- <el-checkbox label="影城前台" name="salableChannel" v-model="frontDesk"></el-checkbox> -->
                 <div class="network-channel-wrap">
-                  <el-checkbox label="网售渠道" name="salableChannel" v-model="networkSale" @change="handleCheckedNetworkSale"></el-checkbox>
-                  <div v-if="networkSale?true:false" class="network-channel">
+                  <!-- <el-checkbox label="网售渠道" name="salableChannel" v-model="networkSale" @change="handleCheckedNetworkSale"></el-checkbox> -->
+                  <div class="network-channel">
                     <el-checkbox :indeterminate="isIndeterminateChannel" v-model="checkAllChannels" @change="handleCheckAllChange">全选</el-checkbox>
                     <el-checkbox-group v-model="checkedChannels" @change="handleCheckedChannelsChange">
                       <el-checkbox v-for="(item,index) in channels" :label="item.desc+','+item.code" :key="index">{{item.desc}}</el-checkbox>
@@ -756,7 +756,7 @@ export default {
     };
     // 验证可售渠道
     var checkSalableChannel = (rule, value, callback) => {
-      if (this.frontDesk | this.checkedChannels.length) {
+      if (this.checkedChannels.length) {
         callback();
       } else {
         callback(new Error("请至少选择一种可售渠道"));
@@ -853,7 +853,7 @@ export default {
         mustFill: ["user_name", "sex", "birthday", "phone_number"], //开卡必填（姓名，手机号...）
         weakPassword: 0, //是否允许简单密码
         canCharge: 1, //是否允许充值
-        freeConsumption: false,//是否免费支付
+        freeConsumption: 0, //是否免费支付
         firstChargeMin: "50", //首充最小金额
         chargeMin: "", //最大充值金额
         chargeMax: "", //最小充值金额
@@ -883,8 +883,8 @@ export default {
         }
       },
       allChannels: [], //存起来的网售渠道
-      frontDesk: true, //影城前台
-      networkSale: true, //网售渠道
+      // frontDesk: true, //影城前台
+      // networkSale: true, //网售渠道
       checkAllChannels: true,
       checkedChannels: [],
       channels: [],
@@ -902,7 +902,9 @@ export default {
           { required: false, validator: checkRemark, trigger: "blur" }
         ],
         canCharge: [{ required: true, message: "请选择", trigger: "change" }],
-        freeConsumption: [{ required: true, message: "请选择", trigger: "change" }],
+        freeConsumption: [
+          { required: true, message: "请选择", trigger: "change" }
+        ],
         firstChargeMin: [
           { required: true, validator: checkMoney, trigger: "blur" }
         ],
@@ -1001,10 +1003,10 @@ export default {
         this.checkedChannels = res.map(item => {
           return item.desc + "," + item.code;
         });
+        this.$route.query.cardId
+          ? this.getcardTypeInfo(this.$route.query.cardId)
+          : console.log("添加卡");
       });
-    this.$route.query.cardId
-      ? this.getcardTypeInfo(this.$route.query.cardId)
-      : console.log("添加卡");
   },
   mixins: [fixStepMixin],
   watch: {
@@ -1152,7 +1154,7 @@ export default {
     changeEquityDialog(ok) {
       this.equityDialog = false;
       if (ok) {
-        this.ruleForm.equityList = new Array(...this.multipleSelectionItem) ;
+        this.ruleForm.equityList = new Array(...this.multipleSelectionItem);
       } else {
         this.multipleSelectionItem = new Array(...this.ruleForm.equityList);
       }
@@ -1170,7 +1172,7 @@ export default {
     // 删除权益
     handleDeleteEquity(index) {
       this.ruleForm.equityList.splice(index, 1);
-      this.multipleSelectionItem = new Array(...this.ruleForm.equityList)
+      this.multipleSelectionItem = new Array(...this.ruleForm.equityList);
     },
     // 权益回显
     rowMultipleChecked(selectedArr) {
@@ -1178,12 +1180,12 @@ export default {
         for (let i = 0; i < selectedArr.length; i++) {
           for (let k = 0; k < this.tableData.length; k++) {
             if (selectedArr[i].id == this.tableData[k].id) {
-                this.$refs.multipleTable.toggleRowSelection(
-                  this.tableData[k],
-                  true
-                );
-                break
-              }
+              this.$refs.multipleTable.toggleRowSelection(
+                this.tableData[k],
+                true
+              );
+              break;
+            }
           }
         }
       }
@@ -1196,44 +1198,44 @@ export default {
       return row.id;
     },
     //单一数据toggle
-    rowOneToggle(row){
-        for (let index = 0; index < this.multipleSelectionItem.length; index++) {
-          if(row.id == this.multipleSelectionItem[index].id){
-            this.multipleSelectionItem.splice(index,1)
-            return
-          }
+    rowOneToggle(row) {
+      for (let index = 0; index < this.multipleSelectionItem.length; index++) {
+        if (row.id == this.multipleSelectionItem[index].id) {
+          this.multipleSelectionItem.splice(index, 1);
+          return;
         }
-        this.multipleSelectionItem.push(row)
+      }
+      this.multipleSelectionItem.push(row);
     },
     //单一数据add
-    rowOneAdde(row){
-        for (let index = 0; index < this.multipleSelectionItem.length; index++) {
-          if(row.id == this.multipleSelectionItem[index].id){
-            return
-          }
+    rowOneAdde(row) {
+      for (let index = 0; index < this.multipleSelectionItem.length; index++) {
+        if (row.id == this.multipleSelectionItem[index].id) {
+          return;
         }
-        this.multipleSelectionItem.push(row)
+      }
+      this.multipleSelectionItem.push(row);
     },
     //单一数据reomove
-    rowOneRemove(row){
-        for (let index = 0; index < this.multipleSelectionItem.length; index++) {
-          if(row.id == this.multipleSelectionItem[index].id){
-            this.multipleSelectionItem.splice(index,1)
-            return
-          }
+    rowOneRemove(row) {
+      for (let index = 0; index < this.multipleSelectionItem.length; index++) {
+        if (row.id == this.multipleSelectionItem[index].id) {
+          this.multipleSelectionItem.splice(index, 1);
+          return;
         }
+      }
     },
     //手动选择权益
     handleSelect(selection, row) {
-      if(row){
-        this.rowOneToggle(row)
-      }else{
-        if(selection.length == 0){
+      if (row) {
+        this.rowOneToggle(row);
+      } else {
+        if (selection.length == 0) {
           for (let index = 0; index < this.tableData.length; index++) {
             const item = this.tableData[index];
-            this.rowOneRemove(item)
+            this.rowOneRemove(item);
           }
-        }else{
+        } else {
           for (let j = 0; j < selection.length; j++) {
             const selectionItem = selection[j];
             this.rowOneAdde(selectionItem);
@@ -1258,7 +1260,10 @@ export default {
           this.tableData = data.records;
           this.total = data.total;
           this.$refs.multipleTable.clearSelection();
-          console.log('this.ruleForm.equityList3243234634655',this.ruleForm.equityList)
+          console.log(
+            "this.ruleForm.equityList3243234634655",
+            this.ruleForm.equityList
+          );
           this.rowMultipleChecked(this.multipleSelectionItem);
           // this.loading = false;
         })
@@ -1295,47 +1300,26 @@ export default {
     initChannel(res) {
       // 修改时的初始化
       if (res == null) return;
-
-      let resData = res.map(item => {
+      var newArr = new Array(...res);
+      let resData = newArr.map(item => {
         return item.channelName;
       });
-      if (resData.indexOf("影城前台") != -1 && resData.length == 1) {
-        this.frontDesk = true;
-        this.networkSale = false;
-        this.checkAllChannels = false;
-        this.isIndeterminateChannel = false;
-        this.checkedChannels = [];
-      }
       if (resData.indexOf("全选") != -1) {
-        this.frontDesk = true;
-        this.networkSale = true;
         this.checkAllChannels = true;
         this.isIndeterminateChannel = false;
-        this.checkedChannels = res.map(item => {
-          return item.channelName + "," + item.channelNo;
-        });
-      }
-      if (
-        resData.indexOf("影城前台") != -1 &&
-        resData.length <= this.channels.length &&
-        resData.length != 1
-      ) {
-        this.frontDesk = true;
-        this.networkSale = true;
+      } else {
         this.checkAllChannels = false;
         this.isIndeterminateChannel = true;
-        this.checkedChannels = res.map(item => {
-          return item.channelName + "," + item.channelNo;
-        });
       }
-
-      if (resData.indexOf("影城前台") == -1 && resData.length > 1) {
-        this.frontDesk = false;
-        this.networkSale = true;
-        this.checkedChannels = res.map(item => {
-          return item.channelName + "," + item.channelNo;
-        });
+      // 过滤掉 全选
+      for (var i = 0; i < res.length; i++) {
+        if (res[i].channelName == "全选") {
+          res.splice(i, 1);
+        }
       }
+      this.checkedChannels = res.map(item => {
+        return item.channelName + "," + item.channelNo;
+      });
     },
 
     //数据反处理
@@ -1350,7 +1334,8 @@ export default {
           id: item.equityId,
           equityName: item.equityName,
           equityType: item.equityType,
-          equityTypeName: item.equityTypeName
+          equityTypeName: item.equityTypeName,
+          equityCategoryName: item.equityCategoryName
         };
       });
       formatDate.equityList = formatDate.equityList.map(item => {
@@ -1358,7 +1343,8 @@ export default {
           id: item.equityId,
           equityName: item.equityName,
           equityType: item.equityType,
-          equityTypeName: item.equityTypeName
+          equityTypeName: item.equityTypeName,
+          equityCategoryName: item.equityCategoryName
         };
       });
       // 处理商户
@@ -1412,14 +1398,20 @@ export default {
     // 表单提交前的 可售渠道处理
     handleSalableChannel(data) {
       data.list = [];
-      if (this.frontDesk && this.networkSale && this.checkAllChannels) {
-        this.checkedChannels.push("影城前台,front_desk", "全选,0");
+      // if (this.frontDesk && this.networkSale && this.checkAllChannels) {
+      //   this.checkedChannels.push("影城前台,front_desk", "全选,all_channels");
+      //   data.list = this.checkedChannels;
+      // } else if (this.frontDesk && this.networkSale) {
+      //   this.checkedChannels.push("影城前台,front_desk");
+      //   data.list = this.checkedChannels;
+      // } else if (this.frontDesk) {
+      //   data.list.push("影城前台,front_desk");
+      // } else {
+      //   data.list = this.checkedChannels;
+      // }
+      if (this.checkedChannels.length == this.channels.length) {
+        this.checkedChannels.push("全选,all_channels");
         data.list = this.checkedChannels;
-      } else if (this.frontDesk && this.networkSale) {
-        this.checkedChannels.push("影城前台,front_desk");
-        data.list = this.checkedChannels;
-      } else if (this.frontDesk) {
-        data.list.push("影城前台,front_desk");
       } else {
         data.list = this.checkedChannels;
       }
@@ -1448,7 +1440,8 @@ export default {
           return {
             equityId: item.equityId ? item.equityId : item.id,
             equityName: item.equityName,
-            equityType: item.equityType
+            equityType: item.equityType,
+            equityCategoryName: item.equityCategoryName
           };
         });
       } else {
@@ -1456,7 +1449,8 @@ export default {
           return {
             equityId: item.id,
             equityName: item.equityName,
-            equityType: item.equityType
+            equityType: item.equityType,
+            equityCategoryName: item.equityCategoryName
           };
         });
       }
@@ -1518,6 +1512,7 @@ export default {
             return repeatArr;
           }
           var val = this.ruleForm.equityList;
+          console.log("val===========", val);
 
           if (repeatArray(val).length > 0) {
             this.sameCategoryDialog = true;
@@ -1542,13 +1537,13 @@ export default {
       });
     },
     // 网售渠道
-    handleCheckedNetworkSale(val) {
-      if (!val) {
-        this.checkedChannels = [];
-        this.checkAllChannels = false;
-        this.isIndeterminateChannel = false;
-      }
-    },
+    // handleCheckedNetworkSale(val) {
+    //   if (!val) {
+    //     this.checkedChannels = [];
+    //     this.checkAllChannels = false;
+    //     this.isIndeterminateChannel = false;
+    //   }
+    // },
     handleCheckAllChange(val) {
       this.checkedChannels = val
         ? this.allChannels.map(item => {
@@ -1774,21 +1769,18 @@ export default {
           .network-channel-wrap {
             display: flex;
             margin-left: 0;
+            width: 75%;
             .el-checkbox {
               margin-right: 15px;
             }
             .network-channel {
               display: flex;
-              padding: 0 15px;
-              height: 32px;
-              line-height: 32px;
-              background: #f5f5f5;
             }
           }
         }
         .el-form-item__error {
-          top: 6px;
-          left: 490px;
+          top: 10px;
+          left: 560px;
         }
       }
       .merchant-list {

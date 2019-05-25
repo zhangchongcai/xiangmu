@@ -22,6 +22,7 @@
         </section>
 
     </div>
+    <!-- 弹窗 -->
     <edit v-if="showDetail" :dialogFormVisible="showDetail" @close="closeDetail" :dataInfo="dataInfo" :showType="showType"></edit>
     
 </div>
@@ -41,13 +42,14 @@ export default {
     },
     data() {
         return {
-            dataInfo:{},
-            showDetail:false,
-            showType:"",
-            dialogFormVisible: false,
+            dataInfo:{},//传入数据
+            showDetail:false,//弹窗显示状态
+            showType:"",//弹窗类型
+            dialogFormVisible: false,//弹窗状态
             pageShow: 'actList',
-            tenantId: '1', //商户id
+            tenantId: 805852, //商户id
             modelName: "approvalSettingManagement",
+            //查询配置
             searchConfig: [{
                     keyName: 'searchActivityName',
                     name: '业务单据号',
@@ -126,7 +128,9 @@ export default {
                     ]
                 },
             ],
+            //查询参数
             searchParam: {},
+            //分页配置
             pageConfig: {
                 start: 0,
                 pageSize: 10,
@@ -134,8 +138,9 @@ export default {
                 currentPage: 1,
                 total: 0
             },
-
+            //列表数据
             tableData: [],
+            //列表显示项
             tableLabels: [{
                     prop: 'name',
                     label: '流程名称',
@@ -157,6 +162,7 @@ export default {
                 },
               
             ],
+            //列表操作项
             tableOptions: {
                 label: "操作",
                 fixed: "right",
@@ -184,20 +190,7 @@ export default {
                     }
                 ]
             },
-
-            startOrStopShow: false,
-            status: 0,
-            stopOrStartId: '',
-            startOrStopForm: {
-                remark: ''
-            },
-            startOrStopRule: {
-                remark: [{
-                    required: true,
-                    message: '备注不能为空',
-                    trigger: 'blur'
-                }]
-            }
+          
         }
     },
      created() {
@@ -209,7 +202,8 @@ export default {
         search() {
             // let _param = this.setParam();
             let _param = {
-                pageNo:this.pageConfig.currentPage
+                pageNo:this.pageConfig.currentPage,
+                tenantId:805852
                 // pageSize:10,
                 // biz_no:"",
                 // apply_user_name:"",
@@ -253,26 +247,31 @@ export default {
         handleButton(data) {
             this[`${data.method}`](data.scope);
         },
+        //查看
         checkDetail(scope){
             this.showType="check"
             this.openDetail(scope)
         },
+        //编辑
         editDetail(scope){
             this.showType="edit"
             this.openDetail(scope)
         },
+        //增加
         addDetail(){
             this.showType="add"
             this.openDetail()
         },
+        //删除
         delDetail(scope){
             let params= {
-                id:scope.row.id
+                id:scope.row.id,
+                tenantId:805852
             }
             this.$cwfList.deleteApprovalProcess(params).then(data => {
-            if (data && data.code === 200&&data.flag ==0) {
-                // this.tableData = data.data.list;
-                // this.pageConfig.total = data.data.total;
+            if (data && data.code === 200) {
+                this.tableData = data.data.list;
+                this.pageConfig.total = data.data.total;
                 this.search()
                 this.$message({
                     message: "删除成功",
@@ -280,8 +279,8 @@ export default {
                     duration: 1000
                 });
             } else {
-                // this.tableData = [];
-                // this.pageConfig.total = 0;
+                this.tableData = [];
+                this.pageConfig.total = 0;
                 this.$message({
                     message: data.msg,
                     type: "warning",
@@ -292,6 +291,7 @@ export default {
                 console.log(err)
             })
         },
+        //打开弹窗并且传参
         openDetail(scope){
             console.log(scope)
             if(scope){
@@ -300,7 +300,7 @@ export default {
                 this.dataInfo={
                     name:"",
                     noteNum:1,
-                    tenantId:111,
+                    tenantId:805852,
                     processList:[],
                     status:0,                    
                 }
@@ -310,17 +310,22 @@ export default {
                     assigneeType:0,
                     nextNoteNum:0,
                     noteNum:0,
-                    tenantId:111
+                    tenantId:805852
                 })
             }
             this.showDetail=true
         },
-        closeDetail(){
+        //关闭弹窗事件
+        closeDetail(update){
             this.showDetail=false
+            if(update){
+                this.search();
+            }
         },
         handleSizeChange(){
             
         },
+        //页数变化
         handleCurrentChange(currentPage){
             this.pageConfig.currentPage = currentPage;
             this.search();

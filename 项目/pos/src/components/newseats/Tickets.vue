@@ -70,7 +70,7 @@ export default {
 
      .tickets-header {
         width: 100%;
-        height: 38px;
+        height: calc(16vh - 10.6vh);
         display: flex;
         justify-content: flex-start;
         align-items: center;
@@ -97,7 +97,7 @@ export default {
              width: calc((100% - 1% * 3) / 3);
              margin-left: 0.5%;
              margin-bottom: 2px;
-             padding: 1.2vh 0;
+             padding: 1vh 0;
              border: 1px solid #A4BEFC;
              background: #ffffff;
              display: flex;

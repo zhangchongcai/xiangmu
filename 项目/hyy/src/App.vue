@@ -249,24 +249,6 @@ a:hover {
     background: #212121bf;
 }
 
-// .el-popover {
-//   min-width: 50px;
-//   padding: 0px;
-// }
-// .el-tooltip__popper {
-//   max-width: 450px;
-//   max-height: 136px;
-//   overflow: hidden;
-// }
-// .el-menu--vertical{
-//       .el-submenu{
-//      height: 20px;
-//    }
-//    .el-menu-item-group{
-//      height: 20px;
-
-//    }
-//    }
 
 // 重写框架样式
 .el-button {
@@ -582,14 +564,14 @@ a:hover {
 ::-webkit-scrollbar {
   width: .5rem;
   height: .5rem;
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0);
 }
 ::-webkit-scrollbar-track {
   border-radius: 0;
 }
 ::-webkit-scrollbar-thumb {
   border-radius: 0;
-  background-color: rgba(95, 95, 95, 0.4);
+  background-color: rgba(95, 95, 95, 0.2);
   transition: all .2s;
   border-radius: .5rem;
 }

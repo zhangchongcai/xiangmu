@@ -22,7 +22,7 @@
                 </el-form-item>
                 <el-form-item label="影片间隔：">
                     <span class="cinema-stock-edit-text">
-                        <el-input class="short-input" v-model="movieData.planShowInterval"></el-input>
+                        <el-input class="short-input" @change="timeIntervalChange" v-model="movieData.intervalMinute"></el-input>
                         &nbsp;分钟
                     </span>
                 </el-form-item>
@@ -49,7 +49,7 @@
                 </el-form-item>
                 <el-form-item label="影片间隔：">
                     <span class="cinema-stock-edit-text">
-                        {{movieData.planShowInterval}}分钟
+                        {{movieData.intervalMinute}}分钟
                     </span>
                 </el-form-item>
                 
@@ -143,6 +143,7 @@
                                     @selection-change="ticketSelChange">
                                     <el-table-column
                                         type="selection"
+                                        :selectable="rowIsDisabled"
                                         width="55">
                                     </el-table-column> 
                                     <el-table-column
@@ -190,7 +191,7 @@
                                     </el-table-column>
                                     <el-table-column
                                         prop="price"
-                                        label="价格">
+                                        label="渠道价格">
                                         <template slot-scope="scope">
                                             <span class="input-con"><el-input type="number" maxlength="9" max="999999" @blur="cichannelToFixed(scope)" v-model="scope.row.price"></el-input><i class="rmb-hover">¥</i></span>
                                         </template>
@@ -257,7 +258,7 @@
                                     </el-table-column>
                                     <el-table-column
                                         prop="price"
-                                        label="价格">
+                                        label="渠道价格">
                                         <template slot-scope="scope">
                                             <span class="input-con">{{scope.row.price}}</span>
                                         </template>
@@ -290,7 +291,7 @@
                 >
                 </el-table-column>
                 <el-table-column
-                    label="票价分摊比例(100%)"
+                    label="票价分摊比例(%)"
                 >
                     <template slot-scope="scope">
                         <span class="input-con"><el-input type="number" maxlength="3" max="100" @blur="percentTableToFixed(scope)" v-model="scope.row.percentPrice"></el-input></span>
@@ -304,7 +305,7 @@
                     </template>
                 </el-table-column>
                 <el-table-column
-                    label="分账比例(100%)"
+                    label="分账比例(%)"
                 >
                     <template slot-scope="scope">
                         <span class="input-con"><el-input type="number" maxlength="3" max="100" @blur="percentTableToFixed(scope)" v-model="scope.row.publisherRate"></el-input></span>
@@ -345,7 +346,7 @@
                 >
                 </el-table-column>
                 <el-table-column
-                    label="票价分摊比例(100%)"
+                    label="票价分摊比例(%)"
                 >
                     <template slot-scope="scope">
                         <span class="input-con">{{scope.row.percentPrice}}</span>
@@ -359,7 +360,7 @@
                     </template>
                 </el-table-column>
                 <el-table-column
-                    label="分账比例(100%)"
+                    label="分账比例(%)"
                 >
                     <template slot-scope="scope">
                         <span class="input-con">{{scope.row.publisherRate}}</span>
@@ -480,7 +481,9 @@ import {getmoviePlanDetails, cinemaStockList, initTimeLine, datePlanList, savePl
             return {
                 isEditMode: false,
                 planUid: '',
+                referer: '',
                 movieData: {},
+                copyIntervalMin: 0,
                 // 当前排片页面日期
                 curPlanDate: '',
                 // 下一天排片页面日期
@@ -524,6 +527,7 @@ import {getmoviePlanDetails, cinemaStockList, initTimeLine, datePlanList, savePl
                 
                 this.isEditMode = this.$route.query.mode ? this.$route.query.mode == 'edit' ? true : false : false
                 this.planUid = this.$route.query.uid ? this.$route.query.uid : ''
+                this.referer = this.$route.query.referer ? decodeURIComponent(this.$route.query.referer) : ''
                 // 获取导入价格方案里的两个list
                 this.getPlanData()
             },
@@ -541,7 +545,7 @@ import {getmoviePlanDetails, cinemaStockList, initTimeLine, datePlanList, savePl
                     this.planMinute = this.copyMinute
                     return this.error('必须为0-59之间的整数')
                 }
-                this.movieData.timeLong = this.movieTable.reduce((data, item) => data += item.timeLong, 0) + (this.movieTable.length - 1) * this.movieData.planShowInterval
+                this.movieData.timeLong = this.movieTable.reduce((data, item) => data += item.timeLong, 0) + (this.movieTable.length - 1) * this.movieData.intervalMinute
                 let tmpTimeStart = new Date(`${this.year}-${this.month}-${this.day} ${this.planHour}:${val}`).getTime(),
                 tmpTimeEnd = tmpTimeStart + this.movieData.timeLong * 60 * 1000
                 // 判断调整完成之后的时间是否与同影厅其他场次冲突
@@ -558,6 +562,13 @@ import {getmoviePlanDetails, cinemaStockList, initTimeLine, datePlanList, savePl
                 this.movieData.planTimeEnd = this.formatDateTime(tmpTimeEnd, 0)
                 this.planMinute = val < 10 ? `0${val}` : `${val}`
                 this.copyMinute = this.planMinute
+            },
+            timeIntervalChange(val) {
+                if (val  < 1 || val > 99 || !/^\+?[1-9][0-9]*$/.test(val)) {
+                    this.movieData.intervalMinute = this.copyIntervalMin
+                    return this.error('必须为0-99之间的整数')
+                }
+                this.changeMovieTime(JSON.parse(JSON.stringify(this.movieTable)))
             },
             // 获取时间间隔
             getTimeLine() {
@@ -579,7 +590,11 @@ import {getmoviePlanDetails, cinemaStockList, initTimeLine, datePlanList, savePl
                     planDate: `${this.year}-${this.month}-${this.day}`,
                     cinemaUid: this.movieData.cinemaUid
                 }).then(res => {
-                    console.log(res)
+                    let hallData = res.data.filter(item => item.hallUid == this.movieData.hallUid && item.planUid != this.planUid)
+                    hallData.forEach(item => {
+                        item.showTimeStart = item.startTime.split(':')[0] < 6 ? `${this.nextPlanDate} ${item.startTime}` : `${this.curPlanDate} ${item.startTime}`
+                        item.showTimeEnd = item.endTime.split(':')[0] < 6 ? `${this.nextPlanDate} ${item.endTime}` : `${this.curPlanDate} ${item.endTime}`
+                    })
                     this.hallData = res.data.filter(item => item.hallUid == this.movieData.hallUid && item.planUid != this.planUid)
                 })
             },
@@ -605,7 +620,6 @@ import {getmoviePlanDetails, cinemaStockList, initTimeLine, datePlanList, savePl
                 this.multipleSelection = val;
             },
             ticketSelChange(val) {
-                console.log(val)
                 this.ticketData.forEach(item => {
                     item.switchStatus = !val.every(citem => citem.uid != item.uid)
                 })
@@ -626,7 +640,7 @@ import {getmoviePlanDetails, cinemaStockList, initTimeLine, datePlanList, savePl
                 let selAddData = JSON.parse(JSON.stringify(this.multipleSelection))
                 selAddData.forEach((item, i) => {
                     item.showIndex = this.movieTable.length + i + 1
-                    item.startTimeC = !i ? this.movieTable.length ? this.formatDateTime((new Date(this.movieTable[this.movieTable.length - 1].endTimeC) + this.movieData.planShowInterval * 60 * 1000), 0) : this.movieData.planTime : this.formatDateTime((new Date(selAddData[i - 1].endTimeC) + this.movieData.planShowInterval * 60 * 1000), 0)
+                    item.startTimeC = !i ? this.movieTable.length ? this.formatDateTime((new Date(this.movieTable[this.movieTable.length - 1].endTimeC) + this.movieData.intervalMinute * 60 * 1000), 0) : this.movieData.planTime : this.formatDateTime((new Date(selAddData[i - 1].endTimeC) + this.movieData.intervalMinute * 60 * 1000), 0)
                     item.startTime = item.startTime = this.formatDateTime(new Date(item.startTimeC), 2)
                     item.endTimeC = this.formatDateTime((new Date(item.startTimeC) + item.timeLong * 60 * 1000), 0)
                     item.endTime = this.formatDateTime((new Date(item.startTimeC) + item.timeLong * 60 * 1000), 2)
@@ -698,8 +712,8 @@ import {getmoviePlanDetails, cinemaStockList, initTimeLine, datePlanList, savePl
                         item.startTimeC = this.movieData.planTime
                         item.startTime = this.formatDateTime(new Date(item.startTimeC).getTime(), 2)
                     } else {
-                        item.startTimeC = this.formatDateTime((new Date(movieTable[i - 1].endTimeC).getTime() + this.movieData.planShowInterval * 60 * 1000), 0)
-                        item.startTime = this.formatDateTime((new Date(movieTable[i - 1].endTimeC).getTime() + this.movieData.planShowInterval * 60 * 1000), 2)
+                        item.startTimeC = this.formatDateTime((new Date(movieTable[i - 1].endTimeC).getTime() + this.movieData.intervalMinute * 60 * 1000), 0)
+                        item.startTime = this.formatDateTime((new Date(movieTable[i - 1].endTimeC).getTime() + this.movieData.intervalMinute * 60 * 1000), 2)
                     }
                     item.endTimeC = this.formatDateTime((new Date(item.startTimeC).getTime() + item.timeLong * 60 * 1000), 0)
                     item.endTime = this.formatDateTime((new Date(item.startTimeC).getTime() + item.timeLong * 60 * 1000), 2)
@@ -713,7 +727,7 @@ import {getmoviePlanDetails, cinemaStockList, initTimeLine, datePlanList, savePl
                 getmoviePlanDetails({
                     id: this.planUid
                 }).then(res => {
-                    let {approveStatus, cinemaUid, hallName, hallTypeCode, hallUid, joinFlag, joinMovieName, mustRightSeat, permitDiscount, permitSaleBox, planShowInterval, planTime, planTimeEnd, priceProgramName, priceProgramUid, timeLong} = res.data
+                    let {approveStatus, cinemaUid, hallName, hallTypeCode, hallUid, joinFlag, joinMovieName, mustRightSeat, permitDiscount, permitSaleBox, intervalMinute, planTime, planTimeEnd, priceProgramName, priceProgramUid, timeLong} = res.data
                     let planDate = planTime.split(' ')[0]
                     this.year = planTime.includes('T') ? planTime.split('T')[0].split('-')[0] : planTime.split(' ')[0].split('-')[0]
                     this.month = planTime.includes('T') ? planTime.split('T')[0].split('-')[1] : planTime.split(' ')[0].split('-')[1]
@@ -727,13 +741,14 @@ import {getmoviePlanDetails, cinemaStockList, initTimeLine, datePlanList, savePl
                     this.permitSaleBox = !!permitSaleBox
                     this.permitDiscount = !!permitDiscount
                     this.mustRightSeat = !!mustRightSeat
-                    this.movieData = {approveStatus, cinemaUid, hallName, hallTypeCode, hallUid, joinFlag, joinMovieName, mustRightSeat, permitDiscount, permitSaleBox, planShowInterval, planTime, planTimeEnd, priceProgramName, priceProgramUid, timeLong, planDate}
+                    this.movieData = {approveStatus, cinemaUid, hallName, hallTypeCode, hallUid, joinFlag, joinMovieName, mustRightSeat, permitDiscount, permitSaleBox, intervalMinute, planTime, planTimeEnd, priceProgramName, priceProgramUid, timeLong, planDate}
+                    this.copyIntervalMin = this.movieData.intervalMinute
                     this.getTimeLine()
                     this.getPlanList()
                     // 连场影片数据
                     let movieTable = JSON.parse(JSON.stringify(res.data.detailVos))
                     movieTable.forEach((item, i) => {
-                        item.startTimeC = !i ? this.movieData.planTime : this.formatDateTime((new Date(movieTable[movieTable.length - 1].endTimeC) + this.movieData.planShowInterval * 60 * 1000), 0)
+                        item.startTimeC = !i ? this.movieData.planTime : this.formatDateTime((new Date(movieTable[movieTable.length - 1].endTimeC) + this.movieData.intervalMinute * 60 * 1000), 0)
                         item.startTime = item.startTime = this.formatDateTime(new Date(item.startTimeC), 2)
                         item.endTimeC = this.formatDateTime((new Date(item.startTimeC) + item.timeLong * 60 * 1000), 0)
                         item.endTime = this.formatDateTime((new Date(item.startTimeC) + item.timeLong * 60 * 1000), 2)
@@ -886,10 +901,11 @@ import {getmoviePlanDetails, cinemaStockList, initTimeLine, datePlanList, savePl
             savePlan() {
                 // 基础验证
                 var p1 = new Promise((resolve, reject) => {
-                    let errorData = !this.movieData.joinMovieName, errorData2 = this.movieTable.length < 2, errorData3 = this.movieData.planShowInterval  < 1 || this.movieData.planShowInterval > 99 || !/^\+?[1-9][0-9]*$/.test(this.movieData.planShowInterval)
-
+                    let errorData = !this.movieData.joinMovieName, errorData3 = this.movieData.intervalMinute  < 1 || this.movieData.intervalMinute > 99 || !/^\+?[1-9][0-9]*$/.test(this.movieData.intervalMinute)
+                    let errorData2 
+                    errorData2 = this.movieTable.length < 2 ? '连场最少设置两部影片' : this.movieTable.length > 9 ? '连场影片不得超过9部' : false
                     let errorData4
-                    this.movieData.timeLong = this.movieTable.reduce((data, item) => data += item.timeLong, 0) + (this.movieTable.length - 1) * this.movieData.planShowInterval
+                    this.movieData.timeLong = this.movieTable.reduce((data, item) => data += item.timeLong, 0) + (this.movieTable.length - 1) * this.movieData.intervalMinute
                     let tmpTimeStart = new Date(`${this.year}-${this.month}-${this.day} ${this.planHour}:${this.planMinute}`).getTime(),
                     tmpTimeEnd = tmpTimeStart + this.movieData.timeLong * 60 * 1000
                     // 判断调整完成之后的时间是否与同影厅其他场次冲突
@@ -901,13 +917,13 @@ import {getmoviePlanDetails, cinemaStockList, initTimeLine, datePlanList, savePl
                         tmpTimeEnd > new Date(this.formatDateTime(`${this.nextPlanDate} 06:00`, 0)).getTime()) {
                         errorData4 = '放映结束时间不能超过次日早上6点!'
                     }
-                    console.log(errorData4)
+                    
                     if (!errorData && !errorData2 && !errorData3 && !errorData4) {
                         resolve()
                     } else if (errorData) {
                         reject(`请输入正确的连场名称`)
                     } else if (errorData2) {
-                        reject(`连场影片个数必须大于2`)
+                        reject(errorData2)
                     } else if (errorData3) {
                         reject(`场次间隔栏请输入一个介于1和99之间的整数`)
                     } else if (errorData4) {
@@ -989,8 +1005,8 @@ import {getmoviePlanDetails, cinemaStockList, initTimeLine, datePlanList, savePl
                 })
             },
             submitPlan() {
-                let {cinemaUid, hallUid, joinFlag, movieCode, planTimeEnd} = this.movieData
-                let planDate = `${this.year}-${this.month}-${this.day}`, planTimeStart = this.movieData.planTime, permitSaleBox = this.permitSaleBox ? 1 : 0, mustRightSeat = this.mustRightSeat ? 1 : 0, permitDiscount = this.permitDiscount ? 1 : 0, planUid = this.planUid, priceProgramName =  this.movieData.priceProgramName, priceProgramUid = this.movieData.priceProgramUid,
+                let {cinemaUid, hallUid, joinFlag, planTimeEnd, intervalMinute} = this.movieData
+                let planDate = `${this.year}-${this.month}-${this.day}`, planTimeStart = this.movieData.planTime, permitSaleBox = this.permitSaleBox ? 1 : 0, mustRightSeat = this.mustRightSeat ? 1 : 0, permitDiscount = this.permitDiscount ? 1 : 0, planUid = this.planUid, priceProgramName =  this.movieData.priceProgramName, priceProgramUid = this.movieData.priceProgramUid, joinMovieName = this.movieData.joinMovieName, movieCode = this.movieTable[0].movieCode, minPrice = this.movieTable[0].minPrice, rate = this.movieTable[0].rate, movieLanguage = this.movieTable[0].movieLanguage,
                 schPlanBaseTicketVoList = this.ticketData.filter(item => item.price > 0).map(item => {
                     return {
                         addFee: item.addFee,
@@ -1013,17 +1029,18 @@ import {getmoviePlanDetails, cinemaStockList, initTimeLine, datePlanList, savePl
                         saleStatus: item.switchStatus ? 'SALE' : 'NOT_SALE'
                     }
                 }),
-                movieTemplateVos = this.movieTable.map(item => {
+                planTimeVoList = this.movieTable.map(item => {
                     return {
-                        joinMovieName: this.movieData.joinMovieName,
                         minPrice: item.minPrice,
                         movieCode: item.movieCode,	
                         percentPrice: item.percentPrice,
                         rate: item.publisherRate,	
-                        showIndex: item.showIndex
+                        showIndex: item.showIndex,
+                        planTimeStart: item.startTimeC,
+                        planTimeEnd: item.endTimeC
                     }
                 })
-                let saveData = {cinemaUid, hallUid, joinFlag, mustRightSeat, permitDiscount, permitSaleBox, planUid, priceProgramName, priceProgramUid, planTimeEnd,planDate, planTimeStart, schPlanBaseTicketVoList, schPlanFavTicketVoList, movieTemplateVos}
+                let saveData = {cinemaUid, hallUid, joinFlag, mustRightSeat, permitDiscount, joinMovieName, permitSaleBox, planUid, priceProgramName, priceProgramUid, planTimeEnd,planDate, planTimeStart, schPlanBaseTicketVoList, schPlanFavTicketVoList, planTimeVoList, movieCode, minPrice, rate, movieLanguage, intervalMinute}
                 savePlanAll({
                     list: [saveData]
                 }).then(res => {
@@ -1033,18 +1050,46 @@ import {getmoviePlanDetails, cinemaStockList, initTimeLine, datePlanList, savePl
                         }
                         this.success('保存成功, 即将跳转至排片详情')
                         setTimeout(() => {
-                            this.$router.push({path: 'layout', query: {date: this.curPlanDate}})
-                            // TODO 跳转至上个页面
-                            // this.$router.push({path: 'layout', query: {date: this.curPlanDate}})
+                            this.$store.commit("tagNav/removeTagNav", {
+                                name: this.$route.name,
+                                path: this.$route.path,
+                                title: this.$route.meta.title,
+                                query: this.$route.query
+                            })
+                            if (this.referer) {
+                                this.$router.push({path: this.referer})
+                            } else {
+                                this.$router.push({path: 'layout', query: {date: this.curPlanDate}})
+                            }
                         }, 1000)
                     }
                 }).catch(res => {})
             },  
             cancelHandle() {
-                this.$router.push({path: 'layout', query: {date: this.curPlanDate}})
+                this.$store.commit("tagNav/removeTagNav", {
+                    name: this.$route.name,
+                    path: this.$route.path,
+                    title: this.$route.meta.title,
+                    query: this.$route.query
+                })
+                if (this.referer) {
+                    this.$router.push({path: this.referer})
+                } else {
+                    this.$router.push({path: 'layout', query: {date: this.curPlanDate}})
+                }
             },
             closePage() {
-                this.$router.push({path: 'layout', query: {date: this.curPlanDate}})
+                this.$store.commit("tagNav/removeTagNav", {
+                    name: this.$route.name,
+                    path: this.$route.path,
+                    title: this.$route.meta.title,
+                    query: this.$route.query
+                })
+                if (this.referer) {
+                    this.$router.push({path: this.referer})
+                } else {
+                    this.$router.push({path: 'layout', query: {date: this.curPlanDate}})
+                }
             },
             formatDateTime(timeStamp, type) { // type: 0 全格式 1 仅日 2 仅时间
                 var date = new Date(timeStamp)
@@ -1058,11 +1103,14 @@ import {getmoviePlanDetails, cinemaStockList, initTimeLine, datePlanList, savePl
                 let mm = date.getMinutes()
                 mm = mm < 10 ? `0${mm}` : mm
                 return type == 0 ? `${y}-${m}-${d} ${h}:${mm}` : type == 1 ? `${y}-${m}-${d}` : type == 2 ? `${h}:${mm}` : `${y}-${m}-${d} ${h}:${mm}`
+            },
+            rowIsDisabled(row) {
+                return row.baseFlag
             }
         },
         computed: {
             approveStatus() {
-                return this.movieData.approveStatus == 'NOT_APPROVE' ? '未审核' : this.movieData.approveStatus == 'WAIT_APPROVE' ? '待审核' : '已审核'
+                return this.movieData.approveStatus == 'NOT_APPROVE' ? '未审核' : this.movieData.approveStatus == 'WAIT_APPROVE' ? '待审核' : this.movieData.approveStatus == 'REJECT' ? '已驳回' :  '已审核'
             }
         }
         

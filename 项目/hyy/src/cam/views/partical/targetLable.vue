@@ -16,14 +16,11 @@
 </template>
 <script>
 export default {
-  props:{
-    type:String,
-  },
+  props:['type'],
   data() {
     return {
       targetType: 'xse',
       otherType: null,
-      type: null,
       // 指标
       targetLabel: [
         {

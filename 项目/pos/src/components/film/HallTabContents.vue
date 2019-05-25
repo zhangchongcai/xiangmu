@@ -2,10 +2,10 @@
     <div :class="['hall-order-container', currentFilmId == filmInfo.id ? 'selected' : '']" @click="setFilmId(filmInfo.id, filmInfo.plan_code, filmInfo.allow_single_sold)">
         <div class="detail">
            <div class="detail-name">
-              <span class="film-name">
+              <span :class="['film-name',  currentFilmId == filmInfo.id ? 'font-selected' : '']">
                    {{filmInfo.name}}
               </span>
-              <span class="film-time">
+              <span :class="['film-time',  currentFilmId == filmInfo.id ? 'font-selected' : '']">
                   {{filmInfo.show_time.substring(10, 16)}}
               </span>
            </div>
@@ -14,7 +14,7 @@
                    <span class="film-tip">{{filmInfo.play_effect}}</span>
                    <span class="film-tip">{{filmInfo.language}}</span>
                </span>
-               <span class="sell">{{"已售" + filmInfo.soldnum + "/"  + filmInfo.seatnum}}</span>
+               <span :class="['sell', currentFilmId == filmInfo.id ? 'font-selected' : '']">{{"已售" + filmInfo.soldnum + "/"  + filmInfo.seatnum}}</span>
            </div>
         </div>
         <i v-show="currentFilmId == filmInfo.id" class="iconfont selection-pos iconchangcixuanzhongzhuangtai"></i>
@@ -123,7 +123,6 @@ export default {
                 margin-top: 2px;
                 text-align: center;
                 font-size: $font-size12;
-                transform: scale(0.95);
             }
 
             .sell {
@@ -133,6 +132,10 @@ export default {
           }
       }
   }
+
+  .font-selected {
+        color: $blue-color !important;
+    }
 </style>
 
 

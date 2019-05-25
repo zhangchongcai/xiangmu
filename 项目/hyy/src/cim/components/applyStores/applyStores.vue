@@ -1,7 +1,7 @@
 <template>
   <div class="apply-stores">
     <el-select
-      v-model="defaultSelected"
+      v-model="selected"
       placeholder="请选择"
       class="apply-select"
       @change="handleApplyChange(defaultSelected)"
@@ -12,9 +12,8 @@
       <el-input
         class="input apply-stores-input"
         v-model="currentChecked.name"
-        :disabled="currentChecked.name ?true:false"
+        :disabled="currentChecked.name ? true:false"
         placeholder="请选择"
-        @focus="setCheckedKeys(defaultSelected)"
       >
         <i
           slot="suffix"
@@ -23,43 +22,17 @@
           @click.stop="handleDelete"
         ></i>
       </el-input>
-      <el-button v-if="currentChecked.name" @click.stop="setCheckedKeys(defaultSelected)">编辑</el-button>
+      <el-button v-if="currentChecked.name" @click.stop="handleEdit">编辑</el-button>
     </span>
-    <!-- 选择门店 -->
-    <el-dialog :visible.sync="applyDialog">
-      <div>
-        <el-form :inline="true" label-position="right" label-suffix=":">
-          <el-form-item :label="title">
-            <el-input placeholder="请输入你要查询的内容" v-model="filterQueryValue">
-              <el-button slot="append" icon="el-icon-search" @click="handleQuery(filterQueryValue)"></el-button>
-            </el-input>
-          </el-form-item>
-        </el-form>
-      </div>
-      <div class="apply-tree">
-        <el-row>
-          <el-col :span="24">
-            <el-tree
-              :data="sourceTreeData"
-              :props="defaultProps"
-              show-checkbox
-              node-key="id"
-              :default-expanded-keys="defaultCheckedKys"
-              :filter-node-method="filterNode"
-              ref="applyTree"
-            >></el-tree>
-          </el-col>
-        </el-row>
-      </div>
-      <span slot="footer">
-        <el-button @click="applyDialog = false">取 消</el-button>
-        <el-button type="primary" @click="handleApplySubmit">确 定</el-button>
-      </span>
-    </el-dialog>
+    <!-- 选择影院弹窗 -->
+    <cinemal-dialog ref="myCinemalDialog" @onSumit="onCinemalSumit" multiple :title="'选择适应门店'"></cinemal-dialog>
+   
   </div>
 </template>
 
 <script>
+import cinemalDialog from "cim/components/cinemalDialog/cinemaDialog.vue";
+
 export default {
   props: {
     title: {
@@ -78,69 +51,14 @@ export default {
   },
   data() {
     return {
-      // type: this.defaultSelected,
+      
       currentChecked: {},
-      applyInput: "",
-      filterQueryValue: "", //筛选值
-      applyDialog: false,
-      defaultCheckedKys: [],
-      sourceTreeData: [
-        {
-          id: 1,
-          label: "一级 1",
-          children: [
-            {
-              id: 4,
-              label: "二级 1-1",
-              children: [
-                {
-                  id: 9,
-                  label: "中大影院"
-                },
-                {
-                  id: 10,
-                  label: "客村影院"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          id: 2,
-          label: "一级 2",
-          children: [
-            {
-              id: 5,
-              label: "大学城影院"
-            },
-            {
-              id: 6,
-              label: "二级 2-2"
-            }
-          ]
-        },
-        {
-          id: 3,
-          label: "一级 3",
-          children: [
-            {
-              id: 7,
-              label: "二级 3-1"
-            },
-            {
-              id: 8,
-              label: "二级 3-2"
-            }
-          ]
-        }
-      ],
-      defaultProps: {
-        children: "children",
-        label: "label"
-      }
+      defaultCheckedKys: []
     };
   },
-  mounted() {},
+  mounted() {
+    console.log(this.radios);
+  },
   methods: {
     //切换
     handleApplyChange(type) {
@@ -148,55 +66,43 @@ export default {
         return item.type == type;
       });
       this.currentChecked = tempArr[0];
-      this.$emit("onCheckedNodes", {
-        type: this.defaultSelected,
-        value: this.currentChecked.value || []
-      });
-    },
-    setCheckedKeys() {
-      this.applyDialog = true;
-      this.$nextTick(() => {
-        this.defaultCheckedKys = this.currentChecked.checkedKys;
-        this.$refs.applyTree.setCheckedKeys(this.defaultCheckedKys);
-      });
-      console.log(this.defaultCheckedKys);
     },
     handleDelete(item) {
-      this.currentChecked.name = "";
-      this.currentChecked.value = [];
-      this.currentChecked.checkedKys = [];
-      let tempObj = {
-        type: this.defaultSelected,
-        value: []
-      };
-      this.$emit("onCheckedNodes", tempObj);
+      // this.currentChecked.name = "";
+      // this.currentChecked.value = [];
+      // this.currentChecked.checkedKys = [];
+      // let tempObj = {
+      //   type: this.defaultSelected,
+      //   value: []
+      // };
+      // this.$emit("onCheckedNodes", tempObj);
       // console.log(this.radios);
+    },
+    handleEdit() {
+      this.selectCinemalDialog();
+    },
+    onCinemalSumit(data) {
+      console.log("daasda", data);
+    },
+    selectCinemalDialog() {
+      this.$refs.myCinemalDialog.handleDialog(true);
     },
     // 筛选
     filterNode(value, data) {
       if (!value) return true;
       return data.label.indexOf(value) !== -1;
-    },
-    //查询
-    handleQuery(val) {
-      this.$refs.applyTree.filter(val);
-    },
-    //选择
-    handleApplySubmit(value) {
-      let checkedNodes = this.$refs.applyTree.getCheckedNodes(true);
-      let tempObj = {
-        type: this.defaultSelected,
-        value: checkedNodes
-      };
-      this.$emit("onCheckedNodes", tempObj);
-      this.applyDialog = false;
     }
   },
-  computed: {},
+  computed: {
+    selected(){
+      return this.defaultSelected
+    },
+  },
+  components: {
+    cinemalDialog
+  },
   watch: {
-    filterQueryValue(val) {
-      this.$refs.applyTree.filter(val);
-    }
+
   }
 };
 </script>

@@ -15,6 +15,8 @@
       :reportCode="reportCode"
       :Pagination="Pagination"
       :tableLoading="tableLoading"
+      :routeChangeStatus="routeChangeStatus"
+      @tableDataArrEventNoGroup="tableDataArrEventNoGroup"
     ></data-query>
     <data-btn
       :colArr="colArr"
@@ -66,13 +68,6 @@
       :styleExtQueryArr="styleExtQueryArr"
       :searchData="searchData"
     ></data-show>
-    <!-- <cinema-tree2></cinema-tree2> -->
-    <!-- <api-ports></api-ports> -->
-    <br>
-    <!-- {{this.baseQueryArr}} -->
-    <!-- {{this.styleGroupArr}} -->
-    <br>
-    <br>
   </section>
 </template>
 <script>
@@ -84,8 +79,6 @@ import dataTable from "../components/dataCenter/dataTable";
 import dataShow from "../components/dataCenter/dataShow";
 import cinemaTree2 from "../components/dataCenter/dataCommon/cinemaTree2.vue";
 
-// 测试用
-import apiPorts from "../components/dataCenter/apiPorts";
 export default {
   data() {
     return {
@@ -146,7 +139,8 @@ export default {
       tableLoading: false,
       searchData: [], //基础查询和表格筛选查询的拼接数据
       //是否获取到数据
-      getDataSucc: false
+      getDataSucc: false,
+      routeChangeStatus: false //路由是否发生变化
     };
   },
   components: {
@@ -155,7 +149,6 @@ export default {
     dataBtn,
     dataTable,
     dataShow,
-    apiPorts,
     cinemaTree2
   },
   mounted() {
@@ -174,7 +167,7 @@ export default {
       this.getDatacenter(stylUid);
     });
     datacenterBus.$on("sendSearchData", data => {
-      console.log(data);
+      console.log('==================>',data);
       data.forEach(element => {
         if (element.queryColValue === "空白") {
           element.operation = " is";
@@ -192,124 +185,121 @@ export default {
 
       this.searchData = JSON.parse(JSON.stringify(inputData));
     });
+    // datacenterBus.$on("sendSearch", data => {
+    //   console.log('==================>',data);
+    //   data.forEach(element => {
+    //     if (element.queryColValue === "空白") {
+    //       element.operation = " is";
+    //       element.queryColValue = "null";
+    //     }
+    //     if (element.queryColValue === "无空白") {
+    //       element.operation = " is not";
+    //       element.queryColValue = "null";
+    //     }
+    //   });
+    //   let inputData = JSON.parse(JSON.stringify(this.baseQueryArr));
+    //   data.forEach(element => {
+    //     inputData.push(element);
+    //   });
+
+    //   this.searchData = JSON.parse(JSON.stringify(inputData));
+    // });
     datacenterBus.$on("styleColArr", (val1, val2) => {
       this.styleColArr = val1;
       this.colArr = val2;
-    }),
-      datacenterBus.$on("CcArrEvent", function(val1, val2, val3) {
-        self.styleExtQueryArr = val1;
-        self.extQueryArr = val2;
-      }),
-      datacenterBus.$on("tableLoading", function() {
-        Vue.nextTick(function() {
-          self.tableLoading = true;
-        });
-      }),
-      datacenterBus.$on("cinemaTreeValue", function(val1) {
-        self.baseQueryArr.push(val1);
-        console.log(val1);
-      }),
-      datacenterBus.$on("tableArrEvent", function(val) {
-        self.Jdata = val;
-        self.pagesShow = true;
-      }),
-      datacenterBus.$on("GroupArrEvent", function(val1, val2) {
-        self.groupArr = val1;
-        self.styleGroupArr = val2;
-        if (self.styleGroupArr.length != 0) {
-          self.pagesShow = false;
-        }
-      }),
-      datacenterBus.$on("tableDataArrEventNoGroup", (val, sortArray) => {
-        this.Jdata = val.list;
-        this.Pagination.total = val.totalNum;
-        // if(self.Jdata==null || self.Jdata.length == 0){
-
-        // }
-        this.pagesShow = true;
-        this.colSummary = val.summary;
-        if (sortArray == undefined) {
-          //点击查询过来的，清空排序数组
-          this.$refs.multipleSelection.clearSort();
-          this.sortArray = [];
-          //点击查询过来的，重置分页
-          this.Pagination.currentPage = 1;
-        } else {
-          //点击排序过来的，要给排序数组赋值
-          this.sortArray = sortArray;
-        }
-        Vue.nextTick(() => {
-          this.tableLoading = false;
-        });
-      }),
-      datacenterBus.$on("tableDataArrEventYesGroup", function(val) {
-        self.Jdata = val.list;
-        self.summary = val.summary;
-        if (val.summary.length != 0) {
-          self.summary[0].colValue = "合计";
-        }
-        self.pagesShow = false;
-        Vue.nextTick(function() {
-          self.tableLoading = false;
-        });
-      }),
-      datacenterBus.$on("pagesDataArrEvent", function(val) {
-        self.Jdata = val.list;
-        Vue.nextTick(function() {
-          self.tableLoading = false;
-        });
-      }),
-      datacenterBus.$on("sizeDataArrEvent", function(val) {
-        self.Pagination.pagesize = val;
-      }),
-      datacenterBus.$on("newtableDataArrEvent", function(val, d) {
-        self.Jdata[d].childrenDatas1 = val.list;
-        self.Jdata[d].isShow = "false";
-        Vue.nextTick(function() {
-          self.tableLoading = false;
-        });
-      }),
-      datacenterBus.$on("closeNewtableDataArrEvent", function(index) {
-        self.Jdata[index].childrenDatas1 = [];
-        self.Jdata[index].isShow = "true";
-      }),
-      datacenterBus.$on("newtableDataArrEvent1", function(val, d, e) {
-        console.log("123456");
-        self.Jdata[e].childrenDatas1[d].childrenDatas1 = val.list;
-        self.Jdata[e].childrenDatas1[d].isShow = "false";
-        Vue.nextTick(function() {
-          self.tableLoading = false;
-        });
-      }),
-      datacenterBus.$on("closeNewtableDataArrEvent1", function(index1, index) {
-        self.Jdata[index].childrenDatas1[index1].childrenDatas1 = [];
-        self.Jdata[index].childrenDatas1[index1].isShow = "true";
-        Vue.nextTick(function() {
-          self.tableLoading = false;
-        });
-      }),
-      datacenterBus.$on("newtableDataArrEvent2", function(val, d, e, f) {
-        self.Jdata[f].childrenDatas1[e].childrenDatas1[d].childrenDatas1 =
-          val.list;
-        self.Jdata[f].childrenDatas1[e].childrenDatas1[d].isShow = "false";
-        Vue.nextTick(function() {
-          self.tableLoading = false;
-        });
-      }),
-      datacenterBus.$on("closeNewtableDataArrEvent2", function(
-        index2,
-        index1,
-        index
-      ) {
-        self.Jdata[index].childrenDatas1[index1].childrenDatas1[
-          index2
-        ].childrenDatas1 = [];
-        self.Jdata[index].childrenDatas1[index1].childrenDatas1[index2].isShow =
-          "true";
-        Vue.nextTick(function() {
-          self.tableLoading = false;
-        });
+    });
+    datacenterBus.$on("CcArrEvent", function(val1, val2, val3) {
+      self.styleExtQueryArr = val1;
+      self.extQueryArr = val2;
+    });
+    datacenterBus.$on("tableLoading", function() {
+      Vue.nextTick(function() {
+        self.tableLoading = true;
       });
+    });
+    datacenterBus.$on("cinemaTreeValue", function(val1) {
+      self.baseQueryArr.push(val1);
+      console.log(val1);
+    });
+    datacenterBus.$on("tableArrEvent", function(val) {
+      self.Jdata = val;
+      self.pagesShow = true;
+    });
+    datacenterBus.$on("GroupArrEvent", function(val1, val2) {
+      self.groupArr = val1;
+      self.styleGroupArr = val2;
+      if (self.styleGroupArr.length != 0) {
+        self.pagesShow = false;
+      }
+    });
+    datacenterBus.$on("tableDataArrEventYesGroup", function(val) {
+      self.Jdata = val.list;
+      self.summary = val.summary;
+      if (val.summary.length != 0) {
+        self.summary[0].colValue = "合计";
+      }
+      self.pagesShow = false;
+      Vue.nextTick(function() {
+        self.tableLoading = false;
+      });
+    });
+    datacenterBus.$on("pagesDataArrEvent", function(val) {
+      self.Jdata = val.list;
+      Vue.nextTick(function() {
+        self.tableLoading = false;
+      });
+    });
+    datacenterBus.$on("sizeDataArrEvent", function(val) {
+      self.Pagination.pagesize = val;
+    });
+    datacenterBus.$on("newtableDataArrEvent", function(val, d) {
+      self.Jdata[d].childrenDatas1 = val.list;
+      self.Jdata[d].isShow = "false";
+      Vue.nextTick(function() {
+        self.tableLoading = false;
+      });
+    });
+    datacenterBus.$on("closeNewtableDataArrEvent", function(index) {
+      self.Jdata[index].childrenDatas1 = [];
+      self.Jdata[index].isShow = "true";
+    });
+    datacenterBus.$on("newtableDataArrEvent1", function(val, d, e) {
+      console.log("123456");
+      self.Jdata[e].childrenDatas1[d].childrenDatas1 = val.list;
+      self.Jdata[e].childrenDatas1[d].isShow = "false";
+      Vue.nextTick(function() {
+        self.tableLoading = false;
+      });
+    });
+    datacenterBus.$on("closeNewtableDataArrEvent1", function(index1, index) {
+      self.Jdata[index].childrenDatas1[index1].childrenDatas1 = [];
+      self.Jdata[index].childrenDatas1[index1].isShow = "true";
+      Vue.nextTick(function() {
+        self.tableLoading = false;
+      });
+    });
+    datacenterBus.$on("newtableDataArrEvent2", function(val, d, e, f) {
+      self.Jdata[f].childrenDatas1[e].childrenDatas1[d].childrenDatas1 =
+        val.list;
+      self.Jdata[f].childrenDatas1[e].childrenDatas1[d].isShow = "false";
+      Vue.nextTick(function() {
+        self.tableLoading = false;
+      });
+    });
+    datacenterBus.$on("closeNewtableDataArrEvent2", function(
+      index2,
+      index1,
+      index
+    ) {
+      self.Jdata[index].childrenDatas1[index1].childrenDatas1[
+        index2
+      ].childrenDatas1 = [];
+      self.Jdata[index].childrenDatas1[index1].childrenDatas1[index2].isShow =
+        "true";
+      Vue.nextTick(function() {
+        self.tableLoading = false;
+      });
+    });
   },
   methods: {
     printTable: function() {
@@ -328,8 +318,8 @@ export default {
       //   reportCode: this.$route.query.id
       // };
       let param = {
-        reportCode: this.$route.path.split('=')[1]
-      }
+        reportCode: this.$route.path.split("=")[1]
+      };
       //调用api，查询报表基础信息
       this.$rptList
         .reportTableInfo(param, stylUid)
@@ -368,21 +358,43 @@ export default {
       this.isDef = data.isDef;
       this.firstLoading = false;
       this.getDataSucc = true;
+    },
+    tableDataArrEventNoGroup(val, sortArray) {
+      this.Jdata = val.list;
+      this.Pagination.total = val.totalNum;
+      // if(self.Jdata==null || self.Jdata.length == 0){
+
+      // }
+      this.pagesShow = true;
+      this.colSummary = val.summary;
+      if (sortArray == undefined) {
+        //点击查询过来的，清空排序数组
+        this.$refs.multipleSelection.clearSort();
+        this.sortArray = [];
+        //点击查询过来的，重置分页
+        this.Pagination.currentPage = 1;
+      } else {
+        //点击排序过来的，要给排序数组赋值
+        this.sortArray = sortArray;
+      }
+      Vue.nextTick(() => {
+        this.tableLoading = false;
+      });
     }
   },
-  watch:{
-    '$route'(to, from){
+  watch: {
+    $route(to, from) {
       let styleUid;
       this.getDatacenter(styleUid);
-    },
+      this.routeChangeStatus = true;
+      console.log(this.Jdata, this.styleColArr);
+    }
   }
 };
 </script>
 <style Scoped>
 .datacenter-box {
   position: relative;
-  /* padding-left: 24px;
-  padding-right: 24px; */
   min-width: 1280px;
 }
 </style>

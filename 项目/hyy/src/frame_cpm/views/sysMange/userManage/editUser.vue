@@ -47,12 +47,11 @@
         </el-form>
         <el-dialog :title="title" :visible.sync="dialogVisible">
             <el-table
-                    :reserve-selection="true"
+                    :row-key="getrowkey"
                     v-if="treeFlag"
                     :data="roleArr"
                     style="width: 100%"
                     ref="multipleTable"
-                    :row-key="getrowkey"
                     @selection-change="handleSelectionChange"
             >
                 <el-table-column
@@ -180,7 +179,7 @@
                 deptIds: [],
                 rules: {
                     loginName: [
-                        { required: true, message: '请输入编码', trigger: 'blur' },
+                        { required: true, message: '请输入用户账号', trigger: 'blur' },
                         // { min: 3, max: 8, message: '长度在 3 到 7 个字符', trigger: 'blur' }
                     ],
                     fullName: [
@@ -188,7 +187,7 @@
                         // { min: 3, max: 50, message: '长度在 50 个字符以内', trigger: 'blur' }
                     ],
                     empCode: [
-                        { required: true, message: '请输入全称', trigger: 'blur' },
+                        { required: true, message: '请输入编码', trigger: 'blur' },
                         // { min: 3, max: 50, message: '长度在 50 个字符以内', trigger: 'blur' }
                     ],
                     status: [
@@ -201,7 +200,7 @@
                         { required: true, message: '请选择组织', trigger: 'blur' }
                     ],
                     deptName: [
-                        { required: true, message: '请选择角色', trigger: 'blur' }
+                        { required: true, message: '请选择数据权限', trigger: 'blur' }
                     ]
                 },
                 getrowkey(row) {
@@ -211,7 +210,6 @@
         },
         created() {
             this.uid = localStorage.getItem('onlyUser')
-            // this.getRoleTreeList()
             this.getOrgTreeList()
             this.getUser()
         },
@@ -225,7 +223,7 @@
                                 uid: this.uid,
                                 loginName: this.ruleForm.loginName,
                                 fullName: this.ruleForm.fullName,
-                                empCode: this.ruleForm.empcode,
+                                empCode: this.ruleForm.empCode,
                                 status: this.ruleForm.status,
                                 orgUid: this.orgUid,
                                 orgType: this.orgType,
@@ -275,7 +273,6 @@
                 }
             },
             ok2() {
-                this.dialogVisible2 = false
                 let arr = this.$refs.tree2.getCheckedNodes()
                 let resultArr = []
                 let newArr = []
@@ -294,8 +291,13 @@
                         }
                     })
                 }
+              if(resultArr.length==0){
+                this.$message('选择有误，请重新选择')
+              }else{
                 this.deptIds = resultArr
                 this.ruleForm.deptName = newArr.join('，')
+                this.dialogVisible2 = false
+              }
             },
             cancel() {
                 this.dialogVisible = false
@@ -403,7 +405,6 @@
                     .then(ret => {
                         if(ret && ret.code==200){
                           _this.roleArr = ret.data
-                          _this.pageNum = ret.data.pageNum
                           _this.pageSize = ret.data.pageSize
                           _this.total = ret.data.total
 
@@ -427,17 +428,11 @@
             handleCurrentChange(value) {
                 this.currentPage = value;
                 this.getRoleTreeList();
-              this.$nextTick(()=>{
-                this.toggleSelection(this.multipleSelection)
-              })
             },
             //当前页数数目改变e
             handleSizeChange(value) {
                 this.pageSize = value;
                 this.getRoleTreeList();
-              this.$nextTick(()=>{
-                this.toggleSelection(this.multipleSelection)
-              })
             },
         }
     }

@@ -18,6 +18,7 @@
                     </el-form-item>
                     <el-form-item label="年份：" prop="year">
                         <el-date-picker
+                                value-format="yyyy"
                                 v-model="formInline.year"
                                 type="year"
                                 placeholder="选择年">
@@ -59,6 +60,13 @@
                             label="结束日期"
 
                     >
+                    </el-table-column>
+                    <el-table-column
+                            prop="type"
+                            label="类型"
+
+                    >
+                        <template slot-scope="scope">{{scope.row.type?'自定义':'法定'}}</template>
                     </el-table-column>
                     <el-table-column
                             prop="isOpen"
@@ -115,22 +123,15 @@
 
       }
     },
-    filters:{
-      renderTime(date) {
-        let dateee = new Date(date).toJSON();
-        return new Date(+new Date(dateee) + 8 * 3600 * 1000).toISOString().replace(/T/g, ' ').replace(/\.[\d]{3}Z/, '')
-      }
-    },
     created() {
       this.getHolList()
     },
     methods: {
       toCreate() {
         this.$router.push('newHol')
-
       },
       editCus(val) {
-        this.$router.push({path:'newHol',query:{id:val.id}})
+        this.$router.push({path:'editHol',query:{id:val.id}})
       },
       getHolList(){
         let _this = this
@@ -139,7 +140,7 @@
           pageSize: this.pageSize,
           name: this.formInline.name,
           code: this.formInline.code,
-          year: new Date(+new Date(new Date(this.formInline.year).toJSON()) + 8 * 3600 * 1000).toISOString().replace(/T/g, ' ').replace(/\.[\d]{3}Z/, '').slice(0,4)
+          year: this.formInline.year
         }
         holList(params)
           .then(ret => {

@@ -956,5 +956,57 @@ util.writeTerminalParameter=function(json,callback){
 	
 }
 
+/**
+ * 开钱箱方法
+ * @param configData object //终端配置
+ * @callback function //回调函数
+ */
+util.openCashBox = function (configData,callback) {
+	if (typeof(app) == 'undefined'){
+		callback("浏览器不支持此功能");
+		return;
+	}else{
+		if(!app.sendMessage){
+			callback("浏览器不支持此功能");
+			return;
+		}
+	}
+	if(readCashBoxStatus){
+		readCashBoxStatus=false
+	}else{
+		callback("钱箱开启中");
+		return
+	}
+	if (!configData){
+		callback("终端数据为空");
+		return;
+	}
+
+	let callbackName=getCallbackName()//回调名
+	let cashBoxObject = configData.cash_box//钱箱配置
+	if (!cashBoxObject){
+		callback("找不到钱箱终端配置项");
+		return;
+	}
+
+	let cashBoxCode=getPrintCode(cashBoxObject)//键盘配置码
+	if(!cashBoxCode){
+		callback("未找到钱箱");
+		return;
+	}
+	
+	//向外壳发送数据
+	app.sendMessage('CashBox_Open_REQUEST', [callbackName,cashBoxCode]);
+
+	try {
+		app.setMessageCallback(callbackName, function (name, args){
+			readCashBoxStatus=true
+			callback(args)
+		})
+	} catch (error) {
+		readCashBoxStatus=true
+		callback(error)
+	}
+};
 
 export default util

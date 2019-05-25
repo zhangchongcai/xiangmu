@@ -126,6 +126,17 @@
       </div>
     </el-form>
     <fixStepTool :stepData="stepData.stepList" class="_fixsteptool-member"></fixStepTool>
+    <!--  权益相同时的dialog -->
+    <el-dialog title="" class="__equity-dialog" :visible.sync="sameCategoryDialog">
+      <div style="text-align:center;margin:40px 0;">
+        {{`此成长值获取规则内包含同为“${sameChannel}”的获取渠道`}}<br /><br />
+        请仔细检查，避免选择重复的获取渠道
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button type="primary" size="medium" @click="sameCategoryDialog = false">确 定</el-button>
+        <el-button size="medium" @click="sameCategoryDialog = false">取 消</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -139,12 +150,33 @@ export default {
 
     // 验证会员等级名称
     var checkLevelName = (rule, value, callback) => {
+      // 校验会员等级名称是否重复
+      function isRepeat(val, arr) {
+        var repeatArr = [];
+        for (var i = 0; i < arr.length; i++) {
+          if (val == arr[i].levelName) {
+            repeatArr.push(arr[i].levelName);
+          }
+        }
+        if (repeatArr.length > 1) {
+          return true;
+        } else {
+          return false;
+        }
+      }
       if (!value.levelName.toString().trim()) {
         callback(new Error("请输入会员等级名称"));
       } else if (value.levelName.toString().trim().length * 1 > 20) {
         callback(new Error("长度不可超过20个字符"));
       } else if (!testName.test(value.levelName.toString().trim())) {
         callback(new Error("输入的名称含有不合法字符"));
+      } else if (
+        isRepeat(
+          value.levelName.toString().trim(),
+          this.ruleForm.memberLevelRuleVOList
+        )
+      ) {
+        callback(new Error("等级名称不可重复"));
       } else {
         this.ruleForm[rule.field] = value.levelName.toString().trim();
         callback();
@@ -152,6 +184,66 @@ export default {
     };
     // 校验升级，保级标准
     var checkGrowth = (rule, value, callback) => {
+      // 校验不同级别间成长值范围
+      function gradeComparison(val, arr) {
+        for (var i = 0; i < arr.length; i++) {
+          if (val.levelNo == arr[i].levelNo) {
+            // 有低一级保级标准
+            if (arr[i - 1].saveGrowth != "") {
+              if (
+                val.levelupGrowth.toString().trim() * 1 <=
+                arr[i - 1].saveGrowth
+              ) {
+                return "1"; //升级标准小于低级的保级标准
+              } else if (
+                val.levelupGrowth.toString().trim() * 1 <=
+                arr[i - 1].levelupGrowth
+              ) {
+                return "2"; //升级标准小于低级的升级标准
+              }
+            }
+            // 没有低一级保级标准
+            if (arr[i - 1].saveGrowth == "") {
+              if (
+                val.levelupGrowth.toString().trim() * 1 <=
+                arr[i - 1].levelupGrowth
+              ) {
+                return "2"; //升级标准小于低级的升级标准
+              }
+            }
+            // 有高一级保级标准
+            if (arr[i + 1] && arr[i + 1].saveGrowth != "") {
+              if (
+                val.levelupGrowth.toString().trim() * 1 >=
+                arr[i + 1].saveGrowth
+              ) {
+                return "3"; //升级标准大于高级的保级标准
+              }
+              if (
+                arr[i + 1].saveGrowth &&
+                val.saveGrowth.toString().trim() * 1 >= arr[i + 1].saveGrowth
+              ) {
+                return "5"; //保级标准大于高级的保级标准
+              }
+            }
+            // 有高一级升级标准
+            if (arr[i + 1] && arr[i + 1].levelupGrowth != "") {
+              if (
+                val.levelupGrowth.toString().trim() * 1 >=
+                arr[i + 1].levelupGrowth
+              ) {
+                return "4"; //升级标准大于高级的升级标准
+              }
+              if (
+                val.saveGrowth.toString().trim() * 1 >=
+                arr[i + 1].levelupGrowth
+              ) {
+                return "6"; //保级标准大于高级的升级标准
+              }
+            }
+          }
+        }
+      }
       if (value.levelupGrowth == null) {
         value.levelupGrowth = "";
       }
@@ -169,7 +261,37 @@ export default {
           callback(new Error("保级标准必须为正整数"));
         }
         if (
-          value.levelupGrowth.toString().trim() * 1 >
+          gradeComparison(value, this.ruleForm.memberLevelRuleVOList) == "1"
+        ) {
+          callback(new Error("升级标准必须大于低等级的保级标准"));
+        }
+        if (
+          gradeComparison(value, this.ruleForm.memberLevelRuleVOList) == "2"
+        ) {
+          callback(new Error("升级标准必须大于低等级的升级标准"));
+        }
+        if (
+          gradeComparison(value, this.ruleForm.memberLevelRuleVOList) == "3"
+        ) {
+          callback(new Error("升级标准必须小于高等级的保级标准"));
+        }
+        if (
+          gradeComparison(value, this.ruleForm.memberLevelRuleVOList) == "4"
+        ) {
+          callback(new Error("升级标准必须小于高等级的升级标准"));
+        }
+        if (
+          gradeComparison(value, this.ruleForm.memberLevelRuleVOList) == "5"
+        ) {
+          callback(new Error("保级标准必须小于高等级的保级标准"));
+        }
+        if (
+          gradeComparison(value, this.ruleForm.memberLevelRuleVOList) == "6"
+        ) {
+          callback(new Error("保级标准必须小于高等级的升级标准"));
+        }
+        if (
+          value.levelupGrowth.toString().trim() * 1 >=
           value.saveGrowth.toString().trim() * 1
         ) {
           callback(new Error("升级标准必须小于保级标准"));
@@ -184,6 +306,36 @@ export default {
           !/^[1-9]\d*$/.test(value.levelupGrowth.toString().replace(/\s/g, ""))
         ) {
           callback(new Error("升级标准必须为正整数"));
+        }
+        if (
+          gradeComparison(value, this.ruleForm.memberLevelRuleVOList) == "1"
+        ) {
+          callback(new Error("升级标准必须大于低等级的保级标准"));
+        }
+        if (
+          gradeComparison(value, this.ruleForm.memberLevelRuleVOList) == "2"
+        ) {
+          callback(new Error("升级标准必须大于低等级的升级标准"));
+        }
+        if (
+          gradeComparison(value, this.ruleForm.memberLevelRuleVOList) == "3"
+        ) {
+          callback(new Error("升级标准必须小于高等级的保级标准"));
+        }
+        if (
+          gradeComparison(value, this.ruleForm.memberLevelRuleVOList) == "4"
+        ) {
+          callback(new Error("升级标准必须小于高等级的升级标准"));
+        }
+        if (
+          gradeComparison(value, this.ruleForm.memberLevelRuleVOList) == "5"
+        ) {
+          callback(new Error("保级标准必须小于高等级的保级标准"));
+        }
+        if (
+          gradeComparison(value, this.ruleForm.memberLevelRuleVOList) == "6"
+        ) {
+          callback(new Error("保级标准必须小于高等级的升级标准"));
         } else {
           callback();
         }
@@ -214,6 +366,8 @@ export default {
     };
 
     return {
+      sameCategoryDialog: false, // 相同的可售渠道的dialog显示/隐藏
+      sameChannel: "", //相同的可售渠道
       id: "",
       AccessChannels: [],
       buyMethods: [
@@ -307,21 +461,25 @@ export default {
   },
   mounted() {
     this.$crmList
-      .getLevelDetail({ tenantId: this.$store.state.loginUser.consumerId })
-      .then(res => {
-        // this.ruleForm = res;
-        this.id = res.id;
-        if (this.$route.query.id) {
-          this.$set(this, "ruleForm", this.initRuleformData(res));
-        }
-      })
-      .catch(err => {
-        console.log(err);
-      });
-    this.$crmList
       .channelList({ tenantId: this.$store.state.loginUser.consumerId })
       .then(res => {
         this.AccessChannels = res;
+        if (this.$route.query.id) {
+          // 请求详情数据
+          this.$crmList
+            .getLevelDetail({
+              tenantId: this.$store.state.loginUser.consumerId
+            })
+            .then(res => {
+              // this.ruleForm = res;
+              this.id = res.id;
+              this.$set(this, "ruleForm", this.initRuleformData(res));
+              // }
+            })
+            .catch(err => {
+              console.log(err);
+            });
+        }
       });
   },
   mixins: [fixStepMixin],
@@ -419,7 +577,11 @@ export default {
         }
         if (wrapArr[i].memberGrowthRuleVOList.length == 2) {
           for (var j = 0; j < wrapArr[i].memberGrowthRuleVOList.length; j++) {
-            this.$set(wrapArr[i].memberGrowthRuleVOList[j], "checked", true);
+            if (wrapArr[i].memberGrowthRuleVOList[j].everyFullGrowth) {
+              this.$set(wrapArr[i].memberGrowthRuleVOList[j], "checked", true);
+            } else {
+              this.$set(wrapArr[i].memberGrowthRuleVOList[j], "checked", false);
+            }
           }
         }
         // 控制渠道的全选按钮的状态
@@ -597,46 +759,74 @@ export default {
     formatChannel(data) {
       var data = JSON.parse(JSON.stringify(data));
       var wrapArr = data.memberGrowthRuleAndChannelVOList;
+      // 查看可售渠道是否有重叠
+      // 拼接所有数组
+      var totalChannel = [];
+      var temp = []; //一个新的临时数组
+      var repeatArr = []; // 重复的数组
+      var sameArr = []; //最终的相同渠道名的数组
       for (var i = 0; i < wrapArr.length; i++) {
-        wrapArr[i].memberGrowthRuleChannelVOList = wrapArr[
-          i
-        ].memberGrowthRuleChannelVOList.map(item => {
-          return {
-            channelName: item.split(",")[0],
-            channelNo: item.split(",")[1]
-          };
-        });
+        totalChannel = totalChannel.concat(
+          wrapArr[i].memberGrowthRuleChannelVOList
+        );
       }
-      for (var k = 0; k < wrapArr.length; k++) {
-        var innerArr = wrapArr[k].memberGrowthRuleVOList;
-        for (var j = 0; j < innerArr.length; j++) {
-          if (!innerArr[j].checked) {
-            innerArr[j].everyDayUpper = "";
-            innerArr[j].everyFullGrowth = "";
-          }
+      // 数组去重
+      for (var i = 0; i < totalChannel.length; i++) {
+        if (temp.indexOf(totalChannel[i]) == -1) {
+          temp.push(totalChannel[i]);
+        } else if (
+          temp.indexOf(totalChannel[i]) != -1 &&
+          repeatArr.indexOf(totalChannel[i]) == -1
+        ) {
+          repeatArr.push(totalChannel[i]);
         }
       }
-      return data;
+      // 提出重复数组中的渠道名称
+      if (repeatArr.length > 0) {
+        for (var i = 0; i < repeatArr.length; i++) {
+          sameArr.push(repeatArr[i].split(",")[0]);
+        }
+        this.sameChannel = sameArr.join(",");
+        this.sameCategoryDialog = true;
+        return false;
+      } else {
+        for (var i = 0; i < wrapArr.length; i++) {
+          wrapArr[i].memberGrowthRuleChannelVOList = wrapArr[
+            i
+          ].memberGrowthRuleChannelVOList.map(item => {
+            return {
+              channelName: item.split(",")[0],
+              channelNo: item.split(",")[1]
+            };
+          });
+        }
+        for (var k = 0; k < wrapArr.length; k++) {
+          var innerArr = wrapArr[k].memberGrowthRuleVOList;
+          for (var j = 0; j < innerArr.length; j++) {
+            if (!innerArr[j].checked) {
+              innerArr[j].everyDayUpper = "";
+              innerArr[j].everyFullGrowth = "";
+            }
+          }
+        }
+        this.$crmList
+          .editMemberLevel(data)
+          .then(data => {
+            if (data) {
+              this.$message.success("保存成功");
+              this.$router.push({ path: "/member/membershipLevel/detail" });
+            }
+          })
+          .catch(err => {
+            console.log(err);
+          });
+      }
     },
     // 提交表单
     submitForm(formName) {
       this.$refs[formName].validate(valid => {
         if (valid) {
-          console.log(
-            "this.formatChannel(data)---",
-            this.formatChannel(this.ruleForm)
-          );
-          this.$crmList
-            .editMemberLevel(this.formatChannel(this.ruleForm))
-            .then(data => {
-              if (data) {
-                this.$message.success("保存成功");
-                this.$router.push({ path: "/member/membershipLevel/detail" });
-              }
-            })
-            .catch(err => {
-              console.log(err);
-            });
+          this.formatChannel(this.ruleForm);
         } else {
           console.log("error submit!!");
           return false;
@@ -801,6 +991,7 @@ export default {
         color: #333;
         .el-input__inner {
           height: 20px;
+          line-height: 20px;
         }
       }
     }
@@ -815,6 +1006,7 @@ export default {
         margin: 0 6px;
         .el-input__inner {
           height: 20px;
+          line-height: 20px;
         }
       }
     }
@@ -909,6 +1101,18 @@ export default {
       width: 80px;
       padding: 8px 20px;
     }
+  }
+}
+// 相同获取渠道的dialog样式
+.__equity-dialog {
+  .el-dialog__header {
+    padding: 10px 20px;
+  }
+  .el-dialog__body {
+    padding: 0px 20px;
+  }
+  .el-dialog__footer {
+    text-align: center;
   }
 }
 </style>

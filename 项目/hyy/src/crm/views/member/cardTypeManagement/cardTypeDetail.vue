@@ -40,14 +40,14 @@
             <div class="item-inner"><label class="lable-name">充值设置：</label>{{detailData.canChargeName}}</div>
             <div class="item-inner"><label class="lable-name">单充最小金额：</label>{{detailData.chargeMin}}元</div>
             <div class="item-inner"><label class="lable-name">开卡手续费：</label>{{detailData.openPrice}}元</div>
-            <div class="item-inner"><label class="lable-name">换卡手续费：</label>{{detailData.replacePrice}}元</div>
+            <!-- <div class="item-inner"><label class="lable-name">换卡手续费：</label>{{detailData.replacePrice}}元</div> -->
+            <div class="item-inner"><label class="lable-name">注销手续费：</label>{{detailData.backPrice}}元</div>
           </div>
           <div class="basic-info-item item-right">
             <div class="item-inner"><label class="lable-name">简单密码：</label>{{detailData.weakPasswordName}}</div>
             <div class="item-inner"><label class="lable-name">首充最小金额：</label>{{detailData.firstChargeMin}}元</div>
             <div class="item-inner"><label class="lable-name">单充最大金额：</label>{{detailData.chargeMax}}元</div>
             <div class="item-inner"><label class="lable-name">补卡手续费：</label>{{detailData.makeUpPrice}}元</div>
-            <div class="item-inner"><label class="lable-name">注销手续费：</label>{{detailData.backPrice}}元</div>
           </div>
           <div class="annual-fee-rule" v-if="detailData.annualFee">
             <div class="annual-fee-rule-title">年费规则</div>
@@ -379,7 +379,7 @@ export default {
       .basic-info-item {
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
+        // justify-content: space-between;
         width: 50%;
         .item-inner {
           display: flex;

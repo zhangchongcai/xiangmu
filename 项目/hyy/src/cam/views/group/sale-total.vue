@@ -2,7 +2,7 @@
   <div class="sale-content-wrap">
     <div class="header-fixed">
       <el-breadcrumb separator="/" class="reset-bread" separator-class="el-icon-arrow-right">
-        <el-breadcrumb-item :to="{ path: '/group/home' }">
+        <el-breadcrumb-item :to="{ path:'/analysis/new/home' }">
           <span class="text-gray">经营决策</span>
         </el-breadcrumb-item>
         <el-breadcrumb-item>
@@ -58,18 +58,24 @@
             <div class="target-title">{{item.indicatorName}}</div>
             <div class="money">
               <i class="iconfont" :class="icons[index]" :style="{color:iconColors[index]}"></i>
-              <span class="money-num">{{item.value}}</span>
-              <span class="unit">{{item.indicatorCode|formatTargetUnit}}</span>
+              <span class="money-num">{{item.value | formatMoney}}</span>
+              <span class="unit">{{item.indicatorCode|formatTargetUnit(item.value)}}</span>
             </div>
             <div class="ratio" v-if="ratioType == 1">
               环比
-              <i></i>
-              <span class="ratio-num">{{item.roundPeriodValue == '-9999'?'--':item.roundPeriodValue}}</span>%
+              <span class="ratio-num" :class="item.roundPeriodValue*1 > 0 ? 'text-green':'text-red' ">
+                <i class="iconfont" :class="[item.roundPeriodValue > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']">
+                </i>
+                {{item.roundPeriodValue == '-9999'?'--':(item.roundPeriodValue*1 >0?item.roundPeriodValue*1:item.roundPeriodValue*(-1))}}%
+              </span>
             </div>
              <div class="ratio" v-else>
               同比
-              <i></i>
-              <span class="ratio-num">{{item.samePeriodValue == '-9999'?'--':item.samePeriodValue}}</span>%
+              <span class="ratio-num" :class="item.samePeriodValue*1 >0?'text-green':'text-red'">
+                <i class="iconfont" :class="[item.samePeriodValue > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']">
+                </i>
+                {{item.samePeriodValue == '-9999'?'--':(item.samePeriodValue*1 >0 ?item.samePeriodValue:item.samePeriodValue*(-1))}}%
+              </span>
             </div>
           </div>
         </div>
@@ -86,8 +92,8 @@
           <target-lable @getType="changeSaleType"></target-lable>
         </div>
         <div>
-          <i class="iconfont icon-neiye-zhexiantu" style="color:#3B74FF" @click="isLine = true"></i>
-          <i class="iconfont icon-neiye-biaoge" style="color:#3B74FF" @click="isLine = false"></i>
+          <i class="iconfont icon-neiye-zhexiantu cursor" :class="[isLine?'text-blue':'']"  @click="isLine = true"></i>
+          <i class="iconfont icon-neiye-biaoge cursor" :class="[isLine?'':'text-blue']" @click="isLine = false"></i>
         </div>
       </div>
       <div class="section-content">
@@ -98,8 +104,11 @@
           :extend="lineExtend"
         >
         </ve-line>
-          <div  class="reset-table mt20" v-else>
-             <el-table border :data="saleTableData" height="380">
+        <div class="reset-table" v-else>
+           <div style="overflow:hidden;zoom:1;margin:10px 0" class="reset-button">
+            <el-button class="right" size="mini"  @click="getSaleOut">导出</el-button>
+           </div>
+            <el-table border :data="saleTableData" height="380" class="mt10">
               <el-table-column prop="dateKey" label="日期" min-width="100" fixed></el-table-column>
               <el-table-column prop="salesVolume" label="销售额" min-width="100" fixed></el-table-column>
               <el-table-column prop="salesOrders"  label="销售单量" min-width="100" fixed></el-table-column>
@@ -107,12 +116,12 @@
               <el-table-column prop="unitPrice" label="平均单价" min-width="100"></el-table-column>
               <el-table-column prop="buyRate" label="购买率" min-width="100"></el-table-column>
               <el-table-column prop="sppPrice" label="SPP" min-width="100"></el-table-column>
-              <el-table-column prop="" label="销售成本" min-width="100"></el-table-column>
+              <el-table-column prop="sellingCost" label="销售成本" min-width="100"></el-table-column>
               <el-table-column prop="salesGrossProfit" label="销售毛利" min-width="100"></el-table-column>
               <el-table-column prop="salesGrossProfitRate" label="销售毛利率" min-width="100"></el-table-column>
               <el-table-column prop="memberSalesVolumePercent" label="会员消费占比" min-width="100"></el-table-column>
-            </el-table>
-          </div>
+          </el-table>
+        </div>
       </div>
     </div>
     <div class="section">
@@ -121,7 +130,7 @@
         渠道及品类分布
       </div>
       <div class="section-select center">
-        <target-lable  @getType="changeChannelType" type="channel"></target-lable>
+        <target-lable  @getType="changeChannelType" type="channel" ></target-lable>
       </div>
       <!-- 饼图 -->
       <div class="section-content flex" v-if="showPie">
@@ -145,10 +154,10 @@
       <!-- 柱状图 -->
       <div class="section-content flex" v-else>
         <div style="width:40%;margin:0 auto">
-          <ve-histogram :title="渠道" :data="channelData" :extend="barExtend" :legend-visible="false"></ve-histogram>
+          <ve-histogram  :data="channelData" :extend="barExtend" :legend-visible="false" ></ve-histogram>
         </div>
         <div style="width:40%;margin:0 auto">
-          <ve-histogram :data="categoryData" :extend="barExtend" :legend-visible="false"></ve-histogram>
+          <ve-histogram :data="categoryData" :extend="barExtend" :legend-visible="false" ></ve-histogram>
         </div>
       </div>
     </div>
@@ -174,28 +183,32 @@
       </div>
       <div class="section-content">
         <div class="reset-table">
-          <el-table border :data="tableData">
+           <div style="overflow:hidden;zoom:1;margin:10px 0" class="reset-button">
+            <el-button class="right" size="mini"  @click="getAreaOut">导出</el-button>
+           </div>
+          <el-table border :data="tableData" 
+            @sort-change="sortChange">
             <el-table-column label="序号" width="60" type="index" fixed></el-table-column>
-            <el-table-column label="区域名称"  min-width="180" fixed>
+            <el-table-column label="区域名称"  min-width="120" fixed>
               <template slot-scope="scope">
                 <div class="cursor" @click="goDetail(scope.row.cityId)">
                   <span class="text-blue">{{scope.row.name}}</span>
                 </div>
               </template>
             </el-table-column>
-            <el-table-column prop="salesVolume" label="销售额"  min-width="110"></el-table-column>
-            <el-table-column prop="salesOrders" label="销售单量"  min-width="90"></el-table-column>
-            <el-table-column prop="salesCount" label="销售数量"  min-width="90"></el-table-column>
-            <el-table-column prop="unitPrice" label="客单价"  min-width="90"></el-table-column>
-            <el-table-column prop="piecePrice" label="件单价"  min-width="90"></el-table-column>
-            <el-table-column prop="unitCount" label="客单量"  min-width="90"></el-table-column>
-            <el-table-column prop="buyRate" label="购买率"  min-width="90"></el-table-column>
-            <el-table-column prop="sppPrice" label="人均消费额"  min-width="110px"></el-table-column>
-            <el-table-column prop="sellingCost" label="销售成本"  min-width="110px"></el-table-column>
-            <el-table-column prop="salesGrossProfit" label="销售毛利"  min-width="110px"></el-table-column>
-            <el-table-column prop="salesGrossProfitRate" label="销售毛利率"  min-width="110px"></el-table-column>
-            <el-table-column prop="memberSalesVolumePercent" label="会员消费占比"  min-width="120px"></el-table-column>
-            <el-table-column prop="setmealSalesVolumePercent" label="套餐消费占比"  min-width="120px"></el-table-column>
+            <el-table-column prop="salesVolume" label="销售额"  min-width="90" sortable></el-table-column>
+            <el-table-column prop="salesOrders" label="销售单量"  min-width="110" sortable></el-table-column>
+            <el-table-column prop="salesCount" label="销售数量"  min-width="110" sortable></el-table-column>
+            <el-table-column prop="unitPrice" label="客单价"  min-width="100" sortable></el-table-column>
+            <el-table-column prop="piecePrice" label="件单价"  min-width="100" sortable></el-table-column>
+            <el-table-column prop="unitCount" label="客单量"  min-width="100" sortable></el-table-column>
+            <el-table-column prop="buyRate" label="购买率"  min-width="100" sortable></el-table-column>
+            <el-table-column prop="sppPrice" label="人均消费额"  min-width="110px" sortable></el-table-column>
+            <el-table-column prop="sellingCost" label="销售成本"  min-width="110px" sortable></el-table-column>
+            <el-table-column prop="salesGrossProfit" label="销售毛利"  min-width="110px" sortable></el-table-column>
+            <el-table-column prop="salesGrossProfitRate" label="销售毛利率"  min-width="110px" sortable></el-table-column>
+            <el-table-column prop="memberSalesVolumePercent" label="会员消费占比"  min-width="120px" sortable></el-table-column>
+            <el-table-column prop="setmealSalesVolumePercent" label="套餐消费占比"  min-width="120px" sortable></el-table-column>
           </el-table>
         </div>
         <div class="reset-page">
@@ -203,7 +216,7 @@
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
             :current-page="page"
-            :page-sizes="$pageSizes"
+            :page-sizes="[15,30,45,60]"
             :page-size="size"
             layout="total,sizes,prev, pager, next, jumper"
             :total="total"
@@ -216,11 +229,12 @@
   </div>
 </template>
 <script>
+import config from "frame_cpm/http/config"
 import TargetLable from "../partical/targetLable";
 import TargetDialog from "../partical/targetDialog";
 import CalendarView from '../../components/calendar/calendar'
 export default {
-  components: { TargetLable, TargetDialog,CalendarView},
+  components: { TargetLable, TargetDialog, CalendarView},
   data() {
     this.colors = [
       "#3B74FF",
@@ -252,7 +266,7 @@ export default {
       memberType: 0, // 会员类型
       ratioType: 1, // 环比类型
       saleType: 'xse', // 卖品指标
-      saleAllType:['xse','xsdl','xssl','kdj','jdj','kdl','cbj','xsml','xhmlr','xscb','gml','rjmpje','hyxfzb','tcxfzb'],
+      saleAllType:['xse','xsdl','xssl','kdj','jdj','kdl','cbj','xsml','xsmlr','xscb','gml','rjmpje','hyxfzb','tcxfzb'],
       saleLineAllData:null,
       saleTableData:[],
       channelType: 'xse', // 渠道/类型指标
@@ -275,14 +289,15 @@ export default {
       lineSettings: {
         itemStyle: {
           color: "#3B74FF", // 折线点颜色
-          lineStyle: {
-            color: "#3B74FF"
-          }
-        } 
+        }, 
+        lineStyle: {
+          color: "#3B74FF"
+        },
       },
       // 指标趋势/折线图扩展
       lineExtend: {
         "xAxis.0.axisLabel.rotate": 45,
+        'xAxis.0.axisLabel.interval': 2,
       },
       // 渠道
       channelData:{
@@ -291,6 +306,7 @@ export default {
       },
       // 渠道设置
       channelSettings: {
+        level:[['线上','线下'],[]]
       },
       // 品类
       categoryData:{
@@ -381,40 +397,60 @@ export default {
     };
   },
   filters:{
-    formatTargetUnit(type){
+    formatTargetUnit:(type,money)=>{
+      function formatUnit(num){
+        if(Number.isInteger(num)){
+          if(num <10000){
+            return ''
+          }else if(num <100000000){
+            return  '万'
+          }else {
+            return  '亿'
+          }
+      }else{
+        if(num < 10000){
+          return ''
+        }else if(num < 100000000){
+            return '万'
+        }else{
+          return  '亿'
+        }
+      }
+    }
+      let unit = formatUnit(money);
       switch(type){
         case 'xse': // 销售额
-          return '万';
+          return unit + '元';
         break;
         case 'xscb': // 销售成本
-          return '元';
+          return unit + '元';
         break;
         case 'xsdl': // 销售单量
-          return '元';
+          return unit+ '单';
         break;
         case 'xssl': // 销售数量
-          return '个';
+          return unit + '件';
         break;
         case 'xsml': // 销售毛利
-          return '元';
+          return unit + '元';
         break;
         case 'xsmlr': // 销售毛利率
           return '%';
         break;
         case 'kdj': // 客单价
-          return '元';
+          return unit + '元';
         break;
         case 'kdl': // 客单量
-          return '个';
+          return unit + '件/单';
         break;
         case 'jdj': // 件单价
-          return '元';
+          return unit + '元';
         break;
         case 'gml': // 购买率
           return '%';
         break;
         case 'rjmpje': // 人均卖品金额
-          return '元';
+          return unit + '元';
         break;
         case 'hyxfzb': // 会员消费占比
           return '%';
@@ -423,8 +459,27 @@ export default {
           return '%';
         break;
         case 'cbj': // 成本价
-          return '元';
+          return unit + '元';
         break;
+      }
+    },
+    formatMoney(money){
+      if(Number.isInteger(money)){
+          if(money<10000){
+            return money
+          }else if(money <100000000){
+            return (money/10000).toFixed(2)
+          }else {
+            return (money/(10000*10000)).toFixed(2)
+          }
+      }else{
+        if(money < 10000){
+          return money
+        }else if(money < 100000000){
+            return (money*100/(10000*100)).toFixed(2)
+        }else{
+          return (money*100/(10000*10000*100)).toFixed(2)
+        }
       }
     }
   },
@@ -432,6 +487,63 @@ export default {
     this.getAllData();
   },
   methods: {
+    // 区域排序排序
+    sortChange(column){
+      let order = null;
+      if(column.order == 'ascending'){
+        // 上升
+        order = 1;
+      }else if(column.order == 'descending'){
+        // 下降
+        order = 0;
+      }
+      let params = {
+          orderBy:order,
+          orderColum:column.prop,
+          userId:this.userId,
+          groupId: this.groupId,
+          dateType: this.timeType,
+          startDate: this.startTime,
+          endDate: this.endTime,
+          member:this.memberType,
+          pageNo: this.page,
+          pageSize: this.size
+      };
+      this.$camList.cityTabelData(params).then(response => {
+        let res = response.data;
+        if (res.sellGoodsList) {
+          this.tableData = res.sellGoodsList.list;
+        }
+      });
+    },
+    // 指标趋势表格下载
+    getSaleOut(){
+      let params = {
+          userId:this.userId,
+          startDate: this.startTime,
+          endDate: this.endTime,
+          member:this.memberType,
+          dateType: this.timeType,
+          bsiCodes:this.saleAllType,
+      }; 
+      let baseURL = config.baseURL;
+      let saleDownUrl =`${baseURL}/analysis/sellGoods/downloadSellGoodsSaleTend?userId=${this.userId}&startDate=${this.startTime}&endDate=${this.endTime}&dateType=${this.timeType}&member=${this.memberType}&bsiCodes=[${this.saleAllType}]&token=${this.$store.state.loginToken}`;
+      window.location.href = saleDownUrl;
+    },
+    // 区域导出
+    getAreaOut(){
+       let params = {
+          userId:this.userId,
+          startDate: this.startTime,
+          endDate: this.endTime,
+          member:this.memberType,
+          dateType: this.timeType,  
+      }; 
+      let baseURL = config.baseURL;
+      let saleDownUrl =`${baseURL}/analysis/sellGoods/downloadSellGoodsArea?userId=${this.userId}&startDate=${this.startTime}&endDate=${this.endTime}&dateType=${this.timeType}&member=${this.memberType}&token=${this.$store.state.loginToken}`
+      // window.location.href = saleDownUrl;
+    },
+    // all api
     getAllData() {
       this.getData();
       this.getTargetView();
@@ -513,28 +625,30 @@ export default {
     },
     // 4. 渠道/品类数据
     getChannelData() {
-      let id = this.channelType;
        let params = {
         body:{
           userId:this.userId,
-          bsiCodes:this.saleAllType,
           startDate:this.startTime,
           endDate:this.endTime,
           dateType:this.timeType,
           member:this.memberType,
+          bsiCodes:this.saleAllType,
         }
       };
       this.$camList.switchChannel(params).then(response =>{
+          this.channelAllData = response.data;
           let res = response.data;
-          this.channelAllData = res;
-          let resData = res[id];
-          if(resData.category){
-            this.categoryData.rows = resData.category;
+          let targetData = response.data[this.channelType];
+          // 品类
+          if(targetData.category){
+            this.categoryData.rows = targetData.category;
           }
-          if(resData.channel){
-            this.channelData.rows = resData.channel
+          // 渠道
+          if(targetData.channel){
+            // this.channelData.rows = targetData.channel;
+            this.channelDataHandle(targetData.channel)
           }
-          if (id == 'xse' || id == 'xssl' || id == 'xsml' || id == 'xscb') {
+          if (this.channelType == 'xse' || this.channelType == 'xssl' || this.channelType == 'xsml' || this.channelType == 'xscb') {
               this.showPie = true;
           } else {
               this.showPie = false;
@@ -599,9 +713,11 @@ export default {
         this.endTime = option.endTime;
       }else{
         this.startTime = this.$moment(option).format('YYYY-MM-DD');
-        this.endTime = this.$moment(option).format('YYYY-MM-DD')
+        this.endTime = this.$moment(option).format('YYYY-MM-DD');
       }
-      this.getAllData();
+      this.$nextTick(()=>{
+         this.getAllData();
+      })
     },
     // 改变/会员
     changeMemberType(id) {
@@ -615,8 +731,9 @@ export default {
     // 改变/卖品指标趋势类型
     changeSaleType(id) {
       this.saleType = id;
-      if(this.saleLineAllData[this.saleType].sellAnalysis){
-          this.saleLineData.rows = this.saleLineAllData[this.saleType].sellAnalysis.map(item=>{
+      let targetData = this.saleLineAllData[this.saleType];
+      if(targetData.sellAnalysis){
+          this.saleLineData.rows = targetData.sellAnalysis.map(item=>{
             return {
               date:item.name,
               value:item.value,
@@ -629,18 +746,35 @@ export default {
       //  销售额1、销售数量3、销售毛利7、销售成本9 展示饼图
       //  销售单量2、人均消费额11、客单价4、件单价5、客单量6、购买率10、销售毛利率8、会员消费占比12 展示柱形图
       this.channelType = id;
-      let resData = this.channelAllData[id];
-      if(resData.category){
-        this.categoryData.rows = resData.category;
+      let targetData = this.channelAllData[id];
+      if(targetData.category){
+        this.categoryData.rows = targetData.category;
       }
-      if(resData.channel){
-        this.categoryData.rows = resData.channel;
+      if(targetData.channel){
+        this.channelDataHandle(targetData.channel)
       }
       if (id == 'xse' || id == 'xssl' || id == 'xsml' || id == 'xscb') {
         this.showPie = true;
       } else {
         this.showPie = false;
       }
+    },
+    // 渠道线上/线下数据处理
+    channelDataHandle(channelData){
+          let newData = channelData.slice(0);
+          let onlineNum = 0;
+          channelData.forEach(item=>{
+              if(item.name == "pos机"){
+                newData.push({name:'线下',value:item.value});
+              }else{
+                onlineNum += onlineNum + item.value;
+              }
+          })
+          newData.push({name:'线上',value:onlineNum});
+          this.channelData.rows = newData;
+          this.channelSettings.level[1] = channelData.map(item=>{
+            return item.name
+          })
     },
     // 指标设置/弹窗
     showTargetSetting() {
@@ -660,7 +794,7 @@ export default {
     },
     // 前往城市版
     goDetail(id) {
-      this.$router.push({ name: "城市体卖品分析", query: { cityId: id } });
+      this.$router.push({ path: "/analysis/area/sale/total", query: { cityId: id } });
     },
     // 查询
     search(){

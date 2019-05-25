@@ -8,7 +8,7 @@
                     <el-row class="flex-base">
                         <el-input class="input-type-166" v-if="!item.alertButton" :clearable="item.clearable" @clear="clearInputVal(item.keyName,item.alertButton)" :readonly="item.readonly" v-model="baseConfig.form[`${item.keyName}`]" :placeholder="item.placeholider"></el-input>
                         <template v-if="item.alertButton">
-                            <el-input class="input-type-166" :clearable="item.clearable" @clear="clearInputVal(item.keyName,item.alertButton)" :readonly="item.readonly" v-model="baseConfig.form[`${item.keyName}`].text" :placeholder="item.placeholider"></el-input>
+                            <el-input class="input-type-166" :clearable="item.clearable" @clear="clearInputVal(item.keyName,item.alertButton)" :readonly="item.readonly" v-model="baseConfig.form[`${item.keyName}`]" :placeholder="item.placeholider"></el-input>
                             <el-button type="primary callWindowBtn" plain @click="callWindow(item.alertCompontsName,item.keyName,item.isNeedReturn)">{{item.alertButtonText ? item.alertButtonText : '选择'}}</el-button>
                         </template>
                     </el-row>
@@ -49,6 +49,14 @@
     <section class="alert-group">
         <!-- 选择支付 -->
         <payType @getData="handlePayTypeBack" ref="payType"></payType>
+        <!-- 选择影院 -->
+        <multiCinema :framedialogVisible="false" @callBack="handleMultiCinemaBack" ref="multiCinema">
+            <div slot="footerId">
+                <el-button @click="multiCinemaClick">取消</el-button>
+                <el-button type="primary" @click="multiCinemaConfirmClick">确定</el-button>
+            </div>
+        </multiCinema>
+        
     </section>
 </div>
 </template>
@@ -77,6 +85,7 @@ export default {
         return {
             /* 基本配置 */
             isShowForm: false,
+            aaa:{},
             baseConfig: {
                 form: {},
                 system: [{

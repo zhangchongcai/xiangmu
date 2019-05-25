@@ -176,7 +176,7 @@
             getSchreportCalendar() {
                 let data = {
                     cinemaUid: this.formData.cinemaUid,
-                    year: this.formData.date.getFullYear(),
+                    year: this.formData.date.getFullYear().toString(),
                     month: this.formData.date.getMonth() + 1
                 }
                 console.log(data)

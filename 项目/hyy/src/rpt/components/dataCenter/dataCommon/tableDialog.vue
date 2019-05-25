@@ -78,13 +78,15 @@ export default {
         colItem = {
           queryColKey: this.colKey,
           queryColValue: this.input + "%",
-          operation: this.value
+          operation: this.value,
+          isAdvanced: true
         };
       } else {
         colItem = {
           queryColKey: this.colKey,
           queryColValue: this.input,
-          operation: this.value
+          operation: this.value,
+          isAdvanced: true
         };
       }
       let selectStatus = {
@@ -100,10 +102,13 @@ export default {
       }
       colList.push(colItem);
       if (colList[0].queryColValue != "" && colList[0].queryColValue != []) {
+        console.log(colList)
         datacenterBus.$emit("sendSearchData", colList);
         this.$emit("sendSelectStatus", selectStatus);
         this.$emit("sendDialog1Visible")
+        this.$emit("sendAdvancedData", colList);
         this.visible = false;
+        colList = [];
         this.$forceUpdate();
       } else {
         this.$message({

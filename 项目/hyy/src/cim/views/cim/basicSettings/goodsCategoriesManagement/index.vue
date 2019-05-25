@@ -11,7 +11,8 @@
             <el-tree
               :data="bigClassTeeData"
               :props="defaultProps"
-              accordion
+              node-key="uid"
+              :default-expanded-keys="defaultExpanded"
               v-loading="treeLoding"
               @node-click="handleTreeNodeClick"
             ></el-tree>
@@ -58,7 +59,7 @@
 
     <el-dialog
       class="change-dialog"
-      :title="isNewBuile ? '新建商品类别':'修改商品类别'"
+      :title="isNewBuile ? '新建商品分类':'修改商品分类'"
       :visible.sync="changeDialog"
       width="500px"
     >
@@ -73,7 +74,6 @@
       >
         <el-form-item label="上级分类" prop="parentUid">
           <p>
-            <!-- {{classSelectedParent.name}} -->
             <el-input v-model="classSelectedParent.name" disabled></el-input>
             <el-popover placement="right" width="400" trigger="click">
               <div class="change-tree">
@@ -88,11 +88,11 @@
             </el-popover>
           </p>
         </el-form-item>
-        <el-form-item label="类别名称" prop="name">
+        <el-form-item label="分类名称" prop="name">
           <el-input v-model="changeData.name"></el-input>
         </el-form-item>
-        <el-form-item label="类别编码" prop="code">
-          <el-input v-model="changeData.code" :disabled="!isNewBuile"></el-input>
+        <el-form-item label="分类编码" prop="code">
+          <el-input v-model="changeData.code" disabled></el-input>
         </el-form-item>
         <el-form-item label="是否末级分类" prop="isLeaf">
           <el-radio-group v-model="changeData.isLeaf">
@@ -100,7 +100,7 @@
             <el-radio label="0">否</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="标准类目" prop="parentUid" v-if="changeData.isLeaf==1">
+        <el-form-item label="标准类目" prop="merClassUid" v-if="changeData.isLeaf==1">
           <p>
             <el-input v-model="criterionSelected.name" disabled></el-input>
             <el-popover placement="right" width="400" trigger="click">
@@ -142,13 +142,12 @@ export default {
         children: "children",
         label: "name",
         disabled: (data, node) => {
-          console.log(data, node);
+          // console.log(data, node);
           if (data.isLeaf == 1) {
             return true;
           } else {
             return false;
           }
-          
         }
       },
       //查询数据
@@ -228,7 +227,18 @@ export default {
             message: "请输入英文或数字!"
           }
         ],
-        name: [{ required: true, message: "请输入类别名称", trigger: "blur" }]
+        name: [
+          { required: true, message: "请输入类别名称", trigger: "blur" },
+          {
+            min: 1,
+            max: 20,
+            message: "最多输入20个字符!",
+            trigger: "blur"
+          }
+        ],
+        merClassUid: [
+          { required: true, message: "请输入标准类目", trigger: "change" }
+        ]
       }
     };
   },
@@ -238,52 +248,18 @@ export default {
   methods: {
     init() {
       this.getCategoryTrees();
-      // this.onQuery();
     },
     // 查询
     onQuery() {
       this.getCategoryList(this.queryData);
     },
-    //查询大类选项改变
-    handleBigClassChange(val) {
-      this.tableData = [];
-      this.currentSelectedUid = null;
-      this.currentSelectedBigClassUid = val;
-      this.getClassTree({
-        uid: val
-      });
-    },
-    // 新建或者修改类别大类选项改变
-    handleBuildClassChange(val) {
-      this.getClassTree(
-        {
-          uid: val
-        },
-        "build"
-      );
-    },
     // 获取分类树
     getCategoryTrees(param) {
       this.$cimList.getCategoryTrees((param = {})).then(resData => {
         if (resData.code == 200) {
-          this.bigClassTeeData = [resData.data];
+          this.bigClassTeeData = resData.data.children;
           console.log(this.bigClassTeeData);
         }
-      });
-    },
-    // 根据销售大类获取类别树
-    getClassTree(param, type) {
-      // this.treeLoding = true;
-      this.$cimList.getClassTree(param).then(resData => {
-        if (resData.code == 200) {
-          if (type == "build") {
-            this.buildBigClassTeeData = resData.data;
-          } else {
-            this.bigClassTeeData = resData.data;
-            console.log(this.bigClassTeeData);
-          }
-        }
-        // this.treeLoding = false;
       });
     },
     // 获取类别管理列表
@@ -307,9 +283,11 @@ export default {
       this.$cimList.categorySave(param).then(resData => {
         if (resData.code == 200) {
           this.getCategoryTrees();
-          this.getCategoryList({
-            uid: this.currentSelectedUid
-          });
+          this.getCategoryList(this.queryData);
+          this.changeDialog = false;
+          this.$message("新建成功!");
+        } else {
+          this.$message(resData.msg);
         }
       });
     },
@@ -317,9 +295,12 @@ export default {
     classUpdate(param) {
       this.$cimList.categorySave(param).then(resData => {
         if (resData.code == 200) {
-          this.getCategoryList({
-            uid: this.currentSelectedUid
-          });
+          this.getCategoryTrees();
+          this.getCategoryList(this.queryData);
+          this.changeDialog = false;
+          this.$message("修改成功!");
+        } else {
+          this.$message(resData.msg);
         }
       });
     },
@@ -327,9 +308,14 @@ export default {
     classDelete(param) {
       this.$cimList.categoryDelete(param).then(resData => {
         if (resData.code == 200) {
-          this.getCategoryList({
-            uid: this.currentSelectedUid
+          this.getCategoryTrees();
+          this.getCategoryList(this.queryData);
+          this.$message({
+            type: "success",
+            message: "删除成功!"
           });
+        } else {
+          this.$message(resData.msg);
         }
       });
     },
@@ -340,18 +326,22 @@ export default {
           let category = resData.data.category;
           this.changeData.code = category.code;
           this.changeData.name = category.name;
-          this.changeData.uid = category.uid;
-          this.changeData.isLeaf = category.isLeaf.toString();
           this.classSelectedParent.name = category.parentName;
           this.criterionSelected.name = category.merClassName;
-          this.buildBigClassTeeData = [resData.data.categories];
-          this.buildCriterionClassData = [resData.data.classes]; //	标准分类树
+          this.buildBigClassTeeData = resData.data.categories.children;
+          this.buildCriterionClassData = resData.data.classes.children; //	标准分类树
+          this.changeData.uid = category.uid;
+          this.changeData.merClassUid = category.merClassUid;
+          this.changeData.parentUid = category.parentUid;
+          if (category.isLeaf != null) {
+            this.changeData.isLeaf = category.isLeaf.toString();
+          }
         }
       });
     },
     // 修改操作
     handleModification(index, row) {
-      console.log(index, row);
+      // console.log(index, row);
       const { uid } = row;
       this.classDetail({ uid: uid });
       this.changeData.uid = uid;
@@ -360,15 +350,29 @@ export default {
     },
     // 删除操作
     handleDlete(index, row) {
-      console.log(index, row);
-      this.classDelete({
-        isLeaf: row.isLeaf,
-        uid: row.uid
-      });
+      this.$confirm("确定删除吗?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          this.classDelete({
+            isLeaf: row.isLeaf,
+            uid: row.uid
+          });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除"
+          });
+        });
+
+      // console.log(index, row);
     },
     //确认提交修改
     handleModificationSubmit() {
-      console.log(this.changeData);
+      // console.log(this.changeData);
       this.$refs["changeForm"].validate(valid => {
         if (valid) {
           if (this.isNewBuile) {
@@ -376,9 +380,8 @@ export default {
           } else {
             this.classUpdate(this.changeData);
           }
-          this.changeDialog = false;
         } else {
-          console.log("error submit!!");
+          // console.log("error submit!!");
           return false;
         }
       });
@@ -407,10 +410,9 @@ export default {
     },
     // 查询树
     handleTreeNodeClick(data) {
-      this.currentSelectedUid = data.uid;
-      this.getCategoryList({
-        uid: this.currentSelectedUid
-      });
+      // this.currentSelectedUid = data.uid;
+      this.queryData.uid = data.uid;
+      this.getCategoryList(this.queryData);
     },
     //上级分类点击
     handleClassTreeNodeClick(data) {
@@ -422,6 +424,13 @@ export default {
       this.changeData.merClassUid = data.uid;
       this.criterionSelected = data;
     }
+  },
+  computed: {
+    defaultExpanded(){
+      return this.bigClassTeeData.map(item=>{
+        return item.uid;
+      })
+    },
   }
 };
 </script>

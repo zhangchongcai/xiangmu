@@ -68,10 +68,12 @@ span {
 section {
     height: 32px;
     background: #F5F5F5;
-    min-width: 1044px;
+    // min-width: 1044px;
     color: #4A4A4A;
     padding: 8px 12px;
     box-sizing: border-box;
+    position: relative;
+    z-index: 99;
     .left {
         float: left;
         padding-left: 10px;

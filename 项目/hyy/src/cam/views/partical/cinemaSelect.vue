@@ -6,7 +6,8 @@
                <div class="search">
                    <label>
                        竞对范围：
-                        <el-select size="small" v-model="distance">
+                        <el-select size="small" v-model="distance"
+                            @change="changeRange">
                             <el-option v-for="(item,index) in distanceRange" :key="index"
                             :label="item.name"
                             :value="item.id">
@@ -21,12 +22,12 @@
                </div>
                <div class="select-wrap flex">
                     <div class="select none-border-table">
-                       <el-table  :data="cinemaList"   @selection-change="handleSelectionChange">
-                            <el-table-column type="selection"></el-table-column>
-                            <el-table-column prop="competeCinemaName" label="影院名称" min-width="110"></el-table-column>
+                       <el-table  ref="multipleTable" height="320" :data="cinemaList"   @selection-change="handleSelectionChange">
+                            <el-table-column type="selection" v-model="selectedList"></el-table-column>
+                            <el-table-column prop="competeCinemaName" label="影院名称" min-width="140"></el-table-column>
                             <el-table-column prop="competeCinemaHall" label="影厅数" min-width="60"></el-table-column>
                             <el-table-column prop="competeCinemaSeat" label="座位数" min-width="60"></el-table-column>
-                            <el-table-column prop="adress" label="地址"  min-width="120"></el-table-column>
+                            <!-- <el-table-column prop="adress" label="地址"  min-width="120"></el-table-column> -->
                        </el-table>
                        <div class="reset-page" v-if="cinemaList.length > 0">  
                            <el-pagination 
@@ -40,19 +41,34 @@
                        </div>
                     </div>
                     <div class="selected">
-                        <div  class="title flex">
+                        <div class="title flex">
                             <div>已选竞对({{selectedList.length}})</div>
-                            <div class="text-blue cursor" @click="clearSelected">清空</div>
+                            <!-- <div class="text-blue cursor">清空</div> -->
                         </div>
-                        <div class="item flex" v-for="(item,index) in selectedList" :key="index">
-                            <div> {{item.competeCinemaName}}</div>
-                           <div><i class="el-icon-close" @click="deleteSelected(item.id)"></i></div>
+                        <div class="item-wrap">
+                            <div class="item flex" v-for="(item,index) in selectedList" :key="index">
+                            <div class="item-name"> {{item.competeCinemaName}}</div>
+                            <div>
+                                <i class="el-icon-close" @click="deleteSelected(item)"></i>
+                            </div>
+                            </div>
                         </div>
+                       
+                        <!-- <draggable v-model="selectedList">
+                            <transition-group>
+                                 <div class="item flex" v-for="(item,index) in selectedList" :key="index">
+                                    <div class="item-name"> {{item.competeCinemaName}}</div>
+                                    <div>
+                                        <i class="iconfont icon-danchuang-tuodongpaixu" @click="deleteSelected(item.id)"></i>
+                                    </div>
+                                </div>
+                            </transition-group>
+                        </draggable> -->
                     </div>
                </div>
            </div>
            <div class="footer">
-               <el-button type="primary" size="mini" @click="sure">确定</el-button>
+                <el-button type="primary" size="mini" @click="sure">确定</el-button>
                 <el-button  size="mini" @click="handleClose">取消</el-button>
            </div>
         </el-dialog>
@@ -103,18 +119,24 @@ export default {
                 this.cinemaList = res.list
             })
         },
-        // 搜索
+        // 2.搜索
         search(){
             this.getCompeteList()
         },
-        deleteSelected(id){
+        // 3.改变竞对范围
+        changeRange(){
+            this.getCompeteList()
+        },
+        //4.删除竞对影院（前端）
+        deleteSelected(row){
+            this.toggleSelection(row)
             this.selectedList.forEach((item,index)=>{
-                if(item.id == id){
+                if(item.id == row.id){
                     this.selectedList.splice(index,1)
                 }
             })
         },
-        // 保存
+        // 5.保存
         sure(){
             let params = {
                 userId:this.userId,
@@ -123,24 +145,35 @@ export default {
                     return item.id
                 })
             };
-            this.$emit('addCinema',params)
-        },      
-         clearSelected(){
-            this.selectedList = [];
-        },
+            if(this.selectedList.length>0){
+                this.$emit('addCinema',params)
+            }
+            this.handleClose()
+        }, 
+        // 6.选择竞对影院
         handleSelectionChange(arr){
             this.selectedList = arr
         },
+        // 7.切换选中状态
+        toggleSelection(row){
+            if(row){
+                this.$refs.multipleTable.toggleRowSelection(row)
+            }
+        },
+        // 8.重置数据
         handleClose(){
+            this.distance = null;
+            this.cinemaName = null;
+            this.page = 1;
             this.show = false;
         },
-         handleSizeChange(val) {
+        handleSizeChange(val) {
             this.pageSize = val;
-            this.initData()
+            this.getCompeteList()
         },
         handleCurrentChange(val) {
             this.page = val;
-           this.initData()
+           this.getCompeteList()
         }
     }
 }
@@ -163,7 +196,7 @@ export default {
             .select{
                 width:60%;
                 height:400px;
-                overflow: auto;
+                // overflow: auto;
             }
             .selected{
                 width:40%;
@@ -174,14 +207,24 @@ export default {
                 .title{
                     padding-left:4px;
                     padding-bottom:4px;
+                    font-size:12px;
                     border-bottom:1px solid #F5F5F5;
                 }
-                .item{
-                    padding:4px;
-                    font-size:8px;
-                    cursor:pointer;
-                    &:hover{
-                        background:  #F5F5F5
+                .item-wrap{
+                    height:360px;
+                    overflow: auto;
+                    .item{
+                        padding:6px;
+                        margin-top:6px;
+                    
+                        font-size:10px;
+                        cursor:pointer;
+                        &:hover{
+                            background:  #F5F5F5
+                        }
+                        .item-name{
+                            font-size:12px;
+                        }
                     }
                 }
             }

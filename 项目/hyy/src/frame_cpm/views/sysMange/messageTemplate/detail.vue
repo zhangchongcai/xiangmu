@@ -3,10 +3,10 @@
     <div class="breadcrumb">
         <el-breadcrumb separator-class="el-icon-arrow-right">
             <el-breadcrumb-item>短信管理</el-breadcrumb-item>
-            <el-breadcrumb-item>创建短信模板</el-breadcrumb-item>
+            <el-breadcrumb-item>{{templateBread}}</el-breadcrumb-item>
         </el-breadcrumb>
     </div>
-    <div class="clearboth"></div>
+    <div class="clearboth" style="margin-top:30px;"></div>
              <!--基本信息-->
              <section class="film-base-page">
                  <el-form ref="messageTemplate" :model="messageTemplate" :rules="rules" label-width="110px" label-position="right" label-height='60px'>
@@ -37,7 +37,7 @@
                     </el-col>
                 </el-row>
                 <el-row :gutter="20">
-                    <el-col :span="12">
+                    <el-col :span="12" class="temp-content">
                         <el-form-item label="模板内容：" prop="content">
                         <el-input type="textarea" v-model="messageTemplate.content" :disabled="isJustSee" placeholder="请选择短信场景" @change="templateTextareaFunc" @blur="templateTextareaFunc"></el-input>
                          <div class="template-box">
@@ -52,8 +52,9 @@
                       
                     </el-col>
                 </el-row>
-                <el-row :gutter="20">
-                    <el-col :span="12">
+                <el-row :gutter="20" v-if="false">
+                    <el-col :span="1"> &nbsp;</el-col>
+                    <el-col :span="11">
                         <el-form-item label="示例：" prop="description">
                             <!-- <el-input type="textarea" v-model="messageTemplate.description" :disabled="isJustSee"></el-input> -->
                             <div class="template-demo-text">
@@ -63,11 +64,12 @@
                         </el-form-item>
                     </el-col>
                 </el-row>  
-                 <el-row :gutter="20">
-                    <el-col :span="12" v-if="!isJustSee && isModify">
+                 <el-row :gutter="20" v-if="!isJustSee">
+                      <!-- v-if="!isJustSee && isModify" -->
+                    <el-col :span="12" >
                         <el-form-item label="测试手机号：" prop="description">
                             <el-input  v-model="messageTemplate.phone" style="width:70%;"></el-input>
-                            <el-button @click="sendMessage" style="margin-left:12px;">发送测试短信</el-button>
+                            <el-button type="primary"  @click="sendMessage" style="margin-left:12px;">发送测试短信</el-button>
                             <div class="contentMsg">{{contentMsg}}</div>
                         </el-form-item>
                     </el-col>
@@ -75,10 +77,10 @@
                 
                 </el-form>
                 <div class="btn" style="margin:20px auto; text-align:center;">
-                    <el-button @click="out"  v-if="!isJustSee">取消</el-button>
                     <el-button type="primary" v-if="!isModify && !isJustSee" @click="submitForm('messageTemplate',false)">保存</el-button>
                     <!-- 修改调用接口 -->
                     <el-button type="primary" v-if="isModify && !isJustSee"  @click="submitForm('messageTemplate',true)">保存</el-button>
+                    <el-button @click="out"  v-if="!isJustSee">取消</el-button>
                     <el-button @click="out"  v-if="isJustSee">返回</el-button>
                 </div>
              </section>
@@ -92,6 +94,7 @@ import { createSmsChannel, updateSmsTemplate, querySmsScene,sendSingleMsg, creat
     export default {
         data(){
             return{
+               templateBread:'',
                listLoading:false,
                tableKey:1,
                sceneCodes:[],
@@ -114,13 +117,13 @@ import { createSmsChannel, updateSmsTemplate, querySmsScene,sendSingleMsg, creat
                },
                rules:{
                    sceneCode:[
-                       {required: true ,message:'请填写短信场景', trigger: 'blur'},
+                       {required: true ,message:'请选择短信场景', trigger: 'blur'},
                    ],
                    seceneParam:[
-                       {required: true ,message:'请填写场景CODE', trigger: 'blur'},
+                       {required: true ,message:'请先选择短信场景', trigger: 'blur'},
                    ],
-                   msgMaxLength:[
-                       {required: true ,message:'请填写通道字符数', trigger: 'blur'},
+                   content:[
+                       {required: true ,message:'请填写模板内容', trigger: 'blur'},
                    ]
                },
             }    
@@ -131,7 +134,16 @@ import { createSmsChannel, updateSmsTemplate, querySmsScene,sendSingleMsg, creat
             },
             sendMessage(){
                 this.sendDebouce = true;
-                if(this.messageTemplate.phone && this.messageTemplate.phone.length==11){
+               
+                 this.$refs['messageTemplate'].validate((valid) => {
+                    if (valid) {
+                        if(this.messageTemplate.phone == null || this.messageTemplate.phone == undefined || this.messageTemplate.phone == ''){
+                            this.error('请输入手机号')
+                            return;
+                        }else if(this.messageTemplate.phone.length==11){
+                            this.error('手机号格式不正确')
+                            return;
+                        }
                     let postObj ={
                         mobile:this.messageTemplate.phone,
                         content:this.messageTemplate.content
@@ -147,7 +159,8 @@ import { createSmsChannel, updateSmsTemplate, querySmsScene,sendSingleMsg, creat
                     }).catch( err => {
                         console.log(err)
                     })
-                }
+                 }
+                });
             },
             closeDialog(){
                 this.dialogFormVisible = false
@@ -223,16 +236,17 @@ import { createSmsChannel, updateSmsTemplate, querySmsScene,sendSingleMsg, creat
                         let itemScene =  this.sceneCodes.filter(item=>item.sceneCode == currentPageObj.sceneCode)
                         this.messageTemplate.seceneParam  = itemScene && itemScene[0] && itemScene[0].paramList
                         let paramCurrentUse = itemScene && itemScene[0] && itemScene[0].paramList
-                        let templateInfo = '【大地电影】购买成功，'
-                        let templatetext = '【大地电影】购买成功，'
+                        let templateInfo = ''
+                        let templatetext = ''
                         for(let i=0;i<paramCurrentUse.length;i++){
                             templateInfo += paramCurrentUse[i].paramName +':' +'{'
                             templateInfo += paramCurrentUse[i].paramCode +'},';
                             templatetext+= paramCurrentUse[i].paramName +':'
                             templatetext += paramCurrentUse[i].sample;
                         }
-                        this.messageTemplate.content = templateInfo
+                        // this.messageTemplate.content = templateInfo
                         this.tempalteShowText = templatetext
+                        this.messageTemplate.content = currentPageObj.content
                         }
                 
                     // let templateInfo1 = '【大地电影】购买成功，卡号：{CardCode},支付金额{Money}元！'
@@ -371,6 +385,14 @@ import { createSmsChannel, updateSmsTemplate, querySmsScene,sendSingleMsg, creat
             this.isJustSee  = (this.$route.query.isJustSee=='true' || this.$route.query.isJustSee==true)?true:false
             if(this.isModify){
                 this.getInfo();
+               if(this.isJustSee){
+                    this.templateBread = '查看短信模板'
+               }else{
+                    this.templateBread = '编辑短信模板'
+               }
+            }
+            if(!this.isModify){
+                this.templateBread = '新建短信模板'
             }
             this.querySmsScene()
         
@@ -379,6 +401,13 @@ import { createSmsChannel, updateSmsTemplate, querySmsScene,sendSingleMsg, creat
 </script>
 <style lang="scss">
     .page-justsee-message-channel{
+        .temp-content{
+            .el-textarea.is-disabled{
+                .el-textarea__inner{
+                    border: 1px solid #BCBCBC;
+                }
+            }
+        }
         .just-see-checkbox{
             span{
                 margin-right:6px;
@@ -469,6 +498,9 @@ import { createSmsChannel, updateSmsTemplate, querySmsScene,sendSingleMsg, creat
             cursor: pointer;
             margin-right: 6px;
         }
+        .scene-btn{
+            color:#3B74FF;
+        }
     }
     .template-box{
         .left{
@@ -488,4 +520,5 @@ import { createSmsChannel, updateSmsTemplate, querySmsScene,sendSingleMsg, creat
         float: left;
         margin-right:6px;
     }
+    
 </style>

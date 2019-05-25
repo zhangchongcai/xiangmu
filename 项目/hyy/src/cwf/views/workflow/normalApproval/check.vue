@@ -1,6 +1,7 @@
 <template>
     <div class="check">
         <el-dialog  width="80%"  :title="contentText" :visible.sync="dialogVisible" :modal-append-to-body="false" @close="close">
+            <!-- 审批数据 -->
             <el-form v-if="checkInfo">
                 <el-form-item  :label-width="formLabelWidth">
                     <div class="check-item">
@@ -43,7 +44,7 @@
                     </div>
                 </el-form-item>
             </el-form>
-
+            <!-- 审批记录 -->
             <el-card class="box-card" shadow="never">
                 <div slot="header" class="clearfix">
                     <span>审批记录</span>
@@ -60,36 +61,6 @@
                     <el-table-column prop="advice" label="审批意见"></el-table-column>
                 </el-table>
             </el-card>
-
-            <el-card class="box-card" shadow="never" v-if="showpageType">
-                <div slot="header" class="clearfix">
-                    <span>审批</span>
-                </div>
-                <div class="text item">
-                    <el-row>
-                        <label for="">审批结果：</label>
-                        <el-radio v-model="radio" label="1">审批通过</el-radio>
-                        <el-radio v-model="radio" label="2">驳回申请</el-radio>
-                    </el-row>
-                    <el-row>
-                        <el-col :span="3">
-                            <label for="">审批意见：</label>
-                        </el-col>
-                        <el-col :span="21">
-                            <el-input
-                                type="textarea"
-                                placeholder="请输入内容"
-                                v-model="textarea"
-                                maxlength="30"
-                                show-word-limit
-                            >
-                            </el-input>
-                        </el-col>
-                    </el-row>
-                    
-                </div>
-            </el-card>
-
             <div slot="footer" class="dialog-footer">
                 <el-button @click="closeBack" >取 消</el-button>
             </div>
@@ -101,40 +72,22 @@
 <script>
   export default {
     props:{
-        checkInfo:Object,
-        dialogFormVisible:Boolean
+        checkInfo:Object, //查看审批数据
+        dialogFormVisible:Boolean //查看弹窗状态
     },
     data () {
       return {
-        contentText:"查看",
-        radio:"",
-        textarea:"",
-        tableData:[],
-        formLabelWidth: '120px',
-        form: {
-            name: '',
-            region: '',
-            date1: '',
-            date2: '',
-            delivery: false,
-            type: [],
-            resource: '',
-            desc: ''
-        },
-        dialogVisible: this.dialogFormVisible,
+        contentText:"查看", //标题内容
+        tableData:[],//审批记录渲染数据
+        formLabelWidth: '120px',//审批信息宽度
+        dialogVisible: this.dialogFormVisible,//显示弹窗状态
       }
     },
     computed:{
-        showpageType(){
-            if(this.contentText=="查询"){
-                return false
-            }
-            if(this.contentText=="审批"){
-                return true
-            }
-        }
+        
     },
     methods:{
+        //获取审批记录
         getApprovalrecordList(){
             let params={
                 atId:1340
@@ -160,10 +113,13 @@
             })
             // this.dialogFormVisible = false
         },
+        //关闭弹窗
         close(){
             this.dialogVisible = false
             this.$emit("close")
+            
         },
+        //关闭弹窗回掉函数
         closeBack(){
             this.dialogVisible = false
         }

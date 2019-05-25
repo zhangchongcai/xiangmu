@@ -1,6 +1,7 @@
 <template>
     <div class="approval">
         <el-dialog  width="80%" :title="contentText" :visible.sync="dialogVisible" :modal-append-to-body="false" @close="close">
+            <!-- 审批数据 -->
             <el-form v-if="approvalInfo">
                 <el-form-item  :label-width="formLabelWidth">
                     <div class="approval-item">
@@ -43,7 +44,7 @@
                     </div>
                 </el-form-item>
             </el-form>
-
+            <!-- 审批记录 -->
             <el-card class="box-card" shadow="never">
                 <div slot="header" class="clearfix">
                     <span>审批记录</span>
@@ -60,8 +61,8 @@
                     <el-table-column prop="advice" label="审批意见"></el-table-column>
                 </el-table>
             </el-card>
-
-            <el-card class="box-card" shadow="never" v-if="showpageType">
+            <!-- 审批 -->
+            <el-card class="box-card" shadow="never" >
                 <div slot="header" class="clearfix">
                     <span>审批</span>
                 </div>
@@ -102,44 +103,33 @@
 <script>
   export default {
     props:{
-        approvalInfo:Object,
-        dialogFormVisible:Boolean
+        approvalInfo:Object,//审批数据
+        dialogFormVisible:Boolean//审批弹窗状态
     },
     data () {
       return {
         approvalValue:0,//审批结果
-        contentText:"审批",
+        contentText:"审批",//内容显示
         approvalAdvice:"",//审批意见
-        tableData:[],
-        formLabelWidth: '120px',
-       
-        dialogVisible: this.dialogFormVisible,
+        tableData:[],//审批记录数据
+        formLabelWidth: '120px',//审批信息宽度
+        dialogVisible: this.dialogFormVisible,//显示弹窗状态
       }
     },
     computed:{
-        showpageType(){
-            if(this.contentText=="查询"){
-                return false
-            }
-            if(this.contentText=="审批"){
-                return true
-            }
-        }
+       
     },
     methods:{
+        //设置参数处理
         setParam(){
             let param={}
                 param.id=this.approvalInfo.atId
                 param.abId=this.approvalInfo.abId
                 param.status=this.approvalValue
                 param.auditAppoint=this.approvalAdvice
-            return {
-                    "id":1342,
-                    "status":"2",
-                    "abId":805,
-                    "auditAppoint":"审批通过"
-                }
+            return param
         },
+        //审批任务
         commitApproval(){
             if(!this.approvalValue){
                 console.log("请审批任务")
@@ -163,7 +153,7 @@
             this.$cwfList.commitApproval(params).then(data => {
                 if (data && data.code === 200) {
                     this.$message({
-                        message: "查询成功",
+                        message: "审批成功",
                         type: "success",
                         duration: 1000
                     });
@@ -179,6 +169,7 @@
             })
             // this.dialogFormVisible = false
         },
+        //获取审批记录列表
         getApprovalrecordList(){
             let params={
                 atId:1340
@@ -187,6 +178,7 @@
             this.$cwfList.getApprovalrecord(params).then(data => {
                 if (data && data.code === 200) {
                     this.tableData=data.data.spAuditOpinionVoS
+                    this.close("update")
                     this.$message({
                         message: "查询成功",
                         type: "success",
@@ -204,10 +196,17 @@
             })
             // this.dialogFormVisible = false
         },
-        close(){
+        //关闭弹窗
+        close(update){
             this.dialogVisible = false
             this.$emit("close")
+             if(update){
+                this.$emit("close",update)
+            }else{
+                this.$emit("close")
+            }
         },
+        //关闭弹窗回调函数
         closeBack(){
             this.dialogVisible = false
         }

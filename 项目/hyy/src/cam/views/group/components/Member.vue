@@ -33,7 +33,7 @@
         <li @click="MeClick('2')" :class="{active:cur==2}">
           <div>会员消费占比</div>
           <div>
-            <span>{{MemberTop.memberConsumePer}}</span>%
+            <span>{{MemberTop.memberConsumePer | woo}}</span>%
           </div>
         </li>
         <li @click="MeClick('3')" :class="{active:cur==3}">
@@ -62,14 +62,14 @@
                 <div slot="content" style="width:300px">
                   <ul id="ulMain">
                     <li>新增会员人数当日达成 : <span>{{MemberKPIData.newMemberCurrent | capitalizePerson}}{{MemberKPIData.newMemberCurrent | too}}</span></li>
-                    <li>环比前一日 : <span :class="[MemberKPIData.memberChainDay > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[MemberKPIData.memberChainDay > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{MemberKPIData.memberChainDay}}%</span></li>
+                    <li>环比前一日 : <span :class="[MemberKPIData.memberChainDay > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[MemberKPIData.memberChainDay > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{MemberKPIData.memberChainDay | woo}}%</span></li>
                     <li>月至今达成 : <span>{{MemberKPIData.memberMonthToNow | capitalizePerson}}{{MemberKPIData.memberMonthToNow | too}}</span></li>
-                    <li>环比上月 : <span :class="[MemberKPIData.memberChainMonth > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[MemberKPIData.memberChainMonth > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{MemberKPIData.memberChainMonth}}%</span></li>
-                    <li>本月目标为 : <span>{{MemberKPIData.newMemberTarget | capitalizePerson}}</span>{{MemberKPIData.newMemberTarget | foo}}</li>
-                    <li>达成率 : <span>{{MemberKPIData.newMemberRate}}</span>%</li>
-                    <li>与时间进度差距为 : <span :class="[MemberKPIData.timeRate > 0? 'green':'red']">{{MemberKPIData.timeRate}}%</span></li>
-                    <li>按目前进度,预计月底达成率为 : <span>{{MemberKPIData.memberExpect}}</span>%</li>
-                    <li>与目标额差距 : <span :class="[MemberKPIData.memberGap > 0? 'green':'red']">{{MemberKPIData.memberGap}}</span>%</li>
+                    <li>环比上月 : <span :class="[MemberKPIData.memberChainMonth > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[MemberKPIData.memberChainMonth > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{MemberKPIData.memberChainMonth | woo}}%</span></li>
+                    <li>本月目标为 : <span>{{MemberKPIData.newMemberTarget | capitalizePerson}}</span>{{MemberKPIData.newMemberTarget | too}}</li>
+                    <li>达成率 : <span>{{MemberKPIData.newMemberRate | woo}}</span>%</li>
+                    <li>与时间进度差距为 : <span :class="[MemberKPIData.timeRateGap > 0? 'green':'red']">{{MemberKPIData.timeRateGap | woo}}%</span></li>
+                    <li>按目前进度,预计月底达成率为 : <span>{{MemberKPIData.memberExpect | woo}}</span>%</li>
+                    <li>与目标额差距 : <span :class="[MemberKPIData.memberGap > 0? 'green':'red']">{{MemberKPIData.memberGap | woo}}%</span></li>
                   </ul>
                 </div>
                 <i class="iconfont icon-danchuang-tishi"></i>
@@ -104,6 +104,8 @@
             size="mini" 
             :data="CurrentMemberTableTop" 
             border
+            @sort-change='SortChange'
+            :default-sort = "{prop: 'showNumMember', order: 'descending'}"
           >
             <el-table-column label="序号" min-width="68" type="index" align="left"></el-table-column>
             <el-table-column prop="name" label="城市名称" min-width="100" align="left">
@@ -111,7 +113,7 @@
                 <span class="color" @click="clickCity(scope.$index, scope.row)">{{ scope.row.name }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="showNumMember" label="新增会员人数" min-width="115" align="left" :sortable="true" :sort-method="sortByDate">
+            <el-table-column prop="showNumMember" label="新增会员人数" min-width="115" align="left" sortable="custom" >
               <template slot-scope="scope">
                 <span>{{ scope.row.showNumMember }}</span>
               </template>
@@ -120,7 +122,7 @@
               <template slot-scope="scope">
                 <div v-if='scope.row.columePercent != 0'>
                   <span class="iconfont" :class="[scope.row.columePercent > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></span>
-                  <span :class="[scope.row.columePercent > 0? 'green':'red']">{{ scope.row.columePercent }}%</span>
+                  <span :class="[scope.row.columePercent > 0? 'green':'red']">{{ scope.row.columePercent > 0? scope.row.columePercent.toFixed(2) : scope.row.columePercent.toFixed(2).substr(1,5) }}%</span>
                 </div>
                 <div v-else>
                   <span style="font-size:30px">--</span>
@@ -169,6 +171,8 @@
             size="mini" 
             :data="CurrentMemberTableTop" 
             border
+            @sort-change='SortChange'
+            :default-sort = "{prop: 'showNumMember', order: 'descending'}"
           >
             <el-table-column label="序号" min-width="68" type="index" align="left"></el-table-column>
             <el-table-column prop="name" label="城市名称" min-width="100" align="left">
@@ -176,7 +180,7 @@
                 <span class="color" @click="clickCity(scope.$index, scope.row)">{{ scope.row.name }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="showNumMember" label="会员消费金额" min-width="115" align="left" :sortable="true" :sort-method="sortByDate">
+            <el-table-column prop="showNumMember" label="会员消费金额" min-width="115" align="left" sortable="custom" >
               <template slot-scope="scope">
                 <span>{{ scope.row.showNumMember }}</span>
               </template>
@@ -185,7 +189,7 @@
               <template slot-scope="scope">
                 <div v-if='scope.row.columePercent != 0'>
                   <span class="iconfont" :class="[scope.row.columePercent > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></span>
-                  <span :class="[scope.row.columePercent > 0? 'green':'red']">{{ scope.row.columePercent }}%</span>
+                  <span :class="[scope.row.columePercent > 0? 'green':'red']">{{ scope.row.columePercent > 0? scope.row.columePercent.toFixed(2) : scope.row.columePercent.toFixed(2).substr(1,5) }}%</span>
                 </div>
                 <div v-else>
                   <span style="font-size:30px">--</span>
@@ -234,6 +238,8 @@
             size="mini" 
             :data="CurrentMemberTableTop" 
             border
+            @sort-change='SortChange'
+            :default-sort = "{prop: 'showNumMember', order: 'descending'}"
           >
             <el-table-column label="序号" min-width="68" type="index" align="left"></el-table-column>
             <el-table-column prop="name" label="城市名称" min-width="100" align="left">
@@ -241,7 +247,7 @@
                 <span class="color" @click="clickCity(scope.$index, scope.row)">{{ scope.row.name }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="showNumMember" label="会员消费占比" min-width="115" align="left" :sortable="true" :sort-method="sortByDate">
+            <el-table-column prop="showNumMember" label="会员消费占比" min-width="115" align="left" sortable="custom" >
               <template slot-scope="scope">
                 <span>{{ scope.row.showNumMember}}</span>
               </template>
@@ -250,7 +256,7 @@
               <template slot-scope="scope">
                 <div v-if='scope.row.columePercent != 0'>
                   <span class="iconfont" :class="[scope.row.columePercent > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></span>
-                  <span :class="[scope.row.columePercent > 0? 'green':'red']">{{ scope.row.columePercent }}%</span>
+                  <span :class="[scope.row.columePercent > 0? 'green':'red']">{{ scope.row.columePercent > 0? scope.row.columePercent.toFixed(2) : scope.row.columePercent.toFixed(2).substr(1,5) }}%</span>
                 </div>
                 <div v-else>
                   <span style="font-size:30px">--</span>
@@ -299,6 +305,8 @@
             size="mini" 
             :data="CurrentMemberTableTop" 
             border
+            @sort-change='SortChange'
+            :default-sort = "{prop: 'showNumMember', order: 'descending'}"
           >
             <el-table-column label="序号" min-width="68" type="index" align="left"></el-table-column>
             <el-table-column prop="name" label="城市名称" min-width="100" align="left">
@@ -306,7 +314,7 @@
                 <span class="color" @click="clickCity(scope.$index, scope.row)">{{ scope.row.name }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="showNumMember" label="开卡数量" min-width="100" align="left" :sortable="true" :sort-method="sortByDate">
+            <el-table-column prop="showNumMember" label="开卡数量" min-width="100" align="left" sortable="custom">
               <template slot-scope="scope">
                 <span>{{ scope.row.showNumMember }}</span>
               </template>
@@ -315,7 +323,7 @@
               <template slot-scope="scope">
                 <div v-if='scope.row.columePercent != 0'>
                   <span class="iconfont" :class="[scope.row.columePercent > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></span>
-                  <span :class="[scope.row.columePercent > 0? 'green':'red']">{{ scope.row.columePercent }}%</span>
+                  <span :class="[scope.row.columePercent > 0? 'green':'red']">{{ scope.row.columePercent > 0? scope.row.columePercent.toFixed(2) : scope.row.columePercent.toFixed(2).substr(1,5) }}%</span>
                 </div>
                 <div v-else>
                   <span style="font-size:30px">--</span>
@@ -365,6 +373,8 @@
             size="mini" 
             :data="CurrentMemberTableTop" 
             border
+            @sort-change='SortChange'
+            :default-sort = "{prop: 'showNumMember', order: 'descending'}"
           >
             <el-table-column label="序号" min-width="68" type="index" align="left"></el-table-column>
             <el-table-column prop="name" label="城市名称" min-width="100" align="left">
@@ -372,7 +382,7 @@
                 <span class="color" @click="clickCity(scope.$index, scope.row)">{{ scope.row.name }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="showNumMember" label="储值金额" min-width="115" align="left" :sortable="true" :sort-method="sortByDate">
+            <el-table-column prop="showNumMember" label="储值金额" min-width="115" align="left" sortable="custom" >
               <template slot-scope="scope">
                 <span>{{ scope.row.showNumMember }}</span>
               </template>
@@ -381,7 +391,7 @@
               <template slot-scope="scope">
                 <div v-if='scope.row.columePercent != 0'>
                   <span class="iconfont" :class="[scope.row.columePercent > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></span>
-                  <span :class="[scope.row.columePercent > 0? 'green':'red']">{{ scope.row.columePercent }}%</span>
+                  <span :class="[scope.row.columePercent > 0? 'green':'red']">{{ scope.row.columePercent > 0? scope.row.columePercent.toFixed(2) : scope.row.columePercent.toFixed(2).substr(1,5) }}%</span>
                 </div>
                 <div v-else>
                   <span style="font-size:30px">--</span>
@@ -502,6 +512,8 @@ export default {
       }
     };
     return {
+      seq:'',
+      seqType:'',
       CurrentMemberTableTop:JSON.parse(JSON.stringify(this.MemberTableTop)),
       flag:true,
       cur:0,
@@ -546,25 +558,31 @@ export default {
     }
   },
   filters: {
+    woo(value){
+      if (!value) return ""
+      return value.toFixed(2)
+    },
     //处理金钱计算保留两位
     capitalizeOne(value) {
       if (!value) return ""
       let newValue = value.toString();
-
+      //判断逻辑
       if(newValue.indexOf('.') != -1){
-        if(newValue.length < 8){
-          return newValue
+        
+        if(newValue.length < 7){
+          return Number(newValue + '0').toFixed(2)
         }
-        else if(newValue.length >= 8 && newValue.length <= 11){
+        else if(newValue.length >= 7 && newValue.length <= 11){
           return (newValue / 10000).toFixed(2)
         }
         else if(newValue.length >= 12){
           return ((newValue / 10000) / 10000).toFixed(2)
         }
       }
-      else{
+      else
+      {
         if(newValue.length < 5){
-          return newValue
+          return Number(newValue + '.00').toFixed(2)
         }
         else if(newValue.length >= 5 && newValue.length <= 8){
           return (newValue / 10000).toFixed(2)
@@ -682,17 +700,16 @@ export default {
     }
   },
   methods: {
-    sortByDate(obj1, obj2) {
-      let val1 = obj1.deadline
-      let val2 = obj2.deadline
-      return val1 - val2
+    active(){
+      this.cur = 0
+      this.currentPage = 1
     },
     formatValue(num, company) {
       let showNum
       if (num < 10000) {
           showNum = `${num.toFixed(2)}${company}`
       } 
-      if (num > 10000 && num < 100000000) {
+      if (num >= 10000 && num < 100000000) {
           showNum = `${(num/10000).toFixed(2)}万${company}`
       }
       if (num >= 100000000) {
@@ -705,7 +722,7 @@ export default {
       if (num < 10000) {
           showNum = `${num}${company}`
       } 
-      if (num > 10000 && num < 100000000) {
+      if (num >= 10000 && num < 100000000) {
           showNum = `${(num/10000).toFixed(2)}万${company}`
       }
       if (num >= 100000000) {
@@ -746,68 +763,198 @@ export default {
       if(val === '0'){
         if(this.BoxType){
           this.getMemberTab('new_member');
-          //调用票房首页分页数据
-          this.getMemberPages('new_member');
         }
       }
       else if(val === '1'){
         if(this.BoxType){
          //调用会员消费金额指标数据
          this.getMemberTab('member_consume_price');
-         //调用会员消费金额分页数据
-         this.getMemberPages('member_consume_price');
         }
       }
       else if(val === '2'){
          if(this.BoxType){
           //调用会员消费占比指标数据
           this.getMemberTab('member_consume_percent');
-          //调用会员消费占比分页数据
-          this.getMemberPages('member_consume_percent');
          }
       }
       else if(val === '3'){
         if(this.BoxType){
           //调用开卡数量指标数据
           this.getMemberTab('card_number');
-          //调用开卡数量分页数据
-          this.getMemberPages('card_number');
          }
       }
       else if(val === '4'){
         if(this.BoxType){
           //调用储值金额指标数据
           this.getMemberTab('store_price');
-          //调用储值金额分页数据
-          this.getMemberPages('store_price');
          }
       }
     },
-     // 初始页currentPage、初始每页数据数pagesize和数据data
+    // 初始页currentPage、初始每页数据数pagesize和数据data
     handleCurrentChange(val){
       this.currentPage = val
       if(this.BoxType === "new_member"){
         //调用会员新增人数分页数据
-        this.getMemberPages('new_member',this.currentPage)
+        this.getMemberPages('new_member',this.currentPage,this.seqType)
       }else if(this.BoxType === "member_consume_price"){
         //调用会员消费金额分页数据
-        this.getMemberPages('member_consume_price',this.currentPage)
+        this.getMemberPages('member_consume_price',this.currentPage,this.seqType)
       }else if(this.BoxType === "member_consume_percent"){
         //调用会员消费占比分页数据
-        this.getMemberPages('member_consume_percent',this.currentPage)
+        this.getMemberPages('member_consume_percent',this.currentPage,this.seqType)
       }else if(this.BoxType === "card_number"){
         //调用开卡数量分页数据
-        this.getMemberPages('card_number',this.currentPage)
+        this.getMemberPages('card_number',this.currentPage,this.seqType)
       }
       else if(this.BoxType === "store_price"){
         //调用储值金额分页数据
-        this.getMemberPages('store_price',this.currentPage)
+        this.getMemberPages('store_price',this.currentPage,this.seqType)
+      }
+    },
+    //排序事件
+    SortChange(column){
+      if(column.order === 'descending'){
+        this.seq = 'DESC'
+        this.$camList.MemberPager({
+          body: {
+            groupId: 44,
+            columnType: this.BoxType,
+            startDate: this.startDate,
+            endDate: this.endDate,
+            dateType: this.timeType,
+            pageSize: this.pageSize,
+            pageNo: this.currentPage,
+            seq:this.seq
+          }
+        })
+        .then(response => {
+          let res = response.data;
+          
+          if(this.BoxType === 'new_member'){
+            //判断新增会员人数
+            if(res.memberCinemaPageInfo){
+              res.memberCinemaPageInfo.list.forEach(item => {
+                item.showNumMember = this.formatPerson(item.columeName,'人')
+              })
+              this.CurrentMemberTableTop = res.memberCinemaPageInfo.list
+            }
+          }
+          else if(this.BoxType === 'member_consume_price'){
+            //判断会员消费金额
+            if(res.memberCinemaPageInfo){
+
+              res.memberCinemaPageInfo.list.forEach(item => {
+                item.showNumMember = this.formatValue(item.columeName,'元')
+              })
+              this.CurrentMemberTableTop = res.memberCinemaPageInfo.list
+
+            }
+          }
+          else if(this.BoxType === 'member_consume_percent'){
+            //判断会员消费占比
+            if(res.memberCinemaPageInfo){
+              res.memberCinemaPageInfo.list.forEach(item => {
+                item.showNumMember = this.formatValue(item.columeName,'%')
+              })
+              this.CurrentMemberTableTop = res.memberCinemaPageInfo.list
+            }
+          }
+          else if(this.BoxType === 'card_number'){
+            //判断开卡数量
+            if(res.memberCinemaPageInfo){
+              res.memberCinemaPageInfo.list.forEach(item => {
+                item.showNumMember = this.formatZhang(item.columeName,'张')
+              })
+              this.CurrentMemberTableTop = res.memberCinemaPageInfo.list
+            }
+          }
+          else if(this.BoxType === 'store_price'){
+            //判断储值金额
+            if(res.memberCinemaPageInfo){
+              res.memberCinemaPageInfo.list.forEach(item => {
+                item.showNumMember = this.formatValue(item.columeName,'元')
+              })
+              this.CurrentMemberTableTop = res.memberCinemaPageInfo.list
+            }
+          }
+          
+        });
+      }
+      else if(column.order === 'ascending'){
+        this.seq = 'ASC'
+        this.$camList.MemberPager({
+          body: {
+            groupId: 44,
+            columnType: this.BoxType,
+            startDate: this.startDate,
+            endDate: this.endDate,
+            dateType: this.timeType,
+            pageSize: this.pageSize,
+            pageNo: this.currentPage,
+            seq:this.seq
+          }
+        })
+        .then(response => {
+          let res = response.data;
+           if(this.BoxType === 'new_member'){
+            //判断新增会员人数
+            if(res.memberCinemaPageInfo){
+              res.memberCinemaPageInfo.list.forEach(item => {
+                item.showNumMember = this.formatPerson(item.columeName,'人')
+              })
+              this.CurrentMemberTableTop = res.memberCinemaPageInfo.list
+            }
+          }
+          else if(this.BoxType === 'member_consume_price'){
+            //判断会员消费金额
+            if(res.memberCinemaPageInfo){
+              res.memberCinemaPageInfo.list.forEach(item => {
+                item.showNumMember = this.formatValue(item.columeName,'元')
+              })
+              this.CurrentMemberTableTop = res.memberCinemaPageInfo.list
+            }
+          }
+          else if(this.BoxType === 'member_consume_percent'){
+            //判断会员消费占比
+            if(res.memberCinemaPageInfo){
+              res.memberCinemaPageInfo.list.forEach(item => {
+                item.showNumMember = this.formatValue(item.columeName,'%')
+              })
+              this.CurrentMemberTableTop = res.memberCinemaPageInfo.list
+            }
+          }
+          else if(this.BoxType === 'card_number'){
+            //判断开卡数量
+            if(res.memberCinemaPageInfo){
+              res.memberCinemaPageInfo.list.forEach(item => {
+                item.showNumMember = this.formatZhang(item.columeName,'张')
+              })
+              this.CurrentMemberTableTop = res.memberCinemaPageInfo.list
+            }
+          }
+          else if(this.BoxType === 'store_price'){
+            //判断储值金额
+            if(res.memberCinemaPageInfo){
+              res.memberCinemaPageInfo.list.forEach(item => {
+                item.showNumMember = this.formatValue(item.columeName,'元')
+              })
+              this.CurrentMemberTableTop = res.memberCinemaPageInfo.list
+            }
+          }
+        });
       }
     },
     //票房分页公用组件
-    getMemberPages(val,currentPage){
+    getMemberPages(val,currentPage,seq){
       this.currentPage = currentPage ? currentPage : 1
       this.BoxType = val;
+
+      if(this.seq === 'DESC'){
+        this.seqType = this.seq
+      }
+      else if(this.seq === 'ASC'){
+        this.seqType = this.seq
+      }
 
       this.$nextTick(() => {
         this.$camList.MemberPager({
@@ -818,7 +965,8 @@ export default {
             dateType: this.timeType,
             pageSize:this.pageSize,
             pageNo:this.currentPage,
-            columnType:this.BoxType
+            columnType:this.BoxType,
+            seq:this.seqType
           }
         })
         .then(response => {
@@ -856,7 +1004,7 @@ export default {
     },
     //指标切换接口
     getMemberTab (val,currentPage) {  
-      
+      this.currentPage = currentPage ? currentPage : 1
       this.BoxType = val
       this.$nextTick(() => {
         this.$camList.SwitchMemberTab({
@@ -877,7 +1025,6 @@ export default {
             res.memberCinemaPageInfo.list.forEach(item => {
               item.showNumMember = this.formatPerson(item.columeName,'人')
             })
-          
             this.CurrentMemberTableTop = res.memberCinemaPageInfo.list;
            
             //获取KPI
@@ -898,10 +1045,8 @@ export default {
               item.showNumMember = this.formatValue(item.columeName,'%')
             })
             this.CurrentMemberTableTop = res.memberCinemaPageInfo.list;
-
             //获取会员消费占比
             this.getPropChart(res)
-            
           }
           else if(this.BoxType === "card_number"){
             res.memberCinemaPageInfo.list.forEach(item => {
@@ -967,7 +1112,7 @@ export default {
     clickCity(index, row) {
       let cityId = row.cityId;
       this.$router.push({
-        name:'城市体首页',
+        path: "/analysis/area/home",
         query: {
           cityId: cityId
         }
@@ -1168,8 +1313,10 @@ export default {
 .icon-neiye-xiajiangjiantou{
   color:red;
 }
-.el-table .cell > .color:hover{
+.el-table .cell > .color{
   color:#3b74ff;
+}
+.el-table .cell > .color:hover{
   cursor:pointer;
 }
 .green{

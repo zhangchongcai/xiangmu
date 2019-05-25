@@ -179,12 +179,12 @@
                   <template v-for="city in rightGroupsShow">
                     <div class="right-show" :key="city.seq">
                       <el-checkbox class="checkbox" :label="city">{{city.groupColName}}</el-checkbox>
-                      <el-button plain class="sequence-button sort-btn" @click="upClick">
-                        <i class="el-icon-caret-top" :id="city.seq"></i>
-                      </el-button>
-                      <el-button plain class="sequence-button sort-btn" @click="downClick">
-                        <i class="el-icon-caret-bottom" :id="city.seq"></i>
-                      </el-button>
+                      <div plain class="sequence-button sort-btn" @click="upClick">
+                        <i class="iconfont icon-neiye-paixushangmoren" :id="city.seq"></i>
+                      </div>
+                      <div plain class="sequence-button sort-btn" @click="downClick">
+                        <i class="iconfont icon-neiye-paixuxiaxuanzhong" :id="city.seq"></i>
+                      </div>
                     </div>
                   </template>
                 </el-checkbox-group>
@@ -403,7 +403,7 @@ export default {
     },
     pagesExport() {
       this.$confirm(
-        "<i class='iconfont icon-danchuang-jingtanhao'></i>此操作将把数据导出为Excel表格, 是否继续?",
+        "<i class='iconfont icon-danchuang-jingtanhao'></i>即将导出表格数据, 是否继续?",
         {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
@@ -455,7 +455,7 @@ export default {
             responseType: "blob"
           });
           naxios
-            .post(`${Config.baseURL}report/exportExcel`, datapagesExport)
+            .post(`${Config.baseURL}/report/report/exportExcel`, datapagesExport)
             .then(res => {
               var blob = new Blob([res.data], {
                 type:
@@ -789,7 +789,7 @@ export default {
               iconClass: "iconfont icon-danchuang-wancheng",
               customClass: "alert-message",
               center: "true",
-              duration: 0
+              duration: 2
             });
           } else {
             this.$message({
@@ -911,11 +911,13 @@ export default {
           center: "true"
         });
       } else {
-        this.$confirm("此操作将删除该样式, 是否继续?", "提示", {
+        this.$confirm("此操作将删除该样式, 是否继续?", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning",
-          lockScroll: false
+          lockScroll: false,
+          showClose: false,
+          iconClass: 'iconfont icon-danchuang-jingtanhao'
         })
           .then(() => {
             this.$rptList.deleteUserStyle(this.styleUid).then(res => {

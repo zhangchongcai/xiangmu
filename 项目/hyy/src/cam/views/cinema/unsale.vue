@@ -2,7 +2,7 @@
   <div class="sale-content-wrap">
     <div class="header-fixed">
       <el-breadcrumb separator="/" class="reset-bread" separator-class="el-icon-arrow-right">
-        <el-breadcrumb-item :to="{path:'/cinema/inventory'}">
+        <el-breadcrumb-item :to="{path:'/analysis/cinema/inventory'}">
           <span class="text-gray">进销存</span>
         </el-breadcrumb-item>
         <el-breadcrumb-item>

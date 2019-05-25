@@ -204,7 +204,7 @@
                         <el-option label="包含" value="normalIn"></el-option>
                         <el-option label="不包含" value="normalNotIn"></el-option>
                     </el-select>
-                    <el-input class="chooseWidth1" v-model="basicDataForm.tradingMerchantInput" readonly></el-input>
+                    <el-input class="chooseWidth1" v-model="basicDataForm.tradingMerchantInput" ></el-input>
                     <el-button type="primary" style="margin-left:10px;" @click="tradingMerchantClick()" plain>选择</el-button>
                 </el-form-item>
                 <el-form-item label="会员等级:">
@@ -212,7 +212,7 @@
                         <el-option label="全部会员" value="AllMember"></el-option>
                         <el-option label="指定会员等级" value="normalIn"></el-option>
                     </el-select>
-                    <el-input class="chooseWidth1" v-if="basicDataForm.membershipLevel=='normalIn'" v-model="basicDataForm.membershipLevelInput" readonly></el-input>
+                    <el-input class="chooseWidth1" v-if="basicDataForm.membershipLevel=='normalIn'" v-model="basicDataForm.membershipLevelInput" ></el-input>
                     <el-button type="primary" v-if="basicDataForm.membershipLevel=='normalIn'" style="margin-left:10px;" @click="membershipLevelClick()" plain>选择</el-button>
                 </el-form-item>
                 <div v-if="basicDataForm.activityType==29">
@@ -222,7 +222,7 @@
                             <el-option label="包含" value="FieldStringIndexOf"></el-option>
                             <el-option label="不包含" value="notFieldStringIndexOf"></el-option>
                         </el-select>
-                        <el-input class="chooseWidth1" v-if="basicDataForm.projectionEffect!=''" v-model="basicDataForm.projectionEffectInput" readonly></el-input>
+                        <el-input class="chooseWidth1" v-if="basicDataForm.projectionEffect!=''" v-model="basicDataForm.projectionEffectInput" ></el-input>
                         <el-button type="primary" disabled="disabled" v-if="basicDataForm.projectionEffect!=''" style="margin-left:10px;" @click="projectionEffectClick()" plain>选择</el-button>
                     </el-form-item>
 
@@ -232,7 +232,7 @@
                             <el-option label="包含" value="normalIn"></el-option>
                             <el-option label="不包含" value="normalNotIn"></el-option>
                         </el-select>
-                        <el-input class="chooseWidth1" v-if="basicDataForm.studioType!=''" v-model="basicDataForm.studioTypeInput" readonly></el-input>
+                        <el-input class="chooseWidth1" v-if="basicDataForm.studioType!=''" v-model="basicDataForm.studioTypeInput" ></el-input>
                         <el-button type="primary" disabled="disabled" v-if="basicDataForm.studioType!=''" style="margin-left:10px;" @click="studioTypeClick()" plain>选择</el-button>
                     </el-form-item>
 
@@ -242,7 +242,7 @@
                             <el-option label="包含" value="normalIn"></el-option>
                             <el-option label="不包含" value="normalNotIn"></el-option>
                         </el-select>
-                        <el-input class="chooseWidth1" v-if="basicDataForm.film!=''" v-model="basicDataForm.filmInput" readonly></el-input>
+                        <el-input class="chooseWidth1" v-if="basicDataForm.film!=''" v-model="basicDataForm.filmInput" ></el-input>
                         <el-button type="primary" disabled="disabled" v-if="basicDataForm.film!=''" style="margin-left:10px;" @click="filmClick()" plain>选择</el-button>
                     </el-form-item>
                     <el-form-item label="影片类型:">
@@ -251,7 +251,7 @@
                             <el-option label="包含" value="stringSplitContainOneOperator"></el-option>
                             <el-option label="不包含" value="notStringSplitContainOneOperator"></el-option>
                         </el-select>
-                        <el-input class="chooseWidth1" v-if="basicDataForm.filmType!=''" v-model="basicDataForm.filmTypeInput" readonly></el-input>
+                        <el-input class="chooseWidth1" v-if="basicDataForm.filmType!=''" v-model="basicDataForm.filmTypeInput" ></el-input>
                         <el-button type="primary" disabled="disabled" v-if="basicDataForm.filmType!=''" style="margin-left:10px;" @click="filmTypeClick()" plain>选择</el-button>
                     </el-form-item>
 
@@ -310,7 +310,7 @@
                             <el-option label="包含" value="normalIn"></el-option>
                             <el-option label="不包含" value="normalNotIn"></el-option>
                         </el-select>
-                        <el-input class="chooseWidth1" v-if="basicDataForm.tradeName!=''" v-model="basicDataForm.tradeNameInput" readonly></el-input>
+                        <el-input class="chooseWidth1" v-if="basicDataForm.tradeName!=''" v-model="basicDataForm.tradeNameInput" ></el-input>
                         <el-button type="primary" v-if="basicDataForm.tradeName!=''" style="margin-left:10px;" @click="tradeNameClick()" plain>选择</el-button>
                     </el-form-item>
                     <el-form-item label="卖品单价:" prop="goodsSold">
@@ -337,7 +337,7 @@
                         <el-option label="包含" value="normalIn"></el-option>
                         <el-option label="不包含" value="normalNotIn"></el-option>
                     </el-select>
-                    <el-input class="chooseWidth1" v-if="basicDataForm.payType!=''" v-model="basicDataForm.payTypeInput" readonly></el-input>
+                    <el-input class="chooseWidth1" v-if="basicDataForm.payType!=''" v-model="basicDataForm.payTypeInput" ></el-input>
                     <el-button type="primary" v-if="basicDataForm.payType!=''" style="margin-left:10px;" @click="payTypeClick()" plain>选择</el-button>
                 </el-form-item>
                 <el-form-item label="首充金额:" v-if="basicDataForm.activityType==27">

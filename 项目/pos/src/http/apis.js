@@ -38,14 +38,17 @@ export const findCart = (data) => Axios.get(['saleBill/findCart'], data).then(re
 export const saveSaleBill = (data) => Axios.get(['saleBill/saveSaleBill'], data).then(res => res.data)
 export const delTicket = (data) => Axios.post(['saleBill/delGoods'], data).then(res => res.data)
 export const clearAllTicket = (data) => Axios.dele(['saleBill/empty'], data).then(res => res.data)
+export const onlyClearSeats = (data) => Axios.dele(['saleBill/emptySeat'], data).then(res => res.data)
 export const changeTicketCategory = (data) => Axios.post(['saleBill/updateTicketType'],data).then(res => res.data)
+export const replaceGood = (data) => Axios.post(['productExhibition/getComboReplace', 'http://192.168.101.89:2302/'], data).then(res => res.data)
 //获取支付方式
 export const payType = (data) => Axios.get(['payType/findAll'], data).then(res=> res.data)
 //支付接口
 export const payIt= (data) => Axios.post(['csm/pay'], data).then(res => res.data)
 //结算接口
 export const settleIt = (data) => Axios.post(['saleBillGoods/settlement'], data).then(res => res.data)
-
+//同步流水
+export const syncFlow = (data) => Axios.get(['saleBillGoods/orderflow'], data).then(res => res.data)
 
 
 //获取退货信息
@@ -72,7 +75,13 @@ export const posticketGetTicket = data => Axios.post(['posticket/getTicket'],dat
 export const extractFund = data => Axios.post(['extractFund'],data).then( res => res.data )
 
 //卖品菜单
-export const productExhibitionClassIfy = data => Axios.post(['productExhibition/classIfy/'+data.cinemaUid,'http://192.168.101.89:2302/']).then( res => res.data )
+export const productExhibitionClassIfy = data => Axios.post(['productExhibition/classIfy'],data).then( res => res.data )
 
 //卖品商品列表
-export const productExhibitionHomeDefault =  data => Axios.post(['productExhibition/homeDefault/'+data.cinemaUid,'http://192.168.101.89:2302/']).then( res => res.data )
+export const productExhibitionHomeDefault =  data => Axios.post(['productExhibition/homeDefault'],data).then( res => res.data )
+//修改密码
+export const changePassword = data => Axios.post(['/changePassword'],data).then( res => res.data )
+//注销
+export const userLogout = data => Axios.get(['/user/logout'],data).then( res => res.data )
+//授权接口
+export const userAuthorize = data => Axios.formDataPost(['user/authorize'],data).then( res => res.data ) 

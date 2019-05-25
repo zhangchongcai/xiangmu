@@ -53,7 +53,7 @@
           <el-table-column prop="payStr" label="支付" ></el-table-column>
           <el-table-column prop="totalPrice" label="合计(元)" width="80"></el-table-column>
           <el-table-column prop="reportStatus" label="上报状态" width="80"></el-table-column>
-          <el-table-column prop="applyStatusStr" label="受理状态" width="80" ></el-table-column>
+          <el-table-column prop="applyStatusStr" label="受理状态" width="120" ></el-table-column>
           <el-table-column  label="操作" width="50">
             <template slot-scope="scope">
               <i class="iconfont iconshanchu" :class="!scope.row.planUid ? 'invalid' : ''" @click="delItem(scope.row.planUid ? true:false,scope.$index)"></i> 
@@ -69,7 +69,7 @@
     </div>
     <div class="footButtomLayer">
       <el-button size="medium" @click="$router.go(-1)">关闭</el-button>
-      <el-button size="medium" type="primary" @click="refer" >上报补登</el-button>
+      <el-button size="medium" type="primary" @click="refer" :loading="loading">上报补登</el-button>
     </div>
     <el-dialog title="操作提示" :visible.sync="visible" width="30%">
       <div class="dialogContent">
@@ -95,11 +95,6 @@ export default {
     labelInput,
     dateInput,
   },
-  computed:{
-    dateStr(){
-      return `${this.date.getFullYear()}-${this.date.getMonth()+1 >9 ?this.date.getMonth()+1:'0'+(this.date.getMonth()+1)}-${this.date.getDate() >9 ? this.date.getDate():'0'+this.date.getDate()}`
-    }
-  },
   data(){
     return{
       date:new Date(),
@@ -118,6 +113,7 @@ export default {
       tableData3: [],
       multipleSelection: [],
       applyStatusStrs:['','不需要审核','未受理','受理中','受理成功','受理失败'],
+      loading:false,
     }
   },
   computed:{
@@ -136,6 +132,9 @@ export default {
         num += Number(item.totalPrice)
       })
       return num.toFixed(2)
+    },
+    dateStr(){
+      return `${this.date.getFullYear()}-${this.date.getMonth()+1 >9 ?this.date.getMonth()+1:'0'+(this.date.getMonth()+1)}-${this.date.getDate() >9 ? this.date.getDate():'0'+this.date.getDate()}`
     }
   },
   async mounted(){
@@ -149,7 +148,7 @@ export default {
       },
       async getSelectData(){
         const data = await saleBillAppendSaleQuerySessionUnSalable({
-          date:'2019-03-30'
+          date:this.dateStr,
         })
         if(data.code == 200){
           data.data.map((item,index)=>{
@@ -181,7 +180,9 @@ export default {
         this.tableData3 = data.data;
       },
       dateChange(date){
-        console.log(date)
+        this.value = '';
+        this.subValue = '';
+        this.getSelectData();
       },
       rowClassName({row, rowIndex}){
         let className = rowIndex%2 ? 'posRowOdd' : 'posRowEven';
@@ -235,9 +236,13 @@ export default {
       },
       async refer(){
         let referArr = this.tableData3.filter( item => item.planUid )
-        console.log(referArr);
+        if(!referArr.length) return this.$message.warning('请先添加上报影票!');
+        this.loading = true
         const data = await saleBillAppendSave(referArr)
-        console.log(data);
+        this.loading = false
+        if(data.code != 200) return this.$message.error(data.msg);
+        this.getTabelDate();
+        this.$message.success(data.msg);
       },
       delItem(type,index){
         if(type){

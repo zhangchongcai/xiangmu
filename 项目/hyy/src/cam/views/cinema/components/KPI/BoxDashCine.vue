@@ -292,7 +292,7 @@ export default {
       let tool1 = BoxKPIvalueCine.timeRate, tool2 = BoxKPIvalueCine.boxOfficeRate
       
       //取值title
-      this.BoxRate = BoxKPIvalueCine.boxOfficeTarget
+      this.BoxRate = BoxKPIvalueCine.boxOfficeMonthToNow
       this.BoxKPItotal = BoxKPIvalueCine.boxOfficeCurrent
       //从新复制
       this.gaugeData = {

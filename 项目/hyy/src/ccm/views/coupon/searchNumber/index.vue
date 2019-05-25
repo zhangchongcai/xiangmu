@@ -20,7 +20,7 @@
 
     <!-- 表格 -->
     <section class="table-section">
-        <el-table :data="tableConfig.data" style="width: 100%">
+        <el-table :data="tableConfig.data" style="width: 100%" >
             <template v-for="(item,index) in tableConfig.title">
                 <el-table-column :key="index" v-if="item.prop && !item.hasTemplate" :prop="item.prop" :label="item.label" :width="item.width" show-overflow-tooltip :fixed="item.fixed"></el-table-column>
                 <el-table-column :key="index" v-else-if="item.hasTemplate" :prop="item.prop" :label="item.label" :width="item.width" show-overflow-tooltip :fixed="item.fixed">
@@ -204,7 +204,9 @@ export default {
         }
     },
     created() {
+
         let applyCode = this.$route.query[`applyCode`];
+        console.log(applyCode)
         if (applyCode) {
             this.searchConfig[0].value = applyCode;
             this.searchParam.applyCode = applyCode;
@@ -232,7 +234,6 @@ export default {
                     showClose: true
                 });
             }
-
             this.$ccmList.queryCodeList(params).then(data => {
                 if (data.flag == 1) {
                     if (data.data) {

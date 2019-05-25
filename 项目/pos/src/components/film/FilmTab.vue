@@ -10,7 +10,7 @@
                 <span class="common-font-size">{{currentDateStr}}</span>
                 <i class="iconfont iconyoujiantouda"></i>
             </div>
-            <div class="right">
+            <div class="right" @click="refreshCurrentOrder">
                 <i class="common-font-size iconfont iconshuaxin"></i>
             </div>
         </div>
@@ -483,6 +483,11 @@ export default {
            this.SHOW_FULL_ORDER()
         },
 
+        //刷新
+        refreshCurrentOrder() {
+            this.$emit('refreshCurrentOrder')
+        },
+
         // handerScroll(direction, ele, innerEle, rate) {
         //     let scrollHeight = this.$refs[ele].scrollHeight
         //     let boxHeight = this.$refs[ele].offsetHeight
@@ -598,7 +603,7 @@ export default {
 <style lang="scss" scoped>
   .film-container {
       width: 100%;
-      height: 100%;
+      height: 75.3vh;
       .film-nav {
          box-sizing: border-box;
          padding: 0 10px;
@@ -645,17 +650,19 @@ export default {
               line-height: 3.4vh;
               text-align: center;
               font-size: $font-size12;
-              @include color('color', $white-color);
+              color: $font-color3;
               cursor: pointer;
               border-radius: 1.7vh;
 
               &:hover {
-                @include color('bgColor'); 
+                background: $blue-color;
+                color: $white-color;
               }
           }
 
           .active {
-               @include color('bgColor'); 
+               background: $blue-color;
+               color: $white-color;
           }
       }
 

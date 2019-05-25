@@ -1,7 +1,19 @@
 <template>
     <div class="open-close-sale">
 
-        <el-dialog title="选择渠道" :visible.sync="dialogVisible" width="76%">
+        <singleCinema
+                ref="frameSingleCinema"
+                :framedialogVisible.sync="singleCinemaVisible"
+                :type="singleCinemaType"
+                :innerData="innerData"
+                @callBackSingle="callBackSingle">
+            <div slot="footerId">
+                <el-button @click="singleCinemaVisible = false">取 消</el-button>
+                <el-button type="primary" @click="$refs.frameSingleCinema.confirmData(), singleCinemaVisible = false">确 定</el-button>
+            </div>
+        </singleCinema>
+
+        <el-dialog title="选择渠道" @close="dialogClose" :visible.sync="dialogVisible" width="76%">
             <el-form :inline="true" :model="searchForm" :label-width="formLabelWidth" size="small">
                 <el-form-item label="渠道类型">
                     <el-select v-model="searchForm.channelNative" placeholder="请选择">
@@ -70,6 +82,9 @@
         </el-dialog>
 
         <el-form :inline="true" :model="formData" class="demo-form-inline search-form" size="small">
+            <el-form-item>
+                <el-button @click="$refs.frameSingleCinema.listAuthCommCinemas(), singleCinemaVisible = true">{{ cinemaName }}</el-button>
+            </el-form-item>
             <el-form-item label="时间范围：">
                 <el-date-picker
                     v-model="date"
@@ -218,7 +233,7 @@
                 show-overflow-tooltip>
                 <template slot-scope="scope">
                     <el-popover trigger="hover" placement="bottom" v-if="scope.row.baseTicketList && scope.row.baseTicketList.length > 0">
-                        <div style="padding: 10px" v-for="item in scope.row.baseTicketList">
+                        <div style="padding: 10px" v-for="(item, index) in scope.row.baseTicketList" :key="index">
                             <span style="display: inline-block; min-width: 70px">{{item.ticketName}}</span>
                             <span>￥{{item.price}}</span>
                         </div>
@@ -231,7 +246,7 @@
                 show-overflow-tooltip>
                 <template slot-scope="scope">
                     <el-popover trigger="hover" placement="bottom" v-if="scope.row.favTicketList && scope.row.favTicketList.length > 0">
-                        <div style="padding: 10px" v-for="item in scope.row.favTicketList">
+                        <div style="padding: 10px" v-for="(item, index) in scope.row.favTicketList" :key="index">
                             <span style="display: inline-block; min-width: 70px">{{item.channelName}}</span>
                             <span>￥{{item.price}}</span>
                         </div>
@@ -253,7 +268,7 @@
                 show-overflow-tooltip>
                 <template slot-scope="scope">
                     <el-popover trigger="hover" placement="bottom" v-if="scope.row.saleChannel && scope.row.saleChannel.length > 0">
-                        <div style="padding: 10px" v-for="item in scope.row.saleChannel">
+                        <div style="padding: 10px" v-for="(item, index) in scope.row.saleChannel" :key="index">
                             <span style="display: inline-block; min-width: 70px">{{item}}</span>
                         </div>
                         <el-button type="text" slot="reference">查看</el-button>
@@ -297,12 +312,24 @@
 <script>
 
     import formatDate from 'ctm/mixins/formatDate'
+    import singleCinema from "frame_cpm/dialogs/cinemaDialog/singleCinema"
+
 
     export default {
         name: "OpenCloseSale",
         mixins: [formatDate],
+        components: {
+            singleCinema
+        },
         data() {
             return {
+                singleCinemaVisible: false,
+                singleCinemaType: 2,
+                innerData: {
+                    id: '',
+                },
+                cinemaName: '',
+
                 openStopFlag: '',
                 channelNatureOptions: [{
                     keyCode: 2,
@@ -375,6 +402,27 @@
         },
         methods: {
 
+            callBackSingle(data) {
+                console.log(data, '-----> data')
+                this.cinemaName = data.data.name
+                this.formData.cinemaUid = data.data.id
+                this.searchForm.cinemaUid = data.data.id
+                this.innerData.id = data.data.id
+
+                this.search()
+
+                // this.baseParam = {
+                //     planDate: this.baseParam.planDate,
+                //     uidCinema: data.data.id
+                // }
+
+            },
+
+            dialogClose() {
+                this.searchForm.channelNative = -1
+                this.searchForm.name = this.searchForm.code = ''
+            },
+
             emptyData() {
                 this.selectedChannel = []
                 this.$refs.multipleTable.clearSelection()
@@ -389,11 +437,12 @@
 
             },
 
-            getBaseChannelList() {
+            getBaseChannelList(cb) {
                 this.$ctmList.getBaseChannelList(this.searchForm).then( res => {
                     console.log(res)
                     if(res.code === 200) {
                         this.gridData = res.data
+                        cb && cb()
                     }else {
                         this.error(res.msg)
                     }
@@ -404,8 +453,8 @@
             toDetail(uid) {
                 console.log(uid)
                 this.$router.push({
-                    path: '/ctm/moviePlan/detail',
-                    query: { mode: 'view', uid }
+                    path: '/ticket/moviePlan/detail',
+                    query: { mode: 'view', uid, referer: encodeURIComponent(this.$route.fullPath) }
                 })
             },
 
@@ -423,7 +472,10 @@
                     return
                 }
                 this.openStopFlag = flag
-                this.dialogVisible = true
+                this.getBaseChannelList( _ => {
+                    this.dialogVisible = true
+                })
+
             },
 
             setChannelStatus() {
@@ -585,6 +637,9 @@
                 if(res.code === 200) {
                     this.formData.cinemaUid = res.data.cinemaUid
                     this.searchForm.cinemaUid = res.data.cinemaUid
+                    this.innerData.id = Number(res.data.cinemaUid)
+                    this.cinemaName = res.data.cinemaName
+
                     this.search()
                     this.getByName()
                     this.findAllHall()

@@ -186,7 +186,7 @@ export default {
       if (tempParam.status) {
         tempParam.status = tempParam.status - 0;
       }
-      this.$api
+      this.$cimList
         .queryBigClass(tempParam)
         .then(resData => {
           if (resData.code == 200) {
@@ -202,7 +202,7 @@ export default {
     },
     // 回选,新建的时候回填编码
     getBigClass(param) {
-      this.$api.getBigClass(qs.stringify(param)).then(resData => {
+      this.$cimList.getBigClass(qs.stringify(param)).then(resData => {
         if (resData.code == 200) {
           this.changeData.code = resData.data.code;
         }
@@ -210,7 +210,7 @@ export default {
     },
     // 新建
     insertBigClass(param) {
-      this.$api.insertBigClass(qs.stringify(param)).then(resData => {
+      this.$cimList.insertBigClass(qs.stringify(param)).then(resData => {
         if (resData.code == 200) {
           this.onQuery();
         }
@@ -218,7 +218,7 @@ export default {
     },
     // 修改
     updateBigClass(param) {
-      this.$api.updateBigClass(qs.stringify(param)).then(resData => {
+      this.$cimList.updateBigClass(qs.stringify(param)).then(resData => {
         if (resData.code == 200) {
           this.onQuery();
         }
@@ -226,7 +226,7 @@ export default {
     },
     // 停用
     stopBigClass(param) {
-      this.$api.stopBigClass(qs.stringify(param)).then(resData => {
+      this.$cimList.stopBigClass(qs.stringify(param)).then(resData => {
         if (resData.code == 200) {
           this.onQuery();
         }
@@ -234,7 +234,7 @@ export default {
     },
     // 删除
     deleteBigClass(param) {
-      this.$api.deleteBigClass(qs.stringify(param)).then(resData => {
+      this.$cimList.deleteBigClass(qs.stringify(param)).then(resData => {
         if (resData.code == 200) {
           this.onQuery();
         }

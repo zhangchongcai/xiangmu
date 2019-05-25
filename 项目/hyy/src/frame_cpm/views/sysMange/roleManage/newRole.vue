@@ -85,7 +85,8 @@ export default {
       },
       rules:{
         name: [
-            {required: true ,message:'请输入角色名称', trigger: 'blur'},
+            {required: true ,message:'请输入角色名称',trigger: 'blur'},
+            { min: 3, max: 50, message: '长度在 3 到 30 个字符', trigger: 'blur' }
         ],
         status: [
             {required: true ,message:'请选择角色状态', trigger: 'blur'},

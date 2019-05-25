@@ -43,7 +43,7 @@
     methods: {
       getCurrentNode(val){
         this.chooseItem = val || {};
-        console.log(this.chooseItem)
+        // console.log(this.chooseItem)
       },
       confirmSelect(){
         let a = JSON.stringify(this.chooseItem)
@@ -77,10 +77,7 @@
             .getCinemaByParam(Object.assign({},limit))
             .then(data => {
               const treeValue = data.data;
-              console.log(treeValue)
-              // this.data = treeValue
               this.data = changeTreeJson(treeValue.rows);
-              console.log(this.data)
               this.$emit("firstCinema",this.data[6])
               Vue.nextTick( ()=>{
                   setTimeout(() => {
@@ -94,7 +91,7 @@
         }
       },
       renderContent(h, { node, data, store }) {
-        console.log(node, data, store)
+        // console.log(node, data, store)
         if(node.childNodes.length == 0 && data.cinemaUID){
           return (
             <span class="custom-tree-node">

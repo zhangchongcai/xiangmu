@@ -57,7 +57,6 @@ export default {
         font-size:12px;
         border-top:1px solid  #E5E5E5;
         padding-top:10px;
-
        .reset-form{
            width:80%;
            margin:0 auto;

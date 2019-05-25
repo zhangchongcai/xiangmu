@@ -5,7 +5,7 @@ const homeRoutes = [
           title: '销售主页'
         },
         name: 'toHome',
-        component: () => import('views/csmpos/home'),
+        component: () => import('views/csmpos/Home'),
       },
       
       // TODO  补充后续其他栏目 主页

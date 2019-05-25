@@ -1,13 +1,13 @@
 <template>
     <div class="container">
         <div :class="['film-contents', currentFilmId == item.id ? 'selected' : '']" v-for="(item, index) in content" :key="'hall' + index" @click="setFilmId(item.id, item.plan_code, item.allow_single_sold)">
-            <span class="play-time">
+            <span :class="['play-time', currentFilmId == item.id ? 'font-selected' : '']">
                 {{item.show_time.substring(10, 16)}}
             </span>
-            <span class="play-place">
+            <span :class="['play-place', currentFilmId == item.id ? 'font-selected' : '']">
                 {{item.hall_name}}
             </span>
-            <span class="play-sell">
+            <span :class="['play-sell', currentFilmId == item.id ? 'font-selected' : '']">
                 {{"已售" + item.soldnum  + "/" + item.seatnum}}
             </span>
             <i v-show="currentFilmId == item.id" class="iconfont selection-pos iconchangcixuanzhongzhuangtai"></i>
@@ -90,6 +90,10 @@ export default {
                 .play-place, .play-sell {
                     font-size: $font-size12;
                     color: $font-color6;
+                }
+
+                .font-selected {
+                    color: $font-color-blue;
                 }
         }
 

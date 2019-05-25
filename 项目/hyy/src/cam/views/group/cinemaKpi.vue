@@ -2,7 +2,7 @@
   <div class="sale-content-wrap">
     <div class="header-fixed">
       <el-breadcrumb separator="/" class="reset-bread" separator-class="el-icon-arrow-right">
-        <el-breadcrumb-item :to="{ path: '/group/home' }">
+        <el-breadcrumb-item :to="{ path: '/analysis/new/home' }">
           <span class="text-gray">经营决策</span>
         </el-breadcrumb-item>
         <el-breadcrumb-item>
@@ -10,26 +10,44 @@
         </el-breadcrumb-item>
       </el-breadcrumb>
       <div class="time-wrap">
-        <div class="time-item">
-          <label class="label-title">
-            时间选择：
-              <el-date-picker 
-                size="small"
-                v-model="time"
-                type="month"
-                placeholder="选择月"
-                @change="changeTime">
-              </el-date-picker>
-          </label>
-        </div>
-        <div class="time-item">
-          <label class="label-title">
-            影院名称：
-            <el-input size="small" style="width:200px" v-model="cinemaName"></el-input>
-          </label>
-          <el-button type="primary" size="mini" style="margin-left:30px" @click="search">查询</el-button>
-        <el-button type="primary" size="mini" style="margin-left:30px" @click="search">导入KPI</el-button>
-        </div>
+        <el-row>
+          <el-col :span="24">
+            <div class="time-item">
+                <label class="label-title">
+                  时间选择：
+                    <el-date-picker 
+                      size="small"
+                      v-model="time"
+                      type="month"
+                      placeholder="选择月"
+                      @change="changeTime">
+                    </el-date-picker>
+                </label>
+            </div>
+            <div class="time-item">
+              <label class="label-title">
+                影院名称：
+                <el-input size="small" style="width:200px" v-model="cinemaName"></el-input>
+              </label>
+              <el-button type="primary" size="mini" style="margin-left:30px" @click="search">查询</el-button>
+              <el-button type="primary" size="small" @click="downTemplate">模版下载</el-button>
+              <div style="display:inline-block;margin-left:16px">
+                <el-upload style="display:inlineblock"
+                    :show-file-list="false"
+                    class="upload-demo"
+                    action="http://apidev.oristarcloud.com/analysis/cinemaManage/uploadCinemaKpi"
+                    :data="uploadData"
+                    name="excel"
+                    :on-success="uploadSuccess"
+                    :on-error="uploadError"
+                    :before-upload="beforeUpload"
+                  >
+                    <el-button size="small" type="primary">导入KPI</el-button>
+                  </el-upload>
+               </div>
+            </div>
+          </el-col>
+        </el-row>
       </div>
     </div>
     <div class="section">
@@ -42,7 +60,7 @@
       <div class="section-content">
         <div class="reset-table">
           <el-table border :data="tableData">
-            <el-table-column prop="id" label="专资编码"  min-width="90" fixed></el-table-column>
+            <el-table-column prop="cinemaCode" label="专资编码"  min-width="90" fixed></el-table-column>
             <el-table-column prop="cinemaName" label="影院名称"  min-width="180" fixed></el-table-column>
             <el-table-column prop="dateKey" label="月份"  min-width="90"></el-table-column>
             <el-table-column prop="boxOfficeTarget" label="票房收入目标"  min-width="90"></el-table-column>
@@ -64,7 +82,7 @@
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
             :current-page="page"
-            :page-sizes="$pageSizes"
+            :page-sizes="[10,15,30,45,60]"
             :page-size="size"
             layout=" sizes,total,prev, pager, next, jumper"
             :total="total"
@@ -73,7 +91,7 @@
       </div>
     </div>
     <!-- 编辑kpi弹窗 -->
-    <update-cinema-kpi ref="update" :info="info" @updateKpi="updateKpi"> </update-cinema-kpi>
+    <update-cinema-kpi ref="update" @updateKpi="updateKpi"> </update-cinema-kpi>
     <!-- 新建kpi弹窗 -->
     <create-cinema-kpi ref="create" @createKpi="createKpi"></create-cinema-kpi>
   </div>
@@ -81,10 +99,15 @@
 <script>
 import UpdateCinemaKpi from "./components/updateCinemaKpi";
 import CreateCinemaKpi from "./components/createCinemaKpi";
+import config from "frame_cpm/http/config"
 export default {
   components: {UpdateCinemaKpi,CreateCinemaKpi},
   data() {
     return {
+      uploadData:{
+        token:this.$store.state.loginToken
+      },
+      fullscreenLoading:false,
       userId:this.$store.state.loginUser?this.$store.state.loginUser.uid:805852,
       time:null,
       cinemaName:null,
@@ -99,6 +122,25 @@ export default {
     this.getList();
   },
   methods: {
+    // 下载模版
+    downTemplate(){
+      let baseURL = config.baseURL;
+      let downloadUrl = `${baseURL}/analysis/cinemaManage/downloadCinemaKpi?token=${this.$store.state.loginToken}`;
+      window.location.href = downloadUrl
+    },
+    // 上传模版
+    uploadSuccess(response,file,fileList){
+      console.log(data,'success data')
+    },
+    uploadError(err,file,fileList){
+      console.log(err,'errdata')
+    },
+    beforeUpload(file){
+      console.log(file,'before upload file')
+    },
+
+
+
     // 1.影院列表（已设置kpi）
     getList(){
       let params = {
@@ -112,18 +154,27 @@ export default {
       };  
       this.$camList.getCinemaKpi(params).then(response =>{
           let res = response.data;
-          this.tableData = res.cinemaKpiList.list;
-          this.total = res.cinemaKpiList.total;
+          if(res){
+            this.tableData = res.cinemaKpiList.list;
+            this.total = res.cinemaKpiList.total;
+          }
       })
     },
     // 2.新建kpi
     createKpi(info){
       let params = {
-          body:info
+        body:info
       }
       this.$camList.createKpi(params).then(response => {
-        this.$refs.create.handleClose();
-        this.getList()
+        if(response.code == 200){
+          this.$refs.create.handleClose();
+          this.getList()
+        }else{
+          this.$message({
+            type:'warning',
+            message:response.message
+          })
+        } 
       })
     },
     // 3.更新kpi
@@ -173,6 +224,7 @@ export default {
     updateShow(row){
       this.info = row;
       this.info.userId = this.userId,
+      this.$refs.update.infoData = Object.assign({},this.info)
       this.$refs.update.show = true;
     },
     // 分页/大小

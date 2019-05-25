@@ -29,7 +29,11 @@
             <div class="ProgressBoxCoff">
               <div class="title">票房占比</div>
               <div class="el-progress">
-                <el-progress :text-inside="true" :stroke-width="15" :percentage="boxRadio"></el-progress>
+                <el-progress 
+                  :text-inside="true" 
+                  :stroke-width="15" 
+                  :percentage="boxRadio"
+                ></el-progress>
               </div>
             </div>
             <div style="clear:both;"></div>
@@ -40,7 +44,7 @@
                   :text-inside="true"
                   :stroke-width="15"
                   :percentage="sellRadio"
-                  color="rgba(142, 113, 199, 0.7)"
+                  color="rgba(254,130,94, 0.7)"
                 ></el-progress>
               </div>
             </div>
@@ -113,15 +117,11 @@ export default {
   name: "CityBody-detail",
   data() {
     return {
-      boxCount: null,
-      saleCount: null,
-      time: this.$moment(this.$moment(new Date()).add(-1, "day")).format("YYYY-MM-DD"),
-      startTime: this.$moment(new Date())
-        .add(-1, "day")
-        .format("YYYY-MM-DD"),
-      endTime: this.$moment(new Date())
-        .add(-1, "day")
-        .format("YYYY-MM-DD"),
+      boxCount: 0,
+      saleCount: 0,
+      time: this.$moment(this.$moment(new Date()).add(0, "day")).format("YYYY-MM-DD"),
+      startTime: this.$moment(new Date()).add(0, "day").format("YYYY-MM-DD"),
+      endTime: this.$moment(new Date()).add(0, "day").format("YYYY-MM-DD"),
       timeType: "day",
       BoxTotal:0,
       MemberTotal:0,
@@ -197,7 +197,6 @@ export default {
 
       //判断逻辑
       if(newValue.indexOf('.') != -1){
-        console.log('有小数点');
         if(newValue.length < 8){
           return newValue
         }
@@ -211,7 +210,6 @@ export default {
       }
       else
       {
-        console.log('没有小数点');
         if(newValue.length < 5){
           return newValue
         }
@@ -231,7 +229,6 @@ export default {
       let foo = ''
 
      if(newValue.indexOf('.') != -1){
-        console.log('是有小数点');
         if(newValue.length < 8){
           foo = '元'
           return foo
@@ -246,7 +243,6 @@ export default {
         }
       }
       else{
-        console.log('没有小数点');
         if(newValue.length < 5){
           foo = '元'
           return foo
@@ -302,13 +298,13 @@ export default {
       if (num < 10000) {
           showNum = `${num}${company}`
       } 
-      if (num > 10000 && num < 100000000) {
+      if (num >= 10000 && num < 100000000) {
           showNum = `${(num/10000).toFixed(2)}万${company}`
       }
       if (num >= 100000000) {
           showNum = `${(num/100000000).toFixed(2)}亿${company}`
       }
-      return showNum
+      return showNum ? showNum : 0
     },
     getquery() {
       this.cityId = Number(this.$route.query.cityId);
@@ -339,55 +335,51 @@ export default {
           }
           else{
             //是天的时候获取KPI
-            if(res.boxOfficeKpiInfo !== null || res.boxOfficeKpiInfo !== undefined){
-
-              this.BoxKPIDataCity = res.boxOfficeKpiInfo;
-              this.$nextTick(()=>{
-                this.$refs.BoxOffice.foo(true);
-              })
-            }
-            else{
+            if(!res.boxOfficeKpiInfo || JSON.stringify(res.boxOfficeKpiInfo) == "{}"){
               this.$nextTick(()=>{
                 this.$refs.BoxOffice.foo(false);
               })
             }
-          }
-
-            if(res.boxOfficeCinemaVO){
-              //票房数据
-              this.BoxOffdetail = res.boxOfficeCinemaVO;
-
-              //取到票房总收入
-              this.Boxincome = res.boxOfficeCinemaVO.boxOffice;
-              this.boxCount = res.boxOfficeCinemaVO.boxOffice;
-            }
-   
-
-            //获取票房收入
-            if(res.boxOfficeCinemaVO){
-               this.BoxTotal = res.boxOfficeCinemaVO.boxOffice;
-            }
-              
-            if(res.boxOfficeCinemaPageInfo){
-              //获取票房table数据
-              res.boxOfficeCinemaPageInfo.list.forEach(item => {
-                item.showNum = this.formatValue(item.boxOffice,'元')
-              })
-              this.BoxTable = res.boxOfficeCinemaPageInfo.list;
-            }
-          
-            //初始化分页数据
-            if(res.boxOfficeCinemaPageInfo){
-              this.initBoxPage = res.boxOfficeCinemaPageInfo.total
-              
+            else{
+              this.BoxKPIData = res.boxOfficeKpiInfo;
               this.$nextTick(()=>{
-                this.$refs.BoxOffice.testFun()
+                this.$refs.BoxOffice.foo(true);
               })
             }
+          }
+          
+          if(res.boxOfficeCinemaVO){
+            //票房数据
+            this.BoxOffdetail = res.boxOfficeCinemaVO;
 
-            //初始化票房首页玫瑰图数据
-            this.getRoseChart(res)
-
+            //取到票房总收入
+            this.Boxincome = res.boxOfficeCinemaVO.boxOffice;
+            this.boxCount = res.boxOfficeCinemaVO.boxOffice;
+          }
+  
+          //获取票房收入
+          if(res.boxOfficeCinemaVO){
+              this.BoxTotal = res.boxOfficeCinemaVO.boxOffice;
+          }
+            
+          if(res.boxOfficeCinemaPageInfo){
+            //获取票房table数据
+            res.boxOfficeCinemaPageInfo.list.forEach(item => {
+              item.showNumCity = this.formatValue(item.boxOffice,'元')
+            })
+            this.BoxTable = res.boxOfficeCinemaPageInfo.list;
+          }
+        
+          //初始化分页数据
+          if(res.boxOfficeCinemaPageInfo){
+            this.initBoxPage = res.boxOfficeCinemaPageInfo.total
+            
+            this.$nextTick(()=>{
+              this.$refs.BoxOffice.testFun()
+            })
+          }
+          //初始化票房首页玫瑰图数据
+          this.getRoseChart(res)
         });
     },
     //卖品
@@ -415,17 +407,16 @@ export default {
           }
           else{
             //KPI
-            if(res.sellGoodsKpiInfo !== null || res.sellGoodsKpiInfo !== undefined){
-              //获取KPI
-              this.SellKPIDataCity = res.sellGoodsKpiInfo;
-
+            if(!res.sellGoodsKpiInfo || JSON.stringify(res.sellGoodsKpiInfo) == "{}"){
               this.$nextTick(()=>{
-              this.$refs.GoodsSell.foo(true);
+                this.$refs.GoodsSell.foo(false);
               })
             }
             else{
+              //获取KPI
+              this.SellKPIDataCity = res.sellGoodsKpiInfo;
               this.$nextTick(()=>{
-                this.$refs.GoodsSell.foo(false);
+                this.$refs.GoodsSell.foo(true);
               })
             }
           }
@@ -447,6 +438,7 @@ export default {
             //取到卖品总收入
             this.Goodsincome = res.sellGoodsCinema.sppPrice;
             this.saleCount = res.sellGoodsCinema.salesVolume;
+            
           }
           
           if(res.sellGoodsCinema.sppPrice){
@@ -524,7 +516,8 @@ export default {
             res.memberCinemaPageInfo.list.forEach(item => {
               item.showNumMember = this.formatPerson(item.columeName,'人')
             })
-            this.MemberTable = res.memberCinemaPageInfo.list;
+            this.MemberTable = res.memberCinemaPageInfo.list; 
+            console.log(this.MemberTable)
           }
 
           //新增会员数
@@ -570,7 +563,6 @@ export default {
     //获取时间类型
     getTimeType(type) {
       this.timeType = type;
-      console.log(this.timeType)
     },
     //改变时间
     changeTime(option) {
@@ -582,9 +574,14 @@ export default {
         this.getMemberData();
         this.getGoodsData();
 
+        this.$refs.BoxOffice.active()
+        this.$refs.GoodsSell.active()
+        this.$refs.Member.active()
+
       }else{
         this.startTime = this.$moment(option).format('YYYY-MM-DD');
-        this.endTime = this.$moment(option).format('YYYY-MM-DD')
+        this.endTime = this.$moment(option).format('YYYY-MM-DD');
+        this.time = this.$moment(option).format('YYYY-MM-DD')
       }
       
     }

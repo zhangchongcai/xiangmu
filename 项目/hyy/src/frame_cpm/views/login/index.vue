@@ -308,7 +308,7 @@
                 _this.$cpmList
                     .LoginApi(paramMap)
                     .then(ret => {
-                        if(ret&&ret.result) {
+                        if(ret&&ret.code==200){
                           localStorage.setItem("token", ret.data.token);
                             localStorage.setItem("user", JSON.stringify(ret.data));
                             _this.$store.commit('updateLoginUser',ret.data)
@@ -336,7 +336,6 @@
                                   }).catch(error=>{
                                   })
                                 });
-
                             } else {
                                 if (_this.checked) {
                                     localStorage.setItem(
@@ -350,6 +349,7 @@
                                 } else {
                                     localStorage.removeItem("userLocation");
                                 }
+                              // this.$router.push('home')
                                 getUrl().then(ret=>{
                                     if(ret.code==200) {
                                       localStorage.setItem('defaultPath',ret.data)
@@ -358,13 +358,12 @@
                                 }).catch(error=>{
                                 })
                             }
-                        }else if(ret.msg){
+                        }
+                        else{
                           _this.error(ret.msg)
-                        }else{
-                          _this.error('服务器内部错误')
                         }
                     })
-                    .catch((error) => {
+                    .catch(() => {
                       _this.error('服务器内部错误');
                     });
             },

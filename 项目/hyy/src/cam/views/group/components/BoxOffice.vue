@@ -38,13 +38,17 @@
         <li @click="MeClick('3')" :class="{active:cur==3}">
           <div>上座率</div>
           <div>
-            <span>{{BoxofficeTop.attendanceRate}}</span>%
+
+            <span>{{BoxofficeTop.attendanceRate | woo}}</span>%
           </div>
         </li>
         <li>
           <div>市场份额</div>
-          <div>
-            <span>{{BoxofficeTop.marketShare}}</span>%
+          <div v-if="BoxofficeTop.marketShare != 0">
+            <span>{{BoxofficeTop.marketShare | woo}}</span>%
+          </div>
+          <div v-else>
+            <span>--</span>
           </div>
         </li>
       </ul>
@@ -64,14 +68,14 @@
               <div slot="content" style="width:300px">
                 <ul id="ulMain">
                   <li>票房收入当日达成 : <span>{{BoxKPIData.boxOfficeCurrent | capitalizeOne}}{{BoxKPIData.boxOfficeCurrent | foo}}</span></li>
-                  <li>环比前一日 : <span :class="[BoxKPIData.boxOfficeChainDay > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[BoxKPIData.boxOfficeChainDay > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{BoxKPIData.boxOfficeChainDay}}%</span></li>
+                  <li>环比前一日 : <span :class="[BoxKPIData.boxOfficeChainDay > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[BoxKPIData.boxOfficeChainDay > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{BoxKPIData.boxOfficeChainDay | woo}}%</span></li>
                   <li>月至今达成 : <span>{{BoxKPIData.boxOfficeMonthToNow | capitalizeOne}}{{BoxKPIData.boxOfficeMonthToNow | foo}}</span></li>
-                  <li>环比上月 : <span :class="[BoxKPIData.boxOfficeChainMonth > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[BoxKPIData.boxOfficeChainMonth > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{BoxKPIData.boxOfficeChainMonth}}%</span></li>
+                  <li>环比上月 : <span :class="[BoxKPIData.boxOfficeChainMonth > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[BoxKPIData.boxOfficeChainMonth > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{BoxKPIData.boxOfficeChainMonth | woo}}%</span></li>
                   <li>本月目标为 : <span>{{BoxKPIData.boxOfficeTarget | capitalizeOne}}</span>{{BoxKPIData.boxOfficeTarget | foo}}</li>
-                  <li>达成率 : <span>{{BoxKPIData.boxOfficeRate}}</span>%</li>
-                  <li>与时间进度差距为 : <span :class="[BoxKPIData.timeRate > 0? 'green':'red']">{{BoxKPIData.timeRate}}%</span></li>
-                  <li>按目前进度,预计月底达成率为 : <span>{{BoxKPIData.boxOfficeExpect}}</span>%</li>
-                  <li>与目标额差距 : <span :class="[BoxKPIData.boxOfficeGap > 0? 'green':'red']">{{BoxKPIData.boxOfficeGap}}%</span></li>
+                  <li>达成率 : <span>{{BoxKPIData.boxOfficeRate | woo}}</span>%</li>
+                  <li>与时间进度差距为 : <span :class="[BoxKPIData.timeRateGap > 0? 'green':'red']">{{BoxKPIData.timeRateGap | woo}}%</span></li>
+                  <li>按目前进度,预计月底达成率为 : <span>{{BoxKPIData.boxOfficeExpect | woo}}</span>%</li>
+                  <li>与目标额差距 : <span :class="[BoxKPIData.boxOfficeGap > 0? 'green':'red']">{{BoxKPIData.boxOfficeGap | woo}}%</span></li>
                 </ul>
               </div>
               <i class="iconfont icon-danchuang-tishi"></i>
@@ -110,14 +114,17 @@
             size="mini" 
             border
             :data="CurrentBoxTableTop" 
+            @sort-change='SortChange'
+            :default-sort = "{prop: 'showNum', order: 'descending'}"
           >
+          
             <el-table-column label="序号" min-width="68" type="index" align="left"></el-table-column>
             <el-table-column prop="name" label="城市名称" min-width="100" align="left">
               <template slot-scope="scope">
                 <span class="color" @click="clickCity(scope.$index, scope.row)">{{ scope.row.name }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="showNum" label="票房收入" min-width="100" align="left" :sortable="true" :sort-method="sortByDate">
+            <el-table-column prop="showNum" label="票房收入" min-width="100" align="left" sortable="custom">
               <template slot-scope="scope">
                 <span>{{ scope.row.showNum}}</span>
               </template>
@@ -126,7 +133,7 @@
               <template slot-scope="scope">
                 <div v-if='scope.row.columePercent != 0'>
                   <span class="iconfont" :class="[scope.row.columePercent > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></span>
-                  <span :class="[scope.row.columePercent > 0? 'green':'red']">{{ scope.row.columePercent }}%</span>
+                  <span :class="[scope.row.columePercent > 0? 'green':'red']">{{ scope.row.columePercent > 0? scope.row.columePercent.toFixed(2) : scope.row.columePercent.toFixed(2).substr(1, 5) }}%</span>
                 </div>
                 <div v-else>
                   <span style="font-size:30px">--</span>
@@ -165,7 +172,7 @@
           class="veRing"
           :data="ChartViewing"
           :settings="categorySettings"
-          :extend="pieExtend"
+          :extend="pieExtendPerson"
           :colors="colors"
         ></ve-pie>
  
@@ -181,6 +188,8 @@
             size="mini" 
             :data="CurrentBoxTableTop" 
             border
+            @sort-change='SortChange'
+            :default-sort = "{prop: 'showNum', order: 'descending'}"
           >
             <el-table-column label="序号" min-width="68" type="index" align="left"></el-table-column>
             <el-table-column prop="name" label="城市名称" min-width="100" align="left">
@@ -188,7 +197,7 @@
                 <span class="color" @click="clickCity(scope.$index, scope.row)">{{ scope.row.name }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="showNum" label="观影人次" min-width="100" align="left" :sortable="true" :sort-method="sortByDate">
+            <el-table-column prop="showNum" label="观影人次" min-width="100" align="left" sortable="custom" >
               <template slot-scope="scope">
                 <span>{{ scope.row.showNum}}</span>
               </template>
@@ -197,7 +206,7 @@
               <template slot-scope="scope">
                 <div v-if='scope.row.columePercent != 0'>
                   <span class="iconfont" :class="[scope.row.columePercent > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></span>
-                  <span :class="[scope.row.columePercent > 0? 'green':'red']">{{ scope.row.columePercent }}%</span>
+                  <span :class="[scope.row.columePercent > 0? 'green':'red']">{{ scope.row.columePercent > 0? scope.row.columePercent.toFixed(2) : scope.row.columePercent.toFixed(2).substr(1, 5) }}%</span>
                 </div>
                 <div v-else>
                   <span style="font-size:30px">--</span>
@@ -247,6 +256,8 @@
             size="mini" 
             :data="CurrentBoxTableTop" 
             border
+            @sort-change='SortChange'
+            :default-sort = "{prop: 'showNum', order: 'descending'}"
           >
             <el-table-column label="序号" min-width="68" type="index" align="left"></el-table-column>
             <el-table-column prop="name" label="城市名称" min-width="100" align="left">
@@ -254,7 +265,7 @@
                 <span class="color" @click="clickCity(scope.$index, scope.row)">{{ scope.row.name }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="showNum" label="平均票价" min-width="100" align="left" :sortable="true" :sort-method="sortByDate">
+            <el-table-column prop="showNum" label="平均票价" min-width="100" align="left" sortable="custom" >
               <template slot-scope="scope">
                 <span>{{scope.row.showNum}}</span>
               </template>
@@ -263,7 +274,7 @@
               <template slot-scope="scope">
                 <div v-if='scope.row.columePercent != 0'>
                   <span class="iconfont" :class="[scope.row.columePercent > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></span>
-                  <span :class="[scope.row.columePercent > 0? 'green':'red']">{{ scope.row.columePercent }}%</span>
+                  <span :class="[scope.row.columePercent > 0? 'green':'red']">{{ scope.row.columePercent > 0? scope.row.columePercent.toFixed(2) : scope.row.columePercent.toFixed(2).substr(1,5) }}%</span>
                 </div>
                 <div v-else>
                   <span style="font-size:30px">--</span>
@@ -312,6 +323,8 @@
            size="mini" 
            :data="CurrentBoxTableTop"
            border
+           @sort-change='SortChange'
+          :default-sort = "{prop: 'showNum', order: 'descending'}"
           >
             <el-table-column label="序号" min-width="68" type="index" align="left"></el-table-column>
             <el-table-column prop="name" label="城市名称" min-width="100" align="left">
@@ -319,7 +332,7 @@
                 <span class="color" @click="clickCity(scope.$index, scope.row)">{{ scope.row.name }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="showNum" label="上座率" min-width="100" align="left" :sortable="true" :sort-method="sortByDate">
+            <el-table-column prop="showNum" label="上座率" min-width="100" align="left" sortable="custom" >
               <template slot-scope="scope">
                 <span>{{ scope.row.showNum}}</span>
               </template>
@@ -328,7 +341,7 @@
               <template slot-scope="scope">
                 <div v-if='scope.row.columePercent != 0'>
                   <span class="iconfont" :class="[scope.row.columePercent > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></span>
-                  <span :class="[scope.row.columePercent > 0? 'green':'red']">{{ scope.row.columePercent }}%</span>
+                  <span :class="[scope.row.columePercent > 0? 'green':'red']">{{ scope.row.columePercent > 0? scope.row.columePercent.toFixed(2) : scope.row.columePercent.toFixed(2).substr(1,5) }}%</span>
                 </div>
                 <div v-else>
                   <span style="font-size:30px">--</span>
@@ -429,6 +442,8 @@ export default {
       "#c4ccd3"
     ];
     return {
+      seq:'',
+      seqType:'',
       CurrentBoxTableTop:JSON.parse(JSON.stringify(this.BoxTableTop)),
       flag:true,
       cur:0,
@@ -513,6 +528,23 @@ export default {
           formatter: '{b0} : {c0}元 , ({d0}%)'
         }
       },
+      pieExtendPerson: {
+        legend: {
+          top: "bottom",
+          width:'350',
+          itemGap: 20,
+          itemWidth: 12,
+          itemHeight: 12,
+          textStyle: {
+            color: "#666",
+            fontSize: 12
+          }
+        },
+        tooltip:{
+          trigger:'item',
+          formatter: '{b0} : {c0}人 , ({d0}%)'
+        }
+      },
       barExtendTwo:{
         tooltip: {
           trigger: 'axis',
@@ -538,6 +570,11 @@ export default {
     }
   },
   filters: {
+    woo(value){
+      if (!value) return ""
+      return value.toFixed(2)
+    },
+    //处理万元单位
     capitalizeOne(value) {
       if (!value) return ""
       let newValue = value.toString();
@@ -545,7 +582,7 @@ export default {
       if(newValue.indexOf('.') != -1){
         
         if(newValue.length < 7){
-          return newValue
+          return Number(newValue + '0').toFixed(2)
         }
         else if(newValue.length >= 7 && newValue.length <= 11){
           return (newValue / 10000).toFixed(2)
@@ -557,7 +594,7 @@ export default {
       else
       {
         if(newValue.length < 5){
-          return newValue
+          return Number(newValue + '.00').toFixed(2)
         }
         else if(newValue.length >= 5 && newValue.length <= 8){
           return (newValue / 10000).toFixed(2)
@@ -565,22 +602,6 @@ export default {
         else if(newValue.length >= 9){
           return ((newValue / 10000) / 10000).toFixed(2)
         }
-      }
-    },
-    //处理万人计算保留两位小数
-    capitalizePerson(value) {
-      if (!value) return ""
-      let newValue = value.toString();
-
-      if(newValue.length < 5){
-        return newValue
-      }
-      else if(newValue.length >= 5 && newValue.length <= 8){
-
-        return (newValue / 10000).toFixed(2)
-      }
-      else if(newValue.length >= 9){
-        return ((newValue / 10000) / 10000).toFixed(2)
       }
     },
     //处理万元计算
@@ -619,6 +640,22 @@ export default {
         }
       }
     },
+    //处理万人计算保留两位小数
+    capitalizePerson(value) {
+      if (!value) return ""
+      let newValue = value.toString();
+
+      if(newValue.length < 5){
+        return newValue
+      }
+      else if(newValue.length >= 5 && newValue.length <= 8){
+
+        return (newValue / 10000).toFixed(2)
+      }
+      else if(newValue.length >= 9){
+        return ((newValue / 10000) / 10000).toFixed(2)
+      }
+    },
     //处理万人单位计算
     too(value){
       if (!value) return ""
@@ -638,7 +675,7 @@ export default {
         too = '亿人'
         return too
       }
-    }
+    } 
   },
   watch: {
     BoxTableTop(val){
@@ -646,17 +683,16 @@ export default {
     }
   },
   methods: {
-    sortByDate(obj1, obj2) {
-      let val1 = obj1.deadline
-      let val2 = obj2.deadline
-      return val1 - val2
+    active(){
+      this.cur = 0
+      this.currentPage = 1
     },
     formatValue(num, company) {
       let showNum
       if (num < 10000) {
           showNum = `${num.toFixed(2)}${company}`
       } 
-      if (num > 10000 && num < 100000000) {
+      if (num >= 10000 && num < 100000000) {
           showNum = `${(num/10000).toFixed(2)}万${company}`
       }
       if (num >= 100000000) {
@@ -669,7 +705,7 @@ export default {
       if (num < 10000) {
           showNum = `${num}${company}`
       } 
-      if (num > 10000 && num < 100000000) {
+      if (num >= 10000 && num < 100000000) {
           showNum = `${(num/10000).toFixed(2)}万${company}`
       }
       if (num >= 100000000) {
@@ -690,61 +726,169 @@ export default {
         if(this.BoxType){
           //调用票房首页指标数据
           this.getBoxOfficeTab('box_office');
-          //调用票房首页分页数据
-          this.getBoxPages('box_office');
         }
       }
       else if(val === '1'){
         if(this.BoxType){
          //调用观影人次指标数据
          this.getBoxOfficeTab('audience_count');
-         //调用观影人次分页数据
-         this.getBoxPages('audience_count',);
-         
-         
         }
       }
       else if(val === '2'){
          if(this.BoxType){
           //调用平均票价指标数据
           this.getBoxOfficeTab('avg_ticket_price');
-          //调用平均票价分页数据
-          this.getBoxPages('avg_ticket_price');
-         
          }
       }
       else if(val === '3'){
         if(this.BoxType){
           //调用上座率票价指标数据  
           this.getBoxOfficeTab('attendance_rate');
-          //调用上座率票价分页数据
-          this.getBoxPages('attendance_rate');
          }
+      }
+    },
+    //排序事件
+    SortChange(column){
+      if(column.order === 'descending'){
+        this.seq = 'DESC'
+        this.$camList.BoxPager({
+          body: {
+            groupId: 44,
+            columnType: this.BoxType,
+            startDate: this.startDate,
+            endDate: this.endDate,
+            dateType: this.timeType,
+            pageSize: this.pageSize,
+            pageNo: this.currentPage,
+            seq:this.seq
+          }
+        })
+        .then(response => {
+          let res = response.data;
+          
+          if(this.BoxType === 'box_office'){
+            //判断票房收入的
+            if(res.boxOfficeCinemaPageInfo){
+              res.boxOfficeCinemaPageInfo.list.forEach(item => {
+                item.showNum = this.formatValue(item.columeName,'元')
+              })
+              this.CurrentBoxTableTop = res.boxOfficeCinemaPageInfo.list
+            }
+          }
+          else if(this.BoxType === 'audience_count'){
+            //判断观影人次
+            if(res.boxOfficeCinemaPageInfo){
+              res.boxOfficeCinemaPageInfo.list.forEach(item => {
+                item.showNum = this.formatPerson(item.columeName,'人')
+              })
+              this.CurrentBoxTableTop = res.boxOfficeCinemaPageInfo.list
+            }
+          }
+          else if(this.BoxType === 'avg_ticket_price'){
+            //判断平均票价
+            if(res.boxOfficeCinemaPageInfo){
+              res.boxOfficeCinemaPageInfo.list.forEach(item => {
+                item.showNum = this.formatValue(item.columeName,'元')
+              })
+              this.CurrentBoxTableTop = res.boxOfficeCinemaPageInfo.list
+            }
+          }
+          else if(this.BoxType === 'attendance_rate'){
+            //判断上座率
+            if(res.boxOfficeCinemaPageInfo){
+              res.boxOfficeCinemaPageInfo.list.forEach(item => {
+                item.showNum = this.formatValue(item.columeName,'%')
+              })
+              this.CurrentBoxTableTop = res.boxOfficeCinemaPageInfo.list
+            }
+          }
+          
+        });
+      }
+      else if(column.order === 'ascending'){
+        this.seq = 'ASC'
+        this.$camList.BoxPager({
+          body: {
+            groupId: 44,
+            columnType: this.BoxType,
+            startDate: this.startDate,
+            endDate: this.endDate,
+            dateType: this.timeType,
+            pageSize: this.pageSize,
+            pageNo: this.currentPage,
+            seq:this.seq
+          }
+        })
+        .then(response => {
+          let res = response.data;
+           if(this.BoxType === 'box_office'){
+            //判断票房收入的
+            if(res.boxOfficeCinemaPageInfo){
+              res.boxOfficeCinemaPageInfo.list.forEach(item => {
+                item.showNum = this.formatValue(item.columeName,'元')
+              })
+              this.CurrentBoxTableTop = res.boxOfficeCinemaPageInfo.list
+            }
+          }
+          else if(this.BoxType === 'audience_count'){
+            //判断观影人次
+            if(res.boxOfficeCinemaPageInfo){
+              res.boxOfficeCinemaPageInfo.list.forEach(item => {
+                item.showNum = this.formatPerson(item.columeName,'人')
+              })
+              this.CurrentBoxTableTop = res.boxOfficeCinemaPageInfo.list
+            }
+          }
+          else if(this.BoxType === 'avg_ticket_price'){
+            //判断平均票价
+            if(res.boxOfficeCinemaPageInfo){
+              res.boxOfficeCinemaPageInfo.list.forEach(item => {
+                item.showNum = this.formatValue(item.columeName,'元')
+              })
+              this.CurrentBoxTableTop = res.boxOfficeCinemaPageInfo.list
+            }
+          }
+          else if(this.BoxType === 'attendance_rate'){
+            //判断上座率
+            if(res.boxOfficeCinemaPageInfo){
+              res.boxOfficeCinemaPageInfo.list.forEach(item => {
+                item.showNum = this.formatValue(item.columeName,'%')
+              })
+              this.CurrentBoxTableTop = res.boxOfficeCinemaPageInfo.list
+            }
+          }
+        });
       }
     },
     // 初始页currentPage、初始每页数据数pagesize和数据data
     handleCurrentChange(val){
       this.currentPage = val
-
       //调用票房首页分页数据
       if(this.BoxType === 'box_office'){
-        this.getBoxPages('box_office',this.currentPage)
+        this.getBoxPages('box_office',this.currentPage,this.seqType)
       }
       if(this.BoxType === "audience_count"){
         //调用观影人次分页数据
-        this.getBoxPages('audience_count',this.currentPage)
+        this.getBoxPages('audience_count',this.currentPage,this.seqType)
       }else if(this.BoxType === "avg_ticket_price"){
         //调用平均票价分页数据
-        this.getBoxPages('avg_ticket_price',this.currentPage)
+        this.getBoxPages('avg_ticket_price',this.currentPage,this.seqType)
       }else if(this.BoxType === "attendance_rate"){
         //调用上座率票价分页数据
-        this.getBoxPages('attendance_rate',this.currentPage)
+        this.getBoxPages('attendance_rate',this.currentPage,this.seqType)
       }
     },
     //票房分页公用组件
-    getBoxPages(val,currentPage){
+    getBoxPages(val,currentPage,seq){
       this.currentPage = currentPage ? currentPage : 1;
       this.BoxType = val;
+
+      if(this.seq === 'DESC'){
+        this.seqType = this.seq
+      }
+      else if(this.seq === 'ASC'){
+        this.seqType = this.seq
+      }
     
       this.$camList.BoxPager({
           body: {
@@ -754,7 +898,8 @@ export default {
             endDate: this.endDate,
             dateType: this.timeType,
             pageSize: this.pageSize,
-            pageNo: this.currentPage
+            pageNo: this.currentPage,
+            seq:this.seqType
           }
         })
         .then(response => {
@@ -780,13 +925,13 @@ export default {
              item.showNum = this.formatValue(item.columeName,'%')
             })
           }
-          
-            this.CurrentBoxTableTop = res.boxOfficeCinemaPageInfo.list
+          this.CurrentBoxTableTop = res.boxOfficeCinemaPageInfo.list
         });
     },
     //票房指标切换接口
-    getBoxOfficeTab(val) {
+    getBoxOfficeTab(val,currentPage) {
       this.BoxType = val  
+      this.currentPage = currentPage ? currentPage : 1
       this.$camList.SwitchBoxOfficeTab({
         body: {
           groupId: 44,
@@ -803,8 +948,7 @@ export default {
         let res = response.data;
         if(this.BoxType === "box_office"){
           //获取KPI
-          let ResKPI = res.boxOfficeKpiInfo;
-          this.BoxKPIData = ResKPI
+          this.BoxKPIData = res.boxOfficeKpiInfo;
         }
         else if(this.BoxType === "audience_count"){
           res.boxOfficeCinemaPageInfo.list.forEach(item => {
@@ -843,7 +987,7 @@ export default {
         let foo = ChartsDataY.map(item => {
           return {
             name: item.movieName,
-            value: item.boxOffice
+            value: item.audienceCount
           };
         });
         this.ChartViewing.columns = ["name", "value"];
@@ -882,11 +1026,11 @@ export default {
         this.ChartRate.rows = foo;
       }
     },
+    //路由跳转
     clickCity(index, row) {
       let cityId = row.cityId;
       this.$router.push({
-        // path: "/area/home",
-        name: '城市体首页',
+        path: "/analysis/area/home",
         query: {
           cityId: cityId
         }
@@ -906,7 +1050,6 @@ export default {
 
 <style lang="scss" scoped>
 #ulMain{
-  width:250px;
   list-style-type:none;
   padding:0px;
   margin:0px;
@@ -1099,8 +1242,10 @@ export default {
 .icon-neiye-xiajiangjiantou{
   color:red;
 }
-.el-table .cell > .color:hover{
+.el-table .cell > .color{
   color:#3b74ff;
+}
+.el-table .cell > .color:hover{
   cursor:pointer;
 }
 .green{

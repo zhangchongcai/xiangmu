@@ -1,6 +1,18 @@
 <template>
     <div class="manage">
 
+        <singleCinema
+                ref="frameSingleCinema"
+                :framedialogVisible.sync="singleCinemaVisible"
+                :type="singleCinemaType"
+                :innerData="innerData"
+                @callBackSingle="callBackSingle">
+            <div slot="footerId">
+                <el-button @click="singleCinemaVisible = false">取 消</el-button>
+                <el-button type="primary" @click="$refs.frameSingleCinema.confirmData(), singleCinemaVisible = false">确 定</el-button>
+            </div>
+        </singleCinema>
+
         <el-dialog title="复制放映计划" :visible.sync="copyPlanFormVisible">
             <el-form ref="copyPlanForm" :model="copyPlanForm" size="small">
                 <el-form-item label="复制放映日期：" :label-width="formLabelWidth" prop="copyPlanDate">
@@ -36,14 +48,7 @@
 
         <el-form :inline="true" :model="formData" class="demo-form-inline search-form" size="small">
             <el-form-item>
-                <el-select v-model="formData.cinemaUid" @change="cinemaChange" placeholder="请选择">
-                    <el-option
-                        v-for="item in cinemaOptions"
-                        :key="item.cinemaUid"
-                        :label="item.cinemaName"
-                        :value="item.cinemaUid">
-                    </el-option>
-                </el-select>
+                <el-button @click="singleCinemaVisible = true, $refs.frameSingleCinema.listAuthCommCinemas()">{{ cinemaName }}</el-button>
             </el-form-item>
             <el-form-item>
                 <i class="el-icon-arrow-left" @click="changeDate(false)"></i>
@@ -109,10 +114,22 @@
 </template>
 
 <script>
+    import singleCinema from "frame_cpm/dialogs/cinemaDialog/singleCinema"
+
     export default {
         name: "Manage",
+        components: {
+            singleCinema
+        },
         data() {
             return {
+                singleCinemaVisible: false,
+                singleCinemaType: 2,
+                innerData: {
+                    id: '',
+                },
+                cinemaName: '',
+
                 totalHallNum: '',
                 totalSeatNum: '',
                 checkAll: true,
@@ -129,7 +146,6 @@
                     hallList: [],
                     cinemaUid: ''
                 },
-                cinemaOptions: [],
                 formData: {
                     cinemaUid: '',
                     date: new Date()
@@ -139,6 +155,19 @@
             }
         },
         methods: {
+
+            callBackSingle(data) {
+                console.log(data, '-----> data')
+                this.cinemaName = data.data.name
+                this.formData.cinemaUid = data.data.id
+                this.copyPlanForm.cinemaUid = data.data.id
+                this.innerData.id = data.data.id
+
+                this.getListCalendarPlan()
+                this.getCinemaHallSeat()
+
+            },
+
 
             // mode view: 查看, edit: 编辑
             scanPlan(date) {
@@ -340,9 +369,10 @@
             this.$ctmList.getUserInfo().then( res => {
                 console.log(res)
                 if(res.code === 200) {
-                    this.cinemaOptions = [res.data]
                     this.formData.cinemaUid = res.data.cinemaUid
                     this.copyPlanForm.cinemaUid = res.data.cinemaUid
+                    this.innerData.id = Number(res.data.cinemaUid)
+                    this.cinemaName = res.data.cinemaName
 
                     this.getListCalendarPlan()
                     this.getCinemaHallSeat()

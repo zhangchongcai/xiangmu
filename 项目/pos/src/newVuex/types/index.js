@@ -53,6 +53,7 @@ export const GET_CART_DATA = 'GET_CART_DATA' //电影票
 export const GET_CART_GOODSLIST = 'GET_CART_GOODSLIST'
 export const SET_CART_NUMBER = 'SET_CART_NUMBER'
 export const SHOW_CART_KEYBOARD = 'SHOW_CART_KEYBOARD'
+export const CART_SET_GOODS_DATA = 'CART_SET_GOODS_DATA'//卖品
 
 
 //设置
@@ -65,4 +66,11 @@ export const SET_CARD_READER = 'SET_CARD_READER' //读卡器
 export const SET_KEYBOARD = 'SET_KEYBOARD' //密码键盘
 export const SET_FILM_PRINT_OFFSET = 'SET_FILM_PRINT_OFFSET' //影票打印机偏移坐标
 export const SET_COUNTER_TYPE = 'SET_COUNTER_TYPE' //终端售卖商品范围
+
+
+//授权
+export const EMPOWER_SET_SHOW = 'EMPOWER_SET_SHOW'
+export const EMPOWER_SET_TYPE = 'EMPOWER_SET_TYPE'
+export const EMPOWER_SET_USER = 'EMPOWER_SET_USER'
+export const EMPOWER_SET_PASSWORD = 'EMPOWER_SET_PASSWORD'
 

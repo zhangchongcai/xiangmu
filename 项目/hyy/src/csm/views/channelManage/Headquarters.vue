@@ -267,8 +267,6 @@
 </template>
 
 <script>
-    import config from '../../http/config'
-
     export default {
         name: "Headquarters",
         data() {
@@ -446,7 +444,7 @@
             },
 
             setChannelCinema() {
-                this.$csmList.setChannelCinema(JSON.stringify(this.authorizedCinemaData)).then( res => {
+                this.$csmList.setChannelCinema(this.authorizedCinemaData).then( res => {
                     console.log(res)
                     if(res.code === 200) {
                         this.outerVisible = false
@@ -461,27 +459,14 @@
             },
 
             getCinemaTree() {
-                // this.$csmList.getCinemaTree().then( res => {
-                //     console.log(res)
-                //     if(res.code === 200) {
-                //         this.treeData = [res.data]
-                //
-                //     }else {
-                //         this.error(res.msg)
-                //     }
-                //
-                // })
-                this.axios({
-                    method: 'get',
-                    url: `${config.baseURL}/cinema/tree`,
-                }).then( res => {
-                    console.log(res.data)
-                    if(res.data.code === 200) {
-                        this.treeData = [res.data.data]
-
+                this.$ctmList.getCinemaTree().then( res => {
+                    console.log(res)
+                    if(res.code === 200) {
+                        this.treeData = [res.data]
                     }else {
-                        this.error(res.data.msg)
+                        this.error(res.msg)
                     }
+
                 })
 
             },
@@ -494,7 +479,6 @@
                     }else {
                         this.error(res.msg)
                     }
-
                 })
 
             },
@@ -590,27 +574,14 @@
             },
 
             getUserInfo() {
-                // this.$csmList.getUserInfo().then( res => {
-                //     console.log(res)
-                //     if(res.code === 200) {
-                //
-                //
-                //     }else {
-                //         this.error(res.msg)
-                //     }
-                //
-                // })
-                this.axios({
-                    method: 'get',
-                    url: `${config.baseURL}/common/user`,
-                }).then( res => {
-                    console.log(res.data)
-                    if(res.data.code === 200) {
-                        this.cinemaUid = res.data.data.cinemaUid
-
+                this.$ctmList.getUserInfo().then( res => {
+                    console.log(res)
+                    if(res.code === 200) {
+                        this.cinemaUid = res.data.cinemaUid
                     }else {
-                        this.error(res.data.msg)
+                        this.error(res.msg)
                     }
+
                 })
             },
 

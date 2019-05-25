@@ -1,7 +1,7 @@
 import axios from 'axios'; //引入 axios
 import config from './config.js'; //倒入默认配置
 import qs from 'qs'; //序列化数据，视服务端的要求
-import store from '../vuex/index';
+import store from '../newVuex/index';
 import md5 from 'js-md5';
 import {
     MessageBox,
@@ -128,27 +128,17 @@ export default function $axios(options) {
                         // alert(data.msg);
                         Message({
                             message: data.msg,
-                            type: 'error',
-                            center: true,
-                            showClose: false,
-                            customClass: 'hyy-toast',
-                            iconClass: 'icon-danchuang-cuowu iconfont',
-                            duration: 1500
-                        })
+                            type: 'warning'
+                        });
                         window.location.href = '#/login';
                         break;
                     default:
                         // alert(data.msg);
                         Message({
                             message: data.msg,
-                            type: 'error',
-                            center: true,
-                            showClose: false,
-                            customClass: 'hyy-toast',
-                            iconClass: 'icon-danchuang-cuowu iconfont',
-                            duration: 1500
-                        })
-                        return Promise.reject();
+                            type: 'warning'
+                        });
+                        return Promise.reject(data);
                         break;
                 }
                 //若不是正确的返回code，且已登录，就显示错误
@@ -204,7 +194,7 @@ export default function $axios(options) {
                 }
                 console.log(err);
                 //此处使用 element UI 的组件提示
-                // Message.error(`Error:${err}`);
+                Message.error(`Error:${err}`);
                 return Promise.reject(err); //返回接口返回的错误信息
             }
         );

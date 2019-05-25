@@ -7,7 +7,7 @@
 
             <div class="select-info" >
                 <span class="select-info-item" v-for="(item,index) in selectData" :key="index">
-                    {{item}}
+                    {{item.assigneeName}}
                 </span>
             </div>
             <el-button type="success" @click="clearSelectHandler">清除选择</el-button>
@@ -23,58 +23,79 @@
 <script>
   export default {
     props:{
-        showSelectWindow:Boolean,
-        windowType:String
+        showSelectWindow:Boolean,//弹窗状态
+        windowType:String//弹窗类型
     },
     data() {
       return {
-        selectData:[],
-        gridData: [],
-        dialogVisible: this.showSelectWindow,
-        form: {
-          name: '',
-          region: '',
-          date1: '',
-          date2: '',
-          delivery: false,
-          type: [],
-          resource: '',
-          desc: ''
-        },
-        formLabelWidth: '120px'
+        selectData:[],//选中数据
+        gridData: [],//列表数据
+        dialogVisible: this.showSelectWindow,//弹窗状态
       };
     },
     methods:{
+        //关闭弹窗
         close(){
             this.dialogVisible = false
             this.$emit("closeSelcetWindow",false)
         },
+        //提交选中数据
         sumbitRes(){
-            this.$emit("submitData",this.selectData.join("，"))
+            let submitData={
+                assigneeId:"",
+                assigneeName:""
+            }
+            console.log(this.selectData)
+            this.selectData.forEach(item=>{
+
+                if(!submitData.assigneeName){
+                    submitData.assigneeName=item.assigneeName
+                }else{
+                    submitData.assigneeName += (","+item.assigneeName)
+                }
+
+                if(!submitData.assigneeId){
+                    submitData.assigneeId=item.assigneeId
+                }else{
+                    submitData.assigneeId += (","+item.assigneeId)
+                }
+                
+            })
+            console.log(submitData)
+            this.$emit("submitData",submitData)
             this.dialogVisible = false
         },
+        //点击选中数据
         selectItemHandler(row){
             console.log(row)
             let arr=[]
             if(this.selectData.length!=0){
                 let flag= true
                 for(let i=0 ;i<this.selectData.length;i++){
-                    if(this.selectData[i]==row.assigneeName){
+                    if(this.selectData[i].assigneeName==row.assigneeName){
                         flag=false
                         break;
                     }
                 }
                 if(flag){
-                    this.selectData.push(row.assigneeName)
+                    this.selectData.push({
+                        assigneeId:row.assigneeId,
+                        assigneeName:row.assigneeName,
+                    })
                 }
             }else{
-                this.selectData.push(row.assigneeName)
+                this.selectData.push({
+                    assigneeId:row.assigneeId,
+                    assigneeName:row.assigneeName,
+                })
             }
             
         },
+        //清除选择框
         clearSelectHandler(){
             this.selectData=[]
         },
+        //获取用户
         getUserInfo(){
             let params={
                 tenantId:805852,
@@ -99,6 +120,7 @@
                 console.log(err)
             })
         },
+        //获取角色
         getRoleInfo(){
             let params={
                 tenantId:805852,

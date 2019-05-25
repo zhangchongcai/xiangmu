@@ -8,6 +8,9 @@
     </el-breadcrumb> -->
     <div class="searchAdition">
       <el-form :inline="true" class="demo-form-inline search-form" size="small" label-width="90px">
+         <el-form-item label="影院选择:">
+          <el-input v-model="cinemaName" @focus="openCinema()"></el-input>
+        </el-form-item>
         <el-form-item label="订单单号:">
           <el-input v-model="searchAdition.billCode"></el-input>
         </el-form-item>
@@ -109,7 +112,7 @@
           <el-table-column prop="applyStatusType" label="审核状态" width="150" show-overflow-tooltip></el-table-column>
           <el-table-column label="操作" show-overflow-tooltip width="80" fixed="right">
             <template slot-scope="scope">
-              <span class="icon-color" @click="account_add(scope.row.id)">查看</span>
+              <el-button size='small' type="text"  @click="account_add(scope.row)">查看</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -207,7 +210,8 @@
     methods: {
       // 支付方式
       getPayType(){
-        this.$csmList.payType()
+        
+        this.$csmList.payType({cinemaUid:this.searchAdition.cinemaUid})
           .then(data =>{
             if (data && data.code === 200) {
               this.payType = data.data
@@ -218,13 +222,18 @@
           })
       },
       // 订单详情
-      account_add(id) {
-        console.log(id)
-        this.$router.push({path:'detail',query:{id}})
+      account_add(row) {
+        console.log(row)
+        this.$router.push({path:'detail',query:{
+          saleBillUid:row.uid,
+          cinemaUid:row.cinemaUid
+        }})
       },
       //查询
       search() {
-        this.getList();
+        !this.cinemaName ?  this.$alert('请先选择影院', '提示', {
+          confirmButtonText: '确定',
+        }): this.getList() || this.getPayType();
       },
       // 是否高级
       changeHigh() {
@@ -286,22 +295,17 @@
       },
       firstCinema(val){
         // this.$set(this.searchAdition,"cinemaUID",val.cinemaUID)
-        this.searchAdition.cinemaUid = val.cinemaUID;
-        this.searchAdition.cinemaUid &&  this.getList();
+        // this.searchAdition.cinemaUid = val.cinemaUID;
+        // this.searchAdition.cinemaUid &&  this.getList();
       }
     },
     created() {
-      this.getPayType()
+      this.cinemaName && this.getPayType()  // 后台接口想要改变
+      this.cinemaName && this.getList();
     },
     mounted(){
-      // console.log(this.searchAdition.cinemaUID)
-      // this.firstCinema();
-     
+      
     },
-    watch(){
-      searchAdition
-    }
-    
   };
 </script>
 <style lang="scss" scoped>

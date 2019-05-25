@@ -135,7 +135,7 @@
       <!-- {{this.basicUnitData}} -->
       <!-- 采购信息 start-->
       <!-- {{this.$route.query.data}} -->
-      {{this.brandQueryData}}
+      <!-- {{this.brandQueryData}} -->
       <div>
         <div class="sub-tittle">采购信息</div>
         <el-row>
@@ -301,7 +301,7 @@
       </div>
       <!-- 销售信息 end-->
       <div class="submit-box">
-        <el-button type="primary" @click="comSingleSubmit()" v-if="routeQuery.type != 3">确定</el-button>
+        <el-button type="primary" @click="comSingleSubmit()" v-if="routeQuery.type != 3">保 存</el-button>
         <el-button @click="handleCancel">取 消</el-button>
       </div>
     </el-form>
@@ -356,6 +356,7 @@ export default {
       AttributeSkudata:[],
       //页面数据
       queryData: {
+        barCodeUid:"",
         catName:"",
         catUid:"",
         skuUid:"",
@@ -940,6 +941,7 @@ export default {
               this.brandQueryData.list.uid =res.data.brandUid
 
               this.queryData.catUid =res.data.catUid
+              this.queryData.barCodeUid =res.data.barCodeUid
               this.queryData.catName =res.data.catName
               this.queryData.skuUid =res.data.skuUid
               this.queryData.proCode = res.data.code
@@ -1218,7 +1220,7 @@ export default {
           aliasName:this.queryData.aliasName,
           catUid:this.queryData.catUid,
           catName:this.queryData.catName,
-          barCodeUid:this.queryData.skuVoList.barCode,
+          barCode:this.queryData.skuVoList.barCode,
           brandUid:this.brandQueryData.list.uid,
           canSale:this.queryData.canSale,
           classUid:JSON.parse(this.$route.query.data).uid,
@@ -1267,7 +1269,8 @@ export default {
           catUid:this.queryData.catUid,
           skuUid:this.queryData.skuUid,
           aliasName:this.queryData.aliasName,
-          barCodeUid:this.queryData.skuVoList.barCode,
+          barCode:this.queryData.skuVoList.barCode,
+          barCodeUid:this.queryData.barCodeUid,
           brandUid:this.brandQueryData.list.uid,
           canSale:this.queryData.canSale,
           classUid:this.queryData.uid,

@@ -15,7 +15,7 @@
 <script>
 import {mapMutations, mapGetters} from 'vuex'
 import {CLEAR_SELECTION, GET_CART_DATA, GET_CART_BILLCODE, GET_CART_BILLCODEUID, GET_CART_CINEMAUID, RENDER_SELECTION_AFTER_RELEASE} from 'types'
-import {releaseSeat, clearAllTicket, findCart} from 'src/http/apis.js'  //获取全部座位，用来座位布局
+import {releaseSeat, onlyClearSeats, findCart} from 'src/http/apis.js'  //获取全部座位，用来座位布局
 export default {
     props: {
         selectedTickets: {
@@ -54,7 +54,7 @@ export default {
         },
 
         clearSeat() {
-            clearAllTicket({
+            onlyClearSeats({
                 billCode: this.billCode
                 }).then(res => {
                 if(res.code == 200) {
@@ -67,8 +67,8 @@ export default {
                         }).then(res => {
                         if(res.code == 200) {
                             this.CLEAR_SELECTION()
-                            this.GET_CART_BILLCODE('')
-                            this.GET_CART_BILLCODEUID('')
+                            // this.GET_CART_BILLCODE('')
+                            // this.GET_CART_BILLCODEUID('')
                             this.GET_CART_DATA({goodsList:[]})
                             this.RENDER_SELECTION_AFTER_RELEASE(res.data)
                             }else {
@@ -83,7 +83,8 @@ export default {
                         this.$message({
                                         showClose: true,
                                         message: res.msg,
-                                        type: 'error'
+                                        type: 'error',
+                                        customClass: 'global-tip-style'
                                     });
                     }
                 })
@@ -97,17 +98,17 @@ export default {
   .small-sel-container {
         box-sizing: border-box;
         position: fixed;
-        height: 90px;
         overflow: hidden;
         width: 70vw;
         right: 0;
-        bottom: 108px;
+        bottom: 19.8vh;
         display: flex;
         align-items: flex-start;
         justify-content: flex-start;
-        @include seat_rows_bgcolor();
-        padding: 18px;
-        z-index: 10;
+        background-color: #F2F2F2;
+        padding: 1vh 18px;
+        border-radius: 4px;
+        z-index: 90;
     }
     .small-sel-small-seat {
         flex: 0 0 70%;
@@ -119,8 +120,8 @@ export default {
         display: flex;
         justify-content: center;
         align-items: center;
-        width: 88px;
-        height: 24px;
+        width: 8.6vw;
+        height: 3.1vh;
         color: #3b74ff;
         background: #ffffff;
         border: 1px solid #3b74ff;
@@ -142,8 +143,8 @@ export default {
         display: flex;
         justify-content: center;
         align-items: center;
-        width: 72px;
-        height: 24px;
+        width: 7vw;
+        height: 3.1vh;
         color: #ffffff;
         background: #3b74ff;
         font-size: 1vw;

@@ -8,20 +8,17 @@
         label-width="100px"
         label-suffix=":"
       >
-        <el-form-item label="门店名称">
-          <!-- <el-cascader
-            expand-trigger="hover"
-            :options="cinemaOptions"
-            v-model="queryData.cinemaUid"
-            :show-all-levels="false"
-            @change="handleChange"
-          ></el-cascader> -->
+        <el-form-item label="门店名称" class="select-input">
+          <el-input v-model="queryData.cinemaName" placeholder="请选择门店">
+            <i class="el-icon-close el-input__icon" slot="suffix" @click="onCinemalSumit()"></i>
+          </el-input>
+          <el-button @click="selectCinemalDialog">选择</el-button>
         </el-form-item>
         <el-form-item label="终端名称">
           <el-input v-model="queryData.tername" placeholder="请输内容" prefix-icon="el-icon-search"></el-input>
         </el-form-item>
         <el-form-item label="终端编码">
-          <el-input v-model="queryData.rackCode" placeholder="请输内容" prefix-icon="el-icon-search"></el-input>
+          <el-input v-model="queryData.code" placeholder="请输内容" prefix-icon="el-icon-search"></el-input>
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="queryData.status">
@@ -115,13 +112,15 @@
         <el-button type="primary" @click="handleModificationSubmit">确 定</el-button>
       </span>
     </el-dialog>
+    <!-- 选择影院弹窗 -->
+    <cinemal-dialog ref="myCinemalDialog" @onSumit="onCinemalSumit"></cinemal-dialog>
   </div>
 </template>
 
 <script>
 import qs from "qs";
 import mixin from "cim/mixins/cim/paginationConfig.js";
-
+import cinemalDialog from "cim/components/cinemalDialog/cinemaDialog.vue";
 export default {
   mixins: [mixin],
   data() {
@@ -129,6 +128,7 @@ export default {
       //查询数据
       queryData: {
         cinemaUid: "",
+        cinemaName: "",
         tername: "",
         code: "",
         status: "",
@@ -137,7 +137,7 @@ export default {
         page: 1,
         pageSize: 10
       },
-      cinemaOptions:[],
+      cinemaOptions: [],
       //修改终端数据
       changeData: {
         tername: "",
@@ -149,7 +149,7 @@ export default {
       tableColumn: [
         {
           label: "门店名称",
-          key: "address"
+          key: "cinemaName"
         },
         {
           label: "终端名称",
@@ -214,8 +214,8 @@ export default {
     },
     // 查询
     onQuery() {
-      this.getTerminalQueryPage({});
       // console.log(this.queryData);
+      this.getTerminalQueryPage(this.queryData);
     },
     // 获取终端列表
     getTerminalQueryPage(param) {
@@ -235,6 +235,8 @@ export default {
             this.tableData = tempArr;
             this.total = resData.data.total;
             // console.log(tempArr);
+            this.tableLoding = false;
+          } else {
             this.tableLoding = false;
           }
         })
@@ -295,6 +297,20 @@ export default {
 
       this.terminalStatusDialog = false;
     },
+    selectCinemalDialog() {
+      this.$refs.myCinemalDialog.handleDialog(true);
+    },
+    // 选泽门店回调
+    onCinemalSumit(val = []) {
+      if (val.length > 0) {
+        this.queryData.cinemaName = val[0].name;
+        this.queryData.cinemaUid = val[0].cinemaUid;
+      } else {
+        this.queryData.cinemaName = "";
+        this.queryData.cinemaUid = "";
+      }
+      console.log(val);
+    },
     handleSizeChange(val) {
       this.queryData.pageSize = val;
       this.onQuery();
@@ -303,12 +319,20 @@ export default {
       this.queryData.page = val;
       this.onQuery();
     }
+  },
+  components: {
+    cinemalDialog
   }
 };
 </script>
 
 
 <style lang="scss">
+.select-input {
+  .el-input {
+    width: 70%;
+  }
+}
 .change-dialog {
   .el-form--inline .el-form-item {
     width: 100%;

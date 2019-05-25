@@ -201,8 +201,6 @@
           .cell {
             font-size: 12px;
             line-height: 30px;
-            // float: left;
-            // text-align: center;
           }
 
           .el-radio__label {

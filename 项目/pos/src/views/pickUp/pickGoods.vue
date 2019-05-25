@@ -51,9 +51,6 @@ export default {
     }
   },
   mounted(){
-    // this.$nextTick(()=>{
-    //   this.removeTableButtom()
-    // })
     this.getData();
   },
   
@@ -61,7 +58,7 @@ export default {
       async getData(){
         const val = this.$route.query.val
         const data = await posticketGetTicket({
-          getCode:886
+          getCode:val
         })
         console.log(data)
         if(data.code != 200){

@@ -146,6 +146,7 @@
         let limit = {
           current,
           size: this.pageSize,
+          cinemaUid:this.$route.query.cinemaUid
         };
         this.$csmList.getVip(limit)
           .then(data => {
@@ -162,6 +163,7 @@
         let limit = {
           current,
           size: this.pageSize,
+          cinemaUid:this.$route.query.cinemaUid
         };
         this.$csmList.getOtherthing(limit)
           .then(data => {
@@ -177,6 +179,7 @@
         let limit = {
           current,
           size: this.pageSize,
+          cinemaUid:this.$route.query.cinemaUid
         };
         this.$csmList.getCashier(Object.assign({}, limit))
           .then(data => {
@@ -190,7 +193,7 @@
       // 上班登记  
       increaseWorker() {
         let limit = {
-
+          cinemaUid:this.$route.query.cinemaUid
         };
         let vips = this.dynamicValidateForm.domains.slice(0);
         let otherThings = this.dynamicValidateForm.domains2.slice(0);
@@ -312,6 +315,7 @@
       this.getWorker(this.current,);
       this.getVip(this.current,);
       this.getOtherthing(this.current,);
+      console.log(this.$route)
     }
   };
 </script>

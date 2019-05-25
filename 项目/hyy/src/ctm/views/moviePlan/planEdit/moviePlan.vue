@@ -11,14 +11,14 @@
     <div class="window_1" :style="{width: showBan ? 'calc(100% - 183px)' : '100%'}">
         <!-- 影片库 -->
         <filmLibary ref="filmLibary" :films="films" @selectMovie="selectMovie" :width="windowWidth - filmLibary_deleteWidth " :mode="mode"></filmLibary>
-        <div class="window_2" :style="{width: windowWidth - filmScale_deleteWidth + 'px'}">
+        <div class="window_2">
             <!-- 影厅库 -->
             <filmRoom ref="filmRoom" :scrollY="scroll.y" :rooms="rooms" :contentSize="contentSize" @selectRoom="selectRoom" :mode="mode"></filmRoom>
             <div class="window_3" >
                 <!-- 刻度尺 -->
                 <filmScale ref="filmScale" @saveChangeScale="saveChangeScale" :scrollX="scroll.x" :scaleConfig="scaleConfig" :width="windowWidth - filmScale_deleteWidth"></filmScale>
                 <!-- 放映计划 -->
-                <filmPlan ref="filmPlan" @cantEdition="cantEdition" @setMindData="setMindData" @scroll="moviePlanScorll" @cleanMovie="cleanMovie" :width="windowWidth - filmPlan_deleteWidth" :rooms="rooms" :contentSize="contentSize" :selectMovieData="selectMovieData" :baseParam="baseParam" :plan_list="plan_list" :scaleConfig="scaleConfig" @initMoivePlan="initMoivePlan" @copyMovie="selectMovie" :pricePlan="pricePlan" @changeMyData="changeMyData" :mode="mode"></filmPlan>
+                <filmPlan ref="filmPlan" @setMindData="setMindData" @scroll="moviePlanScorll" @cleanMovie="cleanMovie" :width="windowWidth - filmPlan_deleteWidth" :rooms="rooms" :contentSize="contentSize" :selectMovieData="selectMovieData" :baseParam="baseParam" :plan_list="plan_list" :scaleConfig="scaleConfig" @initMoivePlan="initMoivePlan" @copyMovie="selectMovie" :pricePlan="pricePlan" @changeMyData="changeMyData" :mode="mode"></filmPlan>
             </div>
         </div>
         <!-- 标注 -->
@@ -95,11 +95,15 @@ export default {
                 let planData = this.rooms.map(item => [])
                 this.planOriData.forEach((item, i) => {
                     this.films.some(film => {
-                        if (film.movieCode == item.movieCode) {
+                        if (film.movieCode == item.movieCode) { 
                             item.color = film.color
                             item.disversion = film.disversion
                             item.language = film.language
-                            item.timeLong = film.timeLong
+                            if (!item.joinFlag) {
+                                item.timeLong = film.timeLong
+                            } else {
+                                item.movieName = item.joinMovieName
+                            }
                             return true
                         }
                     })
@@ -149,7 +153,8 @@ export default {
                     scene: [],
                     goldScenePer: [],
                     goldScene: []
-                }
+                },
+                loadFlag: false
             },
             /* 刻度尺 - 传入排片 */
             scaleConfig: {
@@ -259,6 +264,7 @@ export default {
     methods: {
         /* 排片发生滚动 */
         moviePlanScorll(data) {
+            console.log(data)
             this.scroll = {
                 x: data.scrollLeft,
                 y: data.scrollTop
@@ -336,14 +342,14 @@ export default {
             }
             editTimeLine(param).then(
                 data => {
-                    let _data = data.data;
+                    let _data = data.data
                     if (_data.tag) {
-                        this.scaleConfig = scaleShowConfig;
+                        this.scaleConfig = scaleShowConfig
                     }
                 }
             ).catch(
                 msg => {
-                    console.log(msg);
+                    console.log(msg)
                 }
             );
         },
@@ -448,6 +454,7 @@ export default {
                                 }
                         })
                         let path = type == 'continuityPlan' ? `consecutivePlan?mode=edit&uid=${uid}` : joinFlag ? `consecutivePlan?mode=${type}&uid=${uid}` : `detail?mode=${type}&uid=${uid}`
+                        path += `&referer=${encodeURIComponent('/ticket/moviePlan/layout?date=' + this.baseParam.planDate)}`
                         this.$router.push({
                                 path
                         })
@@ -474,6 +481,7 @@ export default {
                             if (!item.color) item.color = this.colorBox[0]
                     })
                     this.banData = res.data
+                    this.banData.loadFlag = true
                 }
             })
             // getPlanReference({
@@ -538,20 +546,14 @@ export default {
             //     }
             // })
         },
-        /* 当前用户不具有操作权限提示 */
-        cantEdition() {
-            this.warning('请在编辑放映计划页面中进行编辑！')
-        },
         /* 审核通过/驳货 */
         approvePassPlan(type) {
             this.$refs.filmPlan.approvePassPlan(type);
         },
-        /* 提交审核 */
-        submitReview() {
-            this.$refs.filmPlan.submitReview();
-        },
         changeMyData() {
-            // if ()
+            if (!this.banData.loadFlag) {
+                return
+            }
             // 计算 排片总数 和 黄金场次总数
             let planTotal = this.$refs.filmPlan.plan_rooms.reduce((data, item) => {
                 return data += item.length
@@ -691,13 +693,16 @@ export default {
     .window_2 {
         // min-height: 600px;
         height: calc(100% - 54px);
+        // overflow-y: hidden;
+        // overflow-x: hidden;
+        box-sizing: border-box;
     }
 
     .window_3 {
         float: left;
         width: calc(100% - 128px);
         height: 100%;
-        // overflow-x: scroll;
+        overflow-x: scroll;
     }
 
     ::-webkit-scrollbar {

@@ -32,6 +32,7 @@
           start-placeholder="开始日期"
           end-placeholder="结束日期"
           :picker-options="pickerOptions2"
+          value-format="yyyy-MM-dd"
         >
         </el-date-picker>
       </div>
@@ -87,7 +88,7 @@
             size="small"
             plain
             @click="openDownloadMovie()"
-          >下载至影院库</el-button>
+          >下载影片</el-button>
         </div>
 
       </div>
@@ -145,19 +146,21 @@
         >
         </el-table-column>
         
-        <el-table-column
+        <!-- <el-table-column
           prop="moviedesclanguage"
           label="语言"
         >
-        </el-table-column>
+        </el-table-column> -->
         <el-table-column
           label="最低票价（元）"
           prop="minPrice"
+           width="120"
         >
         </el-table-column>
          <el-table-column
           prop="timeLong"
           label="时长（分钟）"
+           width="100"
         >
         </el-table-column>
         <el-table-column
@@ -192,7 +195,7 @@
           label="影片状态"
         >
         <template slot-scope="scope">
-           <span v-if="new Date().getTime() < new Date(scope.row.dateShowFirst).getTime()">待上映</span>
+           <span v-if="(new Date().getTime() < new Date(scope.row.dateShowFirst).getTime())||!scope.row.dateShowFirst ">待上映</span>
            <span v-else-if="new Date(scope.row.dateShowFirst).getTime() < new Date().getTime() && new Date().getTime() < new Date(scope.row.dateShowOff).getTime()">上映中</span>
            <span v-else>已下映</span>
           </template>
@@ -312,8 +315,8 @@ export default {
         size:self.size || 10,
         current:self.currentPage || 1,
         status:self.status,
-        dateShowFirst:self.value7[0],
-        dateShowOff:self.value7[1],
+        dateShowFirst:self.value7 ?self.value7[0] : '',
+        dateShowOff:self.value7 ? self.value7[1]:'',
       };
       self.$ctmList
         .DownloadmovieList(params)
@@ -410,11 +413,7 @@ export default {
       })
     },
     handleClose(done) {
-        this.$confirm('确认关闭？')
-          .then(_ => {
-            done();
-          })
-          .catch(_ => {});
+        done();
       }
   }
 };

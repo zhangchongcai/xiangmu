@@ -252,8 +252,40 @@ export default {
             currentRow: null
         }
     },
+    watch:{
+        incomeData:{
+            handler: function(newVal,oldVal) {
+                console.log(newVal)
+                let param={
+                    applicableChannel:this.incomeData.applicableChannel||"",
+                    cinemaCodes:this.incomeData.cinemaCodes||"",
+                    incomeCinemaName:this.incomeData.incomeCinemaName||"",
+                    couponType:this.incomeData.couponType,
+                    salesMode:this.incomeData.salesMode||"",
+                    validate:this.incomeData.validate||"",
+                    pageNo:this.pagination.currentPage,
+                    pageSize:this.pagination.size   
+                }
+                this.search(param)
+            },
+        deep: true,
+          
+        }
+      
+    },
     mounted() {
-        this.search();
+        let param={
+            applicableChannel:this.incomeData.applicableChannel||"",
+            cinemaCodes:this.incomeData.cinemaCodes||"",
+            incomeCinemaName:this.incomeData.incomeCinemaName||"",
+            couponType:this.incomeData.couponType,
+            salesMode:this.incomeData.salesMode||"",
+            validate:this.incomeData.validate||"",
+            pageNo:this.pagination.currentPage,
+            pageSize:this.pagination.size   
+        }
+      
+        this.search(param);
     },
     methods: {
         /**

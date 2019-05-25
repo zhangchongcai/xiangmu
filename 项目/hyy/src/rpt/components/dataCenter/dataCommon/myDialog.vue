@@ -105,6 +105,7 @@ export default {
   },
   watch: {
     isShow(newVal, oldVal) {
+      console.log(newVal, oldVal)
       this.visibility = newVal;
     }
   }
@@ -174,7 +175,8 @@ $buttunHeight: 32px;
     .close-icon {
       color: $closeIconColor;
       i {
-        font-size: $titleFontSize;
+        width: 8px;
+        height: 8px;
       }
     }
     .close-icon:hover {
@@ -188,8 +190,8 @@ $buttunHeight: 32px;
     border: none;
   }
   .dialog-content {
-    overflow-x: hidden;
-    overflow-y: scroll;
+    // overflow-x: hidden;
+    // overflow-y: scroll;
   }
   .bottom-hr {
     position: absolute;

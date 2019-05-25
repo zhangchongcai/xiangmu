@@ -9,28 +9,16 @@
         label-suffix=":"
       >
         <el-form-item label="商品名称">
-          <el-input
-            v-model="GoodsListQueryData.merName"
-            placeholder="请输内容"
-          ></el-input>
+          <el-input v-model="GoodsListQueryData.merName" placeholder="请输内容"></el-input>
         </el-form-item>
         <el-form-item label="商品编码">
-          <el-input
-            v-model="GoodsListQueryData.merCode"
-            placeholder="请输内容"
-          ></el-input>
+          <el-input v-model="GoodsListQueryData.merCode" placeholder="请输内容"></el-input>
         </el-form-item>
         <el-form-item label="sku编码">
-          <el-input
-            v-model="GoodsListQueryData.skuCode"
-            placeholder="请输内容"
-          ></el-input>
+          <el-input v-model="GoodsListQueryData.skuCode" placeholder="请输内容"></el-input>
         </el-form-item>
         <el-form-item label="速记代码">
-          <el-input
-            v-model="GoodsListQueryData.shorthandCode"
-            placeholder="请输内容"
-          ></el-input>
+          <el-input v-model="GoodsListQueryData.shorthandCode" placeholder="请输内容"></el-input>
         </el-form-item>
         <el-form-item label="商品类型">
           <el-select v-model="GoodsListQueryData.merType">
@@ -57,7 +45,7 @@
     <div class="common-left">
       <el-tree
         :data="proThreedata"
-        default-expand-all
+        :default-expanded-keys="defaultExpanded"
         ref="proTree"
         node-key="uid"
         :props="proThreedefaultProps"
@@ -94,7 +82,11 @@
             <template slot-scope="{row,$index}">
               <el-button type="text" size="small" @click.stop="proSeeEvent($index, row)">查看</el-button>
               <el-button type="text" size="small" @click.stop="proModifyEvent($index, row)">修改</el-button>
-              <el-button type="text" size="small" @click.stop="proStopEvent($index, row)">{{row.canSaleType == 1 ? "禁止":"允许"}}</el-button>
+              <el-button
+                type="text"
+                size="small"
+                @click.stop="proStopEvent($index, row)"
+              >{{row.canSaleType == 1 ? "禁止":"允许"}}</el-button>
               <el-button type="text" size="small" @click.stop="proDelEvent($index, row)">删除</el-button>
             </template>
           </el-table-column>
@@ -119,13 +111,13 @@
       :visible.sync="newProDialog"
       width="600px"
     >
-    <!-- {{this.newProtitleArr}} -->
+      <!-- {{this.newProtitleArr}} -->
       <div class="newPro-box">
         <div class="tips">请先查找是否已存在相同商品，避免重复新建。或从标准商品库中选择您要的商品，添加到系统中使用。</div>
         <div class="title">商品类型：{{this.newProtitleArr.name}}</div>
         <div class="selectName">请选择商品分类</div>
         <div class="newProTree">
-          <el-tree :data="proThreedata" :props="proThreedefaultProps" @node-click="addProNodeClick"></el-tree>
+          <el-tree :data="proThreedata" :props="proThreedefaultProps"  node-key="uid" :default-expanded-keys="defaultExpanded" @node-click="addProNodeClick"></el-tree>
         </div>
       </div>
       <span slot="footer">
@@ -335,31 +327,31 @@ export default {
               data: JSON.stringify(this.newProtitleArr)
             });
             break;
-          // 原材料
-          case "5":
-            return this.comMaterialProPage({
-              type: 1, //1新建，2修改，3查看
-              data: JSON.stringify(this.newProtitleArr)
-            });
-            break;
           // 合成品
           case "2":
             this.comPositeJump({
-              type: '1', //1新建，2修改，3查看
-              data: JSON.stringify(this.newProtitleArr)
-            });
-            break;
-          // 套餐
-          case "3":
-            this.setMealJump({
-              type: '1', //1新建，2修改，3查看
+              type: "1", //1新建，2修改，3查看
               data: JSON.stringify(this.newProtitleArr)
             });
             break;
           // 服务商品
-          case "4":
+          case "3":
             this.serveGoodJump({
-              type: '1', //1新建，2修改，3查看
+              type: "1", //1新建，2修改，3查看
+              data: JSON.stringify(this.newProtitleArr)
+            });
+            break;
+          // 套餐
+          case "4":
+            this.setMealJump({
+              type: "1", //1新建，2修改，3查看
+              data: JSON.stringify(this.newProtitleArr)
+            });
+            break;
+          // 原材料
+          case "5":
+            return this.comMaterialProPage({
+              type: 1, //1新建，2修改，3查看
               data: JSON.stringify(this.newProtitleArr)
             });
             break;
@@ -440,8 +432,7 @@ export default {
         .setmeaLoadCategoies(proClass)
         .then(res => {
           if (res.code === 200) {
-            this.proThreedata = [];
-            this.proThreedata.push(res.data);
+            this.proThreedata = [...res.data.children];
             console.log(res.data);
           } else {
             this.error(res.msg);
@@ -487,18 +478,18 @@ export default {
     },
     // 删除操作
     handleeDlete(index, row) {
-      debugger
+      debugger;
       let val = {
-          uid:row.uid,
-          skuCode:row.skuCode,
-          skuUid:row.skuUid,
-          merType:row.merType
-      }
-  // String uid;
-  // String skuCode;
-  // String canSaleType;
-  // String skuUid;
-  // String merType;
+        uid: row.uid,
+        skuCode: row.skuCode,
+        skuUid: row.skuUid,
+        merType: row.merType
+      };
+      // String uid;
+      // String skuCode;
+      // String canSaleType;
+      // String skuUid;
+      // String merType;
       this.$api
         .delStorehouse(val)
         .then(data => {
@@ -515,12 +506,12 @@ export default {
     },
     handleSizeChange(val) {
       this.GoodsListQueryData.pageSize = val;
-      this.goodsDataQueryGoodsList()
+      this.goodsDataQueryGoodsList();
       console.log(`每页 ${val} 条`);
     },
     handleCurrentChange(val) {
       this.GoodsListQueryData.page = val;
-      this.goodsDataQueryGoodsList()
+      this.goodsDataQueryGoodsList();
       console.log(`当前页: ${val}`);
     },
     handleComBank() {
@@ -535,128 +526,133 @@ export default {
         // 单品
         case "1":
           this.singleProPage({
-            type: '3',
+            type: "3",
             data: JSON.stringify(row)
           });
           break;
         // 合成品
         case "2":
-         this.comPositeJump({
-            type: '3',
+          this.comPositeJump({
+            type: "3",
             data: JSON.stringify(row)
           });
           break;
         // 服务商品
         case "3":
-         this.serveGoodJump({
-            type: '3',
+          this.serveGoodJump({
+            type: "3",
             data: JSON.stringify(row)
           });
           break;
         //套餐
         case "4":
-         this.setMealJump({
-            type: '3',
-            data: JSON.stringify(row)
-          });
-          break;
-        // 原材料
-        case "5":
-           this.comMaterialProPage({
-            type: '3',
-            data: JSON.stringify(row)
-          })
-          break;
-      }
-    },
-
-    // 修改
-    proModifyEvent(index, row) {
-       switch (row.merType) {
-        // 单品
-        case "1":
-          this.singleProPage({
-            type: '2',
-            data: JSON.stringify(row)
-          });
-          break;
-        // 合成品
-        case "2":
-         this.comPositeJump({
-            type: '2',
-            data: JSON.stringify(row)
-          });
-          break;
-        // 服务商品
-        case "3":
-         this.serveGoodJump({
-            type: '2',
-            data: JSON.stringify(row)
-          });
-          break;
-        //套餐
-        case "4":
-         this.setMealJump({
-            type: '2',
+          this.setMealJump({
+            type: "3",
             data: JSON.stringify(row)
           });
           break;
         // 原材料
         case "5":
           this.comMaterialProPage({
-            type: '2',
+            type: "3",
             data: JSON.stringify(row)
-          })
+          });
+          break;
+      }
+    },
+
+    // 修改
+    proModifyEvent(index, row) {
+      switch (row.merType) {
+        // 单品
+        case "1":
+          this.singleProPage({
+            type: "2",
+            data: JSON.stringify(row)
+          });
+          break;
+        // 合成品
+        case "2":
+          this.comPositeJump({
+            type: "2",
+            data: JSON.stringify(row)
+          });
+          break;
+        // 服务商品
+        case "3":
+          this.serveGoodJump({
+            type: "2",
+            data: JSON.stringify(row)
+          });
+          break;
+        //套餐
+        case "4":
+          this.setMealJump({
+            type: "2",
+            data: JSON.stringify(row)
+          });
+          break;
+        // 原材料
+        case "5":
+          this.comMaterialProPage({
+            type: "2",
+            data: JSON.stringify(row)
+          });
           break;
       }
     },
     // 停用
     proStopEvent(index, row) {
       let val = {
-          uid:row.uid,
-          skuCode:row.skuCode,
-          skuUid:row.skuUid,
-          merType:row.merType,
-          canSaleType:row.canSaleType
-      }
+        uid: row.uid,
+        skuCode: row.skuCode,
+        skuUid: row.skuUid,
+        merType: row.merType,
+        canSaleType: row.canSaleType
+      };
       this.$cimList.headquartersGoods
         .goodsDataUpdateMerStatusByUid(val)
         .then(res => {
           if (res.code === 200) {
-            row.canSaleType == 1 ? 0:1
+            row.canSaleType == 1 ? 0 : 1;
             this.$message("操作成功");
-          }else{
+          } else {
             this.$message(res.msg);
           }
         })
         .catch(err => {});
-        // this.$nextTick(() => {
-          this.goodsDataQueryGoodsList()
-        // });
-        
+      // this.$nextTick(() => {
+      this.goodsDataQueryGoodsList();
+      // });
     },
     // 删除
     proDelEvent(index, row) {
-
       let val = {
-          uid:row.uid,
-          skuCode:row.skuCode,
-          skuUid:row.skuUid,
-          merType:row.merType
-      }
+        uid: row.uid,
+        skuCode: row.skuCode,
+        skuUid: row.skuUid,
+        merType: row.merType
+      };
       this.$cimList.headquartersGoods
         .goodsDataDeleteMerByUid(val)
         .then(res => {
           if (res.code === 200) {
-            this.GoodsListData.splice(index,1)
+            this.GoodsListData.splice(index, 1);
             this.$message("删除成功");
           } else {
             this.$message(res.msg);
           }
         })
         .catch(err => {});
-        this.goodsDataQueryGoodsList()
-    },
+      this.goodsDataQueryGoodsList();
+    }
+  },
+  computed: {
+    defaultExpanded() {
+      return this.proThreedata.map(item => {
+        return item.uid;
+      });
+    }
   },
   components: {
     ComBank
@@ -666,25 +662,14 @@ export default {
 
 <style lang="scss">
 @import "../../../../assets/css/common.scss";
-.common-header{
-  padding: 24px;
-}
 
-
-.common-header{
-  padding: 24px;
+.bigBox .has-gutter tr th {
+  background: #e7ebff !important;
 }
-.el-form-item{
-  margin-bottom:2px;
+.el-form-item__label,
+.el-input__inner {
+  color: #666;
 }
-.bigBox .has-gutter tr th{
-  background: #e7ebff !important; 
-}
-.el-form-item__label,.el-input__inner{
-  color:#666;
-}
-
-
 
 .change-dialog {
   .el-form--inline .el-form-item {
@@ -694,7 +679,7 @@ export default {
     width: 70%;
   }
 }
-.common-header{
+.common-header {
   padding: 24px 25px 0 25px;
 }
 .common-left {

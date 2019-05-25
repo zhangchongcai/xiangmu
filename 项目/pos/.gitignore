@@ -4,8 +4,11 @@ dist/
 npm-debug.log
 yarn-error.log
 .cache/
+.vscode/
 .static/datacenter
+
 # Editor directories and files
+webpack.config.js
 .idea
 *.suo
 *.ntvs*
@@ -14,4 +17,3 @@ yarn-error.log
 .cache/
 .vscode/
 # gulpfile.js
-target/

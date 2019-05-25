@@ -8,7 +8,7 @@
         label-width="100px"
         label-suffix=":"
       >
-        <el-form-item label="销售属性名称">
+        <el-form-item label="属性名称">
           <el-input v-model="queryData.name" placeholder="请输内容" prefix-icon="el-icon-search"></el-input>
         </el-form-item>
         <el-form-item label="属性类型">

@@ -1,7 +1,7 @@
 <template>
     <div :class="['film-order-container', currentMovieId == filmInfo.movieUid ? 'active' : '']" @click="changeMovieId(filmInfo.movieUid)">
       <div class="film-name">
-        <span class="film-name-style">{{filmInfo.name}}</span>
+        <span :class="['film-name-style', isSelected ? 'name-selected' : '']">{{filmInfo.name}}</span>
         <div style="display: flex; justify-content: flex-end; align-items: center;">
             <i class="iconfont icon-arrow-right-noSelected"></i>
         </div>
@@ -36,7 +36,12 @@ export default {
         ...mapGetters([
             'currentMovieId',
             'currentFilmId'
-        ])
+        ]),
+        isSelected() {
+            return this.filmInfo.arr_plan_list.some(item => {
+                return item.id == this.currentFilmId
+            })
+        }
     },
 
     methods: {
@@ -84,12 +89,16 @@ export default {
           padding: 1.6vh;
           display: flex;
           flex-direction: column;
+          justify-content: space-between;
           border: 1px solid $bg-searchPaydetalTabColor;
 
           .film-name-style {
               font-size: $font-size13;
-              color: $font-color-blue;
+              color: $font-color3;
           }
+          .name-selected {
+                color: $font-color-blue;
+            }
 
           .icon-arrow-right-noSelected {
               color: #bbcfff;

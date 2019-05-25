@@ -623,7 +623,8 @@
           for (let j = 0; j < this.maxcolsize; j++) {
             let cell = {};
             if (i <= existRowNum - 1 && j <= existColNum - 1) {
-              cell = seatAreaTemp[i][j];
+              //X、Y坐标与座位行号列号是相反的，所以同一座位行号取坐标Y相同的座位，座位列号同理
+              cell = seatAreaTemp[j][i];
             }
             if (!$.isPlainObject(cell)) {
               cell = {};
@@ -653,23 +654,17 @@
         for (let i = 0; i < this.maxrowsize; i++) {
           let colArray = [];
           for (let j = 0; j < this.maxcolsize; j++) {
-            let cell = {};
+            let cell = null;
             if (i <= existRowNum - 1 && j <= existColNum - 1) {
-              cell = seatcellTemp[i][j];
+              //X、Y坐标与座位行号列号是相反的，所以同一座位行号取坐标Y相同的座位，座位列号同理
+              cell = seatcellTemp[j][i];
             }
             if (!$.isPlainObject(cell)) {
               cell = {};
             }
-            cell.ulX = i + 1;
-            cell.ulY = j + 1;
-            // cell.seatType = 0;
-            // cell.status = null;
-            // cell.seatLevel = "";
-            // cell.rowAlias = null;
-            // cell.colAlias = null;
-            // cell.sgCode = "";
-            // cell.regionUid = null;
-
+            //X、Y坐标与座位行号列号是相反的，所以同一座位行号取坐标Y相同的座位，座位列号同理
+            cell.ulX = j + 1;
+            cell.ulY = i + 1;
             colArray.push(cell);
           }
           this.seatCellGrid.push(colArray);
@@ -1343,11 +1338,12 @@
             cell.col = col;
             // cell.seatId = String(row) + String(col)
             //把行、列索引放入到数组变量中，然后根据行、列索引自动生成行号、列号
-            if ($.inArray(cell.ulX - 1, seatRowIndexArray) == -1) {
-              seatRowIndexArray.push(cell.ulX - 1);
+            //X、Y坐标与座位行号列号是相反的，所以同一座位行号取坐标Y相同的座位，座位列号同理
+            if ($.inArray(cell.ulY - 1, seatRowIndexArray) == -1) {
+              seatRowIndexArray.push(cell.ulY - 1);
             }
-            if ($.inArray(cell.ulY - 1, seatColIndexArray) == -1) {
-              seatColIndexArray.push(cell.ulY - 1);
+            if ($.inArray(cell.ulX - 1, seatColIndexArray) == -1) {
+              seatColIndexArray.push(cell.ulX - 1);
             }
           }
         }
@@ -1722,8 +1718,8 @@
             regionList:this.drawSaleArea,
             seatArray:this.seatCellGrid
           }
-          console.log(data,'这里是最新数据')    
 
+          console.log(this.seatCellGrid)
 
           this.$ctmList.ciseatDesign(data).then( data => {
               if(data.code === 200) {

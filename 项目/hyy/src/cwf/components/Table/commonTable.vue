@@ -31,7 +31,7 @@ tableOptions:{  label:"操作",
 
 <template>
     <div>
-        <el-table :data="tableData" stripe border style="width: 100%" @selection-change="handleSelectionChange">
+        <el-table :data="tableData" stripe border style="width: 100%" @selection-change="handleSelectionChange"  :row-class-name="tableRowClassName">
 
             <!-- 多选框 -->
             <el-table-column  v-if="selection"
@@ -40,6 +40,7 @@ tableOptions:{  label:"操作",
             </el-table-column>
 
             <!-- 数据列 -->
+            
             <template v-for="(item,index) in tableLabels" >
                 <el-table-column :key="index" v-if="item.hasTemplate" 
                 :prop="item.prop?item.prop:''" 
@@ -47,21 +48,30 @@ tableOptions:{  label:"操作",
                 :width="item.width?item.width:''" 
                 :fixed="item.fixed?item.fixed:''"
                 :sortable ="item.sortable?item.sortable:false">
-
                     <template slot-scope="scope" v-if="item.formatRole">
-                        {{item.formatRole(scope)}}
+                        <template  v-if="item.prop=='processList'">
+                            <el-steps :space="100"  align-center>
+                                <el-step :title="''+(indexs+1)" v-for="(items,indexs) in scope.row.processList"></el-step>
+                            </el-steps>
+                        </template>
+                        <template  v-else>
+                            {{item.formatRole(scope)}}
+                        </template>
                     </template>
+                   
+                     
                 </el-table-column>
-                <el-table-column :key="index" v-else :prop="item.prop?item.prop:''" :label="item.label?item.label:''" :width="item.width?item.width:''" :fixed="item.fixed?item.fixed:''"></el-table-column> -->
+                <el-table-column :key="index" v-else :prop="item.prop?item.prop:''" :label="item.label?item.label:''" :width="item.width?item.width:''" :fixed="item.fixed?item.fixed:''"></el-table-column>
             </template>
 
             <!-- 操作列 -->
             <el-table-column  :label="tableOptions.label?tableOptions.label:''"  :fixed="tableOptions.fixed?tableOptions.fixed:''">
                 <template slot-scope="scope">
                     <div v-if="tableOptions.options.length<=3">
-                        <div v-for="(btn,index) in options" :key="index">
+                        <span v-for="(btn,index) in options" :key="index">
                             <el-button v-if="btn.condition(scope)"  type="text" @click="handleButton(btn.method,scope)">{{btn.text}}</el-button>
-                        </div>
+                            <!-- <check class="button" v-if="btn.condition(scope)" :contentText="btn.text"></check> -->
+                        </span>
                     </div>
                     <div v-else>
                         <span v-for="(btn,index) in options" :key="index">
@@ -85,9 +95,12 @@ tableOptions:{  label:"操作",
 </template>
 
 <script>
-
+import check from "../../views/workflow/normalApproval/check"
 export default {
     name:'commonTable',
+    components:{
+        check
+    },
     props: {
         /* 表格数据 */
         tableData: { 
@@ -118,7 +131,7 @@ export default {
     data() {
         return {
             options:[],
-            moreOptions:[]
+            moreOptions:[],
         }
     },
     created() {
@@ -132,6 +145,14 @@ export default {
         }
     },
     methods: {
+        tableRowClassName({row, rowIndex}) {
+            if (rowIndex/2 === 0) {
+                return 'success-row';
+            } else{
+                return '';
+            }
+            
+        },
         handleButton(method,scope){
             this.$emit('handleButton',{method:method,scope:scope});
         },
@@ -151,3 +172,12 @@ export default {
 
 }
 </script>
+
+<style lang="scss" scoped>
+  .el-table .success-row {
+    background: #f0f9eb;
+  }
+  .button{
+      display: inline-block;
+  }
+</style>

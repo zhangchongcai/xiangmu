@@ -40,7 +40,7 @@
                   :text-inside="true"
                   :stroke-width="15"
                   :percentage="sellRadio"
-                  color="rgba(142, 113, 199, 0.7)"
+                  color="rgba(254,130,94, 0.7)"
                 ></el-progress>
               </div>
             </div>
@@ -108,13 +108,9 @@ export default {
     return {
       boxCount: null,
       saleCount: null,
-      time: this.$moment(this.$moment(new Date()).add(-1, "day")).format("YYYY-MM-DD"),
-      startTime: this.$moment(new Date())
-        .add(-1, "day")
-        .format("YYYY-MM-DD"),
-      endTime: this.$moment(new Date())
-        .add(-1, "day")
-        .format("YYYY-MM-DD"),
+      time: this.$moment(this.$moment(new Date()).add(0, "day")).format("YYYY-MM-DD"),
+      startTime: this.$moment(new Date()).add(0, "day").format("YYYY-MM-DD"),
+      endTime: this.$moment(new Date()).add(0, "day").format("YYYY-MM-DD"),
       timeType: "day",
       BoxTotal:0,
       MemberTotal:0,
@@ -227,7 +223,7 @@ export default {
   created: function() {
     //获取传过来的cinemaId
     this.getquery();
-    console.log(typeof this.MemberId)
+    // console.log(typeof this.MemberId)
   },
   mounted:function(){
     //获取票房数据数据
@@ -407,7 +403,7 @@ export default {
         let foo = ChartsDataY.map(item => {
           return {
             name: item.movieName,
-            value: item.boxOfficePercent
+            value: item.boxOffice
           };
         });
         this.ChartQuota.columns = ["name", "value"];
@@ -456,7 +452,8 @@ export default {
         this.getGoodsData();
       }else{
         this.startTime = this.$moment(option).format('YYYY-MM-DD');
-        this.endTime = this.$moment(option).format('YYYY-MM-DD')
+        this.endTime = this.$moment(option).format('YYYY-MM-DD');
+        this.time = this.$moment(option).format('YYYY-MM-DD')
       }
       
     }

@@ -291,7 +291,7 @@ export default {
     //卖品KPI
     getSellKpiData(SellKPIvalue){
       //取到时间进度
-      let tool1 = SellKPIvalue.timeRate, tool2 = (SellKPIvalue.sellGoodsRate / 10000).toFixed(2)
+      let tool1 = SellKPIvalue.timeRate, tool2 = SellKPIvalue.sellGoodsRate
       //取值title
       this.BoxRate = SellKPIvalue.sppCurrent
       this.BoxKPItotal = SellKPIvalue.sppTarget

@@ -10,6 +10,8 @@ let print_voucher = {
 }
 let FormatterData = {}
 
+
+
 FormatterData.trade_print = function(type,voucherInfo) { 
 	/**
 	 * 组装打印数据
@@ -17,11 +19,11 @@ FormatterData.trade_print = function(type,voucherInfo) {
 	 * 2是取货凭证；
 	 * 3是取货交易凭证
 	 */
-
 	var printInfo = {};
 	printInfo.width = 200;
 	printInfo.height = 300;
 	printInfo.ticket_element = [];
+
 
 	var yPos = 0;
 	//头部
@@ -46,15 +48,21 @@ FormatterData.trade_print = function(type,voucherInfo) {
  * 组装抬头信息
  */
 print_voucher.print_title_info = function(type,voucherInfo,printInfo,yPos,fontSize,fontBlack,showModle){
-	printInfo.ticket_element.push({elementValue:'欢迎光临', x:60, y:yPos, font_size:fontSize, font_black:fontBlack, show_modle:showModle});
+	let _oneMarginLeft = ( printInfo.width - (print_voucher.WORD_LENGTH * 4) )/2
+	printInfo.ticket_element.push({elementValue:'欢迎光临', x:_oneMarginLeft, y:yPos, font_size:fontSize, font_black:fontBlack, show_modle:showModle});
+	let _towMarginLeft = ( printInfo.width -  (voucherInfo.cinemaName.length+4) * print_voucher.WORD_LENGTH ) / 2
 	printInfo.ticket_element.push({elementValue:(voucherInfo.cinemaName + '数字影院'), x:20, y:(yPos += print_voucher.ROW_HEIGHT_BIG), font_size:fontSize, font_black:fontBlack, show_modle:showModle});
-	var title = "销售交易凭证 " 
+	let  title = "销售交易凭证 " 
+	let  _threeMarginLeft = ( printInfo.width - (print_voucher.WORD_LENGTH * 6) )/2
+	console.log(_towMarginLeft,'---',_threeMarginLeft)
 	if(type == 2){
-		 title = "   取货凭证 " 
+		title = "   取货凭证 " 
+		_threeMarginLeft = _oneMarginLeft
 	}else if(type == 3){
 		title = "取货交易凭证 " 
+		_threeMarginLeft = ( printInfo.width - (print_voucher.WORD_LENGTH * 6) )/2
 	}
-	printInfo.ticket_element.push({elementValue: title, x:40, y:(yPos += print_voucher.ROW_HEIGHT_BIG), font_size:fontSize, font_black:fontBlack, show_modle:showModle});
+	printInfo.ticket_element.push({elementValue: title, x:_threeMarginLeft, y:(yPos += print_voucher.ROW_HEIGHT_BIG), font_size:fontSize, font_black:fontBlack, show_modle:showModle});
 	return yPos;	
 };
 

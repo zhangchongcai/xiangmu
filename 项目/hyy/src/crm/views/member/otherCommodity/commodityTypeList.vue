@@ -201,6 +201,9 @@ export default {
       font-size: 12px;
       width: 96px;
       padding: 5px 20px;
+      span{
+        color: #fff;
+      }
     }
   }
   .member-list-table {

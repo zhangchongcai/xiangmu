@@ -48,14 +48,14 @@
         <el-table-column prop="goodsTypeName" label="商品类型" min-width="120" show-overflow-tooltip>
         </el-table-column>
         <el-table-column prop="inventoryNum" label="库存" min-width="100" :formatter="formateEmpty" show-overflow-tooltip>
-          <template slot-scope="scope">
+          <!-- <template slot-scope="scope">
             <span>{{ scope.row.inventoryNum | formatBoxOfficeNum}}</span>
-          </template>
+          </template> -->
         </el-table-column>
         <el-table-column prop="saleVolume" label="发售量" min-width="100" :formatter="formateEmpty" show-overflow-tooltip>
-          <template slot-scope="scope">
+          <!-- <template slot-scope="scope">
             <span>{{ scope.row.saleVolume | formatBoxOfficeNum }}</span>
-          </template>
+          </template> -->
         </el-table-column>
         <el-table-column prop="status" label="状态" min-width="120" show-overflow-tooltip>
           <template slot-scope="scope">
@@ -84,46 +84,54 @@
     <!-- 选择商品属性的dialog -->
     <el-dialog title="请选择商品属性" :visible.sync="goodsAttributeVisible">
       <div class="_mbmber-goods-attribute-visible">
-        <div class="_member-goods-item-wrap" @click="handleCreatYouhuiquan">
-          <div><i class="iconfont icon-dianziyouhuiquan-normal" style="font-size:80px;color:#3B74FF;"></i></div>
+        <div class="_member-goods-item-wrap" @click="handleCreatCoupon" @mouseover="()=>{iconStatus = 1}" @mouseout="()=>{iconStatus = 0}">
+          <div class="_icon-wrap"><i :class="iconStatus==2?'iconfont icon-dianziyouhuiquan-selected':'iconfont icon-dianziyouhuiquan-normal'"
+              style="font-size:80px;color:#3B74FF;" :style="iconStatus==1?'color:#0F55FF':'color:#3B74FF'"></i></div>
           <div class="_goods-item-name">电子优惠券</div>
           <div class="_goods-item-desc">（无需物流）</div>
         </div>
         <div class="_member-goods-item-wrap">
-          <div><i class="iconfont icon-xuniqia-normal" style="font-size:80px;color:#3B74FF;"></i></div>
+          <div class="_icon-wrap"><i class="iconfont icon-xuniqia-normal" style="font-size:80px;color:#999;"></i></div>
           <div class="_goods-item-name">虚拟卡</div>
           <div class="_goods-item-desc">（无需物流）</div>
         </div>
         <div class="_member-goods-item-wrap">
-          <div><i class="iconfont icon-shiwushangpin-normal" style="font-size:80px;color:#3B74FF;"></i></div>
+          <div class="_icon-wrap"><i class="iconfont icon-shiwushangpin-normal" style="font-size:80px;color:#999;"></i></div>
           <div class="_goods-item-name">实物商品</div>
           <div class="_goods-item-desc">（需要物流）</div>
         </div>
       </div>
     </el-dialog>
     <!-- 补加商品的dialog -->
-    <el-dialog title="补加电子优惠券" :visible.sync="supplementVisible">
+    <el-dialog title="补加电子优惠券" :visible.sync="supplementVisible" @close="closeDialog">
       <div class="_mbmber-supplement-visible">
         <div class="titcket-name">导入电子优惠券：</div>
-        <el-upload class="upload-demo" :action="$store.state.crm.refillUploadUrl" :on-success="fileUploadSuccess"
-          :show-file-list="false" :before-upload="beforeFileUpload" name="file" :data="{goodsId:this.supplementId,tenantId:this.$store.state.loginUser.consumerId}">
+        <div class="titcket-num">{{titcketParams.ticketNum}}</div>
+        <el-upload class="upload-demo" :action="$store.state.crm.fileUploadUrl" :on-success="fileUploadSuccess"
+          :show-file-list="false" :before-upload="beforeFileUpload" name="file">
           <div class="select-btn"><em>导入</em></div>
         </el-upload>
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="supplementVisible = false">取 消</el-button>
-        <el-button type="primary" @click="supplementVisible = false">确 定</el-button>
+        <el-button type="primary" @click="handleAddTitcket">确 定</el-button>
       </span>
     </el-dialog>
   </div>
 </template>
 <script>
-import formatBoxOfficeNum from "../../../util/formatBoxOfficeNum.js";
+// import formatBoxOfficeNum from "../../../util/formatBoxOfficeNum.js";
 export default {
   name: "DifferentIndustryGoodsList",
   data() {
     return {
-      supplementId: "", //补加id
+      titcketParams: {
+        goodsId: "",
+        tenantId: this.$store.state.loginUser.consumerId,
+        ticketNum: 0,
+        ticketPath: ""
+      }, //补加优惠券参数
+      iconStatus: 0,
       goodsAttributeVisible: false, //商品属性dialog
       supplementVisible: false, //补加电子优惠券dialog
       tipMessage: "",
@@ -160,9 +168,9 @@ export default {
     this.getdiffCommodityTypeList();
   },
   filters: {
-    formatBoxOfficeNum(value) {
-      return formatBoxOfficeNum(value);
-    },
+    // formatBoxOfficeNum(value) {
+    //   return formatBoxOfficeNum(value);
+    // },
     judegStatus: function(value) {
       // console.log("status=", value);
       if (value == "not_on") {
@@ -177,10 +185,36 @@ export default {
     }
   },
   methods: {
+    handleAddTitcket() {
+      this.supplementVisible = false;
+      if (this.titcketParams.ticketNum * 1 <= 0) {
+        this.$message.warning("请上传优惠券后再点击确定");
+        return false;
+      } else {
+        this.$crmList.diffGoodsRefill(this.titcketParams).then(res => {
+          if (res.update) {
+            this.search();
+            this.$message.success("补加成功");
+          } else {
+            this.$message.error("补加失败，请重试");
+          }
+        });
+      }
+    },
+    closeDialog() {
+      this.titcketParams = {
+        goodsId: "",
+        tenantId: this.$store.state.loginUser.consumerId,
+        ticketNum: 0,
+        ticketPath: ""
+      };
+    },
     fileUploadSuccess(response, file, fileList) {
       //文件上传成功
       if (response.code == 200) {
         this.$message.success("导入成功!");
+        this.titcketParams.ticketNum = response.data.num;
+        this.titcketParams.ticketPath = response.data.path;
       } else {
         this.$message.error(response.msg);
       }
@@ -241,13 +275,16 @@ export default {
       this.goodsAttributeVisible = true;
     },
     // 新建电子优惠券
-    handleCreatYouhuiquan() {
-      this.$router.push({
-        path: "/member/differentIndustryGoods/add",
-        query: {
-          goodsAttribute: "electronic_coupons"
-        }
-      });
+    handleCreatCoupon() {
+      this.iconStatus = 2;
+      setTimeout(() => {
+        this.$router.push({
+          path: "/member/differentIndustryGoods/add",
+          query: {
+            goodsAttribute: "electronic_coupons"
+          }
+        });
+      }, 30);
     },
     // 商品类型管理
     handleGoodsType() {
@@ -348,7 +385,7 @@ export default {
     // 补加
     handleSupplement(scope) {
       this.supplementVisible = true;
-      this.supplementId = scope.id;
+      this.titcketParams.goodsId = scope.id;
     },
     formateEmpty(row, column, cellValue, index) {
       return cellValue != null ? cellValue : "-";
@@ -418,15 +455,19 @@ export default {
 ._mbmber-goods-attribute-visible {
   display: flex;
   justify-content: space-around;
-  padding: 0 0 40px;
+  padding: 10px 0 20px;
   ._member-goods-item-wrap {
     text-align: center;
     cursor: pointer;
+    ._icon-wrap {
+      height: 50px;
+    }
     ._goods-item-name {
       font-size: 14px;
       color: #333333;
       letter-spacing: 0;
       text-align: center;
+      margin: 0 0 5px;
     }
     ._goods-item-desc {
       font-size: 12px;
@@ -447,6 +488,13 @@ export default {
   display: flex;
   justify-content: center;
   padding: 10px 0 20px;
+  align-items: center;
+  .titcket-num {
+    width: 84px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
   // 选择按钮的样式
   .select-btn {
     width: 92px;

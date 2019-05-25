@@ -29,7 +29,7 @@
             <div class="ProgressBoxCoff">
               <div class="title">票房占比</div>
               <div class="el-progress">
-                <el-progress :text-inside="true" :stroke-width="15" :percentage="boxRadio"></el-progress>
+                <el-progress :text-inside="true" :stroke-width="15" :percentage="boxRadio*1"></el-progress>
               </div>
             </div>
             <div style="clear:both;"></div>
@@ -39,8 +39,8 @@
                 <el-progress
                   :text-inside="true"
                   :stroke-width="15"
-                  :percentage="sellRadio"
-                  color="rgba(142, 113, 199, 0.7)"
+                  :percentage="sellRadio*1"
+                  color="rgba(254,130,94, 0.7)"
                 ></el-progress>
               </div>
             </div>
@@ -116,15 +116,9 @@ export default {
     return {
       boxCount: null,
       saleCount: null,
-      time: this.$moment(this.$moment(new Date())
-        .add(-1, "day"))
-        .format("YYYY-MM-DD"),
-      startTime: this.$moment(new Date())
-        .add(-1, "day")
-        .format("YYYY-MM-DD"),
-      endTime: this.$moment(new Date())
-        .add(-1, "day")
-        .format("YYYY-MM-DD"),
+      time: this.$moment(this.$moment(new Date()).add(0, "day")).format("YYYY-MM-DD"),
+      startTime: this.$moment(new Date()).add(0, "day").format("YYYY-MM-DD"),
+      endTime: this.$moment(new Date()).add(0, "day").format("YYYY-MM-DD"),
       timeType: "day",
       cityId: "",
       MemberId: "",
@@ -276,8 +270,6 @@ export default {
     this.getGoodsData();
     //获取会员数据
     this.getMemberData();
-    //父组件加载时直接调用子组件分页数据
-    
   },
   methods: {
     formatValue(num, company) {
@@ -293,7 +285,6 @@ export default {
       }
       return showNum
     },
-
     formatPerson(num, company) {
       let showNum
       if (num < 10000) {
@@ -307,7 +298,6 @@ export default {
       }
       return showNum
     },
-
     //票房
     getBoxOfficeData() {
       this.$camList.BoxOfficeData({
@@ -332,24 +322,22 @@ export default {
           }
           else{
             //是天的时候获取KPI
-            if(res.boxOfficeKpiInfo !== null || res.boxOfficeKpiInfo !== undefined){
-              this.BoxKPIData = res.boxOfficeKpiInfo;
-
-              this.$nextTick(()=>{
-                this.$refs.BoxOffice.foo(true);
-              })
-            }
-            else{
+            if(!res.boxOfficeKpiInfo || JSON.stringify(res.boxOfficeKpiInfo) == "{}"){       
               this.$nextTick(()=>{
                 this.$refs.BoxOffice.foo(false);
               })
             }
+            else{
+              this.BoxKPIData = res.boxOfficeKpiInfo;
+              this.$nextTick(()=>{
+                this.$refs.BoxOffice.foo(true);
+              })
+              
+            }
           }
-
           //票房数据
           if(res.boxOfficeCinemaVO){
             this.BoxOffdetail = res.boxOfficeCinemaVO;
-            console.log(this.BoxOffdetail)
             //取到票房总收入
             this.Boxincome = res.boxOfficeCinemaVO.boxOffice;
             this.boxCount = res.boxOfficeCinemaVO.boxOffice;
@@ -376,9 +364,7 @@ export default {
             this.$nextTick(()=>{
               this.$refs.BoxOffice.testFun()
             })
-
-          }
-        
+          }     
           //初始化票房首页玫瑰图数据
           this.getRoseChart(res)
 
@@ -408,45 +394,41 @@ export default {
           }
           else{
             //KPI
-            if(res.sellGoodsKpiInfo !== null || res.sellGoodsKpiInfo !== undefined){
-              //获取KPI
-              let ResKPI = res.sellGoodsKpiInfo;
-              this.SellKPIData = ResKPI
-
-              this.$nextTick(()=>{
-              this.$refs.GoodsSell.foo(true);
-              })
-            }
-            else{
+            if(!res.sellGoodsKpiInfo || JSON.stringify(res.sellGoodsKpiInfo) == "{}"){
               this.$nextTick(()=>{
                 this.$refs.GoodsSell.foo(false);
               })
             }
+            else{
+              //获取KPI
+              this.SellKPIData = res.sellGoodsKpiInfo;
+              this.$nextTick(()=>{
+                this.$refs.GoodsSell.foo(true);
+              })
+            }
           }
 
+          //卖品指标数据
           if(res.sellGoodsCinema){
             //卖品数据
             this.Goodsdetail = res.sellGoodsCinema;
-            //获取卖品table数据
-            this.$nextTick(()=>{
-              res.sellGoodsCinemaPageInfo.list.forEach(item => {
-                item.showNumSell = this.formatValue(item.columeName,'元')
-              })
-              this.GoodTable = res.sellGoodsCinemaPageInfo.list;
-            })
             
             //取到卖品总收入
             this.Goodsincome = res.sellGoodsCinema.sppPrice;
             this.saleCount = res.sellGoodsCinema.salesVolume;
-          }
-
-          if(res.sellGoodsCinema){
-            //获取人均卖品金额
+            //获取人均卖品总收入
             this.SellTotal = res.sellGoodsCinema.sppPrice;
           }
           
           //初始化分页总数
           if(res.sellGoodsCinemaPageInfo){
+            //获取卖品table数据
+            res.sellGoodsCinemaPageInfo.list.forEach(item => {
+              item.showNumSell = this.formatValue(item.columeName,'元')
+            })
+            this.GoodTable = res.sellGoodsCinemaPageInfo.list;
+
+            //获取总条数
             this.initSellPage = res.sellGoodsCinemaPageInfo.total
 
             this.$nextTick(()=>{
@@ -507,12 +489,10 @@ export default {
 
         if(res.memberCinemaVO){
           //获取五项指标数据
-          let resData = res.memberCinemaVO;
-          this.Memberdetail = resData;
+          this.Memberdetail = res.memberCinemaVO;
 
           //取新增会员的值
-          let resTotal = res.memberCinemaVO.newMember;
-          this.MemberTotal = resTotal
+          this.MemberTotal = res.memberCinemaVO.newMember;
         }
 
 
@@ -565,11 +545,15 @@ export default {
       if (option.startTime) {
         this.startTime = option.startTime;
         this.endTime = option.endTime;
-
         this.getBoxOfficeData();
         this.getMemberData();
         this.getGoodsData();
-        //父组件加载时直接调用子组件分页数据
+
+        this.$refs.BoxOffice.active()
+        this.$refs.GoodsSell.active()
+        this.$refs.Member.active()
+
+
        
       }else{
         this.startTime = this.$moment(option).format('YYYY-MM-DD');
@@ -594,7 +578,6 @@ export default {
         this.ChartQuota.rows = foo;
       }
     }
-
   }
 };
 </script>

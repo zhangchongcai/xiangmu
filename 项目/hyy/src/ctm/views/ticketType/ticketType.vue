@@ -8,7 +8,7 @@
           <el-input v-model="cinemaName" @focus="cinemaDialogShow"></el-input>
         </div>
         <div class="search-Btn" style="float:left;margin-left:18px">
-          <el-button type="primary" @click="searchCinema">查询</el-button>
+          <el-button type="primary" @click="searchCinema" readonly>查询</el-button>
         </div>
         <el-button type="primary" @click="addOrUpdateHandle()" style="float:right">新建</el-button>
       </header>
@@ -39,8 +39,10 @@
             </template>
           </el-table-column>
           <el-table-column
-            prop='cinemaName'
             label='适用影院'>
+            <template slot-scope='scope'>
+              {{scope.row.cinemaNames.join(",")}}
+            </template>
           </el-table-column>
           <el-table-column
             label='是否允许打折'>
@@ -94,7 +96,7 @@
   </div>
 </template>
 <script>
-  import frameMulticinemas  from 'frame_cpm/components/frameadmin/cinemaDialog/multiCinema2.vue'
+  import frameMulticinemas  from 'frame_cpm/dialogs/cinemaDialog/multiCinema2.vue'
   import TicketType from './ticketType-add-or-update'
   import SirTable from './sirTable'
   import qs from 'qs';
@@ -122,7 +124,7 @@
         dataListLoading: false,
         // 影院复选
         cinemaName:null,
-        cinemaUid:[],
+        cinemaUids:[],
         multiCinemaVisible: false,
         whereUse:null,
         cinematype:2, // 传递给 组件的调用的影院类型 属性参数
@@ -171,9 +173,9 @@
           'page': this.pageIndex,
           'pageSize': this.pageSize
         }
-        let addition = {cinemaUid:this.cinemaUid}
+        let cinemaUids = {cinemaUids:this.cinemaUids}
         // console.log(limit)
-        this.$ctmList.tickettypeList(limit,addition).then( data => {
+        this.$ctmList.tickettypeList(limit,cinemaUids).then( data => {
             console.log(data)
             if (data && data.code === 200) {
               this.dataList = data.data.list
@@ -253,10 +255,10 @@
           this.whereUse = opt.whereUse
           console.log(opt)
           this.cinemaName = ''
-          this.cinemaUid = []
+          this.cinemaUids = []
           opt.dataList.forEach(item => {
             this.cinemaName += item.name + ','
-            this.cinemaUid.push(item.id)
+            this.cinemaUids.push(item.id)
           })
           this.multiCinemaVisible = false
       },

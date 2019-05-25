@@ -19,7 +19,7 @@
         </el-form-item>
         <el-form-item label="手机号码："
         :rules="[
-                { required: true, message: '请输入手机号码', trigger: 'blur' },
+                { required: true, message: '请输入手机号码', trigger: 'change' },
               ]">
           <el-input v-model="query.number" size="medium" :style="{width:'17.7vw'}"></el-input>
         </el-form-item>
@@ -31,7 +31,7 @@
         </el-form-item>
         <el-form-item label="性别：" 
         :rules="[
-                { required: true, message: '请选择性别', trigger: 'blur' },
+                { required: true, message: '请选择性别', trigger: 'change' },
               ]">
           <el-radio v-model="data.sex" label="1">男</el-radio>
           <el-radio v-model="data.sex" label="2">女</el-radio>

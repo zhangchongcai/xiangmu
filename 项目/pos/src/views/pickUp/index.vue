@@ -48,7 +48,7 @@ export default {
       },
       router(){
           this.$router.push({
-              path: this.type ? 'ticketPick':'pickGoods',
+              path: this.type == 1 ? 'ticketPick':'pickGoods',
               query: {
                   val : this.val
               }

@@ -1,21 +1,21 @@
 <template>
   <div class="commodityList">
     <el-form :inline="true" :model="formData" ref="formData" class="form-data-wrap">
-      <el-form-item label="商品ID：">
+      <el-form-item label="商品ID：" prop="goodsNo">
         <el-input v-model="formData.goodsNo" placeholder="商品ID" clearable maxlength="20" style="width:120px"></el-input>
       </el-form-item>
-      <el-form-item label="商品名称：">
+      <el-form-item label="商品名称：" prop="goodsName">
         <el-input v-model="formData.goodsName" placeholder="商品名称" clearable maxlength="30"></el-input>
       </el-form-item>
-      <el-form-item label="商家名称：">
+      <el-form-item label="商家名称：" prop="merchantName">
         <el-input v-model="formData.merchantName" placeholder="商家名称" clearable maxlength="30"></el-input>
       </el-form-item>
-      <el-form-item label="商品属性：">
+      <el-form-item label="商品属性：" prop="goodsAttribute">
         <el-select v-model="formData.goodsAttribute" placeholder="请选择商品属性" clearable>
           <el-option v-for="item in goodsAttributeList" :key="item.code" :label="item.name" :value="item.code"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="商品类型：">
+      <el-form-item label="商品类型：" prop="goodsType">
         <el-select v-model="formData.goodsType" placeholder="请选择商品类型" clearable>
           <el-option v-for="item in goodsTypeList" :key="item.commodityTypeNo" :label="item.commodityTypeName" :value="item.commodityTypeNo"></el-option>
         </el-select>
@@ -36,7 +36,7 @@
         <el-table-column prop="merchantName" :formatter="emptyShow" label="商家名称" min-width="120" show-overflow-tooltip></el-table-column>
         <el-table-column prop="goodsAttribute" :formatter="goodsAttribute" label="商品属性" min-width="120"
           show-overflow-tooltip></el-table-column>
-        <el-table-column prop="goodsType" :formatter="emptyShow" label="商品类型" min-width="120" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="goodsTypeName" :formatter="emptyShow" label="商品类型" min-width="120" show-overflow-tooltip></el-table-column>
         <el-table-column prop="totalAmount" :formatter="emptyShow" label="总量" min-width="120" show-overflow-tooltip></el-table-column>
         <el-table-column prop="inventoryNum" :formatter="emptyShow" label="剩余" min-width="120" show-overflow-tooltip></el-table-column>
         <el-table-column prop="saleVolume" :formatter="emptyShow" label="发售量" min-width="120" show-overflow-tooltip></el-table-column>
@@ -150,7 +150,6 @@ export default {
     // 重置
     resetForm(formName) {
       this.$refs[formName].resetFields();
-      this.$refs["picker"].emitInput();
     },
     handleSizeChange(val) {
       this.formData.size = val;

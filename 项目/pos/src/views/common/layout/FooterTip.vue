@@ -1,6 +1,6 @@
 <template>
     <div class="footer-tip">
-        <button class="mini-mize" @click="toMinimize"> — 最小化窗口</button> 系统通知：最新消息 错误报告等信息滚动栏 鼠标单击打开信息详情面板    等级：常规 
+        <span>&nbsp;&nbsp;中鑫汇科票务系统 V1.00.00</span>    <button class="mini-mize" @click="toMinimize"> — 最小化窗口</button> 系统通知：最新消息 错误报告等信息滚动栏 鼠标单击打开信息详情面板    等级：常规 
     </div>
 </template>
 
@@ -28,7 +28,6 @@ export default {
         // padding: 0 24px;
         box-sizing: border-box;
         background-color: #EFF1FF;
-        font-size: $font-size12;
         color: $font-color6;
 
         .scale-btn {
@@ -50,7 +49,7 @@ export default {
     }
     .mini-mize{
         margin:1px 20px;
-        width: 96px;   
+        // width: 96px;   
         height: 18px;
         border: 1px solid #3559AF;
         border-radius: 2px;

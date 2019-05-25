@@ -379,18 +379,19 @@ export default {
       this.multipleSelectionAll.forEach(row => {
         selectAllIds.push(row[idKey]);
       });
-      // debugger
+      debugger
       let selectIds = [];
       // 获取当前页选中的id
       console.log(this.multipleSelectionAll, 5);
-      this.multipleSelection.forEach(row => {
-        selectIds.push(row[idKey]);
-        // 如果总选择里面不包含当前页选中的数据，那么就加入到总选择集合里
-        if (selectAllIds.indexOf(row[idKey]) < 0) {
-          that.multipleSelectionAll.push(row);
-        }
-      });
-      // debugger
+      if(this.multipleSelection && this.multipleSelection.length){
+        this.multipleSelection.forEach(row => {
+          selectIds.push(row[idKey]);
+          // 如果总选择里面不包含当前页选中的数据，那么就加入到总选择集合里
+          if (selectAllIds.indexOf(row[idKey]) < 0) {
+            that.multipleSelectionAll.push(row);
+          }
+        });
+      }
       console.log(this.multipleSelectionAll, 6);
       let noSelectIds = [];
       console.log("noSelectIds:" + noSelectIds);

@@ -112,7 +112,7 @@
         <el-radio-group v-model="tabPosition" class="radio-btn-wrap" @change="changeTab">
           <el-radio-button label="CONSUME">消费</el-radio-button>
           <el-radio-button label="CHARGE">储值</el-radio-button>
-          <el-radio-button label="COUPON">优惠券</el-radio-button>
+          <!-- <el-radio-button label="COUPON">优惠券</el-radio-button> -->
         </el-radio-group>
         <div class="historical-bill-table _m-member-table-custom">
           <el-table :data="consumptionList" stripe style="width: 100%" v-if="type=='CONSUME'">
@@ -146,9 +146,8 @@
             ></el-table-column> -->
           </el-table>
           <!-- 优惠券 -->
-          <el-table :data="consumptionList" stripe style="width: 100%" v-if="type=='COUPON'">
+          <!-- <el-table :data="consumptionList" stripe style="width: 100%" v-if="type=='COUPON'">
             <template slot="empty">{{tipMessage}}</template>
-            <!-- <template slot="empty">该会员没有优惠券记录</template> -->
             <el-table-column prop="businessName" label="交易类型" min-width="100" show-overflow-tooltip></el-table-column>
             <el-table-column prop="transactionTime" label="时间" min-width="140" show-overflow-tooltip></el-table-column>
             <el-table-column prop="flowNo" label="流水号" min-width="140" show-overflow-tooltip></el-table-column>
@@ -158,7 +157,7 @@
             <el-table-column prop="couponAmount" label="券面值" min-width="100" show-overflow-tooltip></el-table-column>
             <el-table-column prop="couponNo" label="券码" min-width="100" show-overflow-tooltip></el-table-column>
             <el-table-column prop="couponSource" label="券来源" min-width="100" show-overflow-tooltip></el-table-column>
-          </el-table>
+          </el-table> -->
         </div>
         <!-- 分页 start -->
         <div class="page-wrap">

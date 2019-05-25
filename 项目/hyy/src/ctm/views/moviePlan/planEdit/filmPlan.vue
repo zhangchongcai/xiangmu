@@ -1,8 +1,8 @@
 <template>
-    <section class="movie-plan-window" @scroll="scroll" :style="{width:width+'px',height: contentSize.height +'px'}" ref="moviePlanWindow" @mousemove="changeTimeLine">
-        <div class="content" id="planContent" :style="{width:contentSize.width+'px',height: '100%'}" @mousedown="addFilm" @mousemove="drawBlock" @mouseup="cleanDrawBlock" ref="content">
+    <section class="movie-plan-window" @scroll="scroll" :style="{height: 'calc(100% - 30px)'}" ref="moviePlanWindow" @mousemove="changeTimeLine">
+        <div class="content" id="planContent" :style="{width:contentSize.width+'px', height: contentSize.height +'px'}" @mousedown="addFilm" @mousemove="drawBlock" @mouseup="cleanDrawBlock" ref="content">
             <!-- 过去时间：灰色 -->
-            <div class="pass-time" :style="{height: '100%',width: pass_time.width + 'px'}"></div>
+            <div class="pass-time" :style="{height: contentSize.height +'px', width: pass_time.width + 'px'}"></div>
             <!-- 排片内容 -->
             <ul>
                 <li class="row_content" v-for="(item,index) in plan_rooms" :key="index" :style="{height: contentSize.roomItemHeight + 'px'}" :data-item="index">
@@ -26,7 +26,7 @@
                                     <div>{{filmItem.startTime.hours+':'+filmItem.startTime.minute + '-' + filmItem.endTime.hours + ':' + filmItem.endTime.minute}}</div>
                                 </div>
                                 <!-- 影片状态 -->
-                                <div class="triangle-absolute" v-if="filmItem.approveStatus" :class="{'success':filmItem.approveStatus == 'APPROVED' && filmItem.saleStatus == 'SALE','going':filmItem.approveStatus == 'WAIT_APPROVE','stop': filmItem.approveStatus == 'APPROVED' && filmItem.saleStatus == 'STOP'}"></div>
+                                <div class="triangle-absolute" v-if="filmItem.approveStatus" :class="{'success':filmItem.approveStatus == 'APPROVED' && filmItem.saleStatus == 'SALE','going':filmItem.approveStatus == 'WAIT_APPROVE','stop': filmItem.approveStatus == 'APPROVED' && filmItem.saleStatus == 'STOP', 'warn': filmItem.approveStatus == 'REJECT'}"></div>
                             </li>
                         </el-tooltip>
                     </ul>
@@ -59,7 +59,7 @@
                     </li>
                 </ul>
                 <!-- 时间刻度线 -->
-                <div class="time-line" v-if="drop_clock.isShow" :style="{left: drop_clock.positionX + 'px', height: contentSize.height+'px'}">
+                <div class="time-line" v-if="drop_clock.isShow" :style="{left: drop_clock.positionX + 'px', height: contentSize.height + 'px'}">
                     <div class="clock-info" :style="{top: drop_clock.positionY + 'px'}">{{drop_clock.startTime.hours + ':' + drop_clock.startTime.minute + '-' + drop_clock.endTime.hours +':'+ drop_clock.endTime.minute}}</div>
                 </div>
             </div>
@@ -300,6 +300,8 @@ export default {
                         approve_text = '待审核'
                     } else if (approveStatus == 'APPROVED') {
                         approve_text = '已审核'
+                    } else if (approveStatus == 'REJECT') {
+                        approve_text = '已驳回'
                     }
 
                     // 销售状态
@@ -422,6 +424,7 @@ export default {
     methods: {
         /* 滚动时触发影厅和刻度滚动 */
         scroll(e) {
+            console.log(111111, 'scroll')
             this.$emit("scroll", {
                 scrollTop: e.target.scrollTop,
                 scrollLeft: e.target.scrollLeft
@@ -551,7 +554,7 @@ export default {
                     let maxTime = this.maxTime
                     positionX = this.dropScale(positionX, this.dragPrecision)
                     // 超出限定时
-                    if (positionX + movieNeedTime > maxTime) return
+                    if (positionX + movieNeedTime >= maxTime) return
 
                     if (c_plan_rooms.length == 0) {
                         // 直接添加
@@ -662,7 +665,7 @@ export default {
                         width,
                         height
                     }
-                };
+                }
             }
         },
         /* 清除矩形 */
@@ -1590,7 +1593,7 @@ export default {
                         "hallUid": this.rooms[rowIndex].uid_hall,
                         "movieLanguage": plan.language,
                         "mustRightSeat": plan.mustRightSeat != undefined ? plan.mustRightSeat : 1,
-                        "planDate": plan.startTime.hours < 6 ? this.formatDateTime(new Date(this.baseParam.planDate).getTime() + 24 * 60 * 60 * 1000) : this.baseParam.planDate,
+                        "planDate": this.baseParam.planDate,
                         "planTimeStart": plan.startTime.hours < 6 ? `${this.formatDateTime(new Date(this.baseParam.planDate).getTime() + 24 * 60 * 60 * 1000)} ${plan.startTime.hours}:${plan.startTime.minute}` : `${this.baseParam.planDate} ${plan.startTime.hours}:${plan.startTime.minute}`,
                         "planTimeEnd": plan.endTime.hours < 6 ? `${this.formatDateTime(new Date(this.baseParam.planDate).getTime() + 24 * 60 * 60 * 1000)} ${plan.endTime.hours}:${plan.endTime.minute}` : `${this.baseParam.planDate} ${plan.endTime.hours}:${plan.endTime.minute}`,
                         "minPrice": plan.minPrice != undefined ? plan.minPrice : 0,
@@ -1606,21 +1609,27 @@ export default {
                         "planShowInterval": plan.planShowInterval
                         }
                         return plan.joinFlag ? plan.newJoinFlag ? Object.assign(item, {
-                            movieTemplateVos: [
+                            planTimeVoList: [
                                 {
-                                    joinMovieName: plan.movieName,
                                     percentPrice: 100,
                                     showIndex: 1,
                                     movieCode: plan.movieCode,
-                                    minPrice: plan.minPrice,	
-                                    rate: plan.publisherRate,	
+                                    minPrice: plan.minPrice != undefined ? plan.minPrice : 0,	
+                                    rate: plan.rate != undefined ? plan.rate : 0,
+                                    planTimeStart: plan.startTime.hours < 6 ? `${this.formatDateTime(new Date(this.baseParam.planDate).getTime() + 24 * 60 * 60 * 1000)} ${plan.startTime.hours}:${plan.startTime.minute}` : `${this.baseParam.planDate} ${plan.startTime.hours}:${plan.startTime.minute}`,
+                                    planTimeEnd: plan.endTime.hours < 6 ? `${this.formatDateTime(new Date(this.baseParam.planDate).getTime() + 24 * 60 * 60 * 1000)} ${plan.endTime.hours}:${plan.endTime.minute}` : `${this.baseParam.planDate} ${plan.endTime.hours}:${plan.endTime.minute}`
                                 }
-                            ]
-                        }) : item : item
+                            ],
+                            intervalMinute: plan.intervalMinute,
+                            joinMovieName: plan.movieName
+                        }) : Object.assign(item, {
+                            planTimeVoList: plan.planTimeVoList,
+                            intervalMinute: plan.intervalMinute
+                        }) : item
                     }))
-                })
+            })
             
-            
+            if (!subData.length) return this.warning('暂时没有可以保存的场次')
 
             let _data = {
                 list: subData
@@ -1765,7 +1774,7 @@ export default {
                 }
             let setControlArr = [], approveStatus = movie.approveStatus ? movie.approveStatus : '', saleStatus = movie.saleStatus ? movie.saleStatus : ''
             if (this.mode) {
-                if (approveStatus == 'NOT_APPROVE' || approveStatus == '') {
+                if (approveStatus == 'NOT_APPROVE' || approveStatus == '' || approveStatus == 'REJECT') {
                     // 未审核 或 新建
                     setControlArr = !movie.joinFlag ? ['edit', 'copy', 'delete', 'continuityPlan', 'selectSameMoive'] : ['edit', 'copy', 'delete', 'selectSameMoive']
                 } else if (approveStatus == 'WAIT_APPROVE') {
@@ -1778,6 +1787,9 @@ export default {
                         setControlArr = ['checkMovie', 'copy', 'stopSale', 'selectSameMoive']
                     } else if (saleStatus == 'STOP') {
                         // 停售
+                        let startTime = movie.startTime.hours < 6 ? `${this.formatDateTime(new Date(this.baseParam.planDate).getTime() + 24 * 60 * 60 * 1000)} ${movie.startTime.hours}:${movie.startTime.minute}` : `${this.baseParam.planDate} ${movie.startTime.hours}:${movie.startTime.minute}`
+                        setControlArr = new Date(startTime).getTime() <= new Date().getTime() ? ['copy', 'startSale', 'selectSameMoive'] : ['edit', 'copy', 'delete', 'startSale', 'selectSameMoive']
+                    } else if (saleStatus == 'NOT_SALE') {
                         setControlArr = ['copy', 'startSale', 'selectSameMoive']
                     }
                 } 
@@ -1940,6 +1952,7 @@ export default {
             }
             
             let path = type == 'continuityPlan' ? `consecutivePlan?mode=edit&uid=${uid}` : joinFlag ? `consecutivePlan?mode=${type}&uid=${uid}` : `detail?mode=${type}&uid=${uid}`
+            path += `&referer=${encodeURIComponent('/ticket/moviePlan/layout?date=' + this.baseParam.planDate)}`
             this.$router.push({
                     path
             })
@@ -2322,13 +2335,27 @@ export default {
     .plan-tip:nth-last-of-type(1) {
         margin-bottom: 0;
     }
+    .plan-tip {
+        .mr30 {
+            font-size: 12px;
+            margin-right: 30px;
+        }
+    }
+    div {
+        font-size: 12px;
+        margin-bottom: 2px;
+        &:nth-child(1) {
+            margin-bottom: 4px;
+        }
+    }
   
 }
 .movie-plan-window {
-    max-height: calc(100% - 30px) !important;
-    min-height: 600px;
-    min-width: 915px;
-    overflow: auto;
+    // max-height: calc(100% - 30px) !important;
+    // min-height: 600px;
+    // min-width: 915px;
+    overflow-y: scroll;
+    overflow-x: scroll;
     position: relative;
     box-shadow: inset 2px 2px 15px 0px rgba(0, 0, 0, 0.13);
 
@@ -2564,7 +2591,7 @@ export default {
         background: rgba(0, 0, 0, 0.3);
         // margin-left: 30px;
     }
-
+    
     // 控制器
     .item-controls {
         position: absolute;

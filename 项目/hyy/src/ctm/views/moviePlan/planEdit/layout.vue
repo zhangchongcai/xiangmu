@@ -1,8 +1,9 @@
 <template>
     <div :class="isFullScreen ? 'movie-plan full' : 'movie-plan'">
+        
         <div class="movie-plan-tool">
             <div class="plan-tool-l">
-                <el-select
+                <!-- <el-select
                     v-model="hall.value"
                     placeholder="请选择">
                     <el-option
@@ -12,8 +13,10 @@
                         :value="item.id"
                     >
                     </el-option>
-                </el-select>
-
+                </el-select> -->
+                <el-button class="cinema-con-button" @click="$refs.frameSingleCinema.listAuthCommCinemas(), singleCinemaVisible = true" :title="innerData.name">
+                    {{innerData.name}}
+                </el-button>
                 <span class="plan-tool-l-break"></span>
                 <div class="date-picker-con">
                     <span
@@ -171,7 +174,7 @@
                             <i class="iconfont icon-neiye-huifuxiaoshou plan-tool-icon"></i>
                             <p class="plan-menu-name">恢复销售</p>
                         </li>
-                        <li class="plan-single-menu">
+                        <li class="plan-single-menu" @click="directApproves">
                             <i class="iconfont icon-neiye-zhijieshenhe plan-tool-icon"></i>
                             <p class="plan-menu-name">直接审核</p>
                         </li>
@@ -421,7 +424,7 @@
 
         <el-dialog title="批量编辑" :visible.sync="editBatchDialog">
             <!-- 导入价格方案 -->
-            <el-dialog class="import-price-plan-dialog" title="导入价格方案" :visible.sync="importPricePlanDialog" @close="closeDialogCb" append-to-body>
+            <el-dialog class="import-price-plan-dialog" title="导入价格方案" :visible.sync="importPricePlanDialog" @close="importCloseDialogCb" append-to-body>
                 <el-form>
                     <el-form-item>
                         <el-table
@@ -430,7 +433,7 @@
                             @current-change="selectedRow"
                             :data="importPlanData">
                             <el-table-column
-                                prop="priceProgramName"
+                                prop="name"
                                 label="方案名称">
                             </el-table-column>
                             <el-table-column
@@ -462,13 +465,6 @@
                             </el-table-column>
                         </el-table>
                     </el-form-item>
-                    <el-pagination
-                        @current-change="handleCurrentChange"
-                        :current-page="curPage"
-                        :page-size="pageSize"
-                        layout="total, prev, pager, next, jumper"
-                        :total="total">
-                    </el-pagination>
                 </el-form>
                 <div slot="footer" class="dialog-footer">
                     <el-button @click="importPricePlanDialog = false">取 消</el-button>
@@ -502,7 +498,7 @@
                                     </el-select>
                                 </span>
                                 <span class="input-con" v-if="scope.row.selValue == 1">
-                                    价格：<el-input type="number" maxlength="9" v-model="scope.row.price"></el-input>元+增值服务费: <el-input type="number" maxlength="9" v-model="scope.row.addFee"></el-input>元 = 最终售价: {{scope.row.price + scope.row.addFee}}元
+                                    价格：<el-input type="number" maxlength="9" v-model="scope.row.price"></el-input>元+增值服务费: <el-input type="number" maxlength="9" v-model="scope.row.addFee"></el-input>元 = 最终售价: {{((Number(scope.row.price) * 100 + Number(scope.row.addFee) * 100) / 100).toFixed(2)}}元
                                 </span>
                             </template>
                          </el-table-column>
@@ -531,7 +527,7 @@
                                         </el-option>
                                     </el-select>
                                     <span class="input-con" v-if="scope.row.selValue == 1">
-                                        价格：<el-input type="number" maxlength="9" v-model="scope.row.price"></el-input>元+增值服务费: <el-input type="number" maxlength="9" v-model="scope.row.addFee"></el-input>元 = 最终售价: {{scope.row.price + scope.row.addFee}}元
+                                        价格：<el-input type="number" maxlength="9" v-model="scope.row.price"></el-input>元+增值服务费: <el-input type="number" maxlength="9" v-model="scope.row.addFee"></el-input>元 = 最终售价: {{((Number(scope.row.price) * 100 + Number(scope.row.addFee) * 100) / 100).toFixed(2)}}元
                                     </span>
                                 </span>
                             </template>
@@ -545,14 +541,27 @@
             </div>
         </el-dialog>
         
+        <frame-singlecinema
+            :framedialogVisible="singleCinemaVisible"
+            :type="singleCinemaType"
+            :innerData="innerData"
+            @callBackSingle="handleSingleCallBack"
+            ref="frameSingleCinema">
+            <div slot="footerId">
+                <el-button @click="singleCinemaVisible = false">取消</el-button>
+                <el-button type="primary" @click="confirmCinemaSingleDialog(), singleCinemaVisible = false">确定</el-button>
+            </div>
+        </frame-singlecinema>
+
         <movie-plan ref="moviePlan" :price-plan="curPricePlan" :base-param="baseParam" :mode="mode"></movie-plan>
     </div>
 </template>
 
 <script>
 
-import { getPricePlan, subApproves, getUserInfo, exportMoviePlan, getgoldTimeSet, setgoldTimeSet, getRefCinema, getTicketChannel, setBatchPirce, importBatchPricePlan} from 'ctm/http/interface'
+import { getPricePlan, subApproves, getUserInfo, exportMoviePlan, getgoldTimeSet, setgoldTimeSet, getRefCinema, getTicketChannel, setBatchPirce, importBatchPricePlan, priceprogramScan} from 'ctm/http/interface'
 import moviePlan from "./moviePlan"
+import frameSinglecinema from 'frame_cpm/components/frameadmin/cinemaDialog/singleCinema'
 export default {
     
     data() {
@@ -641,11 +650,27 @@ export default {
                 curPage: 1,
                 pageSize: 10,
                 total: 0,
-                importPlanData: []
+                
             },
+            importPlanData: [],
             curSelectPlans: [],
             curImportPricePlan: {
 
+            },
+            innerDataSingle: {},
+            singleCinemaVisible: false,
+            singleCinemaType: 2,
+            innerData: {
+                id: '',
+                name: ''
+            },
+            currentPriceRow: {},
+            // 导入价格方案的数据
+            selectPlanData: {
+                programUid: '',
+                programName: '',
+                isShow: false,
+                data: []
             }
         }
     },
@@ -663,12 +688,13 @@ export default {
             getUserInfo({}).then(res => {
                 if (res.code == 200 && res.data) {
                     this.uidCinema = res.data.cinemaUid
-                    this.cinemaName = res.data.cinemaName
-                    this.hall.value = res.data.cinemaUid
-                    this.hall.data = [{
-                        id: res.data.cinemaUid,
-                        name: res.data.cinemaName
-                    }]
+                    this.innerData.id = Number(this.uidCinema)
+                    this.innerData.name = res.data.cinemaName
+                    // this.hall.value = res.data.cinemaUid
+                    // this.hall.data = [{
+                    //     id: res.data.cinemaUid,
+                    //     name: res.data.cinemaName
+                    // }]
                     this.baseParam = {
                         planDate: this.formatDateTime(this.dateValue),
                         uidCinema: this.uidCinema
@@ -679,8 +705,8 @@ export default {
         },
         getPricePlan() {
             getPricePlan({
-                'cinemaUid': this.uidCinema,
-                'status': 1 
+                cinemaUid: this.uidCinema,
+                status: 1 
             }).then(res => {
                 if(res.data && res.code == 200) {
                     res.data.unshift({
@@ -755,13 +781,10 @@ export default {
         },
         // 提交审批
         subApproves() {
-            // subApproves([{planDate: this.formatDateTime(this.dateValue), uidCinema: this.uidCinema}]).then(res => {
-            //     if (res.code == 200 && res.data) {
-            //         this.success('提交审核成功')
-            //         this.$refs.moviePlan.initMoivePlan()
-            //     }
-            // })
-            this.$refs.moviePlan.submitReview()
+            this.$refs.moviePlan.$refs.filmPlan.submitReview()
+        },
+        directApproves() {
+            this.$refs.moviePlan.$refs.filmPlan.submitReview()
         },
         // 删除 选中排片计划
         deleteSelectPlan() {
@@ -1050,13 +1073,14 @@ export default {
 				}
 			})
         },
+        // 批量编辑
         editBatch() {
             if (this.$refs.moviePlan.$refs.filmPlan.plan_rooms.every(row => row.every(plan => !plan.isSelect))) return this.warning('请至少选中一个排片计划!')
             let selectPlans = this.$refs.moviePlan.$refs.filmPlan.plan_rooms.reduce((arr, row) => {
                 return arr.concat(row.filter(plan => plan.isSelect))
             }, [])
             this.curSelectPlans = this.$refs.moviePlan.$refs.filmPlan.plan_rooms.reduce((arr, row) => {
-                return arr.concat(row.filter(plan => plan.isSelect && plan.approveStatus !== 'WAIT_APPROVE' && plan.approveStatus !== 'APPROVED'))
+                return arr.concat(row.filter(plan => plan.isSelect && plan.approveStatus !== 'WAIT_APPROVE' && plan.approveStatus !== 'APPROVED' && !plan.joinFlag))
             }, [])
             if (selectPlans.length && !this.curSelectPlans.length) return this.warning('当前选中的排片计划不可编辑')
 
@@ -1142,59 +1166,87 @@ export default {
             //             this.importPlanData = res.data.list
             //         }
             //     })
-            // importBatchPricePlan({
-
-            // }).then(res => {
-
-            // })
+            let programeList = this.curSelectPlans.map(item => {
+                return {
+                    cinemaUid: this.uidCinema,
+                    hallUid: item.hallUid,
+                    movieCode: item.movieCode,
+                    // movieVersionCode: item.disversion,
+                    planDate: `${this.baseParam.planDate} ${item.startTime.hours}:${item.startTime.minute}`
+                }
+            })
+            importBatchPricePlan({
+                programeList
+            }).then(res => {
+                this.importPlanData = res.data
+            })
         },
         // close 导入价格方案弹窗
-        closeDialogCb() {
-            this.hallTypeValue = ''
-            this.issueTypeValue = ''
-            this.planName = ''
-            this.curPage = 1
+        importCloseDialogCb() {
             this.importPlanData = []
+            this.currentPriceRow = {}
         },
         // 选择 一个价格方案进行适配
         selectSinglePlan() {
-            this.selectPlanData.data = this.currentRow
+            this.selectPlanData.data = this.currentPriceRow
             priceprogramScan({id: this.selectPlanData.data.id}).then(res => {
                 if (res.code == 200 && res.data) {
                     if (!this.selectPlanData.isShow) this.selectPlanData.isShow = true
                     this.selectPlanData.programName = res.data.ciPriceProgram.name
                     this.selectPlanData.programUid = res.data.ciPriceProgram.uid
-                    this.ticketData.forEach(item => {
+
+                    
+                    this.editBatchData.baseTicket.forEach(item => {
                         if (res.data.ttVoList && res.data.ttVoList.length) {
-                            res.data.ttVoList.forEach(type => {
-                                if (item.uid == type.ttUid) {
-                                    item.price = type.price
-                                    item.addFee = type.addFee
-                                    item.switchStatus = true
-                                }
-                            })
+                            if (res.data.ttVoList.every(type => type.ttUid != item.uid)) {
+                                item.selValue = 2
+                            } else {
+                                item.selValue = 1
+                                res.data.ttVoList.forEach(type => {
+                                    if (item.uid == type.ttUid) {
+                                        item.price = type.price
+                                        item.addFee = type.addFee
+                                    }
+                                })
+                            }
+                            
                         }
                         if (!item.price) item.price = 0
-                        if (!item.addPrice) item.addPrice = 0
+                        if (!item.addFee) item.addFee = 0
                         item.price = parseFloat(item.price).toFixed(2)
-                        item.addPrice = parseFloat(item.addPrice).toFixed(2)
+                        item.addFee = parseFloat(item.addFee).toFixed(2)
                     })
 
-                    this.channelData.forEach(item => {
+                    this.editBatchData.favTicket.forEach(item => {
                         if (res.data.priceNetSale && res.data.priceNetSale.length) {
-                            res.data.priceNetSale.forEach(channel => {
-                                if (item.uid == type.uid) {
-                                    item.price = type.price
-                                    item.switchStatus = true
-                                }
-                            })
+                            if (res.data.priceNetSale.every(channel => channel.uid != item.uid)) {
+                                item.selValue = 2
+                            } else {
+                                item.selValue = 1
+                                res.data.priceNetSale.forEach(channel => {
+                                    if (item.uid == channel.uid) {
+                                        item.price = channel.price
+                                        item.addFee = channel.addFee
+                                    }
+                                })
+                            }
+                            
                         }
                         if (!item.price) item.price = 0
+                        if (!item.addFee) item.addFee = 0
                         item.price = parseFloat(item.price).toFixed(2)
+                        item.addFee = parseFloat(item.addFee).toFixed(2)
                     })
-                    this.permitDiscount = !!res.data.ciPriceProgram.permitDiscount
-                    this.permitSaleBox = !!res.data.ciPriceProgram.permitSaleBox
-                    this.pricePlanDialog = false
+
+                    // 修改对应选中影片的状态
+                    this.curSelectPlans.forEach(plan => {
+                        plan.permitDiscount = res.data.ciPriceProgram.permitDiscount
+                        plan.permitSaleBox = res.data.ciPriceProgram.permitSaleBox
+                        plan.priceProgramName = this.selectPlanData.programName
+                        plan.priceProgramUid = this.selectPlanData.programUid
+                    })
+                    
+                    this.importPricePlanDialog = false
                 }
             })
         },
@@ -1203,7 +1255,7 @@ export default {
         },
          // 表格单选事件
         selectedRow(val) {
-            this.currentRow = val
+            this.currentPriceRow = val
         },
         handleCurrentChange(curPage) {
             this.importPricePlan(curPage)
@@ -1262,13 +1314,27 @@ export default {
             setBatchPirce(data).then(res => {
                 console.log(res)
             })
+        },
+        handleSingleCallBack(opt) {
+            this.innerData = opt.data
+            this.uidCinema = opt.data.id.toString()
+            this.baseParam = {
+                planDate: this.formatDateTime(this.dateValue),
+                uidCinema: this.uidCinema
+            }
+            this.getPricePlan()
+            this.singleCinemaVisible = opt.framedialogVisible
+        },
+        confirmCinemaSingleDialog() {
+            this.$refs.frameSingleCinema.confirmData()
         }
     },
     destroyed() {
         window.document.oncontextmenu = null
     },
     components: {
-        moviePlan
+        moviePlan,
+        frameSinglecinema
     },
     computed: {
     }
@@ -1311,11 +1377,30 @@ export default {
                 top: -8px;
                 margin: 0 3px 0 10px;
             }
-            .el-select {
+            // .el-select {
+            //     float: left;
+            // }
+            // .el-select .el-input.is-focus .el-input__inner {
+            //     border-color: #3b74ff;
+            // }
+            .cinema-con-button {
                 float: left;
-            }
-            .el-select .el-input.is-focus .el-input__inner {
-                border-color: #3b74ff;
+                width: 152px;
+                height: 32px;
+                font-size: 12px;
+                color: #333;
+                padding-left: 8px;
+                border-color: transparent;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                background-color: #fff;
+                &:hover {
+                    background-color: #fff;
+                }
+                &:active {
+                    border-color: #3b74ff;
+                }
             }
             .el-select .el-input--suffix {
                 float: left;

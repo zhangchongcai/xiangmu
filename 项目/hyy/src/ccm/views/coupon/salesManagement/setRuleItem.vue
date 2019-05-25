@@ -137,7 +137,7 @@
                                             <template v-if="!item.children.type">
                                                 <el-form-item :prop="`${item.children.prop}.text`" :rules="item.children.rules">
                                                     <el-row>
-                                                        <el-input class="input-type-166" v-model="addConfig.form[`${item.children.prop}`].text" :placeholder="'请选择'+item.children.placeholder" :readonly="true" clearable @clear="clearInputValue(item.children.prop,'both')"></el-input>
+                                                        <el-input class="input-type-166" v-model="addConfig.form[`${item.children.prop}`].text" :placeholder="'请选择'+item.children.placeholder"  clearable @clear="clearInputValue(item.children.prop,'both')"></el-input>
                                                         <el-button type="primary" plain @click="selectInputValue(item.prop)">选择</el-button>
                                                     </el-row>
                                                 </el-form-item>
@@ -157,7 +157,7 @@
                             <template v-if="addConfig.form.productType == '0'">
                                 <el-form-item label="商品名称:" prop="merName.text" :rules="addConfig.rules.merName">
                                     <el-row class="flex-base">
-                                        <el-input class="input-type-166" v-model="addConfig.form.merName.text" :readonly="true" clearable @clear="clearInputValue('merName','both')"></el-input>
+                                        <el-input class="input-type-166" v-model="addConfig.form.merName.text"  clearable @clear="clearInputValue('merName','both')"></el-input>
                                         <el-button class="margin-left-10" type="primary" plain @click="selectInputValue('merName')">选择</el-button>
                                     </el-row>
                                 </el-form-item>
@@ -165,13 +165,13 @@
                             <template v-else-if="addConfig.form.productType == '1'">
                                 <el-form-item label="商品类别:" prop="className.text" :rules="addConfig.rules.className">
                                     <el-row class="flex-base">
-                                        <el-input class="input-type-166" v-model="addConfig.form.className.text" :readonly="true" clearable @clear="clearInputValue('merName','both')"></el-input>
+                                        <el-input class="input-type-166" v-model="addConfig.form.className.text"  clearable @clear="clearInputValue('merName','both')"></el-input>
                                         <el-button class="margin-left-10" type="primary" plain @click="selectInputValue('className')">选择</el-button>
                                     </el-row>
                                 </el-form-item>
                                 <el-form-item label="品牌:" prop="brandName.text" :rules="addConfig.rules.brandName">
                                     <el-row class="flex-base">
-                                        <el-input class="input-type-166" v-model="addConfig.form.brandName.text" :readonly="true" clearable @clear="clearInputValue('merName','both')"></el-input>
+                                        <el-input class="input-type-166" v-model="addConfig.form.brandName.text"  clearable @clear="clearInputValue('merName','both')"></el-input>
                                         <el-button class="margin-left-10" type="primary" plain @click="selectInputValue('brandName')">选择</el-button>
                                     </el-row>
                                 </el-form-item>

@@ -1,6 +1,6 @@
 <template>
 <div>
-    <div v-if="pageShow=='actList'">
+    <div>
         <!-- 搜索栏 -->
         <section>
             <searchLan :modelName="modelName" :config="searchConfig" @pressSearch="search" @searchValueChange="setSearch"></searchLan>
@@ -22,6 +22,7 @@
         </section>
 
     </div>
+    <!-- 弹窗 -->
     <edit v-if="showDetail" :dialogFormVisible="showDetail" @close="closeDetail" :dataInfo="dataInfo" :showType="showType"></edit>
     
 </div>
@@ -41,13 +42,13 @@ export default {
     },
     data() {
         return {
-            dataInfo:{},
-            showDetail:false,
-            showType:"",
-            dialogFormVisible: false,
-            pageShow: 'actList',
-            tenantId: '1', //商户id
-            modelName: "approvalSettingManagement",
+            dataInfo:{},//弹窗传入数据
+            showDetail:false,//弹窗是否显示
+            showType:"",//弹窗类型
+            dialogFormVisible: false,//弹窗开启状态
+            tenantId: 805852, //商户id
+            modelName: "approvalSettingManagement",//查询模块名字
+            //查询配置
             searchConfig: [
                 {
                     keyName: 'searchActivityName',
@@ -56,7 +57,9 @@ export default {
                     value: ''
                 }
             ],
+            //查询的参数
             searchParam: {},
+            //分页配置
             pageConfig: {
                 start: 0,
                 pageSize: 10,
@@ -64,31 +67,11 @@ export default {
                 currentPage: 1,
                 total: 0
             },
-
-            tableData: [
-                {
-                   name:"最美科技",
-                   createTime:"2019-01-20 16:47:34",
-                   
-                },
-                {
-                   name:"新城影院",
-                   createTime:"2019-01-20 16:47:35",
-                   
-                },
-                {
-                   name:"sdfsaf",
-                   createTime:"2019-01-20 16:47:36",
-                   
-                },
-                {
-                   name:"ldsfkj",
-                   createTime:"2019-01-20 16:47:37",
-                   
-                },
-            ],
+            //列表显示数据
+            tableData: [],
+            //列表渲染配置
             tableLabels: [{
-                    prop: 'name',
+                    prop: 'orginizationName',
                     label: '适用商户名称',
                     width: '500'
                 },
@@ -99,6 +82,7 @@ export default {
                 },
               
             ],
+            //列表操作配置
             tableOptions: {
                 label: "操作",
                 fixed: "right",
@@ -120,24 +104,11 @@ export default {
                 ]
             },
 
-            startOrStopShow: false,
-            status: 0,
-            stopOrStartId: '',
-            startOrStopForm: {
-                remark: ''
-            },
-            startOrStopRule: {
-                remark: [{
-                    required: true,
-                    message: '备注不能为空',
-                    trigger: 'blur'
-                }]
-            }
         }
     },
      created() {
         //  this.search();
-        this.getBillSettingList()
+         this.getBillSettingList()
     },
     methods: {
         setSearch(){
@@ -145,6 +116,7 @@ export default {
         },
         /* @function search - 搜索
          */
+        //查询列表
         search() {
             // let _param = this.setParam();
             let _param = {
@@ -158,7 +130,7 @@ export default {
             };
             this.getDataList(_param);
         },
-
+        // 初始化参数
         setParam() {
             let exitsSearhParam = JSON.stringify(this.searchParam) != '{}' ? true : false;
             let params = {};
@@ -186,9 +158,8 @@ export default {
             return params;
         },
 
-        // 获取数据列表
+        // 获取查询单据数据列表
          getDataList(params) {
-            this.pageShow = 'actList'
             this.$cwfList.searchApproval(params).then(data => {
                 if (data && data.code === 200) {
                     this.tableData = data.data;
@@ -216,17 +187,48 @@ export default {
         handleButton(data) {
             this[`${data.method}`](data.scope);
         },
+        //编辑
         editDetail(scope){
             this.showType="edit"
             this.openDetail(scope)
         },
+        //新增
         addDetail(){
             this.showType="add"
             this.openDetail()
         },
-        delDetail(){
-
+        //删除
+        delDetail(scope){
+            console.log(scope)
+            let params= {
+                id:scope.row.id+"",
+                orginizationId:scope.row.orginizationId,
+                tenantId:805852
+            }
+            this.$cwfList.deleteBillSetting(params).then(data => {
+            if (data && data.code === 200&&data.flag ==0) {
+                // this.tableData = data.data.list;
+                // this.pageConfig.total = data.data.total;
+                this.getBillSettingList()
+                this.$message({
+                    message: "删除成功",
+                    type: "success",
+                    duration: 1000
+                });
+            } else {
+                this.tableData = [];
+                this.pageConfig.total = 0;
+                this.$message({
+                    message: data.msg,
+                    type: "warning",
+                    duration: 1000
+                });
+            }
+            }).catch(err => {
+                console.log(err)
+            })
         },
+        //打开弹窗并且传入数据
         openDetail(scope){
             if(scope){
                 this.dataInfo=scope.row
@@ -238,8 +240,11 @@ export default {
             this.showDetail=true
             
         },
-        closeDetail(){
+        closeDetail(update){
             this.showDetail=false
+            if(update){
+                this.getBillSettingList()
+            }
         },
         handleSizeChange(){
             
@@ -247,15 +252,16 @@ export default {
         handleCurrentChange(){
 
         },
+        //获取单据设置列表
         getBillSettingList(){
             let params={
-                global:0,
+                global:1,
                 orginizationId:0,
                 tenantId:805852
             }
             this.$cwfList.getBillSettingList(params).then(data => {
                 if (data && data.code === 200) {
-                    // this.tableData=data.data.workflowBusinessList
+                    this.tableData=data.data.workflowBusinessList
                     this.$message({
                         message: "查询成功",
                         type: "success",

@@ -2,7 +2,7 @@
   <div class="sale-content-wrap">
     <div class="header-fixed">
       <el-breadcrumb separator="/" class="reset-bread" separator-class="el-icon-arrow-right">
-        <el-breadcrumb-item :to="{ path: '/group/home' }">
+        <el-breadcrumb-item :to="{ path: '/analysis/new/home' }">
           <span class="text-gray">经营决策</span>
         </el-breadcrumb-item>
         <el-breadcrumb-item>

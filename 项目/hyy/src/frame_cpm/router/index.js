@@ -30,7 +30,8 @@ let routes = [{
             {
                 path: 'home',
                 meta: {
-                    title: '主页'
+                    title: '主页',
+                    hidden:true
                 },
                 component: (resolve) => require(['../views/Home.vue'], resolve),
                 name: '主页',

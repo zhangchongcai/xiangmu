@@ -97,7 +97,7 @@
             <div class="left" v-if="item.isOption != 0">{{item.name}} 可替换为以下商品</div>
           </div>
           <div>
-            <el-table :data="item.options" stripe empty-text="暂无记录" v-loading="tableLoding">
+            <el-table :data="item.options" stripe v-loading="tableLoding">
               <el-table-column
                 v-for="item in formatRecipeTableColumn(item)"
                 :key="item.key"
@@ -114,10 +114,10 @@
                   </div>
                   <div v-else-if="item.bothEdit">
                     <div v-if="routeQuery.type==3">
-                        <span>{{row[item.key].flag==0 ? '加价':'减价'}}</span>
-                        <span>{{row[item.key].price}}</span>
+                      <span>{{row[item.key].flag==0 ? '加价':'减价'}}</span>
+                      <span>{{row[item.key].price}}</span>
                     </div>
-                    
+
                     <div v-else>
                       <el-select v-model="row[item.key].flag" placeholder class="both-edit-inp">
                         <el-option label="加价" value="0"></el-option>
@@ -239,7 +239,7 @@
       </div>
       <!-- 销售信息 end-->
       <div class="submit-box">
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
+        <el-button type="primary" @click="handleSubmit">保 存</el-button>
         <el-button @click="handleCancel">取 消</el-button>
       </div>
     </el-form>
@@ -321,7 +321,6 @@
                       height="300"
                       @selection-change="handleSelectionMaterial"
                       stripe
-                      empty-text="暂无记录"
                       v-loading="tableLoding"
                     >
                       <el-table-column type="selection" width="40"></el-table-column>
@@ -477,8 +476,7 @@ export default {
         },
         {
           label: "基本单位",
-          key: "unieName",
-
+          key: "unieName"
         },
         {
           label: "售价",
@@ -724,7 +722,7 @@ export default {
     },
     // 查看
     setmealQuery(param) {
-      debugger
+      debugger;
       this.$cimList.storequartersGoods
         .cinmaSetmealQuery(param)
         .then(resData => {
@@ -750,7 +748,7 @@ export default {
         .then(resData => {
           if (resData.code == 200) {
             this.$message("新建成功");
-          }else{
+          } else {
             this.$message(resData.msg);
           }
         })
@@ -811,15 +809,13 @@ export default {
       tempArr.dataList = this.requestDataList(this.formattingDataList);
       console.log(tempArr);
 
-     if(this.routeQuery.type == 1){
-         this.setmealSave(tempArr);
-      }else if(this.routeQuery.type == 2){
-         this.setmealSave(tempArr);
-      }else if(this.routeQuery.type == 3){
-         //查看
-        
+      if (this.routeQuery.type == 1) {
+        this.setmealSave(tempArr);
+      } else if (this.routeQuery.type == 2) {
+        this.setmealSave(tempArr);
+      } else if (this.routeQuery.type == 3) {
+        //查看
       }
-     
     },
     // 处理请求参数
     requestDataList(data = []) {
@@ -849,7 +845,7 @@ export default {
     },
     //确认提交修改
     handleModificationSubmit() {
-      debugger
+      debugger;
       if (this.isMaySelected) {
         let tempArr = JSON.parse(JSON.stringify(this.selectedMaterials));
         tempArr = tempArr.map(item => {

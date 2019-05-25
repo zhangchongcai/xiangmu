@@ -17,7 +17,7 @@
           <li><span>终端编号：</span>{{data.terminalCode}}</li>
           <li><span>收银员：</span>{{data.userName}}</li>
           <li><span>交易影院：</span>{{data.cinemaName}}</li>
-          <li><span>交易时间：</span>{{data.payedTime}}</li>
+          <li><span>交易时间：</span>{{data.createTime}}</li>
           <li><span>总金额：</span>{{data.payAmount}}元</li>
           <li><span>放映信息：</span>{{data.showInfo}}</li>
         </ul>
@@ -55,17 +55,15 @@
               </div>
             </template>
           </el-table-column>
-          <div slot="append" class="tableFoot">
+          <!-- <div slot="append" class="tableFoot">
             <div class="paginationLayer">
               <div class="paginationInfo">共10条记录 1/2</div>
               <div class="paginaButtoms">
-                <!-- <span class="previous">&lt;</span>
-                <span class="next">&gt;</span> -->
                 <el-button size="mini" icon="el-icon-arrow-left"></el-button>
                 <el-button size="mini" icon="el-icon-arrow-right"></el-button>
               </div>
             </div>
-          </div>
+          </div> -->
         </el-table>
       </div>
       <div class="retunGoodsInfo">
@@ -87,7 +85,7 @@
       </div>
       <div class="footButtomLayer">
         <el-button size="medium" @click="$router.go(-1)">取消</el-button>
-        <el-button size="medium" type="primary" @click="refor" >退款</el-button>
+        <el-button size="medium" type="primary" @click="refor"  :loading="loading">退款</el-button>
       </div>
     </div>
     <el-dialog title="操作提示" :visible.sync="visible" width="50%">
@@ -134,7 +132,7 @@ export default {
         name:'',
         password:'',
       },
-      key:'DTdabd9-10b',
+      key:'',
       data:{
 
       },
@@ -147,7 +145,8 @@ export default {
       tableData:[],
       multipleSelection: [],
       stateStr:['未打印','已打印'],
-      goodsStr:['未取货','已取货']
+      goodsStr:['未取货','已取货'],
+      loading:false
 
     }
   },
@@ -180,7 +179,8 @@ export default {
       async refor(){
         if(!this.multipleSelection.length) return this.$message.warning('请选择退货商品!');
         if(!this.value) return this.$message.warning('请选择退货原因!');
-        if(!this.phone) return this.$message.warning('请输入登记手机号码!');
+        // if(!this.phone) return this.$message.warning('请输入登记手机号码!');
+        this.loading = true
         const data = await refundRefundSaleBill({
           billCode:this.data.billCode,
           refundGoods: this.multipleSelection.map( item => { return { uid : item.uid} }),
@@ -188,9 +188,11 @@ export default {
           refundPhone : this.phone
         })
         console.log(data);
+        this.loading = false
         if(data.code != 200 ){
           return this.$message.error(data.msg);
         }
+
         this.$message.success(data.msg);
         
         this.getDate()

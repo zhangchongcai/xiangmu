@@ -181,7 +181,6 @@ export default {
       let newValue = value.toString();
       //判断逻辑
       if(newValue.indexOf('.') != -1){
-        console.log('有小数点');
         if(newValue.length < 8){
           return newValue
         }
@@ -195,7 +194,6 @@ export default {
       }
       else
       {
-        console.log('没有小数点');
         if(newValue.length < 5){
           return newValue
         }
@@ -231,7 +229,6 @@ export default {
       let foo = ''
 
       if(newValue.indexOf('.') != -1){
-        console.log('是有小数点');
         if(newValue.length < 8){
           foo = '元'
           return foo
@@ -246,7 +243,6 @@ export default {
         }
       }
       else{
-        console.log('没有小数点');
         if(newValue.length < 5){
           foo = '元'
           return foo
@@ -289,7 +285,7 @@ export default {
       let tool1 = BoxKPIvalue.timeRate, tool2 = BoxKPIvalue.boxOfficeRate
       
       //取值title
-      this.BoxRate = BoxKPIvalue.boxOfficeTarget
+      this.BoxRate = BoxKPIvalue.boxOfficeMonthToNow
       this.BoxKPItotal = BoxKPIvalue.boxOfficeCurrent
       //从新复制
       this.gaugeData = {

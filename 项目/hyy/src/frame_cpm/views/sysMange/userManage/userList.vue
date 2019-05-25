@@ -28,7 +28,7 @@
                     </el-form-item>
                     <el-form-item label="所属组织：" style="margin: 0px !important;">
                         <el-input v-model="formInline.orgName" disabled></el-input>
-                        <i class="el-icon-close" style="top: 11px;right: 4px;position: absolute;font-weight: bolder;color:red;font-size: large" @click="formInline.orgName=''"></i>
+                        <i class="el-icon-close" style="top: 11px;right: 4px;position: absolute;font-weight: bolder;color:red;font-size: large" @click="clear"></i>
                     </el-form-item>
                     <el-form-item style="margin: 0px !important;">
                         <div class="companySpan" @click='dialogVisible=true'>
@@ -75,7 +75,7 @@
                     </el-table-column>
                     <el-table-column
                         prop="organization"
-                        label="所属部门"
+                        label="所属组织"
 
                     >
                         <template slot-scope="scope">{{scope.row.organization.name}}</template>
@@ -180,6 +180,9 @@
         this.getOrgTreeList()
     },
     methods: {
+        clear() {
+          this.formInline.orgName = this.formInline.orgUid = ''
+        },
         to() {
           this.$router.push('newUser')
         },

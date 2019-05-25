@@ -1,12 +1,17 @@
 <template>
     <div class="home">
         <div :style="{paddingBottom: bottomPadding}" v-show="!isExtends" class="home-left">
-            <film-tab></film-tab>
+            <film-tab @refreshCurrentOrder="refreshCurrentOrder"></film-tab>
             <tickets ref="ticketsbox" :ticketArr="allTickets" class="tickets" @openMoreTicket="openMoreTicket"></tickets>
         </div>
         <!-- 座位图区域 -->
         <div :class="['home-right', !isExtends ? 'small-screen' : 'large-screen']">
            <seat :ticketArr="allTickets" @scaleLarge="scaleLarge" @openMoreTicket="openMoreTicket" @scaleSmall="scaleSmall"></seat>
+        </div>
+        <div class="shop-pros" v-if="!isExtends">
+            <span class="pro-item" v-for="(item, index) in 4" :key="'pro' + index">
+                {{'产品' + item}}
+            </span>
         </div>
         <!-- 已选座位框 -->
         <seat-selection v-if="!isExtends && seatSelection.length" :selectedTickets="seatSelection" @extendSeats="scaleLarge"></seat-selection>
@@ -50,16 +55,18 @@ import KeyNumberBoard from 'src/components/dialog/CartNumberKeyBoard'
 import FullScreenOrder from 'components/fullScreenOrder'
 import MorePay from 'components/dialog/MorePay'
 import {mapGetters, mapMutations} from 'vuex'
-import { SHOW_BOTTOM_BAR, EXTEND_SEAT, SHOW_DATE_PICKER, SAVE_FILM_DATA, SAVE_ALL_PAY, MORE_TICKETS_TRIGER, SAVE_TIME_DATA, SAVE_HALL_DATA, GET_CART_DATA, SAVE_ALL_FILM_DATA, SAVE_ALL_TIME_DATA, SAVE_ALL_HALL_DATA ,GET_CART_BILLCODE, SET_CURRENT_DATE, SAVE_CINEMA_INFO} from 'types'
-import { queryFilmDate, queryAllFilm, payType, findCart} from 'src/http/apis.js'
+import { SHOW_BOTTOM_BAR, EXTEND_SEAT, SHOW_DATE_PICKER, SET_CURRENT_PLANCODE, SAVE_FILM_DATA, SAVE_ALL_PAY, MORE_TICKETS_TRIGER, SAVE_TIME_DATA, SAVE_HALL_DATA, GET_CART_DATA, SAVE_ALL_FILM_DATA, SAVE_ALL_TIME_DATA, SAVE_ALL_HALL_DATA ,GET_CART_BILLCODE, SET_CURRENT_DATE, SAVE_CINEMA_INFO, CHECK_CURRENT_SEAT_STATUS} from 'types'
+import { queryFilmDate, queryAllFilm, payType, findCart, findTimeSeatStatus} from 'src/http/apis.js'
 import Cart from 'components/cart/layout'
+
     export default {
         data() {
           return {
               dialogVisible: false,
               bottomPadding: '16vh',
               alltickets: [],
-              cartShow:true
+              cartShow:true,
+              timeoutNum: 30000
           }
         },
         
@@ -77,7 +84,7 @@ import Cart from 'components/cart/layout'
                'cinemaUid',
                'terminalCode',
                'changingTicket'
-            ]),
+            ])
         },
 
         methods: {
@@ -97,7 +104,83 @@ import Cart from 'components/cart/layout'
                 GET_CART_BILLCODE, //获得订单编号
                 SET_CURRENT_DATE, //当前日期
                 SAVE_CINEMA_INFO,
+                CHECK_CURRENT_SEAT_STATUS,
+                SET_CURRENT_PLANCODE
             ]),
+
+            //心跳机制
+
+            heartReset() {
+                clearInterval(this.heart);
+                this.heartStart();
+            },
+            heartStart() {
+                this.heart = setInterval(() => {
+                    this.websocketsend('holdOn')
+                }, this.timeoutNum)
+            },
+
+            reconnect() {
+                if(this.lockReconnect) {
+                    return
+                }
+                this.lockReconnect = true
+                this.reInit = setTimeout( () => {     //没连接上会一直重连，设置延迟避免请求过多
+                this.initWebSocket();
+                this.lockReconnect = false
+                }, 4000);
+            },
+
+            initWebSocket(){ //初始化weosocket
+                // console.log("开始重连")
+                
+                this.websock = new WebSocket(`${this.$wsUrl}${localStorage.getItem('cinemaUid')}/${localStorage.getItem('terminalId')}`);
+                this.websock.onmessage = this.websocketonmessage;
+                this.websock.onopen = this.websocketonopen;
+                this.websock.onerror = this.websocketonerror;
+                this.websock.onclose = this.websocketclose;
+            },
+            websocketonopen(e){ //连接建立之后执行send方法发送数据
+                // console.log(e)
+                // console.log( 'cinemaUid:' + localStorage.getItem('cinemaUid'))
+                // console.log( 'terminalId:' + localStorage.getItem('terminalId'))
+                this.heartReset()
+            },
+            websocketonerror(){//连接建立失败重连
+                this.reconnect()
+                
+            },
+            websocketonmessage(e){
+                if(JSON.parse(e.data)) {
+                    let data = (JSON.parse(e.data))
+                    findTimeSeatStatus({
+                        cinemaCode: data.cinemaCode,
+                        planCode: data.planCode
+                    }).then(res => {
+                        if(res.code == 200) {
+                           this.CHECK_CURRENT_SEAT_STATUS(res.data)
+                        }
+                    })
+                }
+                this.heartReset()
+            },  
+            websocketsend(Data){//数据发送
+                // console.log(Data)
+                this.websock.send(Data)
+            },
+            websocketclose(){  //关闭
+                this.reconnect()
+            },
+
+            //切换页面干掉webSocket
+            killWebSocket() {
+                clearInterval(this.heart);
+                this.lockReconnect = true;
+                clearInterval(this.reInit);
+                this.websock.onclose = null;
+                this.websock.onerror = null;
+                this.websock = null;
+            },
 
             scaleLarge() { //全屏放大选座
 
@@ -118,6 +201,19 @@ import Cart from 'components/cart/layout'
                 this.MORE_TICKETS_TRIGER()
             },
 
+            //刷新按钮事件
+            refreshCurrentOrder() {
+                // 获取可售排期
+                this.getFilmData({date: this.currentDateStr, sequence: 1}, this.SAVE_FILM_DATA);
+                this.getFilmData({date: this.currentDateStr, sequence: 2}, this.SAVE_TIME_DATA);
+                this.getFilmData({date: this.currentDateStr, sequence: 3}, this.SAVE_HALL_DATA);
+
+                // 获取全部排期
+                this.getAllFilmData({date: this.currentDateStr, sequence: 1}, this.SAVE_ALL_FILM_DATA);
+                this.getAllFilmData({date: this.currentDateStr, sequence: 2}, this.SAVE_ALL_TIME_DATA);
+                this.getAllFilmData({date: this.currentDateStr, sequence: 3}, this.SAVE_ALL_HALL_DATA);
+            },
+
             //关闭日期组件
             closeDatePicker(obj) {
               this.SET_CURRENT_DATE(obj.dateStr)
@@ -133,9 +229,10 @@ import Cart from 'components/cart/layout'
             handerDetail() {
                 this.cartShow = !this.cartShow
                 if(this.cartShow){
-                    // this.$refs.cart.style.top = '100vh'
+                    this.$refs.cart.style.opacity = '0.0'
                     this.$refs.cart.style.transform = 'translateY(100vh)'
                 }else{
+                    this.$refs.cart.style.opacity = '1.0'
                     this.$refs.cart.style.transform = 'translateY(0)'
                 }
             },
@@ -146,9 +243,13 @@ import Cart from 'components/cart/layout'
                     if(res.code == 200 && res.data.length) {
                         callback(res.data)
                     }else {
+                        this.SET_CURRENT_PLANCODE({
+                            code: null,
+                            allowSingleSold: false
+                        })
                         this.$message({
                             showClose: true,
-                            message: res.data.length == 0 ? '暂无数据' : res.msg,
+                            message: res.data && res.data.length == 0 ? '暂无可售电影排期数据' : res.msg,
                             type: 'error'
                         });
                     }
@@ -161,9 +262,13 @@ import Cart from 'components/cart/layout'
                     if(res.code == 200 && res.data.length) {
                         callback(res.data)
                     }else {
+                        this.SET_CURRENT_PLANCODE({
+                            code: null,
+                            allowSingleSold: false
+                        })
                         this.$message({
                             showClose: true,
-                            message: res.data.length == 0 ? '暂无数据' : res.msg,
+                            message: res.data && res.data.length == 0 ? '暂无全部电影排期数据' : res.msg,
                             type: 'error'
                         });
                     }
@@ -177,7 +282,7 @@ import Cart from 'components/cart/layout'
         this.SAVE_CINEMA_INFO()
 
            
-        //  获取可售排期
+        // 获取可售排期
            this.getFilmData({date: this.currentDateStr, sequence: 1}, this.SAVE_FILM_DATA);
            this.getFilmData({date: this.currentDateStr, sequence: 2}, this.SAVE_TIME_DATA);
            this.getFilmData({date: this.currentDateStr, sequence: 3}, this.SAVE_HALL_DATA);
@@ -186,18 +291,26 @@ import Cart from 'components/cart/layout'
            this.getAllFilmData({date: this.currentDateStr, sequence: 1}, this.SAVE_ALL_FILM_DATA);
            this.getAllFilmData({date: this.currentDateStr, sequence: 2}, this.SAVE_ALL_TIME_DATA);
            this.getAllFilmData({date: this.currentDateStr, sequence: 3}, this.SAVE_ALL_HALL_DATA);
+           
+           this.initWebSocket()
 
            payType().then(res=> {
                if(res.code==200) {
                    let {data} = res
                 //    console.log(data)
                    this.SAVE_ALL_PAY(data)
+               }else {
+                   this.$message({
+                            showClose: true,
+                            message: res.data && res.data.length == 0 ? '暂无支付方式数据' : res.msg,
+                            type: 'error'
+                        });
                }
            })
         },
 
-        destroy() {
-            console.log("销毁了")
+        destroyed() {
+            this.killWebSocket()
         },
         
         components: {
@@ -229,6 +342,7 @@ import Cart from 'components/cart/layout'
  .home {
      width: 100vw;
      height: 100%;
+     overflow: hidden;
      display: flex;
      justify-content: space-between;
      align-items: flex-start;
@@ -264,10 +378,35 @@ import Cart from 'components/cart/layout'
         position: fixed;
         right: 0;
         bottom: calc(6.3vh + 5.2vh + 2.6vh + 0.3vh);
-        transition: all .4s;
+        transition: all 0.3s;
         transform: translateY(100vh);
         width: 37.3vw;
+        opacity: 1;
         z-index: 99;
+    }
+    .shop-pros {
+        width: 70vw;
+        position: fixed;
+        bottom: 14.4vh;
+        right: 0;
+        height: 5.2vh;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .pro-item {
+            box-sizing: border-box;
+            width: calc(69.8vw / 4);
+            height: 100%;
+            line-height: 5.2vh;
+            border: 1px solid #bcbcbc;
+            border-radius: 2px;
+            background: #ffffff;
+            font-size: $font-size12;
+            color: $font-color3;
+            text-align: center;
+            margin-left: 2px;
+        }
     }
  }
 </style>

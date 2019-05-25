@@ -32,19 +32,19 @@
         <li @click="MeClick('2')" :class="{active:cur==2}">
           <div>购买率</div>
           <div>
-            <span>{{GoodTop.buyRate}}</span>%
+            <span>{{GoodTop.buyRate | woo}}</span>%
           </div>
         </li>
         <li @click="MeClick('3')" :class="{active:cur==3}">
           <div>客单价</div>
           <div>
-            <span>{{GoodTop.unitPrice | capitalizeFloor}}</span>{{GoodTop.unitPrice | foo}}
+            <span>{{GoodTop.unitPrice | capitalizeOne}}</span>{{GoodTop.unitPrice | foo}}
           </div>
         </li>
         <li @click="MeClick('4')" :class="{active:cur==4}">
           <div>套餐销售占比</div>
           <div>
-            <span>{{GoodTop.setmealSalesVolumePercent}}</span>%
+            <span>{{GoodTop.setmealSalesVolumePercent | woo}}</span>%
           </div>
         </li>
       </ul>
@@ -61,11 +61,11 @@
               <div slot="content" style="width:300px">
                 <ul id="ulMain">
                   <li>人均卖品收入当日达成 : <span>{{CurrentSellKPIDataCine.sppCurrent | capitalizeOne}}{{CurrentSellKPIDataCine.sppCurrent | foo}}</span></li>
-                  <li>环比前一日 : <span :class="[CurrentSellKPIDataCine.sppChainDay > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[CurrentSellKPIDataCine.sppChainDay > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{CurrentSellKPIDataCine.sppChainDay}}%</span></li>
+                  <li>环比前一日 : <span :class="[CurrentSellKPIDataCine.sppChainDay > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[CurrentSellKPIDataCine.sppChainDay > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{CurrentSellKPIDataCine.sppChainDay | woo}}%</span></li>
                   <li>月至今达成 : <span>{{CurrentSellKPIDataCine.sppMonthToNow | capitalizeOne}}{{CurrentSellKPIDataCine.sppMonthToNow | foo}}</span></li>
-                  <li>环比上月 : <span :class="[CurrentSellKPIDataCine.sppChainMonth > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[CurrentSellKPIDataCine.sppChainMonth > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{CurrentSellKPIDataCine.sppChainMonth}}%</span></li>
+                  <li>环比上月 : <span :class="[CurrentSellKPIDataCine.sppChainMonth > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[CurrentSellKPIDataCine.sppChainMonth > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{CurrentSellKPIDataCine.sppChainMonth | woo}}%</span></li>
                   <li>本月目标为 : <span>{{CurrentSellKPIDataCine.sppTarget | capitalizeOne}}</span>{{CurrentSellKPIDataCine.sppTarget | foo}}</li>
-                  <li>距目标额差距 : <span :class="[CurrentSellKPIDataCine.sppGap > 0? 'green':'red']">{{CurrentSellKPIDataCine.sppGap}}</span>%</li>
+                  <li>距目标额差距 : <span :class="[CurrentSellKPIDataCine.sppGap > 0? 'green':'red']">{{CurrentSellKPIDataCine.sppGap | woo}}</span>%</li>
                 </ul>
               </div>
               <i class="iconfont icon-danchuang-tishi"></i>
@@ -140,7 +140,7 @@
         <ve-bar 
         :data="ChartsCust"
         :colors="barColors"
-        :extend="barExtend"
+        :extend="barExtendTwo"
         ></ve-bar>
       </div>
     </div>
@@ -326,9 +326,27 @@ export default {
           }
         }
       },
-      //条形图
       barExtend:{
+        legend: {
+          show:false
+        },
         barWidth: 10,
+        tooltip: {
+          trigger: 'axis',
+          //在这里设置
+          formatter: '{a0} : {c0}%'
+        }
+      },
+      barExtendTwo:{
+        legend: {
+          show:false
+        },
+        barWidth: 10,
+        tooltip: {
+          trigger: 'axis',
+          //在这里设置
+          formatter: '{a0} : {c0}元'
+        }
       }
     };
   },
@@ -338,17 +356,21 @@ export default {
     }
   },
   filters: {
+    woo(value){
+      if (!value) return ""
+      return value.toFixed(2)
+    },
+    //处理万元单位
     capitalizeOne(value) {
       if (!value) return ""
       let newValue = value.toString();
-
       //判断逻辑
       if(newValue.indexOf('.') != -1){
-        if(newValue.length < 8){
-          return newValue
+        
+        if(newValue.length < 7){
+          return Number(newValue + '0').toFixed(2)
         }
-        else if(newValue.length >= 8 && newValue.length <= 11){
-
+        else if(newValue.length >= 7 && newValue.length <= 11){
           return (newValue / 10000).toFixed(2)
         }
         else if(newValue.length >= 12){
@@ -358,7 +380,7 @@ export default {
       else
       {
         if(newValue.length < 5){
-          return newValue
+          return Number(newValue + '.00').toFixed(2)
         }
         else if(newValue.length >= 5 && newValue.length <= 8){
           return (newValue / 10000).toFixed(2)
@@ -439,18 +461,17 @@ export default {
           return foo
         }
       }
-    },
-    capitalizeTwo(value) {
-      if (!value) return "";
-      value = value * 100;
-      return value.toFixed(2);
-    },
-    capitalizeFloor(value) {
-      if (!value) return "";
-      return value.toFixed(2);
     }
   },
   methods: {
+    active(){
+      this.cur= 0
+    },
+    clickPush(){
+      this.$router.push({
+        path: "/analysis/cinema/sale/total"
+      });
+    },
     foo(val){
       this.flag = val
     },
@@ -517,10 +538,10 @@ export default {
           let res = response.data;
           //获取总数据
           if(this.BoxType === "spp_price"){
-            
-            //获取KPI
-            let ResKPI = res.sellGoodsKpiInfo;
-            this.CurrentSellKPIDataCine = ResKPI
+            if(res.sellGoodsKpiInfo){
+              //获取KPI
+              this.CurrentSellKPIDataCine = res.sellGoodsKpiInfo;
+            }
           }
           else if(this.BoxType === "sales_volume"){
             //获取卖品收入玫瑰图
@@ -751,6 +772,8 @@ export default {
   color: #3b74ff;
   font-size: 12px;
   margin-left: 10px;
+  position: relative;
+  top:-2px;
 }
 
 //Table表格设置

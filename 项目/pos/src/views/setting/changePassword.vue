@@ -4,14 +4,14 @@
       <div class="contentLeft">
         <el-form  label-width="169px" :model="formLabelAlign">
           <el-form-item label="旧密码：">
-            <el-input v-model="formLabelAlign.name" placeholder="请输入旧密码"></el-input>
+            <el-input v-model="formLabelAlign.oldPassword" type="password"  @focus="changKey('oldPassword')" placeholder="请输入旧密码"></el-input>
           </el-form-item>
           <el-form-item label="新密码：">
-            <el-input v-model="formLabelAlign.region" placeholder="请输入新密码" ></el-input>
+            <el-input v-model="formLabelAlign.newPassword"  type="password" @focus="changKey('newPassword')" placeholder="请输入新密码" ></el-input>
             <div class="inputTip">（不少于6位英文字母与数字混合）</div>
           </el-form-item>
           <el-form-item label="确认新密码：">
-            <el-input v-model="formLabelAlign.type" placeholder="请再次输入新密码"></el-input>
+            <el-input v-model="formLabelAlign.againNewPassword" type="password" @focus="changKey('againNewPassword')" placeholder="请再次输入新密码"></el-input>
           </el-form-item>
         </el-form>
       </div>
@@ -21,35 +21,64 @@
     </div>
     <div class="footButtomLayer">
       <el-button size="medium" @click="$router.go(-1)">返回</el-button>
-      <el-button type="primary" size="medium" @click="show">确定</el-button>
+      <el-button type="primary" size="medium" @click="onChangePassword">确定</el-button>
     </div>
-    <pwd-keyboard ref="pwd" v-model="testVal"></pwd-keyboard>
+    <!-- <pwd-keyboard ref="pwd" v-model="testVal"></pwd-keyboard> -->
   </div>
 </template>
 <script>
 import numberKeyBoard from 'components/numberKeyBoard/index.vue'
-import pwdKeyboard from 'components/pwdKeyboard/index';
+// import pwdKeyboard from 'components/pwdKeyboard/index';
+import {  changePassword,userLogout } from 'http/apis'
 export default {
   components:{
     numberKeyBoard,
-    pwdKeyboard,
+    // pwdKeyboard,
   },
   data(){
     return{
         formLabelAlign: {
-          name: '',
-          region: '',
-          type: '',
+          oldPassword: '',
+          newPassword: '',
+          againNewPassword: '',
         },
-        testVal:'321',
+        valStr:'',
+        testVal:'',
     }
   },
   methods:{
     onkey(item){
-      console.log(item)
+      if(!this.valStr) return
+      this.formLabelAlign[this.valStr] = item
+    },
+    changKey(key){
+      this.valStr = key;
+      this.$refs.keyBoard.keyValue = this.formLabelAlign[this.valStr];
     },
     show(){
       this.$refs.pwd.show()
+    },
+    async onChangePassword(){
+      const { oldPassword,newPassword,againNewPassword } = this.formLabelAlign;
+      if(!oldPassword) return this.$message.warning('请输入旧密码!');
+      if(!newPassword) return this.$message.warning('请输入新密码!');
+      if(!againNewPassword) return this.$message.warning('请输入确认密码!');
+      if(againNewPassword != newPassword) return this.$message.warning('新密码不一致，请重新输入！');
+      const data = await changePassword({
+        cinemaLicence: 'b931c317c9303855',
+        user_name : localStorage.getItem('userName'),
+        oldPassword,
+        newPassword
+      })
+      if(data.code !=200) return  this.$message.error(data.msg);
+      console.log(data);
+      const outData = await userLogout()
+      console.log(outData);
+      if(outData.code !=200) return this.$message.error(outData.msg);
+      this.$message.success(data.msg);
+      localStorage.removeItem('token')
+      this.$router.replace({name:'login'})
+
     }
   }
 }

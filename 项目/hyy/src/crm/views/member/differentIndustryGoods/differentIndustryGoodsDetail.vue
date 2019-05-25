@@ -16,7 +16,7 @@
               formatValidityType(this)}}</div>
             <div class="item-inner"><label class="lable-name">核销方式：</label>{{detailData.writeOffWay |
               formatWriteOffWay}}</div>
-            <div class="item-inner"><label class="lable-name">优惠券：</label>{{detailData.goodsTickets | sumTotalTickets}}
+            <div class="item-inner"><label class="lable-name">优惠券：</label>{{detailData.inventoryNum | emptyShow}}
               张</div>
             <div class="item-inner" style="display: flex;align-items: flex-start;"><label
                 class="lable-name">商品图片：</label>
@@ -177,17 +177,17 @@ export default {
       }
     },
     // 优惠券
-    sumTotalTickets(value) {
-      if (value) {
-        var totalNum = 0;
-        for (var i = 0; i < value.length; i++) {
-          totalNum += parseInt(value[i].ticketNum);
-        }
-        return totalNum;
-      } else {
-        return "-";
-      }
-    },
+    // sumTotalTickets(value) {
+    //   if (value) {
+    //     var totalNum = 0;
+    //     for (var i = 0; i < value.length; i++) {
+    //       totalNum += parseInt(value[i].ticketNum);
+    //     }
+    //     return totalNum;
+    //   } else {
+    //     return "-";
+    //   }
+    // },
     emptyShow: function(value) {
       if (value || value == 0) {
         return value;

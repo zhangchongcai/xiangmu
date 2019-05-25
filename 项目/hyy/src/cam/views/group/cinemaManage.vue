@@ -2,7 +2,7 @@
   <div class="sale-content-wrap">
     <div class="header-fixed">
       <el-breadcrumb separator="/" class="reset-bread" separator-class="el-icon-arrow-right">
-        <el-breadcrumb-item :to="{ path: '/group/home' }">
+        <el-breadcrumb-item :to="{ path: '/analysis/new/home' }">
           <span class="text-gray">经营决策</span>
         </el-breadcrumb-item>
         <el-breadcrumb-item>
@@ -51,7 +51,7 @@
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
             :current-page="page"
-            :page-sizes="$pageSizes"
+            :page-sizes="[15,30,45,60]"
             :page-size="size"
             layout="total,sizes,prev, pager, next, jumper"
             :total="total"
@@ -77,14 +77,19 @@ export default {
       cinemaName:null,
       cinemaId:null,
       competeCinemaList: [],
-      size: 10,
+      size: 15,
       page: 1,
       total: 0,
     };
   },
  
   methods: {
-    // 1. 查询竞对影院（已绑定）
+    // 1.我的影院弹窗
+    myCinemaShow(){
+      this.$refs.mySelectDialog.initData();
+      this.$refs.mySelectDialog.show = true;
+    },
+    // 2. 查询竞对影院（已绑定）
     getBindingCinema(option){
       if(option){
         this.cinemaName = option.cinemaName;
@@ -104,7 +109,16 @@ export default {
           this.total = res.total;
       })
     },
-    
+    // 3.竞对影院弹窗
+    addShow(){
+      if(!this.cinemaId){
+        this.$message({type:'error',message:'请选择我的影院'})
+        return ;
+      }else{
+        this.$refs.selectDailog.getCompeteList();
+        this.$refs.selectDailog.show = true;
+      }
+    },
     // 4. 添加竞对影院
     addCinema(info){
         let params = {
@@ -140,22 +154,7 @@ export default {
         this.$set(this.competeCinemaList,toIndex,oldRow);
       })
     },
-    // 我的影院弹窗
-    myCinemaShow(){
-      this.$refs.mySelectDialog.initData();
-      this.$refs.mySelectDialog.show = true;
-    },
-    // 竞对影院弹窗
-    addShow(){
-      if(!this.cinemaId){
-        this.$message({type:'error',message:'请选择我的影院'})
-        return ;
-      }else{
-        this.$refs.selectDailog.getCompeteList();
-        this.$refs.selectDailog.show = true;
-      }
-    },
-    // 删除竞对影院
+    // 6.删除竞对影院
     delet(id){
       this.$confirm('确定删除该竞对影院?','提示',{
           confirmButtonText: '确定',
@@ -180,8 +179,7 @@ export default {
     //分页/页码
     handleCurrentChange(num) {
       this.page = num;
-       this.getBindingCinema()
-    
+      this.getBindingCinema()
     }
   }
 };

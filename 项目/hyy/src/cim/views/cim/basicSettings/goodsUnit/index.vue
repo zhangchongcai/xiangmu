@@ -138,13 +138,14 @@ export default {
           key: "unitType",
           formatter(row, column, cellValue) {
             let result = "";
-            switch (row.baseFlag) {
-              case 0:
-                result = "采购单位";
-                break;
-              case 1:
-                result = "基本单位";
-                break;
+            if (row.baseFlag == 1 && row.purFlag == 0) {
+              result = "基本单位";
+            }
+            if (row.baseFlag == 0 && row.purFlag == 1) {
+              result = "采购单位";
+            }
+            if (row.baseFlag == 1 && row.purFlag == 1) {
+              result = "基本单位,采购单位";
             }
             return result;
           }
@@ -257,7 +258,7 @@ export default {
         if (this.queryData.unitType === "1") {
           this.queryData.purFlag = 1;
           this.queryData.baseFlag = 0;
-        }else{
+        } else {
           this.queryData.purFlag = "";
           this.queryData.baseFlag = "";
         }

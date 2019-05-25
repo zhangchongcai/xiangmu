@@ -14,8 +14,8 @@
             <el-form-item label="用户名称" prop="fullName">
                 <el-input v-model="ruleForm.fullName" placeholder="请输入20个以内汉字或字符"></el-input>
             </el-form-item>
-            <el-form-item label="用户编码" prop="empcode">
-                <el-input v-model="ruleForm.empcode" placeholder="请输入10个以内汉字或字符"></el-input>
+            <el-form-item label="用户编码" prop="empCode">
+                <el-input v-model="ruleForm.empCode" placeholder="请输入10个以内汉字或字符"></el-input>
             </el-form-item>
             <el-form-item label="状态" prop="status" >
                 <el-radio v-model="ruleForm.status" label="0" >启用</el-radio>
@@ -51,12 +51,13 @@
                     :data="roleArr"
                     style="width: 100%"
                     ref="multipleTable"
+                    :row-key="getrowkey"
                     @selection-change="handleSelectionChange"
             >
                 <el-table-column
                         width="50"
+                        :reserve-selection="true"
                         type="selection">
-
                 </el-table-column>
                 <el-table-column
                         prop="name"
@@ -140,6 +141,9 @@
         name: "newUser",
         data() {
             return {
+                getrowkey(row) {
+                    return row.id
+                },
                 multipleSelection: [],
                 dialogVisible: false,
                 total:null,
@@ -161,7 +165,7 @@
                     label: 'text'
                 },
                 str: '',
-                roles: '',
+                roleIds: [],
                 ruleForm: {
                     loginName: '',
                     fullName: '',
@@ -173,7 +177,6 @@
                     phone: '',
                     email: '',
                 },
-                rolesId: '',
                 orgUid: '',
                 deptIds: '',
                 rules: {
@@ -205,10 +208,7 @@
             }
         },
         created() {
-            this.getRoleTreeList()
             this.getOrgTreeList()
-            this.getDeptTreeList()
-
         },
         methods: {
             submitForm(formName) {
@@ -219,14 +219,14 @@
                             user:{
                                 loginName: this.ruleForm.loginName,
                                 fullName: this.ruleForm.fullName,
-                                empCode: this.ruleForm.empcode,
+                                empCode: this.ruleForm.empCode,
                                 status: this.ruleForm.status,
                                 orgUid: this.orgUid,
                                 orgType: this.orgType,
                                 phone: this.ruleForm.phone,
                                 email: this.ruleForm.email
                             },
-                            roleIds: this.ruleForm.rolesId,
+                            roleIds: this.roleIds,
                             deptIds: this.deptIds,
                             radioType: this.radioType
                         }
@@ -238,22 +238,17 @@
                                         type: 'success'
                                     });
                                     this.$router.push('index')
-                                }else if(ret.code==-200){
-                                    _this.$message({
-                                        message: '用户账号已存在',
-                                        type: 'info'
-                                    });
                                 }else{
                                   _this.$message({
                                     message: ret.msg,
                                     type: 'info'
                                   });
                                 }
-                            }).catch( err => {
+                            }).catch( () => {
+                              this.error('网络繁忙，请稍后再试')
 
                         })
                     } else {
-                        console.log('error submit!!');
                         return false;
                     }
                 });
@@ -268,7 +263,7 @@
                         arrIds.push(item.uid)
                     })
                     this.ruleForm.rolesName = arr.join('，')
-                    this.ruleForm.rolesId = arrIds
+                    this.roleIds= arrIds
                 }
             },
             ok2() {
@@ -319,21 +314,28 @@
                 this.multipleSelection = val;
             },
             getTree(val) {
-                this.dialogVisible = true
                 if(val==1) {
                     this.dialogVisible = true
                     this.title = '选择所属角色'
                     this.treeFlag = true
-                    this.ruleForm.rolesName = ''
-                    this.ruleForm.rolesId = []
+                    this.getRoleTreeList()
+                    this.$nextTick(()=>{
+                        this.toggleSelection(this.multipleSelection)
+                    })
                 }else if(val==2) {
                     this.dialogVisible = true
                     this.title = '选择所属组织'
                     this.treeFlag = false
+                    this.$nextTick(()=> {
+                        this.$refs.tree.setCurrentKey(this.orgUid)
+                    })
                 }else if(val==3) {
                     this.dialogVisible = false
                     this.dialogVisible2 = true
                     this.getDeptTreeList()
+                    this.$nextTick(()=> {
+                        this.$refs.tree2.setCheckedKeys(this.deptIds);
+                    })
                 }
             },
             getOrgTreeList(){
@@ -342,9 +344,12 @@
                     .then(ret => {
                         if(ret && ret.code==200){
                             this.orgArr = ret.data
+                        }else{
+                          this.error(ret.msg)
                         }
                     })
                     .catch(() => {
+                      this.error('网络错误')
                     });
             },
             getRoleTreeList(){
@@ -353,9 +358,12 @@
                     .then(ret => {
                         if(ret && ret.code==200){
                             this.roleArr = ret.data
+                        }else{
+                          this.error(ret.msg)
                         }
                     })
                     .catch(() => {
+                      this.error('网络错误')
                     });
             },
             getDeptTreeList(){
@@ -364,20 +372,23 @@
                     .then(ret => {
                         if(ret && ret.code==200){
                             this.deptArr = ret.data
+                        } else{
+                          this.error(ret.msg)
                         }
                     })
                     .catch(() => {
+                      this.error('网络错误')
                     });
             },
             //当前页改变
             handleCurrentChange(value) {
                 this.currentPage = value;
-                this.getUserList();
+                this.getRoleTreeList();
             },
             //当前页数数目改变e
             handleSizeChange(value) {
                 this.pageSize = value;
-                this.getUserList();
+                this.getRoleTreeList();
             },
         }
     }

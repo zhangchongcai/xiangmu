@@ -1165,7 +1165,7 @@ export default {
         movieCode: "",
         movieName: "",
         currentPage: 0,
-        size: 1000
+        size: 100
       };
       self.$ctmList
         .DownloadmovieList(params)

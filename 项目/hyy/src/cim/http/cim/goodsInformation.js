@@ -1,13 +1,13 @@
 import axios from 'frame_cpm/http/api';
-let cimRegion = '/cim'
-// let cimRegion = ''
+import config from './config';
 export default {
     // 总部商品
     headquartersGoods: {
         // 总部查询接口
         goodsDataQueryGoodsList: data => {
             return axios({
-                url: cimRegion + '/goodsData/queryGoodsList',
+                baseURL:config.baseURL,
+                url: '/goodsData/queryGoodsList',
                 method: 'post',
                 data
             })
@@ -15,7 +15,8 @@ export default {
         // 新建sku
         singleProductCreateSku: data => {
             return axios({
-                url: cimRegion + '/singleProduct/createSku',
+                baseURL:config.baseURL,
+                url: '/singleProduct/createSku',
                 method: 'post',
                 data
             })
@@ -23,7 +24,8 @@ export default {
         // 新建单品
         singleProductSave: data => {
             return axios({
-                url: cimRegion + '/singleProduct/save',
+                baseURL:config.baseURL,
+                url: '/singleProduct/save',
                 method: 'post',
                 data
             })
@@ -31,7 +33,8 @@ export default {
         // 查看单品
         singleProductGet: data => {
             return axios({
-                url: cimRegion + '/singleProduct/get',
+                baseURL:config.baseURL,
+                url: '/singleProduct/get',
                 method: 'post',
                 data
             })
@@ -39,7 +42,8 @@ export default {
         // 修改单品
         singleProductUpdate: data => {
             return axios({
-                url: cimRegion + '/singleProduct/update',
+                baseURL:config.baseURL,
+                url: '/singleProduct/update',
                 method: 'post',
                 data
             })
@@ -47,7 +51,8 @@ export default {
         // 新建原材料
         merRawStockSave: data => {
             return axios({
-                url: cimRegion +'/mer/rawStock/save',
+                baseURL:config.baseURL,
+                url:'/mer/rawStock/save',
                 method: 'post',
                 data
             })
@@ -55,7 +60,8 @@ export default {
         // 查看原材料
         MerRawStockQuery: data => {
             return axios({
-                url: cimRegion +'/mer/rawStock/query',
+                baseURL:config.baseURL,
+                url:'/mer/rawStock/query',
                 method: 'post',
                 data
             })
@@ -63,7 +69,8 @@ export default {
         // 修改原材料
         merRawStockUpdate: data => {
             return axios({
-                url: cimRegion +'/mer/rawStock/update',
+                baseURL:config.baseURL,
+                url:'/mer/rawStock/update',
                 method: 'post',
                 data
             })
@@ -71,7 +78,17 @@ export default {
         // 基本单位/采购单位
         merUnitList: data => {
             return axios({
-                url: cimRegion + '/mer/unit/list',
+                baseURL:config.baseURL,
+                url: '/mer/unit/list',
+                method: 'post',
+                data
+            })
+        },
+        // 品牌管理列表
+        merBandList: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/mer/brand/list',
                 method: 'post',
                 data
             })
@@ -79,7 +96,8 @@ export default {
         // 商品编码
         singleProductCreateMerCode: data => {
             return axios({
-                url: cimRegion + '/singleProduct/createMerCode',
+                baseURL:config.baseURL,
+                url: '/singleProduct/createMerCode',
                 method: 'post',
                 data
             })
@@ -87,7 +105,8 @@ export default {
         // 新增原材料
         merRawStockSave: data => {
             return axios({
-                url: cimRegion + '/mer/rawStock/save',
+                baseURL:config.baseURL,
+                url: '/mer/rawStock/save',
                 method: 'post',
                 data
             })
@@ -95,7 +114,8 @@ export default {
         // 获取原材料列表接口
         synproFindSemifinishedMater: data => {
             return axios({
-                url: cimRegion + '/synpro/findSemifinishedMater',
+                baseURL:config.baseURL,
+                url: '/synpro/findSemifinishedMater',
                 method: 'post',
                 data
             })
@@ -103,7 +123,8 @@ export default {
         // 新建合成品
         synproSaveSyntheticProduct: data => {
             return axios({
-                url: cimRegion + '/synpro/saveSyntheticProduct',
+                baseURL:config.baseURL,
+                url: '/synpro/saveSyntheticProduct',
                 method: 'post',
                 data
             })
@@ -111,7 +132,8 @@ export default {
         // 获取基本单位
         synproFindUnitList: data => {
             return axios({
-                url: cimRegion + '/synpro/findUnitList',
+                baseURL:config.baseURL,
+                url: '/synpro/findUnitList',
                 method: 'post',
                 data
             })
@@ -119,7 +141,8 @@ export default {
         // 选择商品分类
         setmeaLoadCategoies: data => {
             return axios({
-                url: cimRegion + '/setmeal/loadCategoies',
+                baseURL:config.baseURL,
+                url: '/setmeal/loadCategoies',
                 method: 'post',
                 data
             })
@@ -127,7 +150,8 @@ export default {
         // 修改合成品
         synproUpdateSyntheticProduct: data => {
             return axios({
-                url: cimRegion + 'synpro/updateSyntheticProduct',
+                baseURL:config.baseURL,
+                url: 'synpro/updateSyntheticProduct',
                 method: 'post',
                 data
             })
@@ -135,7 +159,8 @@ export default {
         // 查看合成品
         synproQuerySyntheticProduct: data => {
             return axios({
-                url: cimRegion + '/synpro/querySyntheticProduct',
+                baseURL:config.baseURL,
+                url: '/synpro/querySyntheticProduct',
                 method: 'post',
                 data
             })
@@ -143,7 +168,8 @@ export default {
         // 查看销售属性
         singleProductQueryAttribute: data => {
             return axios({
-                url: cimRegion + '/singleProduct/queryAttribute',
+                baseURL:config.baseURL,
+                url: '/singleProduct/queryAttribute',
                 method: 'post',
                 data
             })
@@ -151,7 +177,8 @@ export default {
         // 选择原材料组合sku信息接口
         synproTrycombinationSku: data => {
             return axios({
-                url: cimRegion + '/synpro/trycombinationSku',
+                baseURL:config.baseURL,
+                url: '/synpro/trycombinationSku',
                 method: 'post',
                 data
             })
@@ -159,7 +186,8 @@ export default {
         // 新建服务商品
         merServiceGoodsSave: data => {
             return axios({
-                url: cimRegion + '/mer/serviceGoods/save',
+                baseURL:config.baseURL,
+                url: '/mer/serviceGoods/save',
                 method: 'post',
                 data
             })
@@ -167,7 +195,8 @@ export default {
         // 修改服务商品
         merServiceGoodsUpdate: data => {
             return axios({
-                url: cimRegion + '/mer/serviceGoods/update',
+                baseURL:config.baseURL,
+                url: '/mer/serviceGoods/update',
                 method: 'post',
                 data
             })
@@ -175,7 +204,8 @@ export default {
         // 查看服务商品
         merServiceGoodsQuery: data => {
             return axios({
-                url: cimRegion + '/mer/serviceGoods/query',
+                baseURL:config.baseURL,
+                url: '/mer/serviceGoods/query',
                 method: 'post',
                 data
             })
@@ -183,16 +213,18 @@ export default {
         // 根据商品分类查询品牌列表
         classBrandQuery: data => {
             return axios({
-                url: cimRegion + '/class/brand/query',
+                baseURL:config.baseURL,
+                url: '/class/brand/query',
                 method: 'post',
                 data
             })
         },
-   
+
         // 新增套餐
         setmealSave: data => {
             return axios({
-                url: cimRegion + '/setmeal/save',
+                baseURL:config.baseURL,
+                url: '/setmeal/save',
                 method: 'post',
                 data
             })
@@ -200,7 +232,8 @@ export default {
         // 新增前选择的分类
         setmealLoadCategoies: data => {
             return axios({
-                url: cimRegion + '/setmeal/loadCategoies',
+                baseURL:config.baseURL,
+                url: '/setmeal/loadCategoies',
                 method: 'post',
                 data
             })
@@ -208,7 +241,8 @@ export default {
         // 新增与修改页面数据填充
         setmealToPage: data => {
             return axios({
-                url: cimRegion + '/setmeal/toPage',
+                baseURL:config.baseURL,
+                url: '/setmeal/toPage',
                 method: 'post',
                 data
             })
@@ -216,7 +250,8 @@ export default {
         // 获取套餐商品及可选商品
         setmealLoadItems: data => {
             return axios({
-                url: cimRegion + '/setmeal/loadItems',
+                baseURL:config.baseURL,
+                url: '/setmeal/loadItems',
                 method: 'post',
                 data
             })
@@ -224,7 +259,8 @@ export default {
         // 查看套餐
         setmealQuery: data => {
             return axios({
-                url: cimRegion + '/setmeal/query',
+                baseURL:config.baseURL,
+                url: '/setmeal/query',
                 method: 'post',
                 data
             })
@@ -232,7 +268,8 @@ export default {
         // 查总部所有启用渠道
         queryBaseChannel: data => {
             return axios({
-                url: cimRegion + '/singleProduct/queryBaseChannel',
+                baseURL:config.baseURL,
+                url: '/singleProduct/queryBaseChannel',
                 method: 'post',
                 data
             })
@@ -240,7 +277,8 @@ export default {
         // 首页删除
         goodsDataDeleteMerByUid: data => {
             return axios({
-                url: cimRegion + '/goodsData/deleteMerByUid',
+                baseURL:config.baseURL,
+                url: '/goodsData/deleteMerByUid',
                 method: 'post',
                 data
             })
@@ -248,7 +286,8 @@ export default {
         // 首页禁用
         goodsDataUpdateMerStatusByUid: data => {
             return axios({
-                url: cimRegion + '/goodsData/updateMerStatusByUid',
+                baseURL:config.baseURL,
+                url: '/goodsData/updateMerStatusByUid',
                 method: 'post',
                 data
             })
@@ -259,7 +298,8 @@ export default {
         // 修改合成品
         synproUpdateCinemaSynthetic: data => {
             return axios({
-                url: cimRegion + '/synpro/updateCinemaSynthetic',
+                baseURL:config.baseURL,
+                url: '/synpro/updateCinemaSynthetic',
                 method: 'post',
                 data
             })
@@ -267,7 +307,8 @@ export default {
         // 查看合成品
         synproqueryCinemaSynthetic: data => {
             return axios({
-                url: cimRegion + '/synpro/queryCinemaSynthetic',
+                baseURL:config.baseURL,
+                url: '/synpro/queryCinemaSynthetic',
                 method: 'post',
                 data
             })
@@ -275,7 +316,8 @@ export default {
         // 修改服务商品
         cinemaServiceGoodsUpdate: data => {
             return axios({
-                url: cimRegion + '/cinema/serviceGoods/update',
+                baseURL:config.baseURL,
+                url: '/cinema/serviceGoods/update',
                 method: 'post',
                 data
             })
@@ -283,7 +325,8 @@ export default {
         // 查看服务商品
         cinemaServiceGoodsQuery: data => {
             return axios({
-                url: cimRegion + '/cinema/serviceGoods/query',
+                baseURL:config.baseURL,
+                url: '/cinema/serviceGoods/query',
                 method: 'post',
                 data
             })
@@ -291,15 +334,17 @@ export default {
         // 首页查询
         goodsDataQueryCinemaGoodsList: data => {
             return axios({
-                url: cimRegion + '/goodsData/queryCinemaGoodsList',
+                baseURL:config.baseURL,
+                url: '/goodsData/queryCinemaGoodsList',
                 method: 'post',
                 data
             })
-        }, 
+        },
         // 查看原材料
         cinemaRawStockQuery: data => {
             return axios({
-                url: cimRegion + '/cinema/rawStock/query',
+                baseURL:config.baseURL,
+                url: '/cinema/rawStock/query',
                 method: 'post',
                 data
             })
@@ -307,35 +352,40 @@ export default {
         // 修改原材料
         cinemaRawStockUpdate: data => {
             return axios({
-                url: cimRegion + '/cinema/rawStock/update',
+                baseURL:config.baseURL,
+                url: '/cinema/rawStock/update',
                 method: 'post',
                 data
             })
         },// 查询套餐
         cinmaSetmealQuery: data => {
             return axios({
-                url: cimRegion + '/cinmaSetmeal/query',
+                baseURL:config.baseURL,
+                url: '/cinmaSetmeal/query',
                 method: 'post',
                 data
             })
         },// 修改套餐
         cinmaSetmealSave: data => {
             return axios({
-                url: cimRegion + '/cinmaSetmeal/save',
+                baseURL:config.baseURL,
+                url: '/cinmaSetmeal/save',
                 method: 'post',
                 data
             })
         },// 查看单品
         singleProductGetCinema: data => {
             return axios({
-                url: cimRegion + '/singleProduct/getCinema',
+                baseURL:config.baseURL,
+                url: '/singleProduct/getCinema',
                 method: 'post',
                 data
             })
         },// 修改单品
         singleProductUpdateCinema: data => {
             return axios({
-                url: cimRegion + '/singleProduct/updateCinema',
+                baseURL:config.baseURL,
+                url: '/singleProduct/updateCinema',
                 method: 'post',
                 data
             })

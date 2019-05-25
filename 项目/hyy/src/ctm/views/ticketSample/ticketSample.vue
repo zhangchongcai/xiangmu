@@ -4,7 +4,7 @@
         <div class="demo-ruleForm">
           <div class="item-warp" >
             <span>影院名称:</span>
-            <el-input v-model="cinemaName" @focus="cinemaDialogShow" style="width:220px;"></el-input>
+            <el-input v-model="cinemaName" @focus="cinemaDialogShow" style="width:220px;" readonly></el-input>
           </div>
             <div style="display:inline-block">
               <el-button type="primary" @click="searchCinema">查询</el-button>
@@ -134,13 +134,13 @@ import cinemaDialog from 'ctm/mixins/cinemaDialog.js'
     mixins:[cinemaDialog],
     methods: {
       // 获取数据列表
-      getDataList (cinemaUid) {
+      getDataList (uid) {
         let limit = {
           'page': this.pageIndex,
           'pageSize': this.pageSize,
-          cinemaUid:cinemaUid || null
         }
-        this.$ctmList.ticketList(limit).then( data => {
+        let cinemaUid = {cinemaUid:uid||''}
+        this.$ctmList.ticketList(limit,cinemaUid).then( data => {
             if (data && data.code === 200) {
               data = data.data;
               this.total = data.total  //页数

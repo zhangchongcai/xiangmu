@@ -6,9 +6,10 @@
                 class="tag-nav-item"
                 :class="isActive(item) ? 'cur' : ''"
                 v-for="(item, index) in tagNavList"
-                :to="{path: item.path, query: item.query}"
+                :to="{path: item.path, query: item.query,params: item.params}"
                 :key="index">
-                {{item.title}}
+                <b>{{item.title}}</b>
+
                 <span
                     class='el-icon-close'
                     @click.prevent.stop="closeTheTag(item, index)"
@@ -47,6 +48,7 @@ export default {
         tagNavList() {
             return this.$store.state.tagNav.openedPageList
         }
+
     },
     mounted() {
         // 首次加载时将默认页面加入缓存
@@ -63,6 +65,9 @@ export default {
     },
     methods: {
         addTagNav() {
+            if(this.$route.meta.hidden){
+              return
+            }
             // 如果需要缓存则必须使用组件自身的name(this.$router.getMatchedComponents()[1].name)，而不是router的name
             this.$store.commit("tagNav/addTagNav", {
                 name: this.$route.name,
@@ -81,7 +86,10 @@ export default {
             if (this.$route.path == item.path) {
               let path = localStorage.getItem('defaultPath')
                 if (index) {
-                    this.$router.push(this.tagNavList[index - 1].path)
+                    this.$router.push({path:this.tagNavList[index - 1].path,
+                      query   :   this.tagNavList[index - 1].query ,
+                      params  :   this.tagNavList[index - 1].params
+                    })
                 } else {
                     this.$router.push(path)
                     if (this.$route.path == path) {
@@ -147,6 +155,16 @@ export default {
         font-size: 12px;
         color: #666;
         text-decoration: none;
+        b{
+            overflow:hidden;
+            white-space:nowrap;
+            word-break: keep-all;
+            display: inline-block;
+            text-overflow:ellipsis;
+            width:79%;
+            vertical-align: middle;
+            font-weight: normal;
+        }
         &:hover span {
             display: inline-block;
         }
@@ -168,6 +186,9 @@ export default {
                 display: inline-block;
                 color: #3b74ff;
             }
+        }
+        .el-icon-close {
+            font-size: 16px;
         }
     }
 }

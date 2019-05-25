@@ -175,6 +175,14 @@ let routes = [
     component: (resolve) => require(['csm/views/finance/workTime/public/singleCinema.vue'], resolve),
     name: '总部渠道管理',
   },
+  {
+    path: 'ceshi',
+    meta: {
+      title: '总部渠道管理'
+    },
+    component: (resolve) => require(['csm/views/finance/workTime/publicModule/ceshi.vue'], resolve),
+    name: '总部渠道管理',
+  },
 ];
 
 

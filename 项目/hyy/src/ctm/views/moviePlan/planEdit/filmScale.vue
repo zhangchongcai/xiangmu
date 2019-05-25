@@ -1,7 +1,8 @@
 <template>
-<section :style="{width: width +'px'}">
+<!-- <section :style="{width: width +'px'}"> -->
+<section >
     <div class="scale-window">
-        <ul class="content flex-base" :style="{left:'-'+scrollX +'px'}">
+        <ul class="content flex-base" :style="{left:'-'+ scrollX + 'px'}">
             <li class="time-item flex-base">
                 <div class="time" style="opacity: 0">05:00</div>
                 <ul class="line flex-base">
@@ -163,12 +164,12 @@ section {
     position: relative;
 }
 .scale-window {
-    min-width: 915px;
-    width: 100%;
+    // min-width: 915px;
+    // width: 100%;
     height: 30px;
     overflow: hidden;
     position: relative;
-    float: left;
+    // float: left;
 }
 
 .content {

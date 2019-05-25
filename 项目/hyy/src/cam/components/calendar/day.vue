@@ -26,7 +26,7 @@
         <div class="dayListWarp" v-if="daysList.length > 0">
             <template v-for="(item, index) in daysList">
                 <div class="dayItem" :key="index">
-                    <span v-text="item.label" :class="{'notInMonth':!item.dayInCurrentMonth ,'currendDay': item.currendDay , 'selected' : timeCount == item.value}" @click="sureSelectedTheDate(item)"></span>
+                    <span v-text="item.label" :class="{'notInMonth':!item.dayInCurrentMonth , 'selected' : timeCount == item.value}" @click="sureSelectedTheDate(item)"></span>
                 </div>
             </template>
         </div>
@@ -37,7 +37,7 @@ import {getDaysListOfMonth} from '../../util/getDaysOfMonth'
 export default {
     props: {
         value: {
-            type: Object  , 
+            // type: Object  , 
             default: new Date()  , 
             required: true 
         }
@@ -52,7 +52,7 @@ export default {
             timeNow: null , 
             year: 0 , 
             month: 0 ,
-            timeCount: 0  , 
+            timeCount: new Date(this.value), 
             daysList: [] 
         }
     } , 
@@ -118,6 +118,7 @@ export default {
             this.getDaysListByYearAndMonth();
         }  , 
         sureSelectedTheDate(item){  //确定选择日期
+            this.timeCount = item.value;
             this.$emit('valueChange' , new Date(item.value));
             if(!item.dayInCurrentMonth){
                 this.timeNow = new Date(item.value);

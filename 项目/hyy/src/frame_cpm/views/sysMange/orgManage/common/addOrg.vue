@@ -8,9 +8,9 @@
       <div class="search-wrap plian">
         <span>组织名称：</span>
           <el-input v-model="name" placeholder="请输入内容" clearable></el-input>
-          <div class="childen-search">
-              <el-input v-model="remark" placeholder="备注信息" clearable></el-input>
-          </div>
+          <!--<div class="childen-search">-->
+              <!--<el-input v-model="remark" placeholder="备注信息" clearable></el-input>-->
+          <!--</div>-->
       </div>
       <!--<div class="addOrg-wrap">-->
         <!--<el-button type="text" @click='addOrgInforFun'>-->
@@ -44,7 +44,7 @@ export default {
       bf:'',
       tenantLicenses:'',
       name:"",
-      remark:'',
+      // remark:'',
     };
   },
   props: ['openOrgListFun','chosenOneOrg','dialogVisible_addorgChange','getOrgList'],
@@ -75,19 +75,21 @@ export default {
     //新建组织
     addNewOrgFun(){
       let self = this;
+      if(this.chosenOneOrg.id==null){
+        this.error("请选择上级组织");
+        return false;
+      }
       if (this.name == "") {
         this.error("请输入组织名称");
         return false;
       }
       let data ={
-        pUid: this.chosenOneOrg.id?this.chosenOneOrg.id:0,
+        pUid: this.chosenOneOrg.id,
         name: this.name,
-        remark:this.remark
-
       }
         addOrg(data)
           .then(ret => {
-              if(ret.code == 200){
+              if(ret&&ret.code == 200){
                self.$message({
                         message: '新建成功',
                         type: 'success'
@@ -99,7 +101,7 @@ export default {
                   self.$message(ret.msg);
             }
           })
-          .catch((err) => {
+          .catch(() => {
             self.$message.error('服务器繁忙，稍等再试');
           });
 

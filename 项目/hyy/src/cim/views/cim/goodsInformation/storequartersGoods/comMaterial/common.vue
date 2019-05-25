@@ -295,7 +295,7 @@
       </div>
       <!-- 销售信息 end-->
       <div class="submit-box">
-        <el-button type="primary" @click="comSingleSubmit()" v-if="routeQuery.type != 3">确定</el-button>
+        <el-button type="primary" @click="comSingleSubmit()" v-if="routeQuery.type != 3">保 存</el-button>
         <el-button @click="handleCancel">取 消</el-button>
       </div>
     </el-form>

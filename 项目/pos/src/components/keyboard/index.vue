@@ -1,9 +1,9 @@
 <template>
   <transition name="slide-fade">
-  <div class="keyboardLayer" v-if="showState">
+  <div class="keyboardLayer"  v-if="showState" ref="keyboard">
      <div class="keyboardInputBar">
         <div class="inputLayer">
-          <input ref="allKey" class="input" :type="type" :rows="2" :placeholder="placeholder" :value="value" @input="$emit('input', $event.target.value)" />
+          <input ref="allKey"  @keydown="keydown" class="input" :type="type" :rows="2" :placeholder="placeholder" :value="value" @input="$emit('input', $event.target.value)" />
           <i v-if="this.value" @click="$emit('input', '');" class="iconfont iconguanbi"></i>
         </div>
         <div class="dowmkey" @click="close">
@@ -61,8 +61,15 @@ export default {
   },
   mounted(){
     console.log(this);
+   
+  },
+  updated(){
+    
   },
   methods:{
+    keydown(e){
+      console.log(e)
+    },
     onKey(key){
       switch(key){
         case '大写' : 
@@ -97,9 +104,22 @@ export default {
     },
     show(){
       this.showState = 1;
+      setTimeout(()=>{
+        document.addEventListener('click',this.clickSide)
+      },300)
     },
     close(){
       this.showState = 0;
+      document.removeEventListener('click',this.clickSide)
+    },
+    clickSide(e){
+      if(!this.showState) return
+      if(e.target.tagName.toLowerCase() != 'input'){
+        if(!this.$refs.keyboard.contains(e.target)){
+         this.close()
+        }
+      }
+      
     },
     confirm(){
       this.$emit('confirm',this.value)
@@ -116,7 +136,9 @@ export default {
   bottom: 0;
   background: #fff;
   padding: 2.1vh 4.5vw;
-  z-index: 100;
+  z-index: 9999;
+  user-select: none;
+  -webkit-transform: translateZ(0);
   .keyboardInputBar{
     display: flex;
     justify-content: space-between;

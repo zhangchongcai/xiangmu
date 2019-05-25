@@ -10,7 +10,7 @@
     </el-breadcrumb> -->
     <div class="searchAdition">
       <el-form :inline="true" class="demo-form-inline search-form" size="small" label-width="100px">
-        <el-form-item label="单据状态:">
+        <el-form-item label="资金科目:">
           <el-select v-model="searchAdition.subjectName">
             <el-option label="全部" value>全部</el-option>
             <el-option v-for="(item,index) in subjectList" :key="index" :label="item.subjectName" :value="item.subjectName">{{item.subjectName}}</el-option>
@@ -189,7 +189,8 @@
         let limit = {
           current: this.current,
           size: this.size,
-          userName: this.search2.createName
+          userName: this.search2.createName,
+          cinemaUid:this.$route.query.cinemaUid
         };
         this.$csmList.getCreater(Object.assign({}, limit))
           .then(data => {

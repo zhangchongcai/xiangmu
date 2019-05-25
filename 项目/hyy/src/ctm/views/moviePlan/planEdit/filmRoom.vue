@@ -72,6 +72,10 @@ export default {
 <style lang="scss" scoped>
 section {
     float: left;
+    padding-bottom: 1rem;
+    box-sizing: border-box;
+    overflow: hidden;
+    background: #fff;
 }
 .title {
     width: 128px;

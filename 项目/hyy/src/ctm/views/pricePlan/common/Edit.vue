@@ -1,6 +1,6 @@
 <template>
   <div class="movie-price-plan">
-    <div class="content-wrap">
+  <div class="content-wrap">
     <el-collapse
       v-model="activeNames"
       @change="handleChange"
@@ -914,7 +914,7 @@ export default {
       
     },
     // ****************************************************************************************
-    // 线下模块方法**********************************************************************************************************
+    // 线下模块方法*****************************************************************************
     handleCheckedDisVersion_Change(value) {
       let checkedCount = value.length;
       this.disVersion_checkAll_1 = checkedCount == this.disVersionList.length;
@@ -1202,7 +1202,7 @@ export default {
         movieCode: "",
         movieName: "",
         currentPage: 0,
-        size: 1000
+        size: 100
       };
       self.$ctmList
         .DownloadmovieList(params)

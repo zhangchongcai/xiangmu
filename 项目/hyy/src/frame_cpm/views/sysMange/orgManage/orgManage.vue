@@ -260,8 +260,8 @@ import editNextOrg from "./common/editNextOrg.vue"
       },
     //获取拾取的某个组织
       getOneOrgChosen(val){
-        this.chosenOneOrg = val
         console.log(val)
+        this.chosenOneOrg = val
       },
     //新建组织结构-总
       addNewOrgFun(){
@@ -292,6 +292,7 @@ import editNextOrg from "./common/editNextOrg.vue"
         this.dialogVisible_editNextOrg = !this.dialogVisible_editNextOrg
       },
       dialogVisible_editNextOrgChange(val){
+        console.log(val)
         this.dialogVisible_editNextOrg = val
       },
       //删除当前级别
@@ -318,7 +319,7 @@ import editNextOrg from "./common/editNextOrg.vue"
                     });
               }
             })
-            .catch((err) => {
+            .catch(() => {
               self.$message('服务器繁忙，稍等再试');
             });
 
@@ -371,7 +372,7 @@ import editNextOrg from "./common/editNextOrg.vue"
             }
 
           })
-          .catch((err) => {
+          .catch(() => {
             self.$message('服务器繁忙，稍等再试');
           });
       },

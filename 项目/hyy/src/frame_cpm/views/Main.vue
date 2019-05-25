@@ -14,58 +14,77 @@
                     <i class="el-icon-setting"></i>
                     <span slot="title">工作台</span>
                 </el-menu-item>
-                <!--<div class="workSpace">-->
-                    <!--<i class="el-icon-menu"></i>-->
-                    <!--<span slot="title">工作台</span>-->
-                <!--</div>-->
                 <div class="xian"></div>
-                <el-submenu index="2" >
-                    <template slot="title">全部功能</template>
-                        <el-menu-item
-                            :index="(2-i)+''"
-                            v-for="(item, i) in list"
-                            class="first"
-                            :key="i">
-                            <div class="divTitle">
-                                <i class="el-icon-menu" ></i>
-                                <span slot="title" :index='(2-1-i)+""' >
-                                    {{item.menuName}}
-                                </span>
-                            </div>
-                            <ul class="secondMenu">
-                                <template  v-for="(sub, s) in item.submenu">
-                                    <li v-if="sub.menuName" class="secondTitle" :key="s">
-                                        {{sub.menuName}}
-                                        <ul class="secondList" v-if="sub.submenu">
-                                            <template  v-for="(su, b) in sub.submenu">
-                                                <li v-if="su.menuName" :key="b">
-                                                    <router-link
-                                                            :to="su.resUrl?su.resUrl:su"
-                                                            :title="su.menuName"
-                                                        >{{ su.menuName }}
-                                                    </router-link>
-                                                </li>
-                                            </template>
-                                        </ul>
-                                    </li>
+                <div class="second">
+                    <el-submenu index="2">
+                        <template slot="title">全部功能</template>
+                        <el-menu
+                                :collapse="true"
+                                style="width:100%;background-color:#21376b"
+                        >
+                            <el-submenu
+                                    :index="'2-'+i"
+                                    v-for="(item, i) in list"
+                                    :key="i"
+                            >
+                                <template slot="title">
+                                    <i
+                                            class="el-icon-setting"
+                                            style="color:#fff;font-size: 14px">
+                                        {{item.menuName}}
+                                    </i>
                                 </template>
-                            </ul>
-                        </el-menu-item>
-                </el-submenu>
-                <div class="xian"></div>
-                <el-submenu index="3">
-                    <template slot="title">常用功能</template>
-                    <el-menu-item-group>
-                    </el-menu-item-group>
-                </el-submenu>
+                                <div style="max-height:500px;overflow-y:scroll;">
+                                    <el-menu-item-group
+                                            :index="'2-'+i+'-'+s"
+                                            v-if="item.submenu.length>0"
+                                            v-for="(sub, s) in item.submenu"
+                                    >
+                                    <span
+                                            slot="title"
+                                            v-if="sub.menuName"
+                                            :key="s"
+                                    >
+                                        {{sub.menuName}}
+                                    </span>
+                                    <div style="max-width:480px;display:flex;flex-wrap: wrap;" class="title">
+                                        <el-menu-item
+                                                :index="'2-'+i+'-'+s+'-'+b"
+                                                v-if="sub.submenu.length!=0"
+                                                v-for="(su, b) in sub.submenu"
+                                                :key="b"
+                                                style="width:160px;text-overflow: ellipsis;overflow: hidden"
+                                        >
+                                            <router-link
+                                                    v-if="su.menuName"
+                                                    :to="su.resUrl?su.resUrl:su"
+                                                    :title="su.menuName"
+
+                                            >
+                                                {{ su.menuName }}
+                                            </router-link>
+                                        </el-menu-item>
+                                    </div>
+                                    </el-menu-item-group>
+                                </div>
+                            </el-submenu>
+                        </el-menu>
+                    </el-submenu>
+                    <div class="xian"></div>
+                    <el-submenu index="3">
+                        <template slot="title">常用功能</template>
+                        <el-menu-item-group>
+                        </el-menu-item-group>
+                    </el-submenu>
+                    <div class="button">
+                        <router-link to="/sys/add">
+                            <el-button>
+                                <i class="el-icon-plus"></i>添加
+                            </el-button>
+                        </router-link>
+                    </div>
+                </div>
             </el-menu>
-            <div class="button">
-                <router-link to="/sys/add">
-                    <el-button>
-                        <i class="el-icon-plus"></i>添加
-                    </el-button>
-                </router-link>
-            </div>
         </el-aside>
         <el-container>
             <el-header >
@@ -161,7 +180,7 @@ export default {
     },
     created() {
         let str = JSON.parse(localStorage.getItem('user'))
-        this.user = str.loginName
+        this.user = str.fullName
         this.getData()
     },
     mounted() {
@@ -173,7 +192,6 @@ export default {
     },
     methods: {
         handleCommand(command) {
-          console.log(command)
           if (command == 'a') {
             this.dialogVisible = true
             if(this.$refs.resetForm){
@@ -198,12 +216,12 @@ export default {
                  _this.$router.push("/login");
 
             }else{
-                 _this.$message(ret.msg);
+                 _this.error(ret.msg);
             }
 
           })
           .catch(() => {
-               _this.$message('服务器繁忙，稍等再试');
+               _this.error('服务器繁忙，稍等再试');
           });
       },
         closeDialog(){
@@ -280,9 +298,6 @@ export default {
     }
 };
 </script>
-<style lang="scss">
-
-</style>
 <style lang='scss'>
 .el-container{
     height:100%;
@@ -295,20 +310,44 @@ export default {
         line-height: 100%;
         background: #21376b;
         color: #fff;
-        overflow: visible;
+        overflow: hidden;
         .el-menu {
-            .workSpace{
-                height: 50px;
-                line-height: 50px;
-                background-color: rgba(59, 116, 255, 0.2);
-                text-align: center;
+            height:80%;
+            .second{
+                height:100%;
+                overflow-y: scroll;
+                .el-menu--popup-right-start {
+                    margin-left: 100px !important;
+                }
             }
             .el-submenu__title{
-                padding:0 !important;
-                text-align: center;
-                height:40px;
-                line-height:40px;
+                 height:40px;
+                 line-height:40px;
             }
+            .el-submenu__title:hover {
+                background-color: #fff;
+                i {
+                    color: #3b74ff !important;
+                }
+
+            }
+            .button {
+                width: 100%;
+                text-align: center;
+                height: 50px;
+                background-color: #21376b;
+                line-height: 50px;
+                .el-button--default{
+                    color: #fff;
+                    background-color: #21376b;
+                    &:hover {
+                        color: #1278E1;
+                        background-color: #fff;
+                    }
+                }
+
+            }
+
         }
         .project-title {
             font-size: 18px;
@@ -321,7 +360,7 @@ export default {
             padding: 10px 0;
         }
         .xian{
-            width: 80px;
+            width: 90px;
             height: 2px;
             border: none;
             background: #FFFFFF;
@@ -329,93 +368,7 @@ export default {
             margin: 5px auto;
 
         }
-        .first{
-            background: #21376b;
-            margin-bottom: 5px;
-            &:hover {
-                background-color: #fff !important;
-                span{
-                    color: #1278E1;
-                }
-                .secondMenu{
-                    display: block;
-                }
-                .divTitle{
-                    i.el-icon-menu{
-                        color:#1278E1;
-                    }
-                }
 
-            }
-            .divTitle{
-                position:relative;
-                /*i.el-icon-menu{*/
-                    /*color:#fff;*/
-                /*}*/
-            }
-            .secondMenu{
-                min-width: 200px;
-                /*max-height:400px;*/
-                position: absolute;
-                left: 100%;
-                top: 0;
-                /*bottom:0;*/
-                z-index:9999;
-                background-color: #fff;
-                box-shadow: 4px 4px 12px 0 rgba(0,0,0,0.20);
-                display: none;
-                overflow-y: scroll;
-                li.secondTitle{
-                    color: #ccc;
-                    font-size: 12px;
-                    border-bottom: 1px solid #ccc;
-                }
-                li{
-                    .secondList{
-                        width: 400px;
-                        display: flex;
-                        justify-content: flex-start;
-                        align-items: center;
-                        flex-wrap: wrap;
-                        li{
-                            color: #666;
-                            margin: 0 20px 0 10px;
-                            width: 100px;
-                            text-overflow: ellipsis;
-                            overflow: hidden;
-
-                        }
-                    }
-                }
-
-            }
-        }
-        .button {
-            width: 100%;
-            text-align: center;
-            height: 350px;
-            background-color: #21376b;
-            line-height: 80px;
-            .el-button--default{
-                color: #fff;
-                background-color: #21376b;
-                &:hover {
-                    color: #1278E1;
-                    background-color: #fff;
-                }
-            }
-
-        }
-        .el-menu-item {
-            padding:0 !important;
-            text-align: center;
-            background-color: #fff;
-            height: 40px;
-            line-height: 40px;
-        }
-        .el-submenu .el-menu-item {
-            min-width: 0 !important;
-        }
     }
     .el-container{
         .el-header {
@@ -450,6 +403,7 @@ export default {
                 height:100%;
                 padding: 0 10px 0 10px;
                 box-sizing: border-box;
+                overflow-y: scroll;
                 .list-wrapper{
                     .el-form--inline{
                         .el-form-item__label{

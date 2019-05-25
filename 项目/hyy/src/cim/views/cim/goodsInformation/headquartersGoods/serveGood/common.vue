@@ -138,7 +138,7 @@
           <el-col :span="8">
             <el-form-item label="售价">
               <span v-if="routeQuery.type==3">{{queryData.price}}</span>
-              <el-input class="price-inp" v-else v-model="queryData.price"></el-input>&nbsp;&nbsp;元
+              <el-input class="price-inp" v-else type="number" v-model="queryData.price"></el-input>&nbsp;&nbsp;元
             </el-form-item>
           </el-col>
           <el-col :span="8">
@@ -171,8 +171,8 @@
               <span v-if="routeQuery.type==3">{{queryData.downTime ? queryData.downTime : '不限制'}}</span>
               <div v-else>
                 <el-select v-model="queryData.downTimeType" placeholder="请选择" class="endTime-input">
-                  <el-option key="0" label="不限制" value="0"></el-option>
-                  <el-option key="1" label="指定时间" value="1"></el-option>
+                  <el-option label="不限制" value="0"></el-option>
+                  <el-option label="指定时间" value="1"></el-option>
                 </el-select>
                 <el-date-picker
                   v-if="queryData.downTimeType==1"
@@ -190,22 +190,48 @@
         <el-row>
           <el-col :span="8">
             <el-form-item label="适用门店">
-              <apply-stores
-                title="适用门店"
-                :defaultSelected="queryData.saleCinema"
-                :radios="applyStoresRadios"
-                @onCheckedNodes="handleStoresCheckedNodes"
-              ></apply-stores>
+              <span v-if="routeQuery.type==3">{{saleCinemaType(queryData.saleCinema) }}</span>
+              <el-select v-model="queryData.saleCinema" placeholder="请选择" class="apply-select">
+                <el-option
+                  v-for="item in applyStoresRadios"
+                  :key="item.type"
+                  :label="item.label"
+                  :value="item.type"
+                ></el-option>
+              </el-select>
+              <span class="apply-tag" v-if="queryData.saleCinema!='1'">
+                <el-input
+                  class="input apply-stores-input"
+                  placeholder="请选择"
+                  v-model="selectedStoreName"
+                >
+                  <i slot="suffix" class="el-icon-close icon" @click.stop="handleDeleteCinemas"></i>
+                </el-input>
+                <el-button @click.stop="handleDialog('myCinemalDialog')">选择</el-button>
+              </span>
             </el-form-item>
           </el-col>
           <el-col :span="10">
             <el-form-item label="适用渠道">
-              <apply-channel
-                title="适用渠道"
-                :defaultSelected="queryData.saleChannel"
-                :radios="applyChannelRadios"
-                @onCheckedNodes="handleChannelCheckedNodes"
-              ></apply-channel>
+              <span v-if="routeQuery.type==3">{{queryData.saleChannel==1?"全部渠道":"指定渠道"}}</span>
+              <el-select v-model="queryData.saleChannel" placeholder="请选择" class="apply-select">
+                <el-option
+                  v-for="item in applyChannelRadios"
+                  :key="item.type"
+                  :label="item.label"
+                  :value="item.type"
+                ></el-option>
+              </el-select>
+              <span class="apply-tag" v-if="queryData.saleChannel!='1'">
+                <el-input
+                  class="input apply-stores-input"
+                  placeholder="请选择"
+                  v-model="selectedChannelName"
+                >
+                  <i slot="suffix" class="el-icon-close icon" @click.stop="handleDeleteChanne"></i>
+                </el-input>
+                <el-button @click.stop="handleDialog('myChannelDialog')">选择</el-button>
+              </span>
             </el-form-item>
           </el-col>
         </el-row>
@@ -222,11 +248,15 @@
         </el-row>
       </div>
       <!-- 销售信息 end-->
-      <div class="submit-box">
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
+      <div class="submit-box" v-if="routeQuery.type!=3">
+        <el-button type="primary" @click="handleSubmit">保 存</el-button>
         <el-button>取消</el-button>
       </div>
     </el-form>
+    <!-- 选择影院弹窗 -->
+    <cinemal-dialog ref="myCinemalDialog" @onSumit="onCinemalSumit" multiple :title="'选择适应门店'"></cinemal-dialog>
+    <!-- 选择渠道弹窗 -->
+    <channel-dialog ref="myChannelDialog" @onSumit="onChanneSumit" multiple :title="'选择适应渠道'"></channel-dialog>
   </div>
 </template>
 
@@ -234,8 +264,8 @@
 import qs from "qs";
 import moment from "moment";
 import mixin from "cim/mixins/cim/paginationConfig.js";
-import applyStores from "cim/components/applyStores/applyStores.vue";
-import applyChannel from "cim/components/applyChannel/applyChannel.vue";
+import cinemalDialog from "cim/components/cinemalDialog/cinemaDialog.vue";
+import channelDialog from "cim/components/channelDialog/channelDialog.vue";
 
 export default {
   mixins: [mixin],
@@ -276,28 +306,7 @@ export default {
       },
       unitOptions: [], //基本单位
       brandOptions: [], //品牌
-      options: [
-        {
-          value: "选项1",
-          label: "黄金糕"
-        },
-        {
-          value: "选项2",
-          label: "双皮奶"
-        },
-        {
-          value: "选项3",
-          label: "蚵仔煎"
-        },
-        {
-          value: "选项4",
-          label: "龙须面"
-        },
-        {
-          value: "选项5",
-          label: "北京烤鸭"
-        }
-      ],
+      selectedStoreName: "",
       applyStoresRadios: [
         {
           label: "全部门店",
@@ -305,31 +314,14 @@ export default {
         },
         {
           label: "指定门店",
-          type: "0",
-          name: "中大影院,客村影院",
-          value: [
-            {
-              id: 9,
-              label: "中大影院"
-            },
-            {
-              id: 10,
-              label: "客村影院"
-            }
-          ]
+          type: "0"
         },
         {
           label: "排除门店",
-          type: "2",
-          name: "大学城影院",
-          value: [
-            {
-              id: 5,
-              label: "大学城影院"
-            }
-          ]
+          type: "2"
         }
       ],
+      selectedChannelName: "",
       applyChannelRadios: [
         {
           label: "全部渠道",
@@ -337,22 +329,12 @@ export default {
         },
         {
           label: "指定渠道",
-          type: "0",
-          name: "渠道一,渠道二",
-          value: [
-            {
-              id: 9,
-              label: "渠道一"
-            },
-            {
-              id: 10,
-              label: "渠道二"
-            }
-          ]
+          type: "0"
         }
       ]
     };
   },
+  created() {},
   mounted() {
     this.init();
     console.log(this.queryData);
@@ -360,33 +342,30 @@ export default {
   },
   methods: {
     init() {
-      this.setCheckedKys(this.applyStoresRadios);
-      this.setCheckedKys(this.applyChannelRadios);
+      // this.setCheckedKys(this.applyStoresRadios);
+      // this.setCheckedKys(this.applyChannelRadios);
       switch (this.routeQuery.type) {
         // 新建
         case "1":
           this.queryData.code = this.routeMerData.proCode;
           this.queryData.className = this.routeMerData.uidname;
           this.queryData.classUid = this.routeMerData.uid;
-          this.synproFindUnitList({ classUid: "1" });
-          this.classBrandQuery({ classUid: "1" });
+          this.synproFindUnitList({ catUid: this.routeMerData.uid });
+          this.classBrandQuery({ catUid: this.routeMerData.uid });
           break;
         //修改
         case "2":
           this.merServiceGoodsQuery({
-            uid: this.queryData.uid
+            uid: this.routeMerData.uid
           });
           break;
         //查看
         case "3":
           this.merServiceGoodsQuery({
-            uid: this.queryData.uid
+            uid: this.routeMerData.uid
           });
           break;
       }
-      // this.cinemaServiceGoodsQuery({
-      //   uid: "7626ed20-4df6-4ce1-80d0-88a6a7a48e3d"
-      // });
     },
     setCheckedKys(radios) {
       radios.forEach(item => {
@@ -400,7 +379,7 @@ export default {
     // 获取基本单位
     synproFindUnitList(param) {
       this.$cimList.headquartersGoods
-        .synproFindUnitList(param)
+        .merUnitList(param)
         .then(resData => {
           if (resData.code == 200) {
             this.unitOptions = resData.data;
@@ -411,7 +390,7 @@ export default {
     // 获取品牌列表
     classBrandQuery(param) {
       this.$cimList.headquartersGoods
-        .classBrandQuery(param)
+        .merBandList(param)
         .then(resData => {
           if (resData.code == 200) {
             this.brandOptions = resData.data.list;
@@ -419,11 +398,6 @@ export default {
         })
         .catch(err => {});
     },
-    // 查询
-    onQuery() {
-      // console.log(this.queryData);
-    },
-
     handleSubmit() {
       console.log(this.queryData);
       if (this.routeQuery.type == 1) {
@@ -433,8 +407,6 @@ export default {
       } else if (this.routeQuery.type == 3) {
         //查看
       }
-
-      // this.cinemaServiceGoodsUpdate(this.queryData);
     },
 
     // 总部新建
@@ -443,6 +415,9 @@ export default {
         .merServiceGoodsSave(param)
         .then(resData => {
           if (resData.code == 200) {
+            this.$message("成功!");
+          } else {
+            this.$message(resData.msg);
           }
         });
     },
@@ -453,6 +428,9 @@ export default {
         .merServiceGoodsUpdate(param)
         .then(resData => {
           if (resData.code == 200) {
+            this.$message("成功");
+          } else {
+            this.$message(resData.msg);
           }
         });
     },
@@ -463,6 +441,11 @@ export default {
         .merServiceGoodsQuery(param)
         .then(resData => {
           if (resData.code == 200) {
+            if (resData.data.downTime) {
+              resData.data.downTimeType = "1";
+            } else {
+              resData.data.downTimeType = "0";
+            }
             this.queryData = resData.data;
             if (this.queryData.canSale != null) {
               this.queryData.canSale = this.queryData.canSale.toString();
@@ -470,12 +453,16 @@ export default {
             if (this.queryData.isSaleAsSetMeal != null) {
               this.queryData.isSaleAsSetMeal = this.queryData.isSaleAsSetMeal.toString();
             }
-
-            if (this.queryData.downTime) {
-              this.queryData.downTimeType = "1";
-            } else {
-              this.queryData.downTimeType = "0";
+            if (this.queryData.saleChannel != null) {
+              this.queryData.saleChannel = this.queryData.saleChannel.toString();
             }
+            if (this.queryData.saleCinema != null) {
+              this.queryData.saleCinema = this.queryData.saleCinema.toString();
+              // if (this.queryData.saleCinema) {
+              //   this.applyStoresRadios;
+              // }
+            }
+            // debugger
           }
         });
     },
@@ -488,54 +475,57 @@ export default {
           }
         });
     },
-    // 门店查看服务商品
-    cinemaServiceGoodsQuery(param) {
-      this.$cimList.storequartersGoods
-        .cinemaServiceGoodsQuery(param)
-        .then(resData => {
-          if (resData.code == 200) {
-            this.queryData = resData.data;
-            if (this.queryData.canSale != null) {
-              this.queryData.canSale = this.queryData.canSale.toString();
-            }
-            if (this.queryData.isSaleAsSetMeal != null) {
-              this.queryData.isSaleAsSetMeal = this.queryData.isSaleAsSetMeal.toString();
-            }
-
-            if (this.queryData.downTime) {
-              this.queryData.downTimeType = "1";
-            } else {
-              this.queryData.downTimeType = "0";
-            }
-          }
-        });
+    handleDialog(name) {
+      this.$refs[name].handleDialog(true);
     },
-    //确定选择适用门店
-    handleStoresCheckedNodes(checkedValue) {
-      this.checkedNodes(this.applyStoresRadios, checkedValue);
-    },
-    //确定选择适用渠道
-    handleChannelCheckedNodes(checkedValue) {
-      this.checkedNodes(this.applyChannelRadios, checkedValue);
-    },
-    checkedNodes(radios, checkedValue) {
-      // console.log(radios);
-      console.log(checkedValue);
-      radios.forEach(item => {
-        if (item.type == checkedValue.type) {
-          if (checkedValue.value) {
-            item.value = checkedValue.value;
-            item.name = checkedValue.value
-              .map(valueItem => {
-                return valueItem.label;
-              })
-              .join(",");
-            item.checkedKys = checkedValue.value.map(valueItem => {
-              return valueItem.id;
-            });
-          }
-        }
+    // 门店
+    onCinemalSumit(data = []) {
+      this.queryData.cinemaEntityList = data.map(item => {
+        return {
+          cinemaUid: item.uid
+        };
       });
+      this.selectedStoreName = data
+        .map(item => {
+          return item.name;
+        })
+        .join(",");
+      console.log("门店数据", data);
+    },
+    // 渠道
+    onChanneSumit(data = []) {
+      this.queryData.channelEntityList = data.map(item => {
+        return {
+          channelUid: item.uid
+        };
+      });
+      this.selectedChannelName = data
+        .map(item => {
+          return item.name;
+        })
+        .join(",");
+      console.log("渠道数据", data);
+    },
+    //删除门店
+    handleDeleteCinemas() {
+      this.onCinemalSumit([]);
+    },
+    //删除渠道
+    handleDeleteChanne() {
+      this.onChanneSumit([]);
+    },
+    saleCinemaType(type) {
+      switch (type) {
+        case "0":
+          return "指定门店";
+          break;
+        case "1":
+          return "全部门店";
+          break;
+        case "2":
+          return "排除门店";
+          break;
+      }
     }
   },
   computed: {
@@ -568,8 +558,8 @@ export default {
     }
   },
   components: {
-    applyStores,
-    applyChannel
+    cinemalDialog,
+    channelDialog
   }
 };
 </script>

@@ -35,15 +35,48 @@ module.exports = {
     module: {
         rules: [{
                 test: /\.css$/,
-                use: ['style-loader', 'vue-style-loader', 'css-loader']
+                use: ['style-loader', 'vue-style-loader', 'css-loader', {
+                    loader: 'postcss-loader',
+                    options: {
+                        exclude : /node_modules/,
+                        plugins: ()=>[
+
+                            require('autoprefixer')({})
+
+                        ]
+
+                    },
+                }],
             },
             {
                 test: /\.scss$/,
-                use: ['vue-style-loader', 'css-loader', 'sass-loader']
+                use: ['vue-style-loader', 'css-loader', 'sass-loader', {
+                    loader: 'postcss-loader',
+                    options: {
+                        exclude : /node_modules/,
+                        plugins: ()=>[
+
+                            require('autoprefixer')({})
+
+                        ]
+
+                    },
+                }]
             },
             {
                 test: /\.sass$/,
-                use: ['vue-style-loader', 'css-loader', 'sass-loader?indentedSyntax']
+                use: ['vue-style-loader', 'css-loader', 'sass-loader?indentedSyntax', {
+                    loader: 'postcss-loader',
+                    options: {
+                        exclude : /node_modules/,
+                        plugins: ()=>[
+
+                            require('autoprefixer')({})
+
+                        ]
+
+                    },
+                }]
             },
             {
                 test: /\.vue$/,
@@ -53,7 +86,12 @@ module.exports = {
                         // Since sass-loader (weirdly) has SCSS as its default parse mode, we map
                         // the "scss" and "sass" values for the lang attribute to the right configs here.
                         // other preprocessors should work out of the box, no loader config like this necessary.
-                        scss: ['vue-style-loader', 'css-loader', 'sass-loader'],
+                        scss: ['vue-style-loader', 'css-loader', 'sass-loader', {
+                            loader: 'sass-resources-loader',
+                            options: {
+                                resources: ['./src/assets/css/var.scss', './src/assets/css/mixin.scss'] // 注入 公共变量存放的scss文件
+                              }
+                          }],
                         sass: ['vue-style-loader', 'css-loader', 'sass-loader?indentedSyntax']
                     }
                     // other vue-loader options go here
@@ -106,7 +144,7 @@ module.exports = {
             assets: path.resolve('src/assets'),
             components: path.resolve('src/components'),
             views: path.resolve('src/views'),
-            store: path.resolve('src/vuex'),
+            types: path.resolve('src/newVuex/types'),
             util: path.resolve('src/util'),
             http: path.resolve('src/http'),
             'jquery': path.resolve('node_modules/jquery/src/jquery')
@@ -123,17 +161,22 @@ module.exports = {
         noInfo: true,
         overlay: true,
         contentBase: path.join(__dirname, 'dist'),
-        host: '127.0.0.1',
+        // host: '192.168.100.114',
+        host: '192.168.100.115',
         port: 8010,
+        disableHostCheck:true,
         proxy: {
             '/api/': {
-                target: 'http://localhost:9006/',
+                target: 'http://apidevpos.oristarcloud.com/',
                 changeOrigin: true,
-                pathRewrite: {
-                    // '^/lottery': ''
-                }
+                pathRewrite: {"^/api" : ""}
+            },
+            '/member/pos':{
+                target: 'http://apidevpos.oristarcloud.com',
+                changeOrigin: true,
             }
-        }
+        },
+        
     },
     performance: {
         hints: false
@@ -218,12 +261,6 @@ if (process.env.NODE_ENV === 'production') {
         test: /\.js$/,
         loader: 'babel-loader',
         exclude: /node_modules/,
-        // include: [path.resolve('src'), path.resolve('test')]
-         include: [
-            path.resolve('src'),
-            path.resolve('test'),
-            path.resolve('node_modules/vue-echarts'),
-            path.resolve('node_modules/resize-detector')
-        ]
+        include: [path.resolve('src'), path.resolve('test')]
     }]);
 }

@@ -396,7 +396,7 @@
       </div>
       <!-- 销售信息 end-->
       <div class="submit-box">
-        <el-button type="primary" @click="comSingleSubmit()" v-if="routeQuery.type != 3">确定</el-button>
+        <el-button type="primary" @click="comSingleSubmit()" v-if="routeQuery.type != 3">保 存</el-button>
         <el-button @click="handleCancel">取 消</el-button>
       </div>
     </el-form>
@@ -1319,7 +1319,7 @@ console.log(res.data.purUnitVoList)
     resQueryAttribute(){
       let resValue = {
         // this.$route.query.data.uid
-        catUid:'51c40ea1-9597-4a0e-baa1-6a05e21933b8'
+        catUid:this.queryData.catUid
       }
       console.log(resValue)
       this.$cimList.headquartersGoods.singleProductQueryAttribute(resValue).then( res => {
@@ -1358,7 +1358,7 @@ console.log(res.data.purUnitVoList)
           saleChannelList:[
             {channelUid:"1"}
           ],
-          saleCinemaLis:[
+          saleCinemaList:[
             {cinemaUid:"1"}
           ],
             skuVoList:this.skuData.length == 0 ? app : this.skuData,
@@ -1417,7 +1417,7 @@ console.log(res.data.purUnitVoList)
           saleChannelList:[
             {channelUid:"1"}
           ],
-          saleCinemaLis:[
+          saleCinemaList:[
             {cinemaUid:"1"}
           ],
             skuVoList:this.skuData.length == 0 ? app : this.skuData,

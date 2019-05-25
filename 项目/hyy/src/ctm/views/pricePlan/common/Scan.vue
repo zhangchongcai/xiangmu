@@ -123,6 +123,17 @@
                                     label-width="85px"
                                     size="small"
                                 >
+                                <el-form-item label="适用渠道：">
+                                        <template v-for="(ciPriceSaleChannelVoItem,index) in sizeForm.ciPriceSaleChannelVoList">
+                                            <span class="cinema-stock-scan-text" :key=index v-if="ciPriceSaleChannelVoItem.feeFlag == 0">
+                                                {{ciPriceSaleChannelVoItem.name}}
+                                            </span>
+                                            <span class="cinema-stock-scan-text" :key=index v-else>
+                                                暂无
+                                            </span>
+                                        </template>
+                                    
+                                    </el-form-item>
                                     <el-form-item label="定价方案：">
                                         <el-table
                                             :data="sizeForm.ttVoList"
@@ -196,8 +207,11 @@
                                 >
                                     <el-form-item label="适用渠道：">
                                         <template v-for="(ciPriceSaleChannelVoItem,index) in sizeForm.ciPriceSaleChannelVoList">
-                                            <span class="cinema-stock-scan-text" :key=index>
+                                            <span class="cinema-stock-scan-text" :key=index v-if="ciPriceSaleChannelVoItem.feeFlag == 2">
                                                 {{ciPriceSaleChannelVoItem.name}}
+                                            </span>
+                                            <span class="cinema-stock-scan-text" :key=index v-else>
+                                                暂无
                                             </span>
                                         </template>
                                     
@@ -206,16 +220,16 @@
                                         <el-table
                                             :data="sizeForm.priceNetSale"
                                             border
-                                            style="width: 100%">
+                                            >
                                             <el-table-column
                                                 prop="movieVersionName"
                                                 label="影片版本"
-                                                width="180">
+                                               >
                                             </el-table-column>
                                             <el-table-column
                                                 prop="price"
                                                 label="渠道结算票价"
-                                                width="180">
+                                               >
                                                 <template slot-scope="scope">
                                                     ￥{{scope.row.price}}
                                                 </template>
@@ -228,6 +242,11 @@
                                                 </template>
                                             </el-table-column> -->
                                         </el-table>
+                                    </el-form-item>
+                                    <el-form-item label="">
+                                        <span class="cinema-stock-scan-text">
+                                            若价格方案的定价低于发行价时，将以影片最低发行价出售。
+                                        </span>
                                     </el-form-item>
                                 </el-form>
                             </el-tab-pane>

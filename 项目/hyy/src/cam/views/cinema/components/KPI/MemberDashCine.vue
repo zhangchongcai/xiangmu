@@ -9,8 +9,8 @@
     >
     </ve-gauge>
     <ul class="ulContainer">
-        <li>月至今达成 : {{BoxRate | capitalizeOne}}{{BoxRate | foo}}</li>
-        <li>KPI值 : {{BoxKPItotal | capitalizeOne}}{{BoxKPItotal | foo}}</li>
+        <li>月至今达成 : {{BoxRate | capitalizeOne}}{{BoxRate | too}}</li>
+        <li>KPI值 : {{BoxKPItotal | capitalizeOne}}{{BoxKPItotal | too}}</li>
     </ul>
   </div>
 </template>
@@ -270,15 +270,6 @@ export default {
         too = '亿人'
         return too
       }
-    },
-    capitalizeTwo(value) {
-      if (!value) return "";
-      value = value * 100;
-      return value.toFixed(2);
-    },
-    capitalizeFloor(value) {
-      if (!value) return "";
-      return value.toFixed(2);
     }
   },
   watch: {
@@ -292,7 +283,7 @@ export default {
       //取到时间进度
       let tool1 = MemKPIvalueCine.timeRate, tool2 = MemKPIvalueCine.newMemberRate
       //取值title
-      this.BoxRate = MemKPIvalueCine.newMemberCurrent
+      this.BoxRate = MemKPIvalueCine.memberMonthToNow
       this.BoxKPItotal = MemKPIvalueCine.newMemberTarget
       //从新复制
       this.gaugeData = {

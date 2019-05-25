@@ -136,6 +136,153 @@ export const getFuzzySearchData = (tableName, colKey, reportCode, value) => {
     })
 }
 
+//影片数据
+export const getFilmData = (pageNum, pageSize, filmName, filmCode) => {
+    return axios({
+        url: '/report/condition/getFilmCode',
+        method: 'get',
+        params: {
+            pageNum: pageNum,
+            pageSize: pageSize,
+            filmName: filmName,
+            filmCode: filmCode
+        }
+    })
+}
+
+//收银员/授权人接口
+export const getUser = (pageNum, pageSize, fullName) => {
+    return axios({
+        url: '/report/condition/getUser',
+        method: 'get',
+        params: {
+            pageNum: pageNum,
+            pageSize: pageSize,
+            fullName: fullName
+        }
+    })
+}
+
+// cinemaTree数据
+export const getUserMenuTree = () => {
+    return axios({
+        url: '/ticket/systemParam/getUserMenuTree',
+        method: 'get'
+    });
+}
+
+// 会员等级
+export const selectCardProductList = (cardName) => {
+    return axios({
+        url: 'report/condition/selectCardProductList',
+        method: 'get',
+        params: {
+            cardName: cardName
+        }
+    });
+}
+
+//控件-发行版本获取数据
+export const movieReleasedVersion = () => {
+    return axios({
+        url: 'report/condition/getDictInfo',
+        method: 'get',
+        params: {
+            code: "movie_film_film_edition"
+        }
+    })
+}
+
+//控件-影片类型获取数据
+export const movieType = () => {
+    return axios({
+        url: 'report/condition/getDictInfo',
+        method: 'get',
+        params: {
+            code: "movie_film_film_type"
+        }
+    })
+}
+
+// 交易单类型
+export const getDictionaryData = params => {
+    return axios({
+        url: '/ticket/dictionary/getByName',
+        method: 'get',
+        params
+    })
+}
+
+//多选影院
+export const systemGetUserMenuTree = params => {
+    return axios({
+        url: '/ticket/systemParam/getUserMenuTree',
+        method: 'get',
+        params
+    })
+}
+
+//支付方式
+export const selectForTenant = data => {
+    return axios({
+        url: '/payType/selectForTenant',
+        method: 'post',
+        data
+    })
+}
+
+//交易渠道、代理商
+export const getDitch = data => {
+    return axios({
+        url: `/ticket/base/channel/agent`,
+        method: 'post',
+        data
+    });
+}
+
+// 交易类型
+export const getMoudelData = (page, pageSize, name) => {
+    return axios({
+        url: `/ticket//dictionary/page?page=${page}&pageSize=${pageSize}&name=${name}`,
+        method: 'post',
+    });
+}
+
+// 商品类别
+export const setmealLoadCategoies = data => {
+    return axios({
+        url: '/setmeal/loadCategoies',
+        method: 'post',
+        data
+    })
+}
+
+//商品数据
+export const goodsDataQueryGoodsList = data => {
+    return axios({
+        url: '/cim/goodsData/queryGoodsList',
+        method: 'post',
+        data
+    })
+}
+
+// 仓库数据
+export const checkBillStorehouse = data => {
+    return axios({
+        url: 'cim/checkBill/storehouse',
+        method: 'post',
+        data
+    })
+}
+
+//货架数据
+export const checkBillStorageRack = data => {
+    return axios({
+        url: 'cim/checkBill/storageRack',
+        method: 'post',
+        data
+    })
+}
 
 export default {
     testGet,
@@ -154,5 +301,21 @@ export default {
     getCinemaByParam,
     getTableSearchData,
     getFuzzySearchData,
-    deleteUserStyle
+    deleteUserStyle,
+    getFilmData,
+    getUser,
+    getUserMenuTree,
+    selectCardProductList,
+    movieReleasedVersion,
+    movieType,
+    getDictionaryData,
+    getDictionaryData,
+    systemGetUserMenuTree,
+    selectForTenant,
+    getDitch,
+    getMoudelData,
+    setmealLoadCategoies,
+    goodsDataQueryGoodsList,
+    checkBillStorehouse,
+    checkBillStorageRack
 };

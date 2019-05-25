@@ -293,7 +293,7 @@ export default {
       //取到时间进度
       let tool1 = SellKPIvalueCine.timeRate, tool2 = SellKPIvalueCine.sellGoodsRate
       //取值title
-      this.BoxRate = SellKPIvalueCine.sppCurrent
+      this.BoxRate = SellKPIvalueCine.sppMonthToNow
       this.BoxKPItotal = SellKPIvalueCine.sppTarget
       //从新复制
       this.gaugeData = {

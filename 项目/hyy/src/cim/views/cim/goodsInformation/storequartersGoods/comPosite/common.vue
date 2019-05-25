@@ -158,7 +158,7 @@
             </el-row>
           </el-form>
           <div>
-            <el-table :data="item.cinemaMakeItemVoList" stripe empty-text="暂无记录"  v-loading="tableLoding">
+            <el-table :data="item.cinemaMakeItemVoList" stripe  v-loading="tableLoding">
               <el-table-column
                 v-for="item in recipeTableColumn"
                 :key="item.key"
@@ -295,7 +295,7 @@
           </el-col>
         </el-row>
         <el-row>
-          <el-col :span="12">
+          <el-col :span="8">
             <el-form-item prop="isSaleAsSetMeal" label-width="160px" label="是否只允许套餐内售卖">
               <span v-if="routeQuery.type==3">{{queryData.canSale == 1 ? '允许':'禁止'}}</span>
               <el-radio-group v-else v-model="queryData.isSaleAsSetMeal">
@@ -307,7 +307,7 @@
            <el-col :span="10">
             <el-form-item label="销售地点">
               <apply-channel
-                title="适用渠道"
+                title="销售地点"
                 :defaultSelected="queryData.salePlace"
                 :radios="applyChannelRadios"
                 @onCheckedNodes="handleChannelCheckedNodes"
@@ -400,7 +400,6 @@
                       height="300"
                       @selection-change="handleSelectionMaterial"
                       stripe
-                      empty-text="暂无记录"
                       v-loading="tableLoding"
                     >
                       <el-table-column type="selection" width="40"></el-table-column>
@@ -885,6 +884,9 @@ export default {
             this.queryData = resData.data;
             this.queryData.canSale =  this.queryData.canSale.toString();
             this.queryData.isSaleAsSetMeal =  this.queryData.isSaleAsSetMeal.toString();
+            this.queryData.saleCinema =   this.queryData.saleCinema.toString();
+            this.queryData.saleChannel =  this.queryData.saleChannel.toString();
+            this.queryData.salePlace =  this.queryData.salePlace.toString();
             this.selectedMaterials = this.queryData.cinemaCombinationSkuVoList[0].cinemaMakeItemVoList;
             console.log("this.selectedMaterials",this.selectedMaterials)
             if(this.queryData.downTime){

@@ -2,7 +2,7 @@
   <div class="sale-content-wrap">
     <div class="header-fixed">
       <el-breadcrumb separator="/" class="reset-bread" separator-class="el-icon-arrow-right">
-        <el-breadcrumb-item :to="{ path: '/group/home' }">
+        <el-breadcrumb-item :to="{ path: '/analysis/new/home' }">
           <span class="text-gray">经营决策</span>
         </el-breadcrumb-item>
         <el-breadcrumb-item>
@@ -207,7 +207,7 @@
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
             :current-page="page"
-            :page-sizes="[10, 50, 100, 400]"
+            :page-sizes="[15, 30, 45, 60]"
             :page-size="size"
             layout=" sizes,total,prev, pager, next, jumper"
             :total="total"
@@ -531,7 +531,7 @@ export default {
       let params = {
         body:{
           pageNo:1,
-          pageSize:10,
+          pageSize:this.size,
           supplyCode:null,
           supplyName:name?name:null,
         }

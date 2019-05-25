@@ -19,23 +19,23 @@
             suffix-icon="el-icon-circle-close"
             @change="inputChange"
           />
-          <!-- <button @click="handleSearchClick" class="search">搜索</button>
-          <button @click="handleClearClick">清除筛选</button>-->
+          <!-- <button @click="handleSearchClick" class="search">搜索</button> -->
+          <button class="clear-button" @click="handleClearClick">清除筛选</button>
           <button @click="showDetailDialog">高级筛选</button>
         </div>
         <div class="data-wrapper">
           <div
             class="data-item"
-            v-if="(showData.length === 0 && inputData === '') ||
+            v-show="(showData.length === 0 && inputData === '') ||
             (showData.length !== 0 && inputData === '')"
             v-for="(item,index) in searchData"
-            :key="index"
+            :key="`data-item-${index}`"
             :id="index"
             @click="handleItemClick(item,index)"
           >{{item}}</div>
           <div
             class="data-item"
-            v-if="showData.length !== 0 && inputData !== ''"
+            v-show="showData.length !== 0 && inputData !== ''"
             v-for="(item,index) in showData"
             :key="index"
             :id="index"
@@ -106,7 +106,8 @@ export default {
     searchData: Array,
     colKey: String,
     tableName: String,
-    reportCode: String
+    reportCode: String,
+    advancedData: Array
   },
   components: {
     MyDialog
@@ -122,13 +123,49 @@ export default {
     };
   },
   methods: {
+    changeDataItemStatus(domItem, backgroundColor, color) {
+      let dataItem = document.getElementsByClassName(domItem);
+      for (let i = 0; i < dataItem.length; i++) {
+        dataItem[i].style.background = backgroundColor;
+        dataItem[i].style.color = color;
+      }
+    },
+    //清除筛选
+    handleClearClick() {
+      let clearData = {};
+      let selectedData = JSON.parse(JSON.stringify(this.colData));
+      this.visible = false;
+      this.changeDataItemStatus("data-item", "white", "rgb(51, 51, 51)");
+      this.$emit("sendSelectStatus", {
+        select: false,
+        value: this.colKey
+      });
+      console.log(selectedData, this.advancedData)
+      this.advancedData.forEach(element => {
+        delete element.isAdvanced;
+        selectedData.push(element);
+      });
+      // console.log(this.colKey);
+      // console.log(this.colData);
+      console.log(selectedData)
+      selectedData.forEach(element => {
+        if (element.queryColKey === this.colKey) {
+          clearData.operation = element.operation;
+          clearData.queryColKey = element.queryColKey;
+          clearData.queryColValue = element.queryColValue;
+        }
+      });
+      console.log(clearData);
+      for(let i = 0; i < this.colData.length; i++) {
+        if(this.colData[i].queryColKey === this.colKey) {
+          this.colData.splice(i, 1);
+        }
+      }
+      datacenterBus.$emit("clearTableQueryData", clearData);
+    },
     //弹框关闭时的逻辑
     handleClose() {
-      let dataItem = document.getElementsByClassName("data-item");
-      for (let i = 0; i < dataItem.length; i++) {
-        dataItem[i].style.background = "#f5f5f5";
-        dataItem[i].style.color = "gray";
-      }
+      this.changeDataItemStatus("data-item", "#f5f5f5", "gray");
       this.colValue = [];
       this.showData = [];
       this.visible = false;
@@ -151,19 +188,22 @@ export default {
         value: this.colKey
       };
       //保证提交筛选项时每个弹框有且仅有一个选中
+      console.log("===================>",this.colData);
       if (this.colData.length != 0) {
         for (let i = 0; i < this.colData.length; i++) {
-          if (this.colData[i]["queryColKey"] == this.colKey) {
+          if (this.colData[i].queryColKey == this.colKey) {
             this.colData.splice(i, 1);
           }
         }
       }
       this.colData.push(colItem);
+      console.log("===================>",this.colData);
       //发出查询信息
       if (
         this.colData[0].queryColValue != "" &&
         this.colData[0].queryColValue != []
       ) {
+        console.log(this.colData);
         datacenterBus.$emit("sendSearchData", this.colData);
         //保存每次选择的数据
         if (this.submitColValue.length === 0) {
@@ -241,7 +281,24 @@ export default {
       console.log(this.visible);
     }
   },
+  created() {
+    datacenterBus.$on("sendSearchDataToDialog1", data => {
+      console.log(this.colData, data);
+      this.colData.push(data);
+      console.log(this.colData, data);
+    });
+  },
   updated() {
+    datacenterBus.$on("sendSearchDataToDialog1", data => {
+      console.log(this.colData, data);
+      // this.colData.forEach(element => {
+      //   if(element.queryColKey !== data.queryColKey) {
+      //     this.colData.push(data);
+      //   }
+      // })
+      this.colData.push(data);
+      console.log(this.colData, data);
+    });
     if (document.getElementsByClassName("data-wrapper")[0]) {
       let dataItem = document.getElementsByClassName("data-wrapper")[0]
         .children;
@@ -264,6 +321,11 @@ export default {
 </script>
 
 <style scoped>
+.search-wrapper .clear-button {
+  margin: 0 8px;
+}
 </style>
+
+
 
 

@@ -1,5 +1,7 @@
 // 支付方式
 import payType from 'csm/components/payType/PayType.vue';
+import multiCinema from 'frame_cpm/components/frameadmin/cinemaDialog/multiCinema2.vue';
+
 
 
 /**
@@ -8,12 +10,15 @@ import payType from 'csm/components/payType/PayType.vue';
  */
 let alertHandle = {
     components: {
-        payType
+        payType,
+        multiCinema,
     },
     data() {
         return {
+            reviewData: {},
             altertKeysFn: {
                 payType: 'payTypeClick',
+                multiCinema: 'multiCinemaClick',
             }
         }
     },
@@ -159,6 +164,40 @@ let alertHandle = {
         handlePayTypeBack(data) {
             console.log(data);
         },
+        /**
+         * @function multiCinemaClick - 
+         */
+        multiCinemaConfirmClick() {
+            this.$refs.multiCinema.confirmData()
+            this.$refs.multiCinema.framedialogVisible = false;
+        },
+        /**
+         * @function multiCinemaClick - 
+         */
+        multiCinemaClick() {
+            this.$refs.multiCinema.framedialogVisible = !this.$refs.multiCinema.framedialogVisible;
+
+        },
+        /**
+         * @function handleMultiCinemaBack - 
+         */
+        handleMultiCinemaBack(data) {
+
+            let item = data.dataList
+            let dataString = ""
+            for (let i = 0; i < item.length; i++) {
+                if (dataString) {
+                    dataString += ("," + item[i].name)
+                } else {
+                    dataString = item[i].name
+                }
+            }
+
+            this.baseConfig.form[`${this.currentInputName}`] = dataString
+
+
+        },
+
     }
 };
 
