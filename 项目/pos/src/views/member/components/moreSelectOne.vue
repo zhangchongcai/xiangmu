@@ -116,7 +116,6 @@ export default {
     },
     //当前页
     handleCurrentChange(val){
-      console.log(val);
       this.dataListOther = this.cuttingList[val-1];
     },
     reset() {

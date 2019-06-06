@@ -112,25 +112,14 @@
             </el-col>
           </el-row>
         </div>
-        <el-dialog
-        title="支付凭证---测试时显示"
-        :visible.sync="centerDialogVisible"
-        width="50%"
-        center>
-        <el-form-item label="支付凭证：" prop="barCode">
-          <el-input v-model="ruleForm.barCode" placeholder="请输入支付凭证---测试显示"></el-input>
-        </el-form-item>
-        <span slot="footer" class="dialog-footer">
-          <el-button @click="centerDialogVisible = false">取 消</el-button>
-          <el-button type="primary" @click="cardCharge" :loading="payLoading">{{payLoadingText}}</el-button>
-        </span>
-      </el-dialog>
       </div>
     </el-form>
     <div class="bottom-btn-warp">
       <el-button @click="back()">返回</el-button>
-      <el-button class="submit" v-show="isshow && member.cardNoOrphoneNumState" @click="submit">确定</el-button>
+      <el-button class="submit" v-show="isshow && member.cardNoOrphoneNumState" @click="submit" type="primary">确定</el-button>
     </div>
+
+    <pay-loading v-model="ruleForm.barCode" :visible.sync="centerDialogVisible"></pay-loading>
   </div>
 </template>
 
@@ -141,16 +130,14 @@ import MemberCardIofo from "./components/memberCardInfo";
 import HoldingCardList from "./components/holdingCardList";
 import { num10_999float2 } from "./util/validate.js";
 import moreSelectOne from "./components/moreSelectOne.vue";
-import { MemberAjax } from "src/http/memberApi.js";
+import { MemberAjax ,memeberApi} from "src/http/memberApi.js";
 import { mapState, mapGetters } from "vuex";
-import { back , cardStatusCN ,payPolling,stopPay} from './util/utils'
+import { back , cardStatusCN } from './util/utils';
+import payMixins from './mixins/payMixins';
 export default {
+  mixins:[payMixins],
   data() {
     return {
-      payTimer:null,
-      centerDialogVisible:false,
-      payLoading:false,
-      payLoadingText:'支 付',
       isinput: false, //充值金额可否输入
       cardReadingTitle: "会员卡/手机号：",
       isApply: false,
@@ -167,7 +154,7 @@ export default {
       ruleForm: {
         basicAmount: "", //充值金额
         payWayName: "", //支付方式
-        payWayCode: "", //支付code  ali支付宝 wx 微信
+        payWayCode: "", //支付code 
         cardNo: "", //卡号
         payMode: "", //支付模式
         barCode: "", //支付条码
@@ -176,7 +163,6 @@ export default {
         activityStatus: "", //营销活动ID
         mobileNum: "", //手机号
         cardProductId: "", //卡id
-        channelNo: "" //渠道id
       },
       rules: {
         basicAmount: [
@@ -199,7 +185,7 @@ export default {
   },
   watch:{
     'ruleForm.payWayCode':function(newVal,oldVal){
-          this.ruleForm.payWayName = newVal === "wx" ? "微信" : "支付宝";
+        this.ruleForm.payWayName = newVal === "wxmicropay" ? "微信" : "支付宝";
     }
   },
   filters:{
@@ -215,17 +201,14 @@ export default {
       this.queryData(this.$route.query);
     }
   },
-  created() {
-    this.getActivityList();
-  },
   methods: {
     input(amount){
       this.$nextTick(()=>{
         this.ruleForm.basicAmount = (amount.match(/^\d*(\.?\d{0,2})/g)[0]) || ''
       })
     },
-    getActivityList() {
-      MemberAjax.getActivityList({ tenantId: this.tenantId, action: "charge" }).then(
+    getActivityList(cardNo) {
+      MemberAjax.getActivityList({cardNo:cardNo, tenantId: this.tenantId, action: "MEMBER_ADD_AMOUNT" ,channelNo:localStorage['channelNo'],cinemaId:localStorage['cinemaId']}).then(
         res => {
           var activeList = res.data;
           this.dataListAll = activeList;
@@ -236,65 +219,36 @@ export default {
     // 选中持有卡
     selectedCard(data) {
       console.log("所选择的持有卡", data);
+      this.getActivityList(data.cardNo);  
       this.ruleForm.cardNo = data.cardNo;
       this.ruleForm.cardProductId = data.cardProductId;
       this.chargeMax = data.chargeMax;
       this.chargeMin = data.chargeMin;
-      this.ruleForm.channelNo = data.channelNo;
       sessionStorage["chargeMin"] = data.chargeMin;
       sessionStorage["chargeMax"] = data.chargeMax;
+      this.member.cardNo = data.cardNo
+      this.member.cardState = data.status;
     },
     // 点击查询按钮或敲回车
     back() {
       back(this)
     },
-    submit() {
-      this.$refs["ruleForm"].validate(valid => {
-        if (valid) {
-          if (!this.ruleForm.cardNo) {
-            this.$message.warning("请选择一张储卡");
-            return;
-          }
-          // this.cardCharge();
-          this.centerDialogVisible = true;
-        } else {
-          console.log("error submit!!");
-          return false;
-        }
-      });
-    },
-    cardCharge() {
-      var data =Object.assign({},this.ruleForm,{
+    handleSubmit() {
+       var data =Object.assign({},this.ruleForm,{
           tenantId : this.tenantId,
           mobileNum : this.member.phoneNum
       },JSON.parse(sessionStorage['payParams']));
-      MemberAjax.cardCharge(data).then(res => {
-        if(res.code === 601){
-          this.payLoadingText = '支付中...';
-          this.payTimer = setInterval(()=>{
-            payPolling.call(this,res.data)
-          },2000)
-        }else if (res.code == 200 && res.msg === "操作成功") {
-          this.$message({
-            message: res.msg,
-            type: "success",
-            onClose: () => {
-              this.$router.push({
-                path: "/member"
-              });
-            }
-          });
-        } else {
-          this.$message.error(res.msg);
-          stopPay.bind(this)();
-        }
-      });
-    },
+      return {
+        url: memeberApi.cardCharge["url"],
+        data: data,
+        router: this.$router
+      }
+    }, 
     //权益卡数据过滤
     filterData(arr) {
       if (arr) {
         return arr.filter((item, index) => {
-          return item.cardTypeCode == "stored_card";
+          return item.cardTypeCode == "stored_card" && item.canCharge == 1;
         });
       } else {
         return [];
@@ -318,7 +272,7 @@ export default {
     },
     //活动选择数据暴露
     selectData(data) {
-      console.log(data);
+      console.log(data);    
       if (data) {
         this.isinput = true;
         this.ruleForm.basicAmount = "";
@@ -342,6 +296,7 @@ export default {
         let params = { mobileNum: data.phoneOrCard, tenantId: this.tenantId , verifyCode:false,validateCode:''};
         MemberAjax.getInfoByPhone(params)
           .then(data => {
+            this.member.cardNo = '';
             this.member.pageLoading = false;
             var memberdata = data.data;
             this.memberInfo = memberdata;
@@ -365,10 +320,13 @@ export default {
             console.log(err);
           });
       } else if (data.type == "card") {
+        this.getActivityList(data.phoneOrCard);
         // TODO 请求会员卡详情
         let params = { cardNo: data.phoneOrCard, tenantId: this.tenantId,verifyPassword:false };
         MemberAjax.getCardInfoByNo(params)
           .then(data => {
+            this.memberCardInfo = '';
+            this.isshow = false;
             this.member.pageLoading = false;
             let info = data.data;
             if (!info) {
@@ -379,8 +337,12 @@ export default {
               if(info.cardTypeCode !== 'stored_card'){
                 this.$message.warning(info.cardType+'不能充值');
                 return;
+              }else if(info.canCharge == 0){
+                this.memberCardInfo = info;
+                this.$message.warning('该储值卡政策不可充值');
+                return false;
               }
-              this.isshow = true;
+              // this.isshow = true;
             } else {
               this.isshow = false;
               this.memberCardInfo = '';
@@ -394,7 +356,6 @@ export default {
             this.ruleForm.cardNo = info.cardNo;
             this.ruleForm.mobileNum = info.phoneNumber;
             this.ruleForm.cardProductId = info.cardProductId;
-            this.ruleForm.channelNo = info.channelNo;
             sessionStorage["chargeMin"] = info.chargeMin;
             sessionStorage["chargeMax"] = info.chargeMax;
           })
@@ -404,16 +365,6 @@ export default {
             this.memberCardInfo = '';
             console.log(err);
           });
-      }
-    }
-  },
-  beforeDestroy(){
-      stopPay.bind(this)();
-  },
-  watch: {
-    "centerDialogVisible"(newval){
-      if(!newval){
-        stopPay.bind(this)();
       }
     }
   },

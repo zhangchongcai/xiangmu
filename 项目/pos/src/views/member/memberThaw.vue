@@ -36,7 +36,7 @@
             <el-form-item label="手续费" prop="cost">
               <el-input v-model="ruleForm.cost" class="psd-inp" style="width:15vw"></el-input> 元
             </el-form-item>
-            <el-form-item label="支付方式" prop="payWayCode">
+            <el-form-item label="支付方式" prop="payWayCode" v-if="ruleForm.cost!=0">
               <el-radio-group v-model="ruleForm.payWayCode">
                 <el-radio label="alimicropay">支付宝</el-radio>
                 <el-radio label="wxmicropay">微信</el-radio>
@@ -44,22 +44,11 @@
               </el-radio-group>
             </el-form-item>
           </div>
-          <el-dialog
-            title="支付凭证---测试时显示"
-            :visible.sync="centerDialogVisible"
-            width="50%"
-            center>
-            <el-form-item label="支付凭证：" prop="barCode">
-              <el-input v-model="ruleForm.barCode" placeholder="请输入支付凭证---测试显示"></el-input>
-            </el-form-item>
-            <span slot="footer" class="dialog-footer">
-              <el-button @click="centerDialogVisible = false">取 消</el-button>
-              <el-button type="primary" @click="thawCard" :loading="payLoading">{{payLoadingText}}</el-button>
-            </span>
-          </el-dialog>
         </el-form>
       </div>
     </memberInfoAndCard>
+
+    <pay-loading v-model="ruleForm.barCode" :visible.sync="centerDialogVisible"></pay-loading>
   </div>
 </template>
 
@@ -67,14 +56,12 @@
 import memberInfoAndCard from "./components/memberInfoAndCard";
 import { mapState, mapGetters } from "vuex";
 import { MemberAjax, memeberApi } from "src/http/memberApi";
-import { readCard ,secKeyBoard ,cardStatusCN ,statusDeter ,stopPay ,payPolling,submit} from './util/utils'
+import { readCard ,secKeyBoard ,cardStatusCN ,statusDeter ,stopPay ,payPolling} from './util/utils';
+import payMixins from './mixins/payMixins'
 export default {
+  mixins:[payMixins],
   data() {
     return {
-      payTimer:null,
-      centerDialogVisible:false,
-      payLoading:false,
-      payLoadingText:'支 付',
       memberTitle: "解冻",
       isshow: false,
       editMoney:true,
@@ -83,7 +70,8 @@ export default {
         passwd: "",
         validationCode: "",
         cost:0, //手续费
-        payWayCode:""
+        payWayCode:"",
+        barCode:''
       },
       rules: {
         passwd: [{ required: true, message: "请输入密码", trigger: "blur" }],
@@ -106,57 +94,21 @@ export default {
   },
   methods: {
     isShow(data) {
-      //01000300000021  
       this.isshow = statusDeter.call(this,data,'frozen',`该卡状态为${cardStatusCN(this.member.cardState)},不能解冻`);
       if(this.isshow)this.$refs['ruleForm'].resetFields();
     },
-    //触发确定
-    submit(vo) {
-      if (vo) {
-        if (!this.member.cardNo && this.member.numberType === "phone") {
-          this.$message.warning("请选择一张储卡");
-          return;
-        }
-        this.$refs["ruleForm"].validate(valid => {
-          if (valid) {
-            // this.$store.dispatch("handleHttp", this.handleSubmit());
-            this.centerDialogVisible = true;
-          } else {
-            console.log("error submit!!");
-            return false;
-          }
-        });
-      }
-    },
-    thawCard(){
-      submit.bind(this)()
-        // this.$store.dispatch("handleHttp", this.handleSubmit()).then(res=>{
-        //   if(res.code == 601){
-        //     this.payLoadingText = '支付中...';
-        //     this.payTimer = setInterval(()=>{
-        //       payPolling.call(this,res.data)
-        //     },2000)
-        //   }else{
-        //     this.$message.error(res.msg);
-        //     stopPay.bind(this)();
-        //   }
-        // }).catch(err=>{
-        //   stopPay.bind(this)();
-        //   this.$refs['ruleForm'].resetFields();
-        // });
-    },
     handleSubmit() {
-      var data = Object.assign(this.ruleForm, {
+      var data = Object.assign({},this.ruleForm, {
         tenantId: this.tenantId,
         cardNo: this.member.cardNo,
         operator: this.operator,
-        // phoneNum: this.member.phoneNum,
+        actionType:'ACTIVE'
       },JSON.parse(sessionStorage['payParams']));
       if(!!data.passwd) {
         data.passwd = this.$md5(data.passwd);
       }
       return {
-        url: memeberApi.activeCard["url"],
+        url: memeberApi.payAndAct["url"],
         data: data,
         router: this.$router
       };
@@ -174,16 +126,6 @@ export default {
       }).catch(err=>{
         this.member.show = false;
       }) 
-    }
-  },
-  beforeDestroy(){
-      stopPay.bind(this)();
-  },
-  watch: {
-    "centerDialogVisible"(newval){
-      if(!newval){
-        stopPay.bind(this)();
-      }
     }
   },
   components: {

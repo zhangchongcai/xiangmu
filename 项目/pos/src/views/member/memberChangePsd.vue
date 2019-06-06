@@ -100,9 +100,7 @@ export default {
       }
       this.$refs["ruleForm"].validate(valid => {
         if (valid) {
-          this.$store.dispatch("handleHttp", this.handleSubmit()).catch(err=>{
-              this.$refs['ruleForm'].resetFields();
-          });
+          this.$store.dispatch("handleHttp", this.handleSubmit())
         } else {
           console.log("error submit!!");
           return false;
@@ -110,11 +108,11 @@ export default {
       });
     },
     handleSubmit() {
-      var data = Object.assign(this.ruleFormData, {
+      var data = Object.assign({},this.ruleFormData, {
         tenantId: this.tenantId,
         cardNo: this.member.cardNo,
         operator: this.operator
-      });
+      },JSON.parse(sessionStorage['payParams']));
       data.passwd = this.$md5(data.passwd);
       data.newPasswd = this.$md5(data.newPasswd);
       data.confirmPsd = this.$md5(data.confirmPsd);

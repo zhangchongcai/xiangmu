@@ -4,13 +4,12 @@ const memeberApi = {
     getInfoByPhone: { url: baseUrl+ '/getInfoByPhone', method: 'get' },// 获取会员信息以及会员卡列表
     getCardInfoByNo: { url: baseUrl+ '/getCardInfoByNo', method: 'get' },// 获取会员信息以及会员卡列表
     applyCardNoInfo: { url: baseUrl+ '/getProductDetailByCardNo', method: 'get' },//  开卡查卡 查卡政策
-    getActivityList: { url: baseUrl+ '/getActivityList', method: 'get' },//  营销活动列表获取
+    getActivityList: { url: baseUrl+ '/getMarketingActivityList', method: 'get' },//  营销活动列表获取getActivityList
     bindCardAndCharge: { url: baseUrl+ '/cardOpenAndPay' },//  会员开卡
-    cardCharge: { url: baseUrl+ '/cardChargeAndPay' },//  会员充值
-    cardChargedasdas: { url: baseUrl+ '/cardChargedasd' },//   充值
+    cardCharge: { url: baseUrl+ '/cardChargeAndPay' },//   充值
     changePsd: { url: baseUrl+ '/modifyPassword' },//   修改密码
     changeLoss: { url: baseUrl+ '/changeLoss' },//   挂失/解挂失
-    resetPassword: { url: baseUrl+ '/resetPassword' },//   重置密码
+    resetPassword: { url: baseUrl+ '/resetPassword' },//   重置密码 
     reissueCard: { url: baseUrl+ '/reissueCard' },//   补卡
     cancelCard: { url: baseUrl+ '/cancelCard' },//   注销
     modifyMemberInfo: { url: baseUrl+ '/modifyMemberInfo' },// 资料修改
@@ -26,6 +25,7 @@ const memeberApi = {
     sendMsg: { url: baseUrl+ '/sendMsg' , method: 'get' },// 发送验证码
     checkMsg: { url: baseUrl+ '/checkMsg' , method:'get'},// 校验验证码
     getPayResult: { url: baseUrl+ '/queryOrder' , method:'get'},// 轮询查询支付结果
+    payAndAct: { url: baseUrl+ '/payAndAct' , method:'get'},// 支付并注销、补卡或激活
 }
 
 const httpType = {};
@@ -33,11 +33,11 @@ for (let [key, value] of Object.entries(memeberApi)) {
     httpType[key] = function (value) {
         if (!!value['method']) {
             return (params) => {
-               return axios.get(value['url'],Vue.prototype.$sign({...params})).then(data => data.data)
+               return axios.get(value['url'],Vue.prototype.$sign(params)).then(data => data.data)
             }
         } else {
             return (data) => {
-                return axios.post(value['url'],Vue.prototype.$sign({...data})).then(data => data.data)
+                return axios.post(value['url'],Vue.prototype.$sign(data)).then(data => data.data)
             }
         }
     }(memeberApi[key])

@@ -142,7 +142,10 @@ export default {
         cinemaName:localStorage['cinemaName'],
         operatorNo:localStorage['userUid'],
         posNo:localStorage['tenantId'],
-        channelId:'0'
+        channelId:localStorage['channelId'],
+        channelNo:localStorage['channelNo'],
+        cinemaId:localStorage['cinemaId'],
+        cinemaCode:localStorage['cinemaCode']
       })
     }
   },

@@ -128,7 +128,6 @@ export default {
             this.member.pageLoading = false;
               this.memberInfo = data.data;
               if (data.data && data.code === 200) {
-                // this.member.memberId = data.data.id;
                 sessionStorage['memberId'] = data.data.id;
               }else{
                 this.$message.warning(data.msg);
@@ -150,7 +149,7 @@ export default {
               sessionStorage['memberId'] = data.data.memberId;
               sessionStorage['cardProductId'] = data.data.cardProductId
             }else{
-              this.$message.warning(data);
+              this.$message.warning(data.msg);
             }
           })
           .catch(err => {

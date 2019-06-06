@@ -63,7 +63,7 @@
             <el-col :span="11" v-if="requireShow('birthday')">
               <div class="grid-content bg-purple-light applcard_time">
                 <el-form-item label="生日：" prop="birthday">
-                  <el-date-picker v-model="ruleForm.birthday" format="yyyy-MM-dd" type="date" placeholder="选择日期时间">
+                  <el-date-picker v-model="ruleForm.birthday" format="yyyy-MM-dd" type="date" placeholder="选择日期时间" :picker-options="pickerOptions">
                   </el-date-picker>
                 </el-form-item>
               </div>
@@ -139,7 +139,7 @@
             ref="moreSelectOne" 
             :dataListAll="dataListAll"/>
         </div>
-        <div class="pay">
+        <div class="pay" v-if="allPrice != 0">
           <el-form-item label="支付方式：" prop="payWayCode">
             <el-radio-group v-model="ruleForm.payWayCode">
               <el-radio label="cash">现金</el-radio>
@@ -149,27 +149,14 @@
           </el-form-item>
         </div>
       </div>
-      <el-dialog
-        title="支付凭证---测试时显示"
-        :visible.sync="centerDialogVisible"
-        width="50%"
-        center>
-        <el-form-item label="支付凭证：" prop="barCode">
-          <el-input v-model="ruleForm.barCode" placeholder="请输入支付凭证---测试显示"></el-input>
-        </el-form-item>
-        <span slot="footer" class="dialog-footer">
-          <el-button @click="centerDialogVisible = false">取 消</el-button>
-          <el-button type="primary" @click="bindCardAndCharge" :loading="payLoading">{{payLoadingText}}</el-button>
-        </span>
-      </el-dialog>
     </el-form>
       <div class="bottom-btn-warp">
         <el-button @click="back()" class="button">返回</el-button>
         <el-button v-show="ruleForm.cardProductId" @click="clearRuleForm()">清空</el-button>
-        <el-button class="submit" v-show="ruleForm.cardProductId" @click="submit" type="primary">确定</el-button>
+        <el-button v-show="ruleForm.cardProductId" @click="submit" type="primary">确定</el-button>
       </div>
 
-
+    <pay-loading v-model="ruleForm.barCode" :visible.sync="centerDialogVisible"></pay-loading>
   </div>
 </template>
 
@@ -177,21 +164,19 @@
 import moreSelectOne from "./components/moreSelectOne.vue";
 import CardReading from "./components/cardReading";
 import { formatDate } from "./util/formatDate.js";
-import {MemberAjax} from "http/memberApi";
+import { MemberAjax, memeberApi} from "http/memberApi";
 import { creditNum, num10_999float2 ,customPasswordReg ,validateMobile,validateEmail ,validateName} from "./util/validate.js";
 import {mapState, mapGetters} from 'vuex'
-import { readCard ,secKeyBoard ,getValidation ,payPolling ,stopPay} from './util/utils'
+import { readCard ,secKeyBoard } from './util/utils';
+import payMixins from './mixins/payMixins'
 export default {
+  mixins:[payMixins], //支付
   components: {
     moreSelectOne,
     CardReading
   },
   data() {
     return {
-      payTimer:null,
-      centerDialogVisible:false,
-      payLoading:false,
-      payLoadingText:'支 付',
       mustFill: [], //开卡必填项
       ruleForm: {
         name: "", //姓名
@@ -207,7 +192,6 @@ export default {
         activityStatus: "", //营销活动ID
         sex: "", //性别
         payWayCode: "", //支付方式名称
-        channelNo: "31312321321", //渠道ID
         cardType: "", //会员卡类型
         cardProductId: "", //卡政策ID
         cardName: "", //卡政策
@@ -247,14 +231,21 @@ export default {
         sex: [
           { required: true, message: "性别必填", trigger: "change" }
         ],
-        payWayName: [
+        payWayCode: [
           { required: true, message: "支付方式必填", trigger: "change" }
         ],
         birthday: [{ required: true, message: "生日必填", trigger: "change" }],
         barCode: [{ required: true, message: "支付凭证必填", trigger: "blur" }]
       },
       dataListAll:[],//获取优惠信息列表
-      activeShow:false//优惠活动组件显隐
+      activeShow:false,//优惠活动组件显隐
+      pickerOptions:{
+            disabledDate(time){
+                let _now = Date.now();
+                return time.getTime() > _now;
+　　　　　　　　　　　　　　//大于当前的禁止
+            }
+        }
     };
   },
   created() {
@@ -297,52 +288,18 @@ export default {
     requireShow(name) {
       return this.mustFill.indexOf(name) != -1;
     },
-    bindCardAndCharge() {
+    handleSubmit() {
       var data = Object.assign({},this.ruleForm,{
         tenantId:this.tenantId,
         birthday:!!this.ruleForm.birthday ? new Date(this.ruleForm.birthday).formatDate('yyyy-MM-dd') : '',
         consumePassword:this.$md5(this.ruleForm.consumePassword),
       },JSON.parse(sessionStorage['payParams']));
-      this.member.pageLoading = true;
-      this.payLoading = true;
-      MemberAjax.bindCardAndCharge(data).then(res => {
-        this.member.pageLoading = false;
-        if(res.code === 601){
-          this.payLoadingText = '支付中...';
-          this.payTimer = setInterval(()=>{
-            payPolling.call(this,res.data)
-          },2000)
-        }
-        if (res.code == 200 && res.msg === '操作成功') {
-            this.$message({
-            message: res.msg,
-            type: "success",
-            onClose: () => {
-              this.$router.push({
-                path: "/member"
-              });
-            }
-          });
-        } else {
-          this.$message.error(res.msg);
-          stopPay.bind(this)();
-        }
-      }).catch((err)=>{
-        this.member.pageLoading = false;
-        stopPay.bind(this)();
-      });
-    },
-    submit() {
-      this.$refs["ruleForm"].validate(valid => {
-        if (valid) {
-          // this.bindCardAndCharge();
-          this.centerDialogVisible = true;
-        } else {
-          console.log("error submit!!");
-          return false;
-        }
-      });
-    },
+      return {
+        url: memeberApi.bindCardAndCharge["url"],
+        data: data,
+        router: this.$router
+      }
+    },    
     selectData(data) {
       console.log(data, "返回值");
       if (data) {
@@ -360,7 +317,7 @@ export default {
       this.ruleForm.cardNo = data.phoneOrCard;
     },
     getActivityList() {
-      MemberAjax.getActivityList({ tenantId: this.tenantId, action: "open" }).then(res => {
+      MemberAjax.getActivityList({ tenantId: this.tenantId, action: "MEMBER_ACTIVE_CARD" ,channelNo:localStorage['channelNo'],cinemaId:localStorage['cinemaId']}).then(res => {
         var activeList = res.data;
         this.dataListAll = activeList;
         this.activeShow = true;
@@ -416,20 +373,12 @@ export default {
       }).catch(err=>{
          this.member.show = false;
       })
-    },
-  },
-  beforeDestroy(){
-      stopPay.bind(this)();
+    }
   },
   watch: {
     "ruleForm.cardNo"(newval, oldval) {
       this.applyCardNoInfo(newval);
     },
-    "centerDialogVisible"(newval){
-      if(!newval){
-        stopPay.bind(this)();
-      }
-    }
   }
 };
 </script>

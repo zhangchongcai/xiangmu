@@ -113,28 +113,6 @@ export function secKeyBoard(config){
     })
 }
 
-/**
- * 
- * @param {*} callback 发送验证码回调函数
- */
-//18888888888
-export function getValidation(callback){
-    callback().then(res =>{
-            let n = 60;
-            this.disable = true;
-            window.validateTimer = setInterval(()=>{
-                n --;
-                if(n<=0){
-                    clearInterval(window.validateTimer);
-                    this.validataText = '获取验证码';
-                    this.disable = false;
-                    return;
-                }
-                this.validataText = `${n}s后重新获取`
-            },1000)
-    });
-}
-
 
 /**
  * 所有类型卡都可查询
@@ -160,62 +138,7 @@ export function statusDeter(data,...agrs){
     }
     
 }
-
-/**
- * 
- * @param {*} data 流水号
- */
-export function payPolling(data){
-    MemberAjax.getPayResult({flowNo:data,tenantId:this.tenantId}).then(res=>{
-      if(res.code === 200){
-        clearInterval(this.payTimer);
-        this.payLoading = false;
-        this.payLoadingText = '支付';
-        this.centerDialogVisible = false;
-        this.$message({
-          message:'支付成功',
-          type:'success',
-          onClose: () => {
-            this.$router.push({
-              path: "/member"
-            });
-          }
-        })
-      }
-    }).catch(err=>{
-      
-    })
-  }
   
-/**
- *  支付完成或失败 
- */
-  export function stopPay(){
-    clearInterval(this.payTimer);
-    this.payLoading = false;
-    this.payLoadingText = '支付';
-    this.centerDialogVisible = false;
-  }
-
-/**
- * 有支付支付提交
- */
-export function submit(){
-    this.$store.dispatch("handleHttp", this.handleSubmit()).then(res=>{
-      if(res.code === '601'){
-        this.payLoadingText = '支付中...';
-        this.payTimer = setInterval(()=>{
-          payPolling.call(this,res.data)
-        },2000)
-      }else{
-        this.$message.error(res.msg);
-        stopPay.bind(this)();
-      }
-    }).catch(err=>{
-      stopPay.bind(this)();
-      this.$refs['ruleForm'].resetFields();
-    })
-}
 
 /**
  * 查询卡政策
@@ -224,4 +147,48 @@ export function cardPolicy(cardNo){
   MemberAjax.applyCardNoInfo({ cardNo: cardNo, tenantId: this.tenantId }).then(res => {
     console.log(res)
   })
+}
+
+/**
+ * 
+ * @param {*} value 过滤入参
+ */
+export function formatMemberInfo(value) {
+  var result = [];
+  for (var key in value) {
+    var lable = "";
+    switch (key) {
+      case "sex":
+        lable = "性别:";
+        break;
+      case "name":
+        lable = "姓名:";
+        break;
+      case "birthday":
+        lable = "生日:";
+        break;
+      case "email":
+        lable = "邮箱:";
+        break;
+      case "mobileNum":
+        lable = "手机号:";
+        break;
+      case "creditNum":
+        lable = "身份证号:";
+        break;
+      case "levelName":
+        lable = "会员等级:";
+        break;
+      case "scoreBalance":
+        value[key] = null;
+        break;
+      case "totalScore":
+        value[key] = null;
+        break;
+    }
+    if (value[key] != null) {
+      result.push(lable + value[key]);
+    }
+  }
+  return result.join(" , ");
 }

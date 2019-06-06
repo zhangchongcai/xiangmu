@@ -360,10 +360,10 @@ export default {
                     this.table.data = _data;
                     this.pagination.total = data.pageNum;
                 } else {
-                    this.$message({
-                        type,
-                        message
-                    });
+                    // this.$message({
+                    //     type,
+                    //     message
+                    // });
                 }
             }).catch(msg => {
                 console.log(`获取销售申请单数据错误：${msg}`);

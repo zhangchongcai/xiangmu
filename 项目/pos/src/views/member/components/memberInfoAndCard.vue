@@ -47,7 +47,6 @@ export default {
       dataType: "phone",
       memberInfo: "",
       memberCardInfo: "",
-      // isshow: false,
     };
   },
   mounted() {
@@ -69,7 +68,7 @@ export default {
       this.isshow = true;
       this.member.cardNo = data.cardNo
       this.member.cardState = data.status;
-      this.member.cardTypeCode = '';
+      // this.member.cardTypeCode = '';
     },
     // 点击查询按钮或敲回车
     back() {
@@ -155,7 +154,7 @@ export default {
             this.member.cardNo = info.cardNo;
             this.member.phoneNum = info.phoneNumber;
             this.member.cardTypeCode = info.cardTypeCode;
-            this.$emit('isShow',true)              
+            this.$emit('isShow',true)           
           })
           .catch(err => {
             this.member.pageLoading = false;

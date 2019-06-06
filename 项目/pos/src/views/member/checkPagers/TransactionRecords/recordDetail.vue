@@ -39,7 +39,7 @@ export default {
     methods:{
         getInfo(){
             let params = {
-                outFlowNo:this.$route.params.flowNo,
+                flowNo:this.$route.params.flowNo,
                 tenantId:this.tenantId,
             }
             MemberAjax.getTradeDetail(params).then(res=>{
@@ -53,7 +53,7 @@ export default {
                     },3000)
                 }
             }).catch(error => {
-                this.$message.warning(error)
+                // this.$message.warning(error)
                 this.timer = setTimeout(()=>{
                     this.$router.go(-1)
                 },3000)

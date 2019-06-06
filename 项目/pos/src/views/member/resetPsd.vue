@@ -21,7 +21,7 @@
           <div style="position:relative;margin-top:-22px">
             <div class="recharge-info-title">验证身份</div>
             <el-form-item label="短信验证码" prop="validateCode">
-              <el-input v-model="ruleForm.validateCode" class="psd-inp" @focus="keyboard"></el-input>
+              <el-input v-model="ruleForm.validateCode" class="psd-inp"></el-input>
               <el-button class="start-btn" @click="getVilidate" v-text="validataText" :disabled="disable"></el-button>
             </el-form-item>
           </div>
@@ -36,7 +36,6 @@
         </el-form>
       </div>
     </memberInfoAndCard>
-     <KeyBoard v-model="ruleForm.validateCode" @confirm="fillContent" ref="keyboard"></KeyBoard>
   </div>
 </template>
 
@@ -44,18 +43,17 @@
 import memberInfoAndCard from "./components/memberInfoAndCard";
 import { mapState, mapGetters } from "vuex";
 import { MemberAjax, memeberApi } from "src/http/memberApi";
-import KeyBoard from 'components/keyboard'
-import { readCard ,secKeyBoard ,getValidation ,statusDeter,cardStatusCN} from './util/utils'
+import { readCard ,secKeyBoard  ,statusDeter,cardStatusCN} from './util/utils';
+import getVilidateCode from './mixins/getVilidateCode'
 export default {
+  mixins:[getVilidateCode],
   data() {
     return {
       memberTitle: "重置密码",
       cardReadingTitle: "会员卡/手机号：",
       isshow: false,
       cardStatus:['normal'],
-      validataText:"获取验证码",
       timer:null,
-      disable:false,
       ruleForm: {
         passwd: "",
         validateCode: ""
@@ -78,12 +76,6 @@ export default {
     }
   },
   methods: {
-    keyboard(){
-      this.$refs.keyboard.show()
-    },
-    fillContent(val){
-      this.ruleForm.validateCode = val;
-    },
     isShow(data) {
       this.isshow = statusDeter.call(this,data,'normal',`该卡状态为${cardStatusCN(this.member.cardState)},不能重置密码`);
       if(this.isshow)this.$refs['ruleForm'].resetFields();
@@ -97,9 +89,7 @@ export default {
         }
         this.$refs["ruleForm"].validate(valid => {
           if (valid) {
-            this.$store.dispatch("handleHttp", this.handleSubmit()).catch(err=>{
-              this.$refs['ruleForm'].resetFields()
-            });
+            this.$store.dispatch("handleHttp", this.handleSubmit())
           } else {
             console.log("error submit!!");
             return false;
@@ -108,12 +98,12 @@ export default {
       }
     },
     handleSubmit() {
-      var data = Object.assign(this.ruleForm, {
+      var data = Object.assign({},this.ruleForm, {
         tenantId: this.tenantId,
         cardNo: this.member.cardNo,
         operator: this.operator,
         phoneNum:this.member.phoneNum
-      });
+      },JSON.parse(sessionStorage['payParams']));
       if(data.passwd){
         data.passwd = this.$md5(data.passwd);
       }
@@ -133,16 +123,10 @@ export default {
       }).catch(err=>{
          this.member.show = false;
       })
-    },
-    getVilidate(){
-      getValidation.bind(this)(()=>{
-        return this.$store.dispatch('sendViladate',{phoneNumber:this.member.phoneNum,tenantId:this.tenantId})
-      })
     }
   },
   components: {
-    memberInfoAndCard,
-    KeyBoard
+    memberInfoAndCard
   }
 };
 </script>

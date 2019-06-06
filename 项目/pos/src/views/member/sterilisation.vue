@@ -16,7 +16,7 @@
           :model="ruleForm"
           :rules="rules"
           ref="ruleForm"
-          label-width="100px"
+          label-width="110px"
           style="width:100%"
           class="demo-ruleForm"
         >
@@ -25,8 +25,7 @@
             <el-form-item label="短信验证码" prop="validateCode" v-if="numberType === 'phone'">
               <el-input 
                 v-model="ruleForm.validateCode" 
-                class="psd-inp"
-                @focus="keyboard"></el-input>
+                class="psd-inp"></el-input>
               <el-button class="start-btn" 
               @click="getVilidate" 
               v-text="validataText" 
@@ -98,7 +97,7 @@
                 <el-table-column
                   label="操作">
                   <template slot-scope="scope">
-                      <el-button @click="handleSter(scope.row)" type="text" size="small">冲销</el-button>
+                      <el-button @click="handleSter(scope.row)" type="text" size="small" :disabled="scope.row.isCancel != 0">冲销</el-button>
                   </template>
                 </el-table-column>
             </el-table>
@@ -116,17 +115,17 @@
       </div>
     </memberInfoAndCard>
      
-    <KeyBoard v-model="ruleForm.validateCode" @confirm="fillContent" ref="keyboard"></KeyBoard>
   </div>
 </template>
 
 <script>
-import KeyBoard from 'components/keyboard'
 import memberInfoAndCard from "./components/memberInfoAndCard";
 import { mapState, mapGetters } from "vuex";
 import { MemberAjax, memeberApi } from "src/http/memberApi";
-import { readCard ,secKeyBoard ,getValidation ,statusDeter , cardStatusCN} from './util/utils'
+import { readCard ,secKeyBoard ,statusDeter , cardStatusCN} from './util/utils';
+import getVilidateCode from './mixins/getVilidateCode'
 export default {
+  mixins:[getVilidateCode],
   data() {
     return {
       memberTitle: "冲销",
@@ -136,8 +135,6 @@ export default {
       total:0,
       pageNo:1,
       cardStatus:['normal'],
-      disable:false,
-      validataText:'获取验证码',
       pwdText:"启动密码输入",
       cardTypeShowOrHide:true,
       ruleForm: {
@@ -150,16 +147,12 @@ export default {
         validateCode: [
           { required: true, message: "请输入验证码", trigger: "change" }
         ]
-      },
-      swiperOption:{
-        slidesPerView: 3,
-        spaceBetween: 30
       }
     };
   },
   computed: {
     ...mapState(["member","config"]),
-    ...mapGetters(['tenantId']),
+    ...mapGetters(['tenantId','operator']),
     numberType(){
       return this.member.numberType;
     }
@@ -171,12 +164,6 @@ export default {
       }
   },
   methods: {
-    keyboard(){
-      this.$refs.keyboard.show()
-    },
-    fillContent(val){
-      this.ruleForm.validateCode = val;
-    },
     tableHeaderColor({ row, column, rowIndex, columnIndex }) {
       if (rowIndex === 0) {
         return "background-color:#e5eafd;color:#333;font-size:20px";
@@ -212,7 +199,11 @@ export default {
         url: memeberApi.queryTradeRecord["url"],
         params: paramsObj,
       }
-      this.$store.dispatch('getOrderList',params)
+      this.$store.dispatch('getOrderList',params).then(res=>{
+        if(res.data.records.length == 0 && this.pageNo > 1){
+            this.getOrderList(this.pageNo - 1)
+        }
+      })
     },
     handleCurrentChange(val){
       this.pageNo = val;
@@ -232,19 +223,19 @@ export default {
         });
     },
     handleSubmit(item){
-      let data = {
-        channelId:item.channelId,
+      let data = Object.assign({},{
         oldFlowNo:item.flowNo,
         tenantId:this.tenantId,
-        cinemaName:localStorage['cinemaName']
-      };
+      },JSON.parse(sessionStorage['payParams']));
       MemberAjax.offset(data).then(res => {
-        if(res.code === 200){
+        if(res.code === 200 && res.data){
           this.$message({
               message:res.msg,
               type:'success'
           })
           this.handleCurrentChange(this.pageNo)
+        }else{
+          this.$message.warning(res.msg)
         }
       })
     },
@@ -268,11 +259,6 @@ export default {
       }).catch(err=>{
          this.member.show = false;
         })
-    },
-    getVilidate(){
-      getValidation.bind(this)(()=>{
-       return this.$store.dispatch('sendViladate',{phoneNumber:this.member.phoneNum,tenantId:this.tenantId})
-      })
     }
   },
   filters:{
@@ -285,8 +271,7 @@ export default {
     }
   },
   components: {
-    memberInfoAndCard,
-    KeyBoard
+    memberInfoAndCard
   }
 };
 </script>

@@ -71,6 +71,7 @@ export default {
     memberCardList: {
       //深度监听，可监听到对象、数组的变化
       handler(newV, oldV) {
+        this.selectedCard = '';
         // do something, 可使用this
         if (this.memberCardList.length == 1) {
           this.selectedCard = 0;
@@ -159,6 +160,7 @@ export default {
 </script>
 <style lang="scss">
 ._member-card-list {
+    margin-top:3vh;
   .member-card-list-title {
     font-size: $font-size14;
     color: #333;

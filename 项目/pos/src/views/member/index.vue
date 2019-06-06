@@ -57,4 +57,7 @@ export default {
   -ms-user-select: none;
   user-select: none;
 }
+.el-radio{
+  font-weight:normal;
+}
 </style>

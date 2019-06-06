@@ -2,13 +2,15 @@
   <div class="_card-reading">
     <div class="query-phone-or-card">
       <label class="lable" for="phoneOrCard">{{cardReadingTitle}}</label>
-      <el-input 
-        v-model="phoneOrCard" 
-        @keyup.enter.native="handleSearch" 
-        :placeholder="isApply?'请输入会员卡号':'请输入会员卡号/手机号'"
-        id="phoneOrCard"
-        ref="searchInp"
-        @focus="keyboard"></el-input>
+        <input type="text" 
+          v-model="phoneOrCard"
+          @keyup.enter="handleSearch" 
+          :placeholder="isApply?'请输入会员卡号':'请输入会员卡号/手机号'"
+          class="phoneOrCard"
+          ref="searchInp"
+          autocomplete="off"
+          @focus="(e)=>{e.target.style.borderColor = 'rgb(63, 118, 253)'}"
+          @blur="(e)=>{e.target.style.borderColor = '#bcbcbc'}">
       <el-button size="medium" type="primary" @click="readCard" :loading="readLoading">读卡</el-button>
       <el-button size="medium" @click="search" v-if="!isApply">{{$attrs.validateText ? '校验': '查询'}}</el-button>
       <div class="iskeyBoard" v-if="!!$attrs.iskeyBoard">
@@ -16,13 +18,11 @@
         <label style="color:#666"><em style="color:red">*</em>输入后请按回车键或直接刷卡</label>
       </div>
     </div>
-    <KeyBoard v-model="phoneOrCard" @confirm="fillContent" ref="keyboard"></KeyBoard>
   </div>
 </template>
 <script>
 import { mapState } from 'vuex'
 import { readCard ,secKeyBoard} from '../util/utils'
-import KeyBoard from 'components/keyboard'
 export default {
   data() {
     return {
@@ -51,28 +51,25 @@ export default {
     }
   },
   methods: {
-    keyboard(){
-      this.$refs.keyboard.show()
-    },
-    fillContent(val){
-      this.phoneOrCard = val;
+    input(e){
+      this.phoneOrCard = e;
     },
     search() {
       this.$refs.searchInp.blur();
-      this.$refs.keyboard.close();
+      let getPhoneOrCard = this.phoneOrCard.toString().trim();
       if (this.isApply) {
         console.log("开卡流程");
-        if (this.phoneOrCard.trim()) {
-          if(!/\d{14}/.test(this.phoneOrCard.trim())){
+        if (getPhoneOrCard) {
+          if(!/\d{14}/.test(getPhoneOrCard)){
             this.member.cardNoOrphoneNumState = false;
             this.$message.warning('请输入正确卡号');
             return;
           }
           this.member.cardNoOrphoneNumState = true;
           this.member.numberType = "card";
-          this.member.cardNo = this.phoneOrCard.trim();
+          this.member.cardNo = getPhoneOrCard;
           this.$emit("queryData", {
-            phoneOrCard: this.phoneOrCard.trim(),
+            phoneOrCard: getPhoneOrCard,
             type: "card"
           });
         } else {
@@ -80,12 +77,12 @@ export default {
             this.$message.warning("卡号不能为空");
         }
       } else {
-        if(!this.phoneOrCard.trim()){
+        if(!getPhoneOrCard){
           this.member.cardNoOrphoneNumState = false;
           this.$message.warning("卡号/手机号不能为空");
           return;
         }
-        if (this.phoneOrCard.trim()) {
+        if (getPhoneOrCard) {
           if (
             /^1[3|4|5|6|7|8|9][0-9]\d{8}$/.test(
               this.phoneOrCard.toString().trim()
@@ -93,24 +90,24 @@ export default {
           ) {
             console.log("手机号");
             this.member.numberType = "phone";
-            this.member.phoneNum = this.phoneOrCard.trim();
+            this.member.phoneNum = getPhoneOrCard;
             this.member.cardNoOrphoneNumState = true;
             this.$emit("queryData", {
-              phoneOrCard: this.phoneOrCard.trim(),
+              phoneOrCard: getPhoneOrCard,
               type: "phone"
             });
-          } else {
-            if(!/\d{14}/.test(this.phoneOrCard.trim())){
+          } else{
+            if(!/\d{14}/.test(getPhoneOrCard)){
               this.member.cardNoOrphoneNumState = false;
                 this.$message.warning('请输入正确会员卡号/手机号')
                 return;
               }
             console.log("卡号");
             this.member.numberType = "card";
-            this.member.cardNo = this.phoneOrCard.trim();
+            this.member.cardNo = getPhoneOrCard;
             this.member.cardNoOrphoneNumState = true;
             this.$emit("queryData", {
-              phoneOrCard: this.phoneOrCard.trim(),
+              phoneOrCard: getPhoneOrCard,
               type: "card"
             });
           }
@@ -138,9 +135,6 @@ export default {
     startKeyBorad(){
         this.search()
     }
-  },
-  components:{
-   KeyBoard
   }
 };
 </script>
@@ -151,7 +145,7 @@ export default {
     display: flex;
     align-items: center;
     .lable {
-      width: 10.2vw;
+      min-width: 10.2vw;
       font-size: $font-size14;
     }
     .el-input {
@@ -166,6 +160,21 @@ export default {
 .iskeyBoard{
   display:inline-block;
   margin-left:1vw;
+}
+.phoneOrCard{
+    width: 34.2vw;
+    padding: 10px 15px;
+    margin-right: .9vw;
+    border-radius: 4px;
+    border: 1px solid #bcbcbc;
+    color: rgb(96, 98, 102);
+    // line-height: 37px;
+    font-size:14px;
+    outline:none;
+    box-sizing: border-box;
+    &::-webkit-input-placeholder {
+      color:#D0D3D9
+    }
 }
 </style>
 

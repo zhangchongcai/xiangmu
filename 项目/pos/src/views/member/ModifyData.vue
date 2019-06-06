@@ -26,14 +26,14 @@
           v-for="(item,index) in ruleForm"
           :label="item.label+':'"
           :key="index"
-          v-if="!item.type && !!modifyData[item.prop]"
+          v-if="!item.type && modifyData[item.prop] != null"
           :prop="item.prop"
         >
-          <el-input v-model="modifyData[item.prop]" class="item-inp" @focus="keyboard(`${item.prop}`)"></el-input>
+          <el-input v-model="modifyData[item.prop]" class="item-inp"></el-input>
         </el-form-item>
         <el-form-item
           class="from-item-syle"
-          v-else-if="item.type && item.type === 'radio' && !!modifyData[item.prop]"
+          v-else-if="item.type && item.type === 'radio' && modifyData[item.prop] != null"
           :label="item.label+':'"
           :prop="item.prop"
         >
@@ -43,7 +43,7 @@
         </el-form-item>
         <el-form-item
           class="from-item-syle"
-          v-else-if="item.type && item.type === 'date' && !!modifyData[item.prop]"
+          v-else-if="item.type && item.type === 'date' && modifyData[item.prop] != null"
           :label="item.label+':'"
           :prop="item.prop"
         >
@@ -57,7 +57,7 @@
     <div class="bottom-btn-warp" v-else-if="member.isshow && member.cardNoOrphoneNumState">
       <el-button @click="back()">返回</el-button>
       <el-button @click="clearRuleForm('ruleForm')">清空</el-button>
-      <el-button class="submit" @click="submit">确定</el-button>
+      <el-button class="submit" @click="submit" type="primary">确定</el-button>
     </div>
 
     <!-- dialog pc-->
@@ -69,7 +69,6 @@
         <el-input 
           v-model="modifyData.password" 
           :type="inpType"
-          @focus="keyboard('password')"
           style="width:60%"></el-input>
         <el-button 
           style="margin-left:5px" 
@@ -84,19 +83,19 @@
       </div>
     </el-dialog>
  
-    <KeyBoard v-model="modifyData[modelVal]" @confirm="fillContent" ref="keyboard"></KeyBoard>
   </div>
 </template>
 <script>
 //01000300000021
 import CardReading from "./components/cardReading";
 import { mapState, mapGetters } from "vuex";
-import { toFormModel , secKeyBoard ,getValidation} from "./util/utils";
-import { creditNum, num10_999float2 ,customPasswordReg ,validateMobile,validateEmail} from "./util/validate.js";
+import { toFormModel , secKeyBoard } from "./util/utils";
+import { creditNum, num10_999float2 ,customPasswordReg ,validateMobile,validateEmail , validateName} from "./util/validate.js";
 import { memeberApi } from "src/http/memberApi";
 import App from 'http/app'
-import KeyBoard from 'components/keyboard'
+import getVilidateCode from './mixins/getVilidateCode'
 export default {
+  mixins:[getVilidateCode],
   data() {
     return {
       modelVal:'password',
@@ -107,7 +106,7 @@ export default {
         cardType: ""
       },
       modifyData: {
-        password:'',
+        password:''
       },
       oldPhoneNum:'',
       dialogFormVisible:false,
@@ -132,24 +131,23 @@ export default {
       rules: {
         phoneNumber: [
           { required: true, message: "请输入电话号码", trigger: "change" },
-          { validator: validateMobile,trigger:"blur"}
+          { validator: validateMobile,trigger:"change"}
         ],
-        userName: [{ required: true, message: "请输入姓名", trigger: "change" }],
+        userName: [{ required: true, message: "请输入姓名", trigger: "change" },
+         { validator: validateName,trigger:"change"}],
         gender: [{ required: true, message: "请选择性别", trigger: "change" }],
         birthday: [
           { required: true, message: "请填写生日", trigger: "change" },
         ],
         creditNum: [
           { required: true, message: "请输入身份证号", trigger: "change" },
-          { validator:creditNum,trigger:"blur"}
+          { validator:creditNum,trigger:"change"}
         ],
         email: [
           { required: true, message: "请输入邮箱", trigger: "change" },
           { type: 'email',message:'请输入正确邮箱格式',trigger: ["blur",'change']}
         ]
-      },
-      disable:false,
-      validataText:'获取验证码'
+      }
     };
   },
   created(){
@@ -164,26 +162,19 @@ export default {
     "member.memberCardInfo": function(newVal, oldVal) {
       this.$nextTick(() => {
           this.modifyData = Object.assign({},newVal, {
-            gender: !!newVal["sex"] ? (newVal["sex"]+'').toLowerCase() : (newVal["gender"]+'').toLowerCase(),
+            gender: !!newVal["sex"] ? (newVal["sex"]+'').toLowerCase() : !!newVal["gender"] ? newVal["gender"] === '男' ? 'male' : 'female' : newVal["gender"],
             phoneNumber: !!newVal["mobileNum"] ? newVal["mobileNum"] : newVal["phoneNumber"],
             userName: !!newVal["userName"] ? newVal["userName"] : newVal["name"],
           });
           this.oldPhoneNum = JSON.parse(JSON.stringify(this.modifyData.phoneNumber))
       });
-    },
+    }
   },
   computed: {
     ...mapState(["user", "member","config"]),
     ...mapGetters(['tenantId','operator'])
   },
   methods: {
-    keyboard(modelType){
-      this.modelVal = modelType;
-      this.$refs.keyboard.show()
-    },
-    fillContent(val){
-      this.modifyData[this.modelVal] = val;
-    },
     back() {
       if(this.$route.query.phoneOrCard){
         this.$router.push({
@@ -254,8 +245,7 @@ export default {
     },
     handleSubmit() {
       let fullData = this.modifyData;
-      console.log(this.member.numberType)
-      let data = {
+      let data =Object.assign({},{
         mobileNum: this.oldPhoneNum,
         name: fullData.userName,
         sex: fullData.gender,
@@ -265,7 +255,7 @@ export default {
         id:this.member.numberType === 'phone' ? fullData.id : fullData.memberId,
         tenantId: this.tenantId,
         operator:this.operator
-      };
+      },JSON.parse(sessionStorage['payParams'])) ;
       //修改手机号处理
       if(this.oldPhoneNum !== fullData.phoneNumber){
         data = Object.assign({},data,{
@@ -279,17 +269,16 @@ export default {
       };
     },
     clearRuleForm(formName) {
-      this.$refs[formName].resetFields();
-    },
-    getVilidate(){
-      getValidation.bind(this)(()=>{
-        return this.$store.dispatch('sendViladate',{phoneNumber:this.member.phoneNum,tenantId:this.tenantId})
-      })
+      let modifyData = this.modifyData;
+      Object.keys(toFormModel(this.ruleForm)).forEach((item,index)=>{
+        if(modifyData[item] != null){
+          modifyData[item] = '';
+        }
+      });
     }
   },
   components: {
-    CardReading,
-    KeyBoard
+    CardReading
   }
 };
 </script>

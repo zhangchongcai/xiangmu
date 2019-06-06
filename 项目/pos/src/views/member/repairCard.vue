@@ -50,16 +50,17 @@
                     label="手续费">
                     <el-input
                       v-show="!editMoney"
-                      v-model.number="ruleForm.poundage" 
+                      v-model.number="ruleForm.cost" 
                       style="width:10vw"></el-input>
-                    <span v-show="editMoney">{{ruleForm.poundage}}</span>元
+                    <span v-show="editMoney">{{ruleForm.cost}}</span>元
                     <el-button 
                       class="start-btn" 
                       @click="handleEdit">修改</el-button>
                   </el-form-item>
                   <el-form-item 
                   label="支付方式"
-                  prop="payWay">
+                  prop="payWay"
+                  v-if="ruleForm.cost">
                     <el-radio-group v-model="ruleForm.payWay">
                       <el-radio  
                         v-for="(item,index) in apyType"
@@ -70,22 +71,10 @@
               </el-col>
             </el-row>  
           </div>
-          <el-dialog
-            title="支付凭证---测试时显示"
-            :visible.sync="centerDialogVisible"
-            width="50%"
-            center>
-            <el-form-item label="支付凭证：" prop="barCode">
-              <el-input v-model="ruleForm.barCode" placeholder="请输入支付凭证---测试显示"></el-input>
-            </el-form-item>
-            <span slot="footer" class="dialog-footer">
-              <el-button @click="centerDialogVisible = false">取 消</el-button>
-              <el-button type="primary" @click="repairCardSubmit" :loading="payLoading">{{payLoadingText}}</el-button>
-            </span>
-          </el-dialog>
         </el-form>
       </div>
     </memberInfoAndCard>
+    <pay-loading v-model="ruleForm.barCode" :visible.sync="centerDialogVisible"></pay-loading>
   </div>
 </template>
 
@@ -93,14 +82,12 @@
 import memberInfoAndCard from "./components/memberInfoAndCard";
 import { mapState, mapGetters } from "vuex";
 import { MemberAjax, memeberApi } from "src/http/memberApi";
-import { readCard ,secKeyBoard ,cardStatusCN , statusDeter ,stopPay ,payPolling, submit ,cardPolicy} from "./util/utils";
+import { readCard ,secKeyBoard ,cardStatusCN , statusDeter ,cardPolicy} from "./util/utils";
+import payMixins from './mixins/payMixins'
 export default {
+  mixins:[payMixins], //支付
   data() {
     return {
-      payTimer:null,
-      centerDialogVisible:false,
-      payLoading:false,
-      payLoadingText:'支 付',
       memberTitle: "补卡",
       cardReadingTitle: "会员卡/手机号：",
       isshow: false,
@@ -111,15 +98,16 @@ export default {
         passwd:"",
         newCardNo:"",//新会员卡
         newPasswd:"",//新密码
-        poundage:0,//手续费
-        payWay:"" //支付方式
+        cost:0,//手续费
+        payWay:"", //支付方式
+        barCode:''
       },
       apyType:[{label:'wxmicropay',value:'微信'},{label:'alimicropay',value:'支付宝'},{label:'cash',value:'现金'}],
       rules: {
         passwd: [{ required: true, message: "请输入密码", trigger: "blur" }],
         newCardNo: [{ required: true, message: "请输入新会员卡", trigger: "blur" }],
         newPasswd: [{ required: true, message: "请输入新密码", trigger: "blur" }],
-        poundage: [{  message: "请输入手续费金额", trigger: "change" }],
+        cost: [{  message: "请输入手续费金额", trigger: "change" }],
         payWay:[{required: true, message: "请选择支付方式", trigger: "change"}]
       }
     };
@@ -133,54 +121,20 @@ export default {
       this.isshow = statusDeter.call(this,data,'loss',`该卡状态为${cardStatusCN(this.member.cardState)},不能补卡`);
       if(this.isshow)this.$refs['ruleForm'].resetFields();
     },
-    //触发确定
-    submit(data) {
-      if (data) {
-        if (!this.member.cardNo) {
-          this.$message.warning("请选择一张储卡");
-          return;
-        }
-        this.$refs["ruleForm"].validate(valid => {
-          if (valid) {
-              this.centerDialogVisible = true;
-            // this.$store.dispatch("handleHttp", this.handleSubmit());
-          } else {
-            console.log("error submit!!");
-            return false;
-          }
-        });
-      }
-    },
     handleSubmit() {
-      var data = Object.assign(this.ruleForm, {
+      var data = Object.assign({},this.ruleForm, {
+        actionType:'REISSUE',
         tenantId: this.tenantId,
         cardNo: this.member.cardNo,
-        operator: this.operator
+        operator: this.operator,
+        passwd : this.$md5(this.ruleForm.passwd),
+        newPasswd : this.$md5(this.ruleForm.newPasswd)
       },JSON.parse(sessionStorage['payParams']));
-      data.passwd = this.$md5(data.passwd);
-      data.newPasswd = this.$md5(data.newPasswd);
       return {
-        url: memeberApi.reissueCard["url"],
+        url: memeberApi.payAndAct["url"],
         data: data,
         router: this.$router
       };
-    },
-    repairCardSubmit(){
-      submit.bind(this)()
-        // this.$store.dispatch("handleHttp", this.handleSubmit()).then(res=>{
-        //   if(res.code === '601'){
-        //     this.payLoadingText = '支付中...';
-        //     this.payTimer = setInterval(()=>{
-        //       payPolling.call(this,res.data)
-        //     },2000)
-        //   }else{
-        //     this.$message.error(res.msg);
-        //     stopPay.bind(this)();
-        //   }
-        // }).catch(err=>{
-        //   stopPay.bind(this)();
-        //   this.$refs['ruleForm'].resetFields();
-        // })
     },
     handleEdit(){
       this.editMoney = false;
@@ -218,23 +172,15 @@ export default {
                 this.$message.warning(res.msg)
             }
         }).catch((err)=>{
-            this.$message.warning(err.mag)
+            // this.$message.warning(err.mag)
         })
     }
   },
-  beforeDestroy(){
-      stopPay.bind(this)();
-  },
   watch: {
-    "centerDialogVisible"(newval){
-      if(!newval){
-        stopPay.bind(this)();
-      }
-    },
     'member.cardNo'(newVal){
       if(newVal){
         this.$store.dispatch('cardPolicy',{cardNo:newVal,tenantId: this.tenantId}).then(res=>{
-          this.ruleForm.poundage = this.member.makeUpPrice || 0;
+          this.ruleForm.cost = this.member.makeUpPrice || 0;
         })
       }
     }

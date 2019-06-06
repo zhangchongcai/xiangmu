@@ -31,12 +31,14 @@
             <div style="position:relative" class="_card-reading">
                 <div class="query-phone-or-card">
                     <label class="lable" for="phoneOrCard">会员卡</label>
-                    <el-input 
+                    <input 
                         v-model="secondCardNum" 
-                        @keyup.enter.native="validatorInp" 
+                        @keyup.enter="validatorInp" 
                         placeholder="请输入会员卡号"
-                        @focus="keyboard"
-                        ref="turnInInp"></el-input>
+                        ref="turnInInp"
+                        class="phoneOrCard"
+                        @focus="(e)=>{e.target.style.borderColor = 'rgb(63, 118, 253)'}"
+                        @blur="(e)=>{e.target.style.borderColor = '#bcbcbc'}">
                     <el-button size="medium" type="primary" @click="readCard">读卡</el-button>
                     <div v-show="secondCardError.cardName" class="cardNoNameStyle">
                         <span v-text="secondCardError.cardType"></span>
@@ -77,7 +79,7 @@
         </div> -->
         <div class="bottom-btn-warp" >
             <el-button @click="back()">返回</el-button>
-            <el-button class="submit" @click="submit" v-if="isshow && confirmCardShow">确定</el-button>
+            <el-button class="submit" @click="submit" v-if="isshow && confirmCardShow" type="primary">确定</el-button>
         </div>
 
         <!-- dialog -->
@@ -88,8 +90,6 @@
             <el-button type="primary" @click="getInfo">确 定</el-button>
             </div>
         </el-dialog>
-
-        <KeyBoard v-model="secondCardNum" @confirm="fillContent" ref="keyboard"></KeyBoard>
     </div>
     
 </template>
@@ -98,7 +98,6 @@ import CardReading from "./components/cardReading";
 import { mapState, mapGetters  } from "vuex";
 import { memeberApi , MemberAjax} from "src/http/memberApi";
 import { secKeyBoard ,readCard } from './util/utils'
-import KeyBoard from 'components/keyboard'
 export default {
     data(){
         return {
@@ -144,12 +143,6 @@ export default {
         }
     },
     methods:{
-        keyboard(){
-            this.$refs.keyboard.show()
-        },
-        fillContent(val){
-            this.phoneOrCard = val;
-        },
         queryData(data) {
             this.cardInfo = data;
             if(JSON.parse(localStorage['globalAppState']) && data.type === 'card'){
@@ -188,6 +181,10 @@ export default {
             this.dialogFormVisible = false;
         },
         trunBalance(){
+            if(!!this.cardInfo && this.secondCardNum.trim() === this.cardInfo.phoneOrCard){
+                this.$message.warning('不能与转出卡号一致，请更换一张卡');
+                return;
+            }
             if(this.firstCardInfo && this.secondCardInfo){
                 var params = {
                     tenantId:this.tenantId,
@@ -204,7 +201,7 @@ export default {
             }
         },
         submit(){
-            let data = {
+            let data =Object.assign({},{
                 channel:this.firstCardInfo['channelName'],
                 newCardNo:this.secondCardInfo['cardNo'],
                 oldCardNo:this.firstCardInfo['cardNo'],
@@ -212,7 +209,7 @@ export default {
                 passwd:this.$md5(this.password),//转出卡密
                 tenantId:this.tenantId,
                 turnIntegral:0//是否结转积分 1、是 0、否
-            }
+            },JSON.parse(sessionStorage['payParams']))
             let queryList = {
                 url:memeberApi.carryOver['url'],
                 data:data,
@@ -233,11 +230,12 @@ export default {
             this.secondCardShow = false;
             this.secondCardInfo = '';
             this.confirmCardShow = false;
-            if(!/\d{14}/.test(this.secondCardNum.trim())){
+            let carNum = this.secondCardNum.trim()
+            if(!/\d{14}/.test(carNum)){
                 this.$message.warning('请输入正确会员卡号/手机号')
                 return;
             }
-            var data = { cardNo: this.secondCardNum.trim(), tenantId: this.tenantId ,verifyPassword: false}
+            var data = { cardNo: carNum, tenantId: this.tenantId ,verifyPassword: false}
             MemberAjax.getCardInfoByNo(data).then(res => {
                 if(res.code === 200 && res.data){
                     if(res.data.status !== 'normal' || res.data.cardTypeCode !== 'stored_card'){
@@ -252,14 +250,13 @@ export default {
                 }
                 this.dialogFormVisible = false;
             }).catch((err)=>{
-                this.$message.warning(err.mag)
+                // this.$message.warning(err.mag)
                 this.dialogFormVisible = false;
             })
         }
     },
     components:{
-        CardReading,
-        KeyBoard
+        CardReading
     }
 }
 </script>

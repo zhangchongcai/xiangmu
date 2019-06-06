@@ -46,11 +46,7 @@ export default {
         },
         getListHandle(state,res){
             state.loading = false;
-            if(res.data.code === 200 && res.data.data){
-                state.getOrderList = res.data.data;
-            }else {
-                Vue.prototype.error(res.data.msg);
-            }
+            state.getOrderList = res.data.data;
         },
         getViladateInfo(state,res){
             Vue.prototype.$message({
@@ -67,7 +63,7 @@ export default {
         // submit 提交接口
         handleHttp:function({commit},{url,data,router}){
             return new Promise((reslove,reject)=>{
-                axios.post(url,Vue.prototype.$sign({...data})).then(function(res){
+                axios.post(url,Vue.prototype.$sign(data)).then(function(res){
                     if (res.data.code == 200 && res.data.msg === '操作成功') {
                         commit('handleHttp',{res,router})
                         reslove(res.data)
@@ -82,23 +78,30 @@ export default {
         },
         //获取card信息
         getInfo:function({commit},{url,params}){
-            axios.get(url,Vue.prototype.$sign({...params})).then(res=>{
+            axios.get(url,Vue.prototype.$sign(params)).then(res=>{
                 commit('getInfoHandle',res)
             })
         },
         //获取交易记录
         getOrderList:function({commit},{url,params}){
-            axios.get(url,Vue.prototype.$sign({...params})).then(res => {
-                commit('getListHandle',res)
-            }).catch(err=>{
-                Vue.prototype.error(err.response.data)
-                console.log(err)
+            return new Promise((reslove,reject)=>{
+                axios.get(url,Vue.prototype.$sign(params)).then(res => {
+                    if(res.data.code === 200 && res.data.data){
+                        commit('getListHandle',res);
+                        reslove(res.data)
+                    }else {
+                        Vue.prototype.error(res.data.msg);
+                    }
+                }).catch(err=>{
+                    // Vue.prototype.error(err.response.data)
+                    console.log(err)
+                })
             })
         },
         //发送验证码
         sendViladate:function({commit},data){
             return new Promise((reslove,reject)=>{
-                axios.get(memeberApi.sendMsg['url'],Vue.prototype.$sign({...data})).then(res => {
+                axios.get(memeberApi.sendMsg['url'],Vue.prototype.$sign(data)).then(res => {
                     if(res.data.code === 200 && res.data.msg === '操作成功'){
                         commit('getViladateInfo',res);
                         reslove(res)
@@ -106,7 +109,6 @@ export default {
                         Vue.prototype.error(res.data.msg)
                     }
                 }).catch(err=>{
-                    console.log(err)
                     Vue.prototype.error('验证码发送失败');
                     reject(err)
                 })
@@ -115,7 +117,7 @@ export default {
         //查询卡政策
         cardPolicy:function({commit},data){
             return new Promise((reslove,reject)=>{
-                axios.get(memeberApi.applyCardNoInfo['url'],Vue.prototype.$sign({...data})).then(res=>{
+                axios.get(memeberApi.applyCardNoInfo['url'],Vue.prototype.$sign(data)).then(res=>{
                     if(res.data.code === 200){
                         commit('cardPolicy',res.data.data);
                         reslove(res.data)

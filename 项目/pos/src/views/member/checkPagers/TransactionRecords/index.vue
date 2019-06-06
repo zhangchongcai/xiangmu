@@ -111,7 +111,7 @@ export default {
             this.$store.dispatch('getOrderList',params)
         },
         handleCheck(index,item){
-            this.$router.push({path:`/member/recordDetail/${item.FlowNo}`})
+            this.$router.push({path:`/member/recordDetail/${item.flowNo}`})
         },
         currentPage(vo){
             this.getOrderList(vo)

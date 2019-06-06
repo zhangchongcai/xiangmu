@@ -91,8 +91,8 @@
       @currentPage 当前页码
       @getDate 子组件显示date组件选择时间传给自组件给接口参数使用
  * */
-import { toFormModel } from "../util/utils";
-import { mapState } from 'vuex'
+import { toFormModel , formatMemberInfo} from "../util/utils";
+import { mapState } from 'vuex';
 export default {
   props: {
     searchData: {
@@ -150,20 +150,23 @@ export default {
           return "--";
         }
       } else {
-        switch (value) {
-          case null:
+        switch (true) {
+          case value == null:
             return "--";
             break;
-          case "UNUSED":
+          case value === "UNUSED":
             return "未使用";
             break;
-          case "USED":
+          case value === "USED":
             return "已使用";
+            break;
+            case value instanceof Object && !!value:
+            return formatMemberInfo(value);
             break;
           default:
             return value;
         }
-      }
+      };
     }
   }
 };
