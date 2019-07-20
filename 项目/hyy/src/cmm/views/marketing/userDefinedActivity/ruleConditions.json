@@ -1,5 +1,5 @@
 {
-    "MOVIE365首次购票": {
+    "首次购票": {
         "category": "SaleInfo",
         "groupId": 96,
         "key": "firstBuyTicket",
@@ -7,7 +7,7 @@
         "text": "",
         "value": ""
     },
-    "交易商户": {
+    "交易客商": {
         "category": "SaleInfo",
         "groupId": 14,
         "key": "businessCode",
@@ -48,6 +48,22 @@
         "value": ""
     },
     "会员等级": {
+        "category": "SaleInfo",
+        "groupId": 101,
+        "key": "customerLevelCode",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "会员卡政策": {
+        "category": "SaleInfo",
+        "groupId": 100,
+        "key": "cardRightCode",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "会员卡类型": {
         "category": "MemberInfo",
         "groupId": 10,
         "key": "cardTypeKey",
@@ -131,6 +147,14 @@
         "category": "SaleItemInfo",
         "groupId": 31,
         "key": "price",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "商品类型": {
+        "category": "MemberStatisInfo",
+        "groupId": 17,
+        "key": "saleItemType",
         "opUniqueName": "",
         "text": "",
         "value": ""
@@ -410,6 +434,102 @@
         "opUniqueName": "",
         "text": "",
         "value": ""
+    },
+    "首充金额": {
+        "category": "MemberInfo",
+        "groupId": 98,
+        "key": "firstRecharge",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "单次充值金额": {
+        "category": "SaleInfo",
+        "groupId": 1,
+        "key": "sumPrice",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "动态周期消费次数": {
+        "key": "consumeNum",
+        "hasSon": true,
+        "动态周期": {
+            "category": "MemberStatisInfo",
+            "groupId": 15,
+            "key": "dynamicPeriod",
+            "opUniqueName": "",
+            "text": "",
+            "value": ""
+        },
+        "指定周期": {
+            "category": "MemberStatisInfo",
+            "groupId": 15,
+            "key": "appointPeriod",
+            "opUniqueName": "",
+            "text": "",
+            "value": ""
+        },
+        "交易渠道": {
+            "category": "MemberStatisInfo",
+            "groupId": 15,
+            "key": "consumeWayCode",
+            "opUniqueName": "",
+            "text": "",
+            "value": ""
+        },
+        "消费次数": {
+            "category": "MemberStatisInfo",
+            "groupId": 15,
+            "key": "dynamicConsumeCount",
+            "opUniqueName": "",
+            "text": "",
+            "value": ""
+        }
+    },
+    "动态周期消费额": {
+        "key": "cycleConsumeNum",
+        "hasSon": true,
+        "动态周期": {
+            "category": "MemberStatisInfo",
+            "groupId": 17,
+            "key": "dynamicPeriod",
+            "opUniqueName": "",
+            "text": "",
+            "value": ""
+        },
+        "指定周期": {
+            "category": "MemberStatisInfo",
+            "groupId": 17,
+            "key": "appointPeriod",
+            "opUniqueName": "",
+            "text": "",
+            "value": ""
+        },
+        "交易渠道": {
+            "category": "MemberStatisInfo",
+            "groupId": 17,
+            "key": "consumeWayCode",
+            "opUniqueName": "",
+            "text": "",
+            "value": ""
+        },
+        "商品类型": {
+            "category": "MemberStatisInfo",
+            "groupId": 17,
+            "key": "saleItemType",
+            "opUniqueName": "",
+            "text": "",
+            "value": ""
+        },
+        "动态周期消费额": {
+            "category": "MemberStatisInfo",
+            "groupId": 17,
+            "key": "dynamicConsumeSum",
+            "opUniqueName": "",
+            "text": "",
+            "value": ""
+        }
     },
     "累计积分": {
         "category": "MemberInfo",

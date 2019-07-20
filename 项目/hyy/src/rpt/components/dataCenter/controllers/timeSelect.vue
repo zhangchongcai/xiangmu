@@ -1,14 +1,6 @@
 <template>
-  <!-- <el-date-picker
-    v-model="dateTime"
-    type="datetimerange"
-    range-separator="至"
-    start-placeholder="开始日期"
-    end-placeholder="结束日期"
-    value-format="yyyy-MM-dd HH:mm:ss"
-    @change="dateTimeChange"
-  ></el-date-picker>-->
   <el-time-picker
+    unlink-panels
     is-range
     v-model="time"
     range-separator="至"
@@ -22,9 +14,19 @@
 
 <script>
 import Moment from "moment";
+import mixins from "src/frame_cpm/mixins/cacheMixin.js";
 export default {
+  mixins: [mixins.cacheMixin],
+  props: {
+    resetStatus: Boolean,
+    queryName: String
+  },
   data() {
     return {
+      cacheField: [
+        "time"
+      ],
+      subComName: "timeSelect",
       time: []
     };
   },
@@ -35,19 +37,24 @@ export default {
     getStrTime() {
       let currentTime = this.time;
       if (currentTime != null) {
-        // let endTime = currentTime[1].replace("00:00:00", "23:59:59");
-        // currentTime[1] = endTime;
-        // console.log(currentTime.join(","))
-        console.log(this.time)
-        this.$emit("selectTimeData", currentTime.join(","));
+        console.log(this.time);
+        this.$emit("selectTimeData", currentTime.join(","), this.queryName);
       } else {
-        this.$emit("selectTimeData", "");
+        this.$emit("selectTimeData", "", this.queryName);
       }
     }
   },
-  mounted() {
-    this.time = ['00:00:00', '23:59:59'];
+  mounted() { 
+    this.time = ["00:00:00", "23:59:59"];
     this.getStrTime();
+  },
+  watch: {
+    resetStatus(newVal) {
+      if (newVal === true) {
+        this.time = ["00:00:00", "23:59:59"];
+        this.getStrTime();
+      }
+    }
   }
 };
 </script>

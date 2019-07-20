@@ -1,15 +1,7 @@
 <template>
 <div class="movie-plan_default" :class="{isTableCheck:isEdit == 'detail'}">
-    <div class="breadcrumb">
-        <el-breadcrumb separator-class="el-icon-arrow-right">
-            <el-breadcrumb-item>影票营销活动</el-breadcrumb-item>
-            <el-breadcrumb-item>影票活动总览</el-breadcrumb-item>
-            <el-breadcrumb-item class="primary">{{isEdit=="update" ? '修改' : (isEdit=="detail" ? '查看' : (isEdit=="copy" ? '复制' : '新建'))}}影票活动</el-breadcrumb-item>
-        </el-breadcrumb>
-    </div>
-
     <el-collapse v-model="activeNames" @change="handleChange">
-        <el-form :model="basicDataForm" :rules="basicDataRule" ref="basicDataForm" label-width="150px" class="common-form">
+        <el-form :model="basicDataForm" :rules="basicDataRule" ref="basicDataForm" label-width="120px" class="common-form">
             <!-- 活动基础信息 -->
             <el-collapse-item title="活动基础信息" name="1">
                 <el-form-item label="活动类型:" size="small" prop="activityType">
@@ -20,8 +12,8 @@
                     </el-radio-group>
                 </el-form-item>
 
-                <el-form-item label="活动名称:" prop="activityName" :rules="commonRules.valActivityName">
-                    <el-input class="input-type-217" v-model="basicDataForm.activityName" placeholder="请输入活动名称" :disabled="disabled" maxlength="15" ></el-input>
+                <el-form-item label="活动名称:" prop="activityName" :rules="commonRules.valActivityName" >
+                    <el-input class="input-activity-name" v-model="basicDataForm.activityName" placeholder="请输入活动名称" :disabled="disabled" maxlength="15" @change="delSpace()"></el-input>
                 </el-form-item>
 
                 <el-form-item label="活动描述:" prop="activityDesc">
@@ -30,13 +22,13 @@
 
                 <el-form-item label="执行策略:" size="mini" prop="executeMode">
                     <el-radio-group v-model="basicDataForm.executeMode" :disabled="disabled">
-                        <el-radio :label="'AUTO_MATCH'">自动执行</el-radio>
-                        <el-radio :label="'AUTO_MATCH_RECOMMEND'">推荐执行</el-radio>
+                        <el-radio :label="'AUTO_MATCH'">自动</el-radio>
+                        <el-radio :label="'AUTO_MATCH_RECOMMEND'">推荐</el-radio>
                         <el-popover placement="right-start" title width="200" trigger="hover" content="1.自动执行策略：在交易时系统自动匹配执行的策略；
-2.推荐执行策略：在交易时系统匹配并提示操作人员选择执行的策略；在自助体系（网站、手机APP及自助购票机等）的交易过程中，系统只匹配自动执行策略。例：
-“会员半价”，这种活动在系统识别会员时打折，建议设置自动执行策略；
-“刷招行信用卡25元购票”，对于这种活动必须由柜台操作员判断顾客是否持有相应的信用卡支付，确认后需手工点选实现打折，建议设置为推荐执行策略；
-当同一个优先级存在多个匹配的活动时，系统提示操作员手工选择执行。">
+                            2.推荐执行策略：在交易时系统匹配并提示操作人员选择执行的策略；在自助体系（网站、手机APP及自助购票机等）的交易过程中，系统只匹配自动执行策略。例：
+                            “会员半价”，这种活动在系统识别会员时打折，建议设置自动执行策略；
+                            “刷招行信用卡25元购票”，对于这种活动必须由柜台操作员判断顾客是否持有相应的信用卡支付，确认后需手工点选实现打折，建议设置为推荐执行策略；
+                            当同一个优先级存在多个匹配的活动时，系统提示操作员手工选择执行。">
                             <el-button type="text" slot="reference" class="el-icon-warning" style="margin-left:5px;">
                                 <span style="color:#ffffff">1</span>
                             </el-button>
@@ -46,18 +38,20 @@
 
                 <el-form-item label="执行优先级:" size="mini" class="priorityNum">
                     <el-radio-group v-model="basicDataForm.priority" :disabled="disabled">
-                        <el-row class="flex-base">
+                        <el-row class="flex-base" style="height:32px;line-height:32px;">
                             <el-radio :label="1">输入优先级数字</el-radio>
                             <el-form-item v-if="basicDataForm.priority==1" prop="priorityNum">
-                                <el-input style="margin-right: 35px;" class="input-type-94" v-model="basicDataForm.priorityNum" :disabled="disabled" placeholder="数值越大优先级越高(0-99)" min="0" max="99"></el-input>
+                                <el-input style="width:252px;height:32px;" v-model="basicDataForm.priorityNum" :disabled="disabled" placeholder="数值越大优先级越高(0-99)" min="0" max="99"></el-input>
                             </el-form-item>
+                        </el-row>
+                        <el-row style="height:32px;line-height:32px;margin-top:10px;">
                             <el-radio :label="2">按最优先执行</el-radio>
                         </el-row>
                     </el-radio-group>
                 </el-form-item>
 
                 <el-form-item label="活动有效期:" prop="validDateOption">
-                    <el-date-picker v-model="basicDataForm.validDateOption" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" :disabled="disabled" @change="setValidityDate"></el-date-picker>
+                    <el-date-picker v-model="basicDataForm.validDateOption" :picker-options="pickerOptions" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" :disabled="disabled" @change="setValidityDate"></el-date-picker>
                 </el-form-item>
 
                 <el-form-item label="排除日期:">
@@ -69,14 +63,14 @@
                 </el-form-item>
 
                 <div v-if="basicDataForm.excludeDate.indexOf('指定排除日期范围')!=-1">
-                    <el-form-item label v-for="(item,index) in basicDataForm.excludeDateOptions" :key="index" :prop="'excludeDateOptions.'+index+'.excludeDateOption'" :rules="{required: true, message: '指定排除日期范围不能为空', trigger: 'blur'}">
-                        <el-date-picker v-model="item.excludeDateOption" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" :disabled="disabled" @change="setExcludeDate"></el-date-picker>
+                    <el-form-item label v-for="(item,index) in basicDataForm.excludeDateOptions" :key="index" :prop="'excludeDateOptions.'+index+'.excludeDateOption'" :rules="{required: true, message: '指定排除日期范围不能为空', trigger: 'change'}">
+                        <el-date-picker v-model="item.excludeDateOption" :picker-options="pickerOptions" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" :disabled="disabled" @change="setExcludeDate"></el-date-picker>
                         <el-button size="small" type="text" @click="delExcludeDate(index)">删除</el-button>
                     </el-form-item>
 
                     <el-form-item label v-if="isEdit != 'detail'">
                         <div class="addDate" @click="addExcludeDate">
-                            <i class="el-icon-circle-plus-outline"></i>添加时间
+                            <i class="el-icon-circle-plus-outline"></i>添加日期
                         </div>
                     </el-form-item>
                 </div>
@@ -88,8 +82,8 @@
                     </el-select>
                 </el-form-item>
                 <div v-if="basicDataForm.timeRange==1 && basicDataForm.timeRangeSelect.length>0" class="timeRange_bg">
-                    <div label v-for="(item,index) in basicDataForm.timeRangeSelect" :key="index" style="margin-bottom: -4px;">
-                        <el-form-item  :prop="'timeRangeSelectDays.'+index" :rules="{required: true, message: '时段范围不能为空', trigger: 'blur'}">
+                    <div label v-for="(item,index) in basicDataForm.timeRangeSelect" :key="item.key" style="margin-bottom: -4px;">
+                        <el-form-item>
                             <el-form-item>
                                 <el-checkbox :indeterminate="item.isIndeterminateWithWorkDay" v-model="item.checkAllWorkDay" :disabled="disabled" @change="handleCheckAllWorkDayChange(item,$event)" style="float:left; margin-right:25px;">工作日
                                 </el-checkbox>
@@ -97,20 +91,21 @@
                                     <el-checkbox v-for="item in workDayOptions" :label="item.id" :key="item.id">{{item.text}}</el-checkbox>
                                 </el-checkbox-group>
                             </el-form-item>
-                            <el-form-item label>
+                            <el-form-item :prop="'timeRangeSelectDays.'+index" :rules="{required: true, message: '时段范围不能为空', trigger: 'blur'}">
                                 <el-checkbox :indeterminate="item.isIndeterminateWithWeekend" :disabled="disabled" v-model="item.checkAllWeekend" @change="handleCheckAllWeekendChange(item,$event)" style="float:left; margin-right:40px;">周末
                                 </el-checkbox>
                                 <el-checkbox-group v-model="item.weekend" :disabled="disabled" @change="handleCheckedWeekendChange(item,$event)">
                                     <el-checkbox v-for="item in weekendOptions" :label="item.id" :key="item.id">{{item.text}}</el-checkbox>
                                 </el-checkbox-group>
                             </el-form-item>
-                            <el-form-item label v-if="isEdit != 'detail'">
-                                <el-time-picker is-range v-model="item.specifyTime" range-separator="至" start-placeholder="开始时间" end-placeholder="结束时间" value-format="HH:mm:ss" :disabled="disabled" @change="setSpecifyTime" style="float:left;"></el-time-picker>
-                                <div style="float:left; margin-left:25px;">
-                                    <span>指定范围：</span>
+                            <el-form-item style="margin-top:20px;" :prop="'timeRangeSelect.'+index+'.specifyTime'" :rules="{required: true, message: '时段范围不能为空', trigger: 'change'}">
+                                <el-time-picker is-range v-model="item.specifyTime" range-separator="至" start-placeholder="开始时间" end-placeholder="结束时间" value-format="HH:mm:ss" :disabled="disabled" style="float:left;"></el-time-picker>
+                                <div style="float:left; margin-left:25px;" v-if="isEdit != 'detail'">
+                                    <span style="font-size:12px;">指定范围：</span>
                                     <el-button size="small" type="text" @click="amClick(item)">上午</el-button>
                                     <el-button size="small" type="text" @click="pmClick(item)">下午</el-button>
                                     <el-button size="small" type="text" @click="eveningClick(item)">晚上</el-button>
+                                    <el-button style="margin-left:25px;" size="small" type="text" @click="delTimeRangeSelect(index)">删除</el-button>
                                 </div>
                             </el-form-item>
                         </el-form-item>
@@ -124,15 +119,14 @@
 
                 <el-form-item label="交易渠道:">
                     <el-row class="flex-base">
-                        <el-select v-model="basicDataForm.tradingChannel" :disabled="disabled" clearable>
+                        <el-select v-model="basicDataForm.tradingChannel" :disabled="disabled">
                             <el-option label="不限" value></el-option>
                             <el-option label="包含" value="normalIn"></el-option>
                             <el-option label="不包含" value="normalNotIn"></el-option>
                         </el-select>
-                        <el-form-item class="margin-left-5" v-if="basicDataForm.tradingChannel!=''" prop="tradingChannelState">
-                            <el-select class="chooseWidth1" :disabled="disabled" v-model="basicDataForm.tradingChannelState" multiple collapse-tags @change="handleChangeSelect" :title="basicDataForm.tradingChannelStateName.join(',')" clearable>
-                                <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></el-option>
-                            </el-select>
+                        <el-form-item v-if="basicDataForm.tradingChannel!=''" prop="tradingChannelInput">
+                            <el-input class="chooseWidth1" v-model="basicDataForm.tradingChannelInput" readonly></el-input>
+                            <el-button class="windowBtn" type="primary" :disabled="disabled" @click="tradeChannelClick()" plain>选择</el-button>
                         </el-form-item>
                     </el-row>
                 </el-form-item>
@@ -140,33 +134,69 @@
 
             <!-- 设置活动条件 -->
             <el-collapse-item title="设置活动条件" name="2">
-                <el-form-item label="交易影院:" prop="tradingMerchant">
-                    <el-row class="flex-base">
+                <el-row class="flex-base">
+                    <el-form-item label="交易影院:" prop="tradingMerchant">
                         <el-select v-model="basicDataForm.tradingMerchant" :disabled="disabled">
                             <el-option label="包含" value="normalIn"></el-option>
                             <el-option label="不包含" value="normalNotIn"></el-option>
                         </el-select>
-                        <el-form-item class="margin-left-5" prop="tradingMerchantInput">
-                            <el-input class="chooseWidth1" v-model="basicDataForm.tradingMerchantInput" ></el-input>
-                            <el-button type="primary" :disabled="disabled" style="margin-left:10px;" @click="cinemaClick('movieTicketDialog')" plain>选择</el-button>
-                        </el-form-item>
-                    </el-row>
-                </el-form-item>
-                <el-form-item label="消费者身份:">
+                    </el-form-item>
+                    <el-form-item prop="tradingMerchantInput" class="tradingMerchantInput">
+                        <el-input  class="chooseWidth1" v-show="!basicDataForm.tradingMerchantInput" style="width: 166px;" v-model="basicDataForm.tradingMerchantInput" readonly></el-input>
+                        <el-tooltip placement="bottom" v-show="basicDataForm.tradingMerchantInput">
+                            <el-input class="chooseWidth1" style="width: 166px;" v-model="basicDataForm.tradingMerchantInput" readonly></el-input>
+                            <div slot="content">
+                                <div v-for="item in basicDataForm.tradingMerchantInput.split(',')" :key="item" style="font-size:12px">{{ item }}<br/></div>
+                            </div>
+                        </el-tooltip>   
+                        <el-button class="windowBtn" type="primary" :disabled="disabled" @click="cinemaClick('movieTicketDialog')" plain>选择</el-button>
+                    </el-form-item>
+                </el-row>
+
+                <el-form-item label="会员等级:">
                     <el-row class="flex-base">
-                        <el-select v-model="basicDataForm.consumerIdentity" :disabled="disabled">
-                            <el-option label="所有(会员+非会员)" value></el-option>
-                            <el-option label="全部会员" value="AllMember"></el-option>
-                            <el-option label="指定会员等级" value="AppointMember"></el-option>
+                        <el-select v-model="basicDataForm.customerLevel" :disabled="disabled">
+                            <el-option label="不限" value></el-option>
+                            <el-option label="包含" value="normalIn"></el-option>
+                            <el-option label="不包含" value="normalNotIn"></el-option>
                             <el-option label="非会员" value="not_memberOperator"></el-option>
                         </el-select>
-                        <el-form-item class="margin-left-5" v-if="basicDataForm.consumerIdentity=='AppointMember'" prop="consumerIdentityInput">
-                            <el-input class="chooseWidth1" v-model="basicDataForm.consumerIdentityInput" ></el-input>
-                            <el-button type="primary" :disabled="disabled" v-if="basicDataForm.consumerIdentity=='AppointMember'" style="margin-left:10px;" @click="membershipLevelClick('movieTicketConsumerIdentityDialog')" plain>选择</el-button>
+                        <el-form-item v-if="basicDataForm.customerLevel=='normalIn' || basicDataForm.customerLevel=='normalNotIn'" prop="customerLevelInput">
+                            <el-input class="chooseWidth1" v-model="basicDataForm.customerLevelInput" readonly></el-input>
+                            <el-button class="windowBtn" type="primary" :disabled="disabled" @click="membershipLevelClick('otherCrmMemberLevelDialog')" plain>选择</el-button>
                         </el-form-item>
                     </el-row>
                 </el-form-item>
 
+                <!-- <el-form-item label="消费者身份:">
+                    <el-row class="flex-base">
+                        <el-select v-model="basicDataForm.consumerIdentity" :disabled="disabled" @change="changeConsumerIdentity">
+                            <el-option label="所有(会员+非会员)" value></el-option>
+                            <el-option label="全部会员" value="AllMember"></el-option>
+                            <el-option label="指定会员卡政策" value="AppointMember"></el-option>
+                            <el-option label="非会员" value="not_memberOperator"></el-option>
+                        </el-select>
+                        <el-form-item v-if="basicDataForm.consumerIdentity=='AppointMember'" prop="consumerIdentityInput">
+                            <el-input class="chooseWidth1" v-model="basicDataForm.consumerIdentityInput" readonly></el-input>
+                            <el-button class="windowBtn" type="primary" :disabled="disabled" @click="cardPolicyClick('movieTicketConsumerIdentityDialog')" plain>选择</el-button>
+                        </el-form-item>
+                    </el-row>
+                </el-form-item> -->
+
+                <el-form-item label="会员卡政策:">
+                    <el-row class="flex-base">
+                        <el-select v-model="basicDataForm.membershipLevel" :disabled="disabled">
+                            <el-option label="不限" value></el-option>
+                            <el-option label="包含" value="normalIn"></el-option>
+                            <el-option label="不包含" value="normalNotIn"></el-option>
+                            <el-option label="全部卡政策" value="AllMember"></el-option>
+                        </el-select>
+                        <el-form-item v-if="basicDataForm.membershipLevel=='normalIn' || basicDataForm.membershipLevel=='normalNotIn'" prop="membershipLevelInput">
+                            <el-input class="chooseWidth1" v-model="basicDataForm.membershipLevelInput" ></el-input>
+                            <el-button type="primary" v-if="basicDataForm.membershipLevel!=''" class="windowBtn" @click="cardPolicyClick('giftMembershipLevelDialog')" plain>选择</el-button>
+                        </el-form-item>
+                    </el-row>
+                </el-form-item>
                 <el-form-item label="放映效果:">
                     <el-row class="flex-base">
                         <el-select v-model="basicDataForm.projectionEffect" :disabled="disabled" clearable>
@@ -174,9 +204,9 @@
                             <el-option label="包含" value="FieldStringIndexOf"></el-option>
                             <el-option label="不包含" value="notFieldStringIndexOf"></el-option>
                         </el-select>
-                        <el-form-item class="margin-left-5" v-if="basicDataForm.projectionEffect!=''" prop="projectionEffectInput">
-                            <el-input class="chooseWidth1" v-model="basicDataForm.projectionEffectInput" ></el-input>
-                            <el-button type="primary" :disabled="disabled" v-if="basicDataForm.projectionEffect!=''" style="margin-left:10px;" @click="projectionEffectClick()" plain>选择</el-button>
+                        <el-form-item v-if="basicDataForm.projectionEffect!=''" prop="projectionEffectInput">
+                            <el-input class="chooseWidth1" v-model="basicDataForm.projectionEffectInput" readonly></el-input>
+                            <el-button class="windowBtn" type="primary" :disabled="disabled" v-if="basicDataForm.projectionEffect!=''" @click="projectionEffectClick()" plain>选择</el-button>
                         </el-form-item>
                     </el-row>
                 </el-form-item>
@@ -188,9 +218,9 @@
                             <el-option label="包含" value="normalIn"></el-option>
                             <el-option label="不包含" value="normalNotIn"></el-option>
                         </el-select>
-                        <el-form-item class="margin-left-5" v-if="basicDataForm.studioType!=''" prop="studioTypeInput">
-                            <el-input class="chooseWidth1" v-model="basicDataForm.studioTypeInput" ></el-input>
-                            <el-button type="primary" :disabled="disabled" v-if="basicDataForm.studioType!=''" style="margin-left:10px;" @click="cinemaTypeClick()" plain>选择</el-button>
+                        <el-form-item v-if="basicDataForm.studioType!=''" prop="studioTypeInput">
+                            <el-input class="chooseWidth1" v-model="basicDataForm.studioTypeInput" readonly></el-input>
+                            <el-button class="windowBtn" type="primary" :disabled="disabled" v-if="basicDataForm.studioType!=''" @click="cinemaTypeClick()" plain>选择</el-button>
                         </el-form-item>
                     </el-row>
                 </el-form-item>
@@ -202,9 +232,9 @@
                             <el-option label="包含" value="normalIn"></el-option>
                             <el-option label="不包含" value="normalNotIn"></el-option>
                         </el-select>
-                        <el-form-item class="margin-left-5" v-if="basicDataForm.film!=''" prop="filmInput">
+                        <el-form-item v-if="basicDataForm.film!=''" prop="filmInput">
                             <el-input class="chooseWidth1" v-model="basicDataForm.filmInput" ></el-input>
-                            <el-button type="primary" :disabled="disabled" v-if="basicDataForm.film!=''" style="margin-left:10px;" @click="filmClick()" plain>选择</el-button>
+                            <el-button class="windowBtn" type="primary" :disabled="disabled" v-if="basicDataForm.film!=''" @click="filmClick()" plain>选择</el-button>
                         </el-form-item>
                     </el-row>
                 </el-form-item>
@@ -216,9 +246,9 @@
                             <el-option label="包含" value="stringSplitContainOneOperator"></el-option>
                             <el-option label="不包含" value="notStringSplitContainOneOperator"></el-option>
                         </el-select>
-                        <el-form-item class="margin-left-5" v-if="basicDataForm.filmType!=''" prop="filmTypeInput">
-                            <el-input class="chooseWidth1" v-model="basicDataForm.filmTypeInput" ></el-input>
-                            <el-button type="primary" :disabled="disabled" v-if="basicDataForm.filmType!=''" style="margin-left:10px;" @click="filmTypeClick()" plain>选择</el-button>
+                        <el-form-item v-if="basicDataForm.filmType!=''" prop="filmTypeInput">
+                            <el-input class="chooseWidth1" v-model="basicDataForm.filmTypeInput" readonly></el-input>
+                            <el-button class="windowBtn" type="primary" :disabled="disabled" v-if="basicDataForm.filmType!=''" @click="filmTypeClick()" plain>选择</el-button>
                         </el-form-item>
                     </el-row>
                 </el-form-item>
@@ -231,9 +261,11 @@
                             <el-option label="包含每月指定日" value="DayContainOperator"></el-option>
                             <el-option label="不包含每月指定日" value="not_DayContainOperator"></el-option>
                         </el-select>
-                        <el-form-item class="margin-left-5" v-if="basicDataForm.screeningValidity=='TimeBetweenOperator'" prop="screeningValidityOption">
-                            <el-date-picker v-model="basicDataForm.screeningValidityOption" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" :disabled="disabled" @change="setScreeningValidity"></el-date-picker>
-                            <el-input class="chooseWidth1" v-if="basicDataForm.screeningValidity=='DayContainOperator'||basicDataForm.screeningValidity=='not_DayContainOperator'" v-model="basicDataForm.screeningValidityInput" :disabled="disabled"></el-input>
+                        <el-form-item v-if="basicDataForm.screeningValidity=='TimeBetweenOperator'" prop="screeningValidityOption">
+                            <el-date-picker style="position: relative;top: 2px;" v-model="basicDataForm.screeningValidityOption" :picker-options="pickerOptions" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" :disabled="disabled" @change="setScreeningValidity"></el-date-picker>
+                        </el-form-item>
+                        <el-form-item prop="screeningValidityInput" v-if="basicDataForm.screeningValidity=='DayContainOperator'||basicDataForm.screeningValidity=='not_DayContainOperator'">
+                            <el-input class="chooseWidth1" v-model="basicDataForm.screeningValidityInput" :disabled="disabled"></el-input>
                         </el-form-item>
                     </el-row>
                 </el-form-item>
@@ -249,12 +281,11 @@
                 </el-form-item>
 
                 <div v-if="basicDataForm.screeningPeriod=='TimeRangeContainOperator'">
-                    <el-form-item label v-for="(item,index) in basicDataForm.screeningPeriodOptions" :key="index" :prop="'screeningPeriodOptions.'+index+'.screeningPeriodOption'" :rules="{required: true, message: '时段范围不能为空', trigger: 'blur'}">
-                        <el-date-picker v-model="item.screeningPeriodOption" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" :disabled="disabled" @change="setScreeningPeriod"></el-date-picker>
+                    <el-form-item label v-for="(item,index) in basicDataForm.screeningPeriodOptions" :key="index" :prop="'screeningPeriodOptions.'+index+'.screeningPeriodOption'" :rules="{required: true, message: '时段范围不能为空', trigger: 'change'}">
+                        <el-time-picker is-range v-model="item.screeningPeriodOption" range-separator="至" start-placeholder="开始时间" end-placeholder="结束时间" value-format="HH:mm:ss" :disabled="disabled" style="float:left;" @change="setScreeningPeriod"></el-time-picker>
                         <el-button size="small" type="text" @click="delScreeningPeriod(index)">删除</el-button>
                     </el-form-item>
                 </div>
-
                 <el-form-item label v-if="basicDataForm.screeningPeriod=='TimeRangeContainOperator' && isEdit != 'detail'">
                     <div class="addDate" @click="addScreeningPeriod">
                         <i class="el-icon-circle-plus-outline"></i>添加时间
@@ -274,7 +305,7 @@
                         </el-select>
                         <el-form-item v-if="basicDataForm.issuePrice!=''" prop="issuePriceInput">
                             <el-row class="flex-base">
-                                <el-input class="margin-left-5 input-type-94" v-model="basicDataForm.issuePriceInput" :disabled="disabled" placeholder="请输入"></el-input>
+                                <el-input class="input-type-94" v-model="basicDataForm.issuePriceInput" :disabled="disabled" placeholder="请输入"></el-input>
                                 <span class="margin-left-5">元</span>
                             </el-row>
                         </el-form-item>
@@ -288,9 +319,9 @@
                             <el-option label="包含" value="normalIn"></el-option>
                             <el-option label="不包含" value="normalNotIn"></el-option>
                         </el-select>
-                        <el-form-item class="margin-left-5" v-if="basicDataForm.payType!=''" prop="payTypeInput">
-                            <el-input class="chooseWidth1" v-model="basicDataForm.payTypeInput" ></el-input>
-                            <el-button type="primary" v-if="basicDataForm.payType!=''" style="margin-left:10px;" @click="payTypeClick()" plain>选择</el-button>
+                        <el-form-item v-if="basicDataForm.payType!=''" prop="payTypeInput">
+                            <el-input class="chooseWidth1" v-model="basicDataForm.payTypeInput" readonly></el-input>
+                            <el-button class="windowBtn" type="primary" v-if="basicDataForm.payType!=''" @click="payTypeClick()" plain>选择</el-button>
                         </el-form-item>
                     </el-row>
                 </el-form-item>
@@ -301,8 +332,8 @@
                 <el-form-item label="优惠设置:" prop="discount">
                     <el-row class="flex-base">
                         <span>{{basicDataForm.activityType == 15 ? '立减' : basicDataForm.activityType==16 ? '定价' : basicDataForm.activityType==14 ? '折扣' : ''}}</span>
-                        <el-input class="input-type-94 margin-left-5" v-model="basicDataForm.discount" :disabled="disabled" placeholder="请输入"></el-input>
-                        <span class="margin-left-5">{{basicDataForm.activityType == 15 ? '/每张影票' : basicDataForm.activityType==16 ? '元/每张影票' : basicDataForm.activityType==14 ? '%(零售价打折)' : ''}}</span>
+                        <el-input style="width:100px;" v-model="basicDataForm.discount" :disabled="disabled" placeholder="请输入"></el-input>
+                        <span>{{basicDataForm.activityType == 15 ? '/每张影票' : basicDataForm.activityType==16 ? '元/每张影票' : basicDataForm.activityType==14 ? '%(零售价打折)' : ''}}</span>
                     </el-row>
                 </el-form-item>
                 <el-form-item label="折扣后取整方式:" v-if="basicDataForm.activityType==14">
@@ -323,14 +354,22 @@
                 <el-form-item label="低于最低价时:">
                     <el-row class="flex-base">
                         <el-select v-model="basicDataForm.miniPrice" :disabled="disabled">
+                             <!-- @change="initPrice()" -->
                             <el-option label="不允许出票" value="notAllowSale"></el-option>
                             <el-option label="用户补贴" value="clientPay"></el-option>
                             <el-option label="影院补贴" value="cinemaPay"></el-option>
+                            <el-option label="第三方补贴" value="thirdaPay"></el-option>
                         </el-select>
-                        <el-form-item v-if="basicDataForm.miniPrice=='cinemaPay'" prop="miniPriceInput">
+                        <el-form-item v-if="basicDataForm.miniPrice=='cinemaPay' || basicDataForm.miniPrice=='thirdaPay'" prop="miniPriceInput" >
                             <el-row class="flex-base">
-                                <span class="margin-right-5">最多补贴N元</span>
-                                <el-input class="input-type-94" v-model="basicDataForm.miniPriceInput" :disabled="disabled" placeholder="请输入"></el-input>
+                                <span >最多补贴N元</span>
+                                <el-input class="input-type-94 margin-right-10" v-model="basicDataForm.miniPriceInput" :disabled="disabled" placeholder="请输入"></el-input>
+                                <!-- <span>不足部分:</span>
+                                <el-select v-model="basicDataForm.subsidyPrice" :disabled="disabled">
+                                    <el-option label="用户补齐" value = "clientMakeUp"></el-option>
+                                    <el-option label="影院补齐" value = "cinemaMakeUp" v-if="basicDataForm.miniPrice=='cinemaPay'"></el-option>
+                                    <el-option label="第三方补齐" value = "thirdaMakeUp" v-if="basicDataForm.miniPrice=='thirdaPay'"></el-option>
+                                </el-select> -->
                             </el-row>
                         </el-form-item>
                     </el-row>
@@ -346,9 +385,9 @@
                             <el-option label="每会员每月数量" value="perMemberMonth"></el-option>
                         </el-select>
                         <el-form-item v-if="basicDataForm.roundingNum!='all'" prop="roundingNumInput">
-                            <span class="margin-left-5">数量</span>
-                            <el-input class="input-type-94" v-model="basicDataForm.roundingNumInput" :disabled="disabled" placeholder="请输入"></el-input>
-                            <span class="margin-left-5">个</span>
+                            <span>数量</span>
+                            <el-input style="width:100px;" v-model="basicDataForm.roundingNumInput" :disabled="disabled" placeholder="请输入"></el-input>
+                            <span>个</span>
                         </el-form-item>
                     </el-row>
                 </el-form-item>
@@ -381,7 +420,7 @@
                         </el-form-item>
                     </div>
                 </el-form-item>
-                <el-form-item label="活动总预算周期限制:">
+                <el-form-item label="活动总预算周期限制:" class="br-row">
                     <el-row class="flex-base">
                         <el-select v-model="basicDataForm.activityBudgetCycle" :disabled="disabled" @change="handleActivityBudgetChange">
                             <el-option label="不限制" value></el-option>
@@ -391,15 +430,15 @@
                             <el-option label="每年限制" value="perYear"></el-option>
                             <el-option label="指定周期限制" value="appointTimeRange"></el-option>
                         </el-select>
-                        <el-form-item class="margin-left-5 margin-top-0"  v-if="basicDataForm.activityBudgetCycle == 'appointTimeRange'" prop="activityBudgetCycleDate">
-                            <el-date-picker v-model="basicDataForm.activityBudgetCycleDate" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" :disabled="disabled"></el-date-picker>
+                        <el-form-item v-if="basicDataForm.activityBudgetCycle == 'appointTimeRange'" prop="activityBudgetCycleDate">
+                            <el-date-picker style="position: relative;top: 2px;" v-model="basicDataForm.activityBudgetCycleDate" :picker-options="pickerOptions" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" :disabled="disabled"></el-date-picker>
                         </el-form-item>
                     </el-row>
                     <el-form-item v-if="basicDataForm.activityBudgetCycle!=''" prop="activityBudgetCycleInput">
                         <el-row class="flex-base flex-start">
-                            <span class="margin-right-5">数量</span>
+                            <span>数量</span>
                             <el-input class="input-type-94" v-model="basicDataForm.activityBudgetCycleInput" :disabled="disabled" placeholder="请输入"></el-input>
-                            <span class="margin-left-5">个</span>
+                            <span>个</span>
                         </el-row>
                     </el-form-item>
                 </el-form-item>
@@ -411,9 +450,12 @@
 
     <div class="flex-base flex-center bottom-control-group">
         <!-- <el-button type="primary" @click="dataFormSubmit()">效果测算</el-button> -->
-        <el-button type="primary" v-if="isEdit!='detail'" @click="dataFormSubmit('basicDataForm',2)" :disabled="isDisabled">提交执行</el-button>
-        <el-button type="primary" v-if="isEdit!='detail'" @click="dataFormSubmit('basicDataForm',1)" :disabled="isDisabled">保存草稿</el-button>
-        <el-button @click="returnList()">返回</el-button>
+        <el-button class="bottomBtn" type="primary" v-if="isEdit!='detail'" @click="dataFormSubmit('basicDataForm',2)" :disabled="isDisabled">提交执行</el-button>
+        <el-button class="bottomBtn" type="primary" v-if="isEdit!='detail'" @click="dataFormSubmit('basicDataForm',1)" :disabled="isDisabled">保存草稿</el-button>
+        <el-button class="bottomBtn" @click="returnList()" v-if="isEdit!='detail'">返回</el-button>
+        <div v-if="isEdit=='detail'" class="detailReturnBtn">
+            <el-button :class="{bottomBtn:true,returnBtn:isEdit=='detail'}" @click="returnList()">返回</el-button>
+        </div>
     </div>
     <!-- 弹窗组件都加这 -->
     <section class="alert-group">
@@ -459,8 +501,14 @@
             @callBack="handleMovieTicketCinemaTypeCallBack"
         >
         </cinemaTypeDialog>
-         <!-- 会员等级弹窗 -->
-        <crmMemberLevelDialog @crmMemberLevelDialogCallBack="handleMembershipLevel" :whereUse="crmMemberLevelDialogWhereUse" :reviewData="reviewCrmMemberLevelData" :dialogVisible.sync="crmMemberLevelDialogVisible" />
+        <!-- 放映效果弹窗 -->
+        <projectionEffectDialog :title="projectionEffectDialog.title" :dialogTableVisible.sync="projectionEffectDialog.projectionEffectDialogVisible" ref="projectionEffectDialog" @callBack="handleOtherProjectionEffectCallBack"></projectionEffectDialog>
+        <!-- 会员卡政策弹窗 -->
+        <crmCardPolicyDialog @crmCardPolicyDialogCallBack="handleCardPolicy" :whereUse="crmCardPolicyDialogWhereUse" :reviewData="reviewCrmCardPolicyTypeData" :dialogVisible.sync="crmCardPolicyDialogVisible" />
+        <!-- 会员等级弹窗 -->
+        <crmMemberLevelDialog @crmMemberLevelDialogCallBack="handleMembershipLevel" :whereUse="crmMemberLevelDialogWhereUse" :reviewData="reviewCrmMemberLevelData" :dialogVisible.sync="crmMemberLevelDialogVisible"/>
+        <!-- 交易渠道弹窗 -->
+        <tradeChannelDialog :title="tradeChannelDialog.title" :dialogTableVisible.sync="tradeChannelDialog.tradeChannelDialogVisible" ref="tradeChannelDialog" :channelNature="''" @callBack="handleOtherTradeChannelCallBack" ></tradeChannelDialog>
     </section>
 </div>
 </template>
@@ -478,30 +526,36 @@ export default {
         fixStepTool
     },
     mixins: [fixStepMixin,alertHandle,commonRules],
-    watch: {
-        tradingChannelState(val) {
-            this.basicDataForm.tradingChannelStateName = [];
-            val.map(item => {
-                if (item == 1) {
-                    item = "柜台";
-                } else if (item == 2) {
-                    item = "自助终端";
-                } else if (item == 3) {
-                    item = "官方网站";
-                } else if (item == 4) {
-                    item = "手机APP";
-                } else if (item == 5) {
-                    item = "小程序";
-                } else if (item == 6) {
-                    item = "微信公众号";
-                }
-                this.basicDataForm.tradingChannelStateName.push(item);
-            });
-            console.log(this.basicDataForm.tradingChannelStateName);
-        }
-    },
+    // watch: {
+    //     tradingChannelState(val) {
+    //         this.basicDataForm.tradingChannelStateName = [];
+    //         val.map(item => {
+    //             if (item == 1) {
+    //                 item = "柜台";
+    //             } else if (item == 2) {
+    //                 item = "自助终端";
+    //             } else if (item == 3) {
+    //                 item = "官方网站";
+    //             } else if (item == 4) {
+    //                 item = "手机APP";
+    //             } else if (item == 5) {
+    //                 item = "小程序";
+    //             } else if (item == 6) {
+    //                 item = "微信公众号";
+    //             }
+    //             this.basicDataForm.tradingChannelStateName.push(item);
+    //         });
+    //         console.log(this.basicDataForm.tradingChannelStateName);
+    //     }
+    // },
     data() {
         return {
+            //限制过去时间不可选
+            pickerOptions: {
+                disabledDate(time) {
+                    return time.getTime() < Date.now() - 8.64e7;
+                }
+            },
             // 折叠区域
             activeNames: ["1", "2", "3", "4"],
             //步骤条数据
@@ -549,14 +603,14 @@ export default {
                         }
                         let regExp = /^([1-9]\d|\d)$/;
                         if (!regExp.test(value)) {
-                            return callback(new TypeError('0~99的数字'));
+                            return callback(new TypeError('请输入0~99的数字'));
                         }
 
                         return callback();
                     },
-                    trigger: "change"
+                    trigger: "blur"
                 }],
-                tradingChannelState:[{
+                tradingChannelInput:[{
                     required: true,
                     message: "交易渠道不能为空",
                     trigger: "change"
@@ -564,7 +618,7 @@ export default {
                 validDateOption: [{
                     required: true,
                     message: "活动有效期不能为空",
-                    trigger: "blur"
+                    trigger: "change"
                 }],
                 tradingMerchant: [{
                     required: true,
@@ -576,11 +630,21 @@ export default {
                     message: "交易影院不能为空",
                     trigger: "change"
                 }],
-                consumerIdentityInput:[{
+                customerLevelInput:[{
                     required: true,
-                    message: "消费者身份不能为空",
+                    message: "会员等级不能为空",
                     trigger: "change"
                 }],
+                membershipLevelInput:[{
+                    required: true,
+                    message: "会员卡政策不能为空",
+                    trigger: "change"
+                }],
+                // consumerIdentityInput:[{
+                //     required: true,
+                //     message: "消费者身份不能为空",
+                //     trigger: "change"
+                // }],
                 projectionEffectInput:[{
                     required: true,
                     message: "放映效果不能为空",
@@ -606,10 +670,43 @@ export default {
                     message: "放映有效期不能为空",
                     trigger: "change"
                 }],
+                screeningValidityInput:[{
+                    required: true,
+                    validator: (rules, value, callback) => {
+                        if (!value) {
+                            return callback(new Error('指定日不能为空'));
+                        }
+                        // 把中文逗号替换成英文逗号
+                        value = value.replace(/，/ig,',');
+                        value = value.split(",")
+                        if((new Set(value)).size != value.length){
+                            return callback(new Error('指定日不能重复'));
+                        }
+                        let regExp = /^\+?[1-9][0-9]*$/;
+                        for(let item of value){
+                            if(!regExp.test(item)){
+                                return callback(new Error('日期用逗号分隔，如"1,10,22",某个值只能1到31'));
+                            }else if(item>31){
+                                return callback(new Error('日期用逗号分隔，如"1,10,22",某个值只能1到31'));
+                            }
+                        }
+                        return callback();
+                    },
+                    trigger: "blur"
+                }],
                 issuePriceInput:[{
                     required: true,
-                    message: "发行价不能为空",
-                    trigger: "change"
+                    validator: (rules, value, callback) => {
+                        if (!value) {
+                            return callback(new Error('最低发行价不能为空'));
+                        }
+                        let regExp = /^(?:(?!0\d)\d{1,2}(?:\.\d{1,2})?|100(?:\.0{1,2})?)$/;
+                        if (!regExp.test(value) || value == 0 || value == 100) {
+                            return callback(new TypeError('请输入0.01-99.99范围内的正数'));
+                        }
+                        return callback();
+                    },
+                    trigger: "blur"
                 }],
                 payTypeInput:[{
                     required: true,
@@ -618,29 +715,53 @@ export default {
                 }],
                 totalTicketsAmount: [{
                     required: true,
-                    message: "限制总票数不能为空",
-                    trigger: "change"
+                    validator: (rules, value, callback) => {
+                        if (!value) {
+                            return callback(new Error('限制总票数不能为空'));
+                        }
+                        let regExp = /^[1-9]\d*$/;
+                        if (!regExp.test(value) || value == 0) {
+                            return callback(new TypeError('请输入正整数'));
+                        }else if(value>=1000000000){
+                            return callback(new TypeError('超出范围'));
+                        }
+                        return callback();
+                    },
+                    trigger: "blur"
                 }],
                 totalDiscountAmount: [{
                     required: true,
-                    message: "限制总优惠金额不能为空",
-                    trigger: "change"
+                    validator: (rules, value, callback) => {
+                        if (!value) {
+                            return callback(new Error('限制总优惠金额不能为空'));
+                        }
+                        let regExp = /(^[1-9]([0-9]+)?(\.[0-9]{1,2})?$)|(^(0){1}$)|(^[0-9]\.[0-9]([0-9])?$)/;
+                        if (!regExp.test(value) || value < 1.00) {
+                            return callback(new TypeError('请输入正数,且只允许输入两位小数位'));
+                        }else if(value>=1000000000){
+                            return callback(new TypeError('超出范围'));
+                        }
+
+                        return callback();
+                    },
+                    trigger: "blur"
                 }],
                 activityBudgetCycleDate: [{
                     required: true,
                     message: "请选择指定周期限制",
-                    trigger: "blur"
+                    trigger: "change"
                 }],
                 activityBudgetCycleInput: [{
                     required: true,
                     validator: (rules, value, callback) => {
                         if (!value) {
-                            return callback(new Error('请输入数量'));
+                            return callback(new Error('数量不能为空'));
                         }
-
-                        let regExp = /[^\d]/g;
-                        if (regExp.test(value)) {
-                            return callback(new TypeError('请输入数字'));
+                        let regExp = /^[1-9]\d*$/;
+                        if (!regExp.test(value) || value == 0) {
+                            return callback(new TypeError('请输入正整数'));
+                        }else if(value>=1000000000){
+                            return callback(new TypeError('超出范围'));
                         }
 
                         return callback();
@@ -649,18 +770,58 @@ export default {
                 }],
                 discount:[{
                     required: true,
-                    message: "优惠设置不能为空",
-                    trigger: "blur"      
+                    validator: (rules, value, callback) => {
+                        if (!value) {
+                            return callback(new Error('优惠设置不能为空'));
+                        }
+                        // if(this.basicDataForm.activityType==14){
+                        //     let regExp = /^(?:(?!0\d)\d{1,2}(?:\.\d{1,2})?|100(?:\.0{1,2})?)$/;
+                        //     if (!regExp.test(value)) {
+                        //         return callback(new TypeError('请输入100以内的正数,且只允许输入两位小数位'));
+                        //     }
+                        // }else{
+                        //     let regExp = /(^[1-9]([0-9]+)?(\.[0-9]{1,2})?$)|(^(0){1}$)|(^[0-9]\.[0-9]([0-9])?$)/;
+                        //     if (!regExp.test(value)) {
+                        //         return callback(new TypeError('请输入正数,且只允许输入两位小数位'));
+                        //     }else if(value == 0){
+                        //         return callback(new TypeError('请输入正数,且只允许输入两位小数位'));
+                        //     }
+                        // }
+                        let regExp = /^(?:(?!0\d)\d{1,2}(?:\.\d{1,2})?|100(?:\.0{1,2})?)$/;
+                        if (!regExp.test(value)) {
+                            return callback(new TypeError('请输入100以内的正数,且只允许输入两位小数位'));
+                        }
+                        return callback();
+                    },
+                    trigger: "blur"    
                 }],
                 miniPriceInput:[{
                     required: true,
-                    message: "补贴不能为空",
-                    trigger: "blur"          
+                    validator: (rules, value, callback) => {
+                        if (!value) {
+                            return callback(new Error('补贴不能为空'));
+                        }
+                        let regExp = /(^[1-9]([0-9]+)?(\.[0-9]{1,2})?$)|(^(0){1}$)|(^[0-9]\.[0-9]([0-9])?$)/;
+                        if (!regExp.test(value) || value == 0 || value >= 1000) {
+                            return callback(new TypeError('请输入0.01-999.99范围内的正数'));
+                        }
+                        return callback();
+                    },
+                    trigger: "blur"         
                 }],
                 roundingNumInput:[{
                     required: true,
-                    message: "商品数量不能为空",
-                    trigger: "blur" 
+                    validator: (rules, value, callback) => {
+                        if (!value) {
+                            return callback(new Error('商品数量不能为空'));
+                        }
+                        let regExp = /^[1-9]\d*$/;
+                        if (!regExp.test(value) || value == 0 || value>=1000) {
+                            return callback(new TypeError('请输入1-999范围内的正数'));
+                        }
+                        return callback();
+                    },
+                    trigger: "blur"
                 }]
             },
 
@@ -699,6 +860,7 @@ export default {
             disabled: true,
             isDisabled:false,
             activityId: "",
+            isData:false,
 
             //公共规则部分
             commonInfo: [],
@@ -712,7 +874,7 @@ export default {
             //表单数据
             basicDataForm: {
                 // 活动基本信息
-                tenantId: "1",
+                tenantId: JSON.parse(localStorage.getItem('user')).consumerId,
                 activityCode: "",
 
                 activityType: 14,
@@ -734,16 +896,17 @@ export default {
                 /* 基础信息-时段范围 */
                 timeRange: "",
                 timeRangeSelect: [{
-                    isIndeterminateWithWorkDay: true,
-                    checkAllWorkDay: false,
-                    isIndeterminateWithWeekend: true,
-                    checkAllWeekend: false,
+                    isIndeterminateWithWorkDay: false,
+                    checkAllWorkDay: true,
+                    isIndeterminateWithWeekend: false,
+                    checkAllWeekend: true,
                     workDay: [1,2,3,4,5],
                     weekend: [6,7],
                     specifyTime: ["00:00:00", "23:59:00"]
                 }],
 
                 tradingChannel: "", //交易渠道
+                tradingChannelId:"",
                 tradingChannelInput: "",
 
                 /* 设置活动条件 */
@@ -751,9 +914,13 @@ export default {
                 tradingMerchantId: "",
                 tradingMerchantInput: "",
 
-                consumerIdentity: "", //消费者身份
-                consumerIdentityId: "",
-                consumerIdentityInput: "", //弹窗选择值
+                customerLevel:"",
+                customerLevelId:"",
+                customerLevelInput:"",
+
+                // consumerIdentity: "", //消费者身份
+                // consumerIdentityId: "",
+                // consumerIdentityInput: "", //弹窗选择值
 
                 projectionEffect: "", //放映效果
                 projectionEffectId: "",
@@ -790,15 +957,20 @@ export default {
                 payTypeId: "",
                 payTypeInput: "",
 
+                membershipLevel: "",//会员卡政策
+                membershipLevelId: "",
+                membershipLevelInput: "",
+
                 // 设置优惠方案
                 discount: "",
                 priceMethod: "2", //立减
-                roundingMethod: "ROUND_UNNECESSARY", //保留小数
+                roundingMethod: "ROUND_HALF_UP", //四舍五入
                 roundingNumInput: "",
 
                 miniPrice: "notAllowSale",
                 miniPriceInput: "",
                 roundingNum: "appointAmount",
+                // subsidyPrice: "clientMakeUp", //不足部分
 
                 // 设置活动预算
                 amountCalculation: "discount",
@@ -812,53 +984,58 @@ export default {
                 totalTicketsAmount: "",
 
                 /* 基础信息-交易渠道 */
-                tradingChannelState: [],
-                tradingChannelStateName: [],
-                timeRangeSelectDays:[]
-            },
+                // tradingChannelState: [],
+                // tradingChannelStateName: [],
 
-            
-            options: [{
-                    value: "",
-                    label: "全选"
-                },
-                {
-                    value: "1",
-                    label: "柜台"
-                },
-                {
-                    value: "2",
-                    label: "自助终端"
-                },
-                {
-                    value: "3",
-                    label: "官方网站"
-                },
-                {
-                    value: "4",
-                    label: "手机APP"
-                },
-                {
-                    value: "5",
-                    label: "小程序"
-                },
-                {
-                    value: "6",
-                    label: "微信公众号"
-                }
-            ]
+                timeRangeSelectDays:[],
+                rangerDays:[]
+            },
+            // options: [],
         };
     },
-    created() {},
+    created() {
+        // this.getChannelList();
+    },
     methods: {
+        // getChannelList(){
+        //     if(this.options.length==0){
+        //         let params={
+        //             name: "",
+        //             code: "",
+        //             pageNum: "",
+        //             pageSize: "",
+        //             channelNature: 1,
+        //             tenantId:this.basicDataForm.tenantId
+        //         }
+        //         this.$cmmList.getChannelList(params).then(data => {
+        //             if (data && data.code === 200) {
+        //                 console.log(data)
+        //                 let options = [{value:"",label:"全选"}];
+        //                 for(let item of data.data.list){
+        //                     let ChanneObj = {value:item.code,label:item.name}
+        //                     options.push(ChanneObj)
+        //                 }
+        //                 this.options = options;
+        //             } else {
+        //                 console.log(data.msg);
+        //             }
+        //         })
+        //         .catch(err => {
+        //             console.log(err);
+        //         });
+        //     }
+        // },
+        delSpace(){
+            this.basicDataForm.activityName = (this.basicDataForm.activityName).replace(/\s*/g,"");;
+        },
         init(row, isEdit) {
             if (row) {
                 this.activityId = row.id || 0;
                 this.isEdit = isEdit;
+                console.log("isEdit",this.isEdit)
                 if (this.isEdit == "copy") {
                     this.activityId = "";
                 }
-                console.log("activityId " + this.activityId);
                 let params = qs.stringify({
                     activityId: row.id,
                     tenantId: this.basicDataForm.tenantId
@@ -867,16 +1044,18 @@ export default {
                     .marketingViewActivity(params)
                     .then(res => {
                         if (res && res.code === 200) {
+                            console.log(res)
                             let data = res.data.marketingActivityVO;
                             let ruleGroup = JSON.parse(
                                 res.data.marketingActivityVO.ruleGroup
                             );
-                            // console.log("ruleGroup " + JSON.stringify(ruleGroup));
+                            console.log("ruleGroup " + JSON.stringify(ruleGroup));
 
                             this.activityId = data.id;
                             this.basicDataForm.activityCode = data.activityCode;
                             this.basicDataForm.tenantId = ruleGroup.tenantId;
                             this.basicDataForm.activityType = ruleGroup.templateId;
+                            console.log(this.basicDataForm.activityType)
                             this.basicDataForm.activityName = ruleGroup.name;
                             this.basicDataForm.activityDesc = ruleGroup.remark;
                             this.basicDataForm.executeMode = ruleGroup.executeMode;
@@ -911,9 +1090,9 @@ export default {
                                     this.basicDataForm.excludeDate.push("节假日除外");
                                 } else if (item.key == "consumeWayCode") {
                                     //交易渠道
-                                    this.basicDataForm.tradingChannel = item.opUniqueName ? item.opUniqueName : "";
-                                    this.basicDataForm.tradingChannelState = item.value.split(",");
-                                    this.basicDataForm.tradingChannelInput = this.basicDataForm.tradingChannelState.join(",");
+                                    this.basicDataForm.tradingChannel = item.opUniqueName ;
+                                    this.basicDataForm.tradingChannelInput = item.text;
+                                    this.basicDataForm.tradingChannelId = item.value;
                                 } else if (item.key == "validTime") {
                                     this.basicDataForm.timeRange = "1";
                                     if (item.value) {
@@ -952,7 +1131,8 @@ export default {
                                             obj.isIndeterminateWithWorkDay = true;
                                         }
                                         obj.checkAllWeekend = false;
-                                        if (obj.workend && obj.workend.length > 0 && obj.workend.length == 2) {
+                                        if (obj.weekend && obj.weekend.length > 0 && obj.weekend.length == 2) {
+                                            
                                             obj.checkAllWeekend = true;
                                             obj.isIndeterminateWithWeekend = false;
                                         } else {
@@ -963,19 +1143,33 @@ export default {
                                     }
                                 }
                             }
+
+                            
                             //活动条件
                             for (let item of ruleConditions) {
-                                if (item.key == "businessCode") {
+                                if (item.key == "cinemaCode") {
                                     //交易影院
                                     this.basicDataForm.tradingMerchant = item.opUniqueName;
                                     this.basicDataForm.tradingMerchantInput = item.text;
                                     this.basicDataForm.tradingMerchantId = item.value;
-                                } else if (item.key == "consumerTypeKey") {
-                                    // 消费者身份
-                                    this.basicDataForm.consumerIdentity = item.opUniqueName;
-                                    this.basicDataForm.consumerIdentityInput = item.text;
-                                    this.basicDataForm.consumerIdentityId = item.value;
-                                } else if (item.key == "showEffect") {
+                                } else if (item.key == "customerLevelCode") {
+                                    // 会员等级
+                                    this.basicDataForm.customerLevel = item.opUniqueName;
+                                    this.basicDataForm.customerLevelInput = item.text;
+                                    this.basicDataForm.customerLevelId = item.value;
+                                } else if (item.key == "cardRightCode") {
+                                    //会员卡政策
+                                    this.basicDataForm.membershipLevel = item.opUniqueName;
+                                    this.basicDataForm.membershipLevelInput = item.text;
+                                    this.basicDataForm.membershipLevelId = item.value;
+                                }
+                                // else if (item.key == "consumerTypeKey") {
+                                //     // 消费者身份
+                                //     this.basicDataForm.consumerIdentity = item.opUniqueName;
+                                //     this.basicDataForm.consumerIdentityInput = item.text;
+                                //     this.basicDataForm.consumerIdentityId = item.value;
+                                // } 
+                                else if (item.key == "showEffect") {
                                     // 放映效果
                                     this.basicDataForm.projectionEffect = item.opUniqueName;
                                     this.basicDataForm.projectionEffectInput = item.text;
@@ -1001,12 +1195,22 @@ export default {
                                     if (this.basicDataForm.screeningValidity == "TimeBetweenOperator") {
                                         this.basicDataForm.screeningValidityOption = JSON.parse(item.value);
                                     } else if (this.basicDataForm.screeningValidity == "DayContainOperator" || this.basicDataForm.screeningValidity == "not_DayContainOperator") {
-                                        this.basicDataForm.screeningValidityInput = item.value;
+                                        this.basicDataForm.screeningValidityInput = item.value.replace(/\"/g, "");
                                     }
                                 } else if (item.key == "filmPlanTimeRange") {
                                     //放映时段范围
                                     this.basicDataForm.screeningPeriod = item.opUniqueName;
-                                    this.basicDataForm.screeningPeriodOptions = item.value != "" ? JSON.parse(item.value) : [];
+                                    if(item.value != ""){
+                                        let value = JSON.parse(item.value)
+                                        let dateTime = "";
+                                        this.basicDataForm.screeningPeriodOptions = [];
+                                        for(let item of value){
+                                            dateTime = {screeningPeriodOption:item}
+                                            this.basicDataForm.screeningPeriodOptions.push(dateTime)
+                                        }
+                                    }else{
+                                        this.basicDataForm.screeningPeriodOptions = []
+                                    }
                                 } else if (item.key == "lowestPrice") {
                                     //最低发行价
                                     this.basicDataForm.issuePrice = item.opUniqueName;
@@ -1022,12 +1226,12 @@ export default {
                             // 优惠方案
                             for (let item of actions) {
                                 if (item.key == "modifyValue") {
-                                    this.basicDataForm.discount = item.value;
+                                    this.basicDataForm.discount =  Math.abs(item.value-0);
                                 } else if (item.key == "modifyWay") {
                                     if (item.value == "addToLowestPrice") {
-                                        this.basicDataForm.priceMethod = 2;
+                                        this.basicDataForm.priceMethod = "2";
                                     } else if (item.value == "subPrice") {
-                                        this.basicDataForm.priceMethod = 1;
+                                        this.basicDataForm.priceMethod = "1";
                                     }
                                 } else if (item.key == "decimalRoundMode") {
                                     this.basicDataForm.roundingMethod = item.value;
@@ -1076,11 +1280,15 @@ export default {
                 this.disabled = false;
             }
         },
+        //初始化不足部分
+        // initPrice(){
+        //     this.basicDataForm.subsidyPrice = "clientMakeUp";
+        // },
         returnList() {
             this.$emit("refreshDataList");
         },
         handleChange(val) {
-            console.log(val);
+            console.log(val); 
         },
         /* 修改活动有效期 */
         setValidityDate(val) {
@@ -1099,7 +1307,22 @@ export default {
         /* 修改排除日期 */
         setExcludeDate(val) {
             this.basicDataForm.excludeDateOption = val;
+            this.testExcludeDate();
         },
+        // 验证排除日期
+        testExcludeDate(){
+            if(this.validExcludeDate()){
+                this.$message.error("指定排除日期不能相同");
+            }
+        },
+
+        // 验证放映时段范围
+        testScreeningPeriod(){
+            if(this.validScreeningPeriod()){
+                this.$message.error("放映时段范围不能相同");
+            }
+        },
+
         /* 添加排除日期 */
         addExcludeDate() {
             this.basicDataForm.excludeDateOptions.push({
@@ -1108,7 +1331,9 @@ export default {
         },
         /* 删除排除日期 */
         delExcludeDate(index) {
-            this.basicDataForm.excludeDateOptions.splice(index, 1);
+            if(this.basicDataForm.excludeDateOptions.length!=1){
+                this.basicDataForm.excludeDateOptions.splice(index, 1);
+            }
         },
         /*时段范围- 全选工作日 */
         handleCheckAllWorkDayChange(item, val) {
@@ -1140,24 +1365,31 @@ export default {
             item.isIndeterminateWithWeekend = checkedCount > 0 && checkedCount < this.weekendOptions.length;
         },
         /* 设置具体时间范围 */
-        setSpecifyTime(val) {
-            item.specifyTime = val;
-        },
+        // setSpecifyTime(item,val) {
+        //     item.specifyTime = val;
+        // },
         /** 添加时段范围 */
         addTimeRangeSelect() {
             this.basicDataForm.timeRangeSelect.push({
-                isIndeterminateWithWorkDay: true,
-                checkAllWorkDay: false,
-                isIndeterminateWithWeekend: true,
-                checkAllWeekend: false,
+                isIndeterminateWithWorkDay: false,
+                checkAllWorkDay: true,
+                isIndeterminateWithWeekend: false,
+                checkAllWeekend: true,
                 workDay: [1,2,3,4,5],
                 weekend: [6,7],
-                specifyTime: ["00:00:00", "23:59:00"]
+                specifyTime: ["00:00:00", "23:59:00"],
+                key: Date.now()
             });
         },
         /** 删除时段范围 */
         delTimeRangeSelect(index) {
-            this.basicDataForm.timeRangeSelect.splice(index, 1);
+            if(this.basicDataForm.timeRangeSelect.length != 1){
+                this.basicDataForm.timeRangeSelect.splice(index, 1);
+            }
+            // this.$nextTick(()=>{
+            //     this.validAppointDays();
+            //     this.$refs["basicDataForm"].validate((valid) => {})
+            // })
         },
         /* 上午时间范围 */
         amClick(item) {
@@ -1173,14 +1405,37 @@ export default {
         },
 
         /* 选择交易渠道 */
-        handleChangeSelect(data) {
-            if (data.indexOf("") != -1) {
-                data = ["1", "2", "3", "4", "5", "6"];
+        // handleChangeSelect(data) {
+        //     if (data.indexOf("") != -1) {
+        //         if(this.isData){
+        //             data = [];
+        //         }else{
+        //             let optionsArr = [];
+        //             for(let item of this.options){
+        //                 if(item.value){
+        //                     optionsArr.push(item.value)
+        //                 } 
+        //             }
+        //             data = optionsArr;
+        //         }
+        //         this.isData = !this.isData;
+        //     }
+        //     this.basicDataForm.tradingChannelState = data;
+        //     this.basicDataForm.tradingChannelInput = this.basicDataForm.tradingChannelState.join(",");
+        // },
+        //改变消费者身份
+        changeConsumerIdentity(val){
+            console.log(val)
+            if(val){
+                if(val=="AllMember"){
+                    this.basicDataForm.consumerIdentityId=true
+                }else if(val=="not_memberOperator"){
+                    this.basicDataForm.consumerIdentityId=true
+                }else{
+                    this.basicDataForm.consumerIdentityId=""
+                }
             }
-            this.basicDataForm.tradingChannelState = data;
-            this.basicDataForm.tradingChannelInput = this.basicDataForm.tradingChannelState.join(",");
         },
-
         /*添加放映时段范围 */
         addScreeningPeriod() {
             this.basicDataForm.screeningPeriodOptions.push({
@@ -1190,11 +1445,12 @@ export default {
         /*修改放映时段范围 */
         setScreeningPeriod(val) {
             this.basicDataForm.screeningPeriodOption = val;
+            this.testScreeningPeriod();
         },
 
         /*删除放映时段范围 */
         delScreeningPeriod(index) {
-            if (this.basicDataForm.screeningPeriodOptions.length != 1) {
+            if(this.basicDataForm.screeningPeriodOptions.length != 1){
                 this.basicDataForm.screeningPeriodOptions.splice(index, 1);
             }
         },
@@ -1234,14 +1490,64 @@ export default {
         validAppointDays(){
             //时段范围
             let AppointDays = [];
+            let rangerValue = [];
             if (this.basicDataForm.timeRange == "1" &&this.basicDataForm.timeRangeSelect.length > 0) {
                 for (let item of this.basicDataForm.timeRangeSelect) {
                     let arrDay = [];
                     arrDay = item.workDay.concat(item.weekend);
                     AppointDays.push(arrDay);
+                    if(item.specifyTime){
+                        let arrSpecifyTime = [item.specifyTime[0].slice(0,5)];
+                        arrSpecifyTime.push(item.specifyTime[1].slice(0,5));
+                        arrDay = arrDay.concat(arrSpecifyTime)
+                        rangerValue.push(arrDay)
+                    }
                 }
+                this.basicDataForm.rangerDays = rangerValue
                 this.basicDataForm.timeRangeSelectDays = AppointDays;
             }
+        },
+        //验证排除日期
+        validExcludeDate(){
+            let excludeDateArr = [];
+            if(this.basicDataForm.excludeDateOptions){
+                for(let item of this.basicDataForm.excludeDateOptions){
+                    if(item.excludeDateOption){
+                        excludeDateArr.push(item.excludeDateOption.join(","))
+                    }
+                }
+                if((new Set(excludeDateArr)).size != excludeDateArr.length){
+                    return true;
+                }
+            } 
+        },
+        //验证放映时段范围
+        validScreeningPeriod(){
+            let screeningPeriodArr = [];
+            if(this.basicDataForm.screeningPeriodOptions){
+                for(let item of this.basicDataForm.screeningPeriodOptions){
+                    if(item.screeningPeriodOption){
+                        screeningPeriodArr.push(item.screeningPeriodOption.join(","))
+                    }
+                }
+                if((new Set(screeningPeriodArr)).size != screeningPeriodArr.length){
+                    return true;
+                }
+            } 
+        },
+        //验证时段范围
+        validRangerValue(){
+            let rangerValueArr = [];
+            if(this.basicDataForm.rangerDays){
+                for(let item of this.basicDataForm.rangerDays){
+                    if(item != ""){
+                        rangerValueArr.push(item.join(","))
+                    }
+                }
+                if((new Set(rangerValueArr)).size != rangerValueArr.length){
+                    return true;
+                }
+            } 
         },
         /* 组装公共规则数据 */
         buildCommonInfoData() {
@@ -1251,7 +1557,7 @@ export default {
                 this.commonInfo.push({
                     category: "CommonInfo",
                     key: "holiday",
-                    value: "",
+                    value: "true",
                     text: "",
                     opUniqueName: "not_HolidayOperator"
                 });
@@ -1297,7 +1603,7 @@ export default {
                     text: "",
                     opUniqueName: opUniqueName
                 });
-                console.log(this.commonInfo)
+                console.log(rangerValue)
             }
 
             // 交易渠道
@@ -1305,8 +1611,8 @@ export default {
                 this.commonInfo.push({
                     category: "SaleInfo",
                     key: "consumeWayCode",
-                    value: this.basicDataForm.tradingChannelInput,
-                    text: "",
+                    value: this.basicDataForm.tradingChannelId,
+                    text: this.basicDataForm.tradingChannelInput,
                     opUniqueName: this.basicDataForm.tradingChannel
                 });
             }
@@ -1326,24 +1632,47 @@ export default {
             if (this.basicDataForm.tradingMerchant != "") {
                 this.ruleConditions.push({
                     category: "SaleInfo",
-                    key: "businessCode",
+                    key: "cinemaCode",
                     groupId: 14,
                     value: this.basicDataForm.tradingMerchantId, //弹窗回传
                     text: this.basicDataForm.tradingMerchantInput, //弹窗回传
                     opUniqueName: this.basicDataForm.tradingMerchant //操作符,不填默认为 =
                 });
             }
-            // 消费者身份
-            if (this.basicDataForm.consumerIdentity != "") {
+
+            // 会员等级
+            if (this.basicDataForm.customerLevel != "") {
                 this.ruleConditions.push({
                     category: "SaleInfo",
-                    key: "consumerTypeKey",
-                    groupId: 27,
-                    value: this.basicDataForm.consumerIdentityId,
-                    text: this.basicDataForm.consumerIdentityInput,
-                    opUniqueName: this.basicDataForm.consumerIdentity
+                    key: "customerLevelCode",
+                    groupId: 101,
+                    value: this.basicDataForm.customerLevelId,
+                    text: this.basicDataForm.customerLevelInput,
+                    opUniqueName: this.basicDataForm.customerLevel
                 });
             }
+            // 会员卡政策
+            if (this.basicDataForm.membershipLevel == "normalIn") {
+                this.ruleConditions.push({
+                    category: "SaleInfo",
+                    key: "cardRightCode",
+                    groupId: 100,
+                    value: this.basicDataForm.membershipLevelId,
+                    text: this.basicDataForm.membershipLevelInput,
+                    opUniqueName: this.basicDataForm.membershipLevel
+                });
+            }
+            // 消费者身份
+            // if (this.basicDataForm.consumerIdentity != "") {
+            //     this.ruleConditions.push({
+            //         category: "SaleInfo",
+            //         key: "consumerTypeKey",
+            //         groupId: 27,
+            //         value: this.basicDataForm.consumerIdentityId,
+            //         text: this.basicDataForm.consumerIdentityInput,
+            //         opUniqueName: this.basicDataForm.consumerIdentity
+            //     });
+            // }
             // 放映效果
             if (this.basicDataForm.projectionEffect != "") {
                 this.ruleConditions.push({
@@ -1398,7 +1727,7 @@ export default {
                     this.basicDataForm.screeningValidity == "DayContainOperator" ||
                     this.basicDataForm.screeningValidity == "not_DayContainOperator"
                 ) {
-                    targetValue = this.basicDataForm.screeningValidityInput;
+                    targetValue = this.basicDataForm.screeningValidityInput.replace(/，/ig,',');
                 }
 
                 this.ruleConditions.push({
@@ -1456,17 +1785,6 @@ export default {
 
         /* 组装优惠设置数据 */
         buildActionsData() {
-            /* 优惠设置 - 修改单票售价 */
-
-            //调整额
-            this.actions.push({
-                key: "modifyValue",
-                groupId: 15,
-                value: this.basicDataForm.discount,
-                text: "",
-                opUniqueName: "FilmTicketPriceModify"
-            });
-
             let targetValue = "discountPrice";
             if (this.basicDataForm.activityType == 15) {
                 if (this.basicDataForm.priceMethod == 1) {
@@ -1477,6 +1795,18 @@ export default {
             } else if (this.basicDataForm.activityType == 16) {
                 targetValue = "fixPrice";
             }
+            if(this.basicDataForm.activityType == 15){
+                this.basicDataForm.discount=(this.basicDataForm.discount*-1)+""
+            }
+
+              //优惠设置- 修改单票售价
+            this.actions.push({
+                key: "modifyValue",
+                groupId: 15,
+                value: this.basicDataForm.discount,
+                text: "",
+                opUniqueName: "FilmTicketPriceModify"
+            });
 
             //调价方式
             this.actions.push({
@@ -1577,72 +1907,86 @@ export default {
         
         // 表单提交
         dataFormSubmit(formName,flag) {
+            
             this.isDisabled = true;
             this.validAppointDays();
+            
             this.$refs[formName].validate((valid) => {
-                if (valid) {
-                    // this.$refs["basicDataForm"].validate(valid => {
-                    // if (valid) {
-                    /* 公共规则 */
-                    this.buildCommonInfoData();
-
-                    /* 活动条件 */
-                    this.buildRuleConditionsData();
-
-                    /* 优惠设置 */
-                    this.buildActionsData();
-
-                    /* 活动预算 */
-                    this.buildBizPropertyMap();
-
-                    // }
-
-                    let ruleGroup = {
-                        flag: flag,
-                        tenantId: this.basicDataForm.tenantId,
-                        bizId: this.activityId, //营销活动id
-                        bizOrderCode: this.basicDataForm.activityCode, //营销活动编号
-                        id: this.activityId,
-                        templateId: this.basicDataForm.activityType,
-                        name: this.basicDataForm.activityName,
-                        remark: this.basicDataForm.activityDesc,
-                        executeMode: this.basicDataForm.executeMode,
-                        priority: this.basicDataForm.priority == 1 ?
-                            this.basicDataForm.priorityNum : 100,
-                        validDateStart: this.basicDataForm.validDateStart + " 00:00:00",
-                        validDateEnd: this.basicDataForm.validDateEnd + " 00:00:00",
-                        commonInfo: this.commonInfo,
-                        ruleType: "SaleActivity",
-                        rules: [{
-                            name: "", //规则名称
-                            ruleConditions: this.ruleConditions, //活动规则
-                            actions: this.actions,
-                            bizPropertyMap: this.bizPropertyMap
-                        }]
-                    };
-
-                    console.log("ruleGroup  " + JSON.stringify(ruleGroup));
-                    this.$cmmList
-                        .marketingAdd(ruleGroup)
-                        .then(data => {
-                            if (data && data.code === 200) {
-                                this.$message({
-                                    message: "操作成功",
-                                    type: "success",
-                                    duration: 1500,
-                                    onClose: () => {
-                                        this.$emit("refreshDataList");
-                                    }
-                                });
-                            } else {
-                                this.$message.error(data.msg);
-                            }
-                        })
-                        .catch(err => {
-                            console.log(err);
-                        });
-                }else{
+                if(this.validExcludeDate()){
+                    this.$message.error("指定排除日期不能相同");
                     this.isDisabled = false;
+                }else if(this.validRangerValue()){
+                    this.$message.error("指定时段不能相同");
+                    this.isDisabled = false;
+                }else if(this.validScreeningPeriod()){
+                    this.$message.error("指定放映时段范围不能相同");
+                    this.isDisabled = false;
+                }else{
+                    if (valid) {
+                        // this.$refs["basicDataForm"].validate(valid => {
+                        // if (valid) {
+                        /* 公共规则 */
+                        this.buildCommonInfoData();
+
+                        /* 活动条件 */
+                        this.buildRuleConditionsData();
+
+                        /* 优惠设置 */
+                        this.buildActionsData();
+
+                        /* 活动预算 */
+                        this.buildBizPropertyMap();
+
+                        // }
+
+                        let ruleGroup = {
+                            flag: flag,
+                            tenantId: this.basicDataForm.tenantId,
+                            bizId: this.activityId, //营销活动id
+                            bizOrderCode: this.basicDataForm.activityCode, //营销活动编号
+                            id: this.activityId,
+                            templateId: this.basicDataForm.activityType,
+                            name: this.basicDataForm.activityName,
+                            remark: this.basicDataForm.activityDesc,
+                            executeMode: this.basicDataForm.executeMode,
+                            priority: this.basicDataForm.priority == 1 ?
+                                this.basicDataForm.priorityNum : 100,
+                            validDateStart: this.basicDataForm.validDateStart + " 00:00:00",
+                            validDateEnd: this.basicDataForm.validDateEnd + " 00:00:00",
+                            commonInfo: this.commonInfo,
+                            ruleType: "SaleActivity",
+                            rules: [{
+                                name: "", //规则名称
+                                ruleConditions: this.ruleConditions, //活动规则
+                                actions: this.actions,
+                                bizPropertyMap: this.bizPropertyMap
+                            }]
+                        };
+
+                        console.log("ruleGroup  " + JSON.stringify(ruleGroup));
+                        this.$cmmList
+                            .marketingAdd(ruleGroup)
+                            .then(data => {
+                                if (data && data.code === 200) {
+                                    this.$message({
+                                        message: "操作成功",
+                                        type: "success",
+                                        duration: 1500,
+                                        onClose: () => {
+                                            this.$emit("refreshDataList",true);
+                                        }
+                                    });
+                                } else {
+                                    this.$message.error(data.msg);
+                                    this.isDisabled = false;
+                                }
+                            })
+                            .catch(err => {
+                                console.log(err);
+                            });
+                    }else{
+                        this.isDisabled = false;
+                    }
                 }
             })
             
@@ -1653,3 +1997,17 @@ export default {
     }
 };
 </script>
+<style lang="scss" scoped>
+    @import "../../../assets/comstyle.scss";
+    .el-select-dropdown__item{
+        font-size: 12px !important;
+    }
+    /deep/.movie-plan_default{
+        .el-radio-button__inner{
+            width: 80px;
+            height: 32px;
+        }
+    }
+</style>
+
+

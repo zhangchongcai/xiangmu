@@ -1,0 +1,501 @@
+<template>
+  <section class="datacenter-box">
+    <data-query
+      :baseQueryArr="baseQueryArr"
+      :extQueryArr="extQueryArr"
+      :styleExtQueryArr="styleExtQueryArr"
+      :colArr="colArr"
+      :styleColArr="styleColArr"
+      :tableStyleColArr="tableStyleColArr"
+      :payTypeDataArr="payTypeDataArr"
+      :reportName="reportName"
+      :tableName="tableName"
+      :groupArr="groupArr"
+      :styleGroupArr="styleGroupArr"
+      :styleName="styleName"
+      :reportCode="reportCode"
+      :Pagination="Pagination"
+      :tableLoading="tableLoading"
+      :searchClickStatus="searchClickStatus"
+      :orderCol="orderCol"
+      :automaticSearchStatus="automaticSearchStatus"
+      @sendStyleColArr="getStyleColArr"
+      @tableDataArrEventNoGroup="tableDataArrEventNoGroup"
+      @tableDataArrEventYesGroup="tableDataArrEventYesGroup"
+      @setSearchStatus="setSearchStatus"
+      @returnAutomaticSearchStatus="returnAutomaticSearchStatus"
+      @CcArrEvent="CcArrEvent"
+    ></data-query>
+    <data-btn
+      :colArr="colArr"
+      :baseQueryArr="baseQueryArr"
+      :groupArr="groupArr"
+      :styleGroupArr="styleGroupArr"
+      :tableName="tableName"
+      :styleUid="styleUid"
+      :reportCode="reportCode"
+      :isDef="isDef"
+      :styleArr="styleArr"
+      :styleColArr="styleColArr"
+      :styleExtQueryArr="styleExtQueryArr"
+      :styleName="styleName"
+      :datatable="Jdata"
+      :Pagination="Pagination"
+      :reportName="reportName"
+      :getDataSucc="getDataSucc"
+      @printTable="printTable"
+      @groupDatatable="groupDatatable"
+      @groupArrEvent="groupArrEvent"
+      @setStyleColArr="setStyleColArr"
+      @searchButtonClick="searchButtonClick"
+      @getStyle="getStyle"
+    ></data-btn>
+    <data-table
+      :datatable="Jdata"
+      :Pagination="Pagination"
+      :colArr="colArr"
+      :Jdata="Jdata"
+      :groupArr="groupArr"
+      :styleGroupArr="styleGroupArr"
+      :styleColArr="styleColArr"
+      :tableStyleColArr="tableStyleColArr"
+      :tableName="tableName"
+      :reportCode="reportCode"
+      :baseQueryArr="baseQueryArr"
+      :styleExtQueryArr="styleExtQueryArr"
+      :colSummary="colSummary"
+      :summary="summary"
+      :tableLoading="tableLoading"
+      @newtableDataArrEvent="newtableDataArrEvent"
+      @closeNewtableDataArrEvent="closeNewtableDataArrEvent"
+      @newtableDataArrEvent1="newtableDataArrEvent1"
+      @closeNewtableDataArrEvent1="closeNewtableDataArrEvent1"
+      @newtableDataArrEvent2="newtableDataArrEvent2"
+      @closeNewtableDataArrEvent2="closeNewtableDataArrEvent2"
+      @tableDataArrEventYesGroup="tableDataArrEventYesGroup"
+      @tableDataArrEventNoGroup="tableDataArrEventNoGroup"
+      ref="multipleSelection"
+    ></data-table>
+    <data-show
+      :datatable="Jdata"
+      :Pagination="Pagination"
+      :tableName="tableName"
+      :colArr="colArr"
+      :styleColArr="styleColArr"
+      :reportCode="reportCode"
+      :sortArray="sortArray"
+      :baseQueryArr="baseQueryArr"
+      :styleExtQueryArr="styleExtQueryArr"
+      :searchData="searchData"
+      v-if="pagesShow"
+    ></data-show>
+  </section>
+</template>
+<script>
+import datacenterBus from "src/rpt/util/datacenterBus.js";
+import dataBtn from "../components/dataCenter/dataBtn";
+import dataQuery from "../components/dataCenter/dataQuery";
+import dataTable from "../components/dataCenter/dataTable";
+import dataShow from "../components/dataCenter/dataShow";
+import $Print from "src/rpt/util/prints";
+import { mapState } from "vuex";
+import { filterFunc } from "src/rpt/util/commonFunc.js";
+import mixins from "src/frame_cpm/mixins/cacheMixin.js";
+
+export default {
+  mixins: [mixins.cacheMixin],
+  data() {
+    return {
+      cacheField: [
+        "baseQueryArr",
+        "styleExtQueryArr",
+        "extQueryArr",
+        "Jdata",
+        "Pagination",
+        "reportName",
+        "colArr",
+        "styleColArr",
+        "tableStyleColArr",
+        "groupArr",
+        "styleGroupArr",
+        "styleArr",
+        "reportCode",
+        "styleUid",
+        "styleName",
+        "sortArray",
+        "colSummary",
+        "summary",
+        "searchData",
+        "tableName",
+        "pagesShow",
+        "orderCol"
+      ],
+      dialogVisible: false,
+      // 分页是否显示
+      pagesShow: false,
+      // 接收数据数组
+      Jdata: [],
+      // 分页配置参数
+      Pagination: {
+        //默认显示第几页
+        currentPage: 1,
+        //每页显示多少调数据
+        pagesize: 15,
+        //设置每页显示多少条
+        page_sizes: [15, 20, 50, 100],
+        //数据总数
+        total: 45
+      },
+      // 报表名称
+      reportName: "",
+      //数据中间表表名
+      tableName: "",
+      // 基础查询条件
+      baseQueryArr: [],
+      // 扩展查询条件
+
+      extQueryArr: [],
+      styleExtQueryArr: [],
+      colArr: [],
+      styleColArr: [],
+      tableStyleColArr: [],
+      groupArr: [],
+      styleGroupArr: [],
+      //模板样式
+      styleArr: [],
+      //报表编码
+      reportCode: "",
+
+      //皮肤ID
+      styleUid: "",
+      //皮肤名称
+      styleName: "",
+      //是否默认
+      isDef: "",
+      //皮肤表头
+
+      //皮肤扩展查询条件
+
+      //表格排序
+      sortArray: [],
+      //列汇总
+      colSummary: {},
+      // 分组汇总
+      summary: [],
+      // 首页loading
+      firstLoading: true,
+      // 表格loading
+      tableLoading: false,
+      searchData: [], //基础查询和表格筛选查询的拼接数据
+      //是否获取到数据
+      getDataSucc: false,
+      searchClickStatus: false, //是否需要进行查询数据
+      automaticSearchStatus: 0, //切换模板后是否查询,0为不查询，1无任何操作, 2为查询
+      adsUpdateTime: "",
+      haveGotData: false,
+      //初始支付方式数据
+      payTypeDataArr: [],
+      //默认排序
+      orderCol: ""
+    };
+  },
+  components: {
+    dataQuery,
+    dataBtn,
+    dataTable,
+    dataShow
+  },
+  computed: mapState({
+    pageArr: state => state.rpt.pageArr,
+    isSent: state => state.rpt.isSent,
+    colData: state => state.rpt.colData
+  }),
+  created() {
+    if (
+      !this.pageArr.some(element => element == this.$route.path.split("=")[1])
+    )
+      this.getDatacenter(undefined);
+  },
+  mounted() {
+    datacenterBus.$on("haveGetTableData", data => {
+      this.getDataStatus = data;
+    });
+    datacenterBus.$on("getAllStyles", data => {
+      this.getDatacenter(data);
+    });
+    datacenterBus.$on("tableLoading", () => {
+      this.$nextTick(() => {
+        this.tableLoading = true;
+      });
+    });
+    datacenterBus.$on("cinemaTreeValue", val1 => {
+      this.baseQueryArr.push(val1);
+    });
+    datacenterBus.$on("tableArrEvent", val => {
+      this.Jdata = val;
+      this.pagesShow = true;
+    });
+    datacenterBus.$on("pagesDataArrEvent", val => {
+      this.Jdata = val.list;
+      this.$nextTick(() => {
+        this.tableLoading = false;
+      });
+    });
+    datacenterBus.$on("sizeDataArrEvent", val => {
+      this.Pagination.pagesize = val;
+    });
+  },
+  methods: {
+    setReset() {
+      this.automaticSearchStatus = true;
+    },
+    returnAutomaticSearchStatus() {
+      this.automaticSearchStatus = 0;
+    },
+    printTable() {
+      $Print(this.$refs.multipleSelection);
+    },
+    groupDatatable() {
+      // this.$refs.multipleSelection.groupDatatable();
+      $Print(this.$refs.multipleSelection);
+    },
+    pageIsShow() {
+      this.styleGroupArr.length == 0
+        ? (this.pagesShow = false)
+        : (this.pagesShow = true);
+    },
+    getDatacenter(stylUid) {
+      let param = {
+        reportCode: this.$route.path.split("=")[1]
+      };
+      //调用api，查询报表基础信息
+      this.$rptList
+        .reportTableInfo(param, stylUid)
+        .then(data => {
+          this.getDatacenterSucc(data.reportTableInfo);
+        })
+        .catch(msg => {
+          console.log(msg);
+        });
+    },
+    getDatacenterSucc(data) {
+      this.colArr = data.colArr;
+      this.reportName = data.reportName;
+      this.baseQueryArr = data.baseQueryArr;
+
+      // 保存的扩展条件
+      this.extQueryArr = data.extQueryArr;
+      // 保存的扩展条件
+      this.styleExtQueryArr = data.styleExtQueryArr;
+      this.styleExtQueryArr.forEach(element => {
+        if (element.queryControlKey === "is_split_combo")
+          element.queryColValue = "0";
+      });
+      // 不保存的表头
+      this.colArr = data.colArr;
+      // 保存的表头
+      this.styleColArr = data.styleColArr;
+      this.tableStyleColArr = JSON.parse(JSON.stringify(data.styleColArr));
+      //传给dataTable的表头数据
+      let payTypeArr = [];
+      let deletIndex = "";
+      data.styleColArr.forEach((element1, index) => {
+        if (element1.children !== null) {
+          //初始支付方式数据
+          this.payTypeDataArr = element1.children;
+          element1.children.forEach(element2 => {
+            payTypeArr.push(element2);
+          });
+          deletIndex = index;
+          this.tableStyleColArr.splice(deletIndex, 1);
+          this.tableStyleColArr = [...this.tableStyleColArr, ...payTypeArr];
+        }
+      });
+      // 不保存的分组
+      this.groupArr = data.groupArr;
+      // 保存的分组
+      this.styleGroupArr = data.styleGroupArr;
+      //模板样式
+      this.styleArr = data.styleArr;
+      this.tableName = data.tableName;
+      this.reportCode = data.reportCode;
+      this.styleUid = data.styleUid;
+      this.styleName = data.styleName;
+      this.orderCol = data.orderCol;
+      this.isDef = data.isDef;
+      this.firstLoading = false;
+      this.getDataSucc = true;
+      if (this.automaticSearchStatus === 1) {
+        this.automaticSearchStatus = 2;
+        let baseData = JSON.parse(localStorage.getItem("baseData"));
+        let extendData = JSON.parse(localStorage.getItem("extendData"));
+
+        this.getEachData(this.baseQueryArr, baseData);
+        this.getEachData(this.styleExtQueryArr, extendData);
+      }
+      this.$store.commit("setPageArr", [this.reportCode, false]);
+    },
+    getEachData(array1, array2) {
+      if (array1 && array2) {
+        array1.forEach(element1 => {
+          array2.forEach(element2 => {
+            element1.queryColKey === element2.queryColKey
+              ? (element1.queryColValue = element2.queryColValue)
+              : null;
+          });
+        });
+      }
+    },
+    getStyleColArr(data) {
+      this.styleColArr.forEach(element1 => {
+        if (element1.children) {
+          element1.children = [];
+          data.forEach(element2 => {
+            if (element2.colKey.indexOf("pay_type") > -1) {
+              element1.children.push(element2);
+            }
+          });
+        }
+      });
+      this.tableStyleColArr = data;
+    },
+    CcArrEvent(val1, val2, val3) {
+      this.styleExtQueryArr = val1;
+      this.extQueryArr = val2;
+    },
+    tableDataArrEventNoGroup(val, sortArray) {
+      this.Jdata = val.list;
+      this.Pagination.total = val.totalNum;
+      this.pagesShow = true;
+      this.colSummary = val.summary;
+      if (sortArray === undefined) {
+        //点击查询过来的，清空排序数组
+        this.$refs.multipleSelection.clearSort();
+        this.sortArray = [];
+        //点击查询过来的，重置分页
+        this.Pagination.currentPage = 1;
+      } else {
+        //点击排序过来的，要给排序数组赋值
+        this.sortArray = sortArray;
+      }
+      Vue.nextTick(() => {
+        this.tableLoading = false;
+      });
+    },
+    groupArrEvent(val1, val2) {
+      this.groupArr = val1;
+      this.styleGroupArr = val2;
+      if (this.styleGroupArr.length != 0) {
+        this.pagesShow = false;
+      }
+    },
+    setStyleColArr(val1, val2) {
+      this.styleColArr = JSON.parse(JSON.stringify(val1));
+      this.tableStyleColArr = JSON.parse(JSON.stringify(val1));
+      this.colArr = val2;
+      //传给dataTable的表头数据
+      let payTypeArr = [];
+      let deletIndex = "";
+      val1.forEach((element1, index) => {
+        if (element1.children !== null) {
+          element1.children.forEach(element2 => {
+            payTypeArr.push(element2);
+          });
+          deletIndex = index;
+          this.tableStyleColArr.splice(deletIndex, 1);
+          this.tableStyleColArr = [...this.tableStyleColArr, ...payTypeArr];
+        }
+      });
+    },
+    searchButtonClick() {
+      this.searchClickStatus = true;
+    },
+    setSearchStatus() {
+      this.searchClickStatus = false;
+    },
+    getStyle(data) {
+      let stylUid = data;
+      this.getDatacenter(stylUid);
+      this.automaticSearchStatus = 1;
+    },
+    newtableDataArrEvent(val, d) {
+      this.Jdata[d].childrenDatas1 = val.list;
+      this.Jdata[d].isShow = "false";
+      Vue.nextTick(() => {
+        this.tableLoading = false;
+      });
+    },
+    closeNewtableDataArrEvent(index) {
+      this.Jdata[index].childrenDatas1 = [];
+      this.Jdata[index].isShow = "true";
+    },
+    newtableDataArrEvent1(val, d, e) {
+      this.Jdata[e].childrenDatas1[d].childrenDatas1 = val.list;
+      this.Jdata[e].childrenDatas1[d].isShow = "false";
+      Vue.nextTick(() => {
+        this.tableLoading = false;
+      });
+    },
+    closeNewtableDataArrEvent1(index1, index) {
+      this.Jdata[index].childrenDatas1[index1].childrenDatas1 = [];
+      this.Jdata[index].childrenDatas1[index1].isShow = "true";
+      Vue.nextTick(() => {
+        this.tableLoading = false;
+      });
+    },
+    newtableDataArrEvent2(val, d, e, f) {
+      this.Jdata[f].childrenDatas1[e].childrenDatas1[d].childrenDatas1 =
+        val.list;
+      this.Jdata[f].childrenDatas1[e].childrenDatas1[d].isShow = "false";
+      Vue.nextTick(() => {
+        this.tableLoading = false;
+      });
+    },
+    closeNewtableDataArrEvent2(index2, index1, index) {
+      this.Jdata[index].childrenDatas1[index1].childrenDatas1[
+        index2
+      ].childrenDatas1 = [];
+      this.Jdata[index].childrenDatas1[index1].childrenDatas1[index2].isShow =
+        "true";
+      Vue.nextTick(() => {
+        this.tableLoading = false;
+      });
+    },
+    tableDataArrEventYesGroup(val) {
+      this.Jdata = val.list;
+      this.summary = val.summary;
+      if (val.summary.length != 0) {
+        this.summary[0].colValue = "合计";
+      }
+      this.pagesShow = false;
+      Vue.nextTick(() => {
+        this.tableLoading = false;
+      });
+    }
+  },
+  watch: {
+    $route(to, from) {
+      this.tableLoading = false;
+    },
+    isSent(newVal, oldVal) {
+      if (newVal) {
+        this.searchData = filterFunc(this.colData, this.baseQueryArr);
+      }
+    }
+  }
+};
+</script>
+<style lang="scss">
+.rpt-select .el-select-dropdown__item span {
+  font-size: 12px !important;
+  font-family: "MicrosoftYaHei" !important;
+}
+.datacenter-box {
+  position: relative;
+  min-width: 1280px;
+  .el-input--suffix .el-input__inner {
+    font-size: 12px !important;
+    font-family: "MicrosoftYaHei" !important;
+  }
+}
+</style>

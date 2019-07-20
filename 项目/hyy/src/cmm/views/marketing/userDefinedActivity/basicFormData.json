@@ -20,7 +20,17 @@
     "sexState": [],
     "sexStateName": [],
     "cardTypeKey10": {
-        "opUniqueName": "AllMember",
+        "opUniqueName": "",
+        "value": "",
+        "text": ""
+    },
+    "cardRightCode100": {
+        "opUniqueName": "",
+        "value": "",
+        "text": ""
+    },
+    "customerLevelCode101": {
+        "opUniqueName": "",
         "value": "",
         "text": ""
     },
@@ -67,13 +77,82 @@
         "value": "",
         "text": ""
     },
-    "sumPrice": {
+    "sumPrice2": {
         "opUniqueName": "",
         "value": ""
     },
     "consumeSum6": {
         "opUniqueName": "",
         "value": ""
+    },
+    "firstRecharge98": {
+        "opUniqueName": "",
+        "value": ""
+    },
+    "sumPrice1": {
+        "opUniqueName": "",
+        "value": ""
+    },
+    "consumeWayState": [],
+    "consumeWayStateName": [],
+    "appointPeriodOptions": [{
+        "appointPeriodOption": ""
+    }],
+    "consumeNum": {
+        "dynamicPeriod15": {
+            "opUniqueName": "normalEqual",
+            "value": "",
+            "text": ""
+        },
+        "appointPeriod15": {
+            "opUniqueName": "",
+            "value": "",
+            "text": ""
+        },
+        "consumeWayCode15": {
+            "opUniqueName": "",
+            "value": "",
+            "text": ""
+        },
+        "dynamicConsumeCount15": {
+            "opUniqueName": "",
+            "value": "",
+            "text": ""
+        }
+    },
+    "appointPeriodOptions17": [{
+        "appointPeriodOption17": ""
+    }],
+    "goodsItemTypeState": [],
+    "goodsItemTypeStateName": [],
+    "cycleConsumeWayState": [],
+    "cycleConsumeWayStateName": [],
+    "cycleConsumeNum": {
+        "dynamicPeriod17": {
+            "opUniqueName": "normalEqual",
+            "value": "",
+            "text": ""
+        },
+        "appointPeriod17": {
+            "opUniqueName": "",
+            "value": "",
+            "text": ""
+        },
+        "consumeWayCode17": {
+            "opUniqueName": "",
+            "value": "",
+            "text": ""
+        },
+        "saleItemType17": {
+            "opUniqueName": "",
+            "value": "",
+            "text": ""
+        },
+        "dynamicConsumeSum17": {
+            "opUniqueName": "",
+            "value": "",
+            "text": ""
+        }
     },
     "showEffect35": {
         "opUniqueName": "",
@@ -195,6 +274,12 @@
         "text": ""
     },
     "price31": {
+        "opUniqueName": "",
+        "value": ""
+    },
+    "SaleItemTypeState": [],
+    "SaleItemTypeStateName": [],
+    "saleItemType100": {
         "opUniqueName": "",
         "value": ""
     },

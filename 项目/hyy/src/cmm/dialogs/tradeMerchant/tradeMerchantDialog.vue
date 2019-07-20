@@ -1,29 +1,15 @@
 <template>
   <div class="my_dialog">
-    <el-dialog :title="title" :visible.sync="mydialogTableVisible">
+    <el-dialog :title="title" :close-on-click-modal="false" :visible.sync="mydialogTableVisible">
       <el-form label-width="" :inline="true">
         <div style="position:relative">
-          <el-form-item label="客户账号" class="two_search">
-            <el-input v-model="customerCode" style="width:100px"></el-input>
+          <el-form-item label="客商编码:" class="two_search">
+            <el-input v-model="code" style="width:152px" placeholder="请输入"></el-input>
           </el-form-item>
-          <el-form-item label="客户简称">
-            <el-input v-model="customerName" style="width:100px"></el-input>
+          <el-form-item label="客商名称:">
+            <el-input v-model="name" style="width:184px" placeholder="请输入"></el-input>
           </el-form-item>
-          <el-form-item label="客户类型:">
-            <el-select v-model="customerType" style="width:150px" @change="change()">
-              <el-option label="全部" value>全部</el-option>
-              <el-option label="大客户" value="1">大客户</el-option>
-              <el-option label="第三方" value="2">第三方</el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item label="状态:">
-            <el-select v-model="customerStatus" style="width:150px" @change="change()">
-              <el-option label="全部" value>全部</el-option>
-              <el-option label="启用" value="1">启用</el-option>
-              <el-option label="禁用" value="2">禁用</el-option>
-            </el-select>
-          </el-form-item>
-          <el-button type="primary" style="position:absolute;right:0;top:5px;" @click="searchUser">查询</el-button>
+          <el-button type="primary" style="margin:4px 0;" @click="searchUser">查询</el-button>
         </div>
       </el-form>
       <!-- highlight-current-row  -->
@@ -31,17 +17,9 @@
         <div>
           <el-table :data="tableList" :cell-style={padding:0} :row-style={height:30} :header-cell-style={padding:0}
              ref="multipleTable" @select-all="selectAll"  :row-key="getRowKeys" @selection-change="select">
-            <!-- <el-table-column width="39">
-              <template slot-scope="scope">
-                <el-checkbox v-model="scope.checked"></el-checkbox>
-                <el-radio v-model="templateRadio" :label="scope.$index">&nbsp;</el-radio>
-              </template>
-            </el-table-column> -->
             <el-table-column type="selection" width="40" :reserve-selection="true" ></el-table-column>
-            <el-table-column property="code" label="客户账号" width="200"></el-table-column>
-            <el-table-column property="name" label="客户简称" width="200"></el-table-column>
-            <el-table-column property="type" label="客户类型" width="100"></el-table-column>
-            <el-table-column property="status" label="状态" width="100"></el-table-column>
+            <el-table-column property="code" label="客商编码" width="294"></el-table-column>
+            <el-table-column property="name" label="客商名称" width="294"></el-table-column>
           </el-table>
           <!-- 分页 -->
           <div class="block">
@@ -55,7 +33,7 @@
             <span>已选内容：</span>
             <span style="color: #3B74FF;cursor: pointer;" @click="clearSelection">清空</span>
           </p>
-          <ul class="ul_body">
+          <ul class="ul_body has-page">
             <li v-for="(item,index) in chooseItem" :key="index">
               <span>{{item.name}}</span>
               <span class="delate_span" @click="delateSpan(item)"> <i class="el-icon-close"></i></span>
@@ -67,15 +45,15 @@
 
       <div style="height:12px;background:transparent;"></div>
       <div class="btn-area">
-        <el-button @click="mydialogTableVisible = false">取消</el-button>
         <el-button type="primary" @click="chooseUser" style="margin-right:22px;">确定</el-button>
+        <el-button @click="mydialogTableVisible = false">取消</el-button>
       </div>
     </el-dialog>
   </div>
 
 </template>
 <script>
-import {cusList} from "frame_cpm/http/interface.js"
+import {getChannelList} from "cmm/http/interface.js"
   export default {
     props: {
       dialogTableVisible: {
@@ -85,6 +63,10 @@ import {cusList} from "frame_cpm/http/interface.js"
       title: {
         type: String,
         default: "父组件尚未传值"
+      },
+      channelNature: {
+        type: String,
+        default: ""
       },
       // innerData:{
       //   type: Array,
@@ -106,10 +88,11 @@ import {cusList} from "frame_cpm/http/interface.js"
     },
     data() {
       return {
-        customerCode:"",
-        customerName:"",
+        code:"",
+        name:"",
         customerType:"",
         customerStatus:"",
+        tenantId:JSON.parse(localStorage.getItem('user')).consumerId, //商户id,
         mydialogTableVisible: this.dialogTableVisible,
         chooseItem: [],
         rows:[],
@@ -152,17 +135,17 @@ import {cusList} from "frame_cpm/http/interface.js"
         //打开弹窗
         openDialog(val){
             this.mydialogTableVisible=val
-            this.getCinemaTypeList()
+            this.getChannelList()
         },
         // 页面改变
         handleCurrentChange(val) {
             this.pageData.pageNum=val
             console.log(val)
-            this.getCinemaTypeList()
+            this.getChannelList()
         },
         // 查询
         searchUser() {
-            this.getCinemaTypeList()
+            this.getChannelList()
         },
         // 删除
         delateSpan(item){
@@ -176,23 +159,24 @@ import {cusList} from "frame_cpm/http/interface.js"
             this.chooseItem = []
         },
         //获取影院类型列表
-        getCinemaTypeList(){
+        getChannelList(){
             let params={
-              pageNum:this.pageData.pageNum,
+              pageNo:this.pageData.pageNum,
               pageSize:this.pageData.size,
-              name:this.customerName,
-              code: this.customerCode,
-              status: this.customerStatus,
-              type: this.customerType,
+              name:this.name,
+              code: this.code,
+              channelNature:this.channelNature,
+              tenantId:this.tenantId,
+              // status: this.customerStatus,
+              // type: this.customerType,
             }
             console.log(params)
-            cusList(params).then(res=>{
+            getChannelList(params).then(res=>{
               if(res.data&&res.code==200){
-                  this.tableList=res.data.rows
+                  this.tableList=res.data.list
                   this.pageData.total=res.data.total
                   // this.selectData()
               }
-              
             })
         },
         selectData(){
@@ -215,8 +199,8 @@ import {cusList} from "frame_cpm/http/interface.js"
     watch: {
       dialogTableVisible(val) {
         this.mydialogTableVisible = val;
-        this.customerCode = "";
-        this.customerName = "";
+        this.code = "";
+        this.name = "";
         this.customerType = "";
         this.customerStatus = "";
         this.chooseItem = [];
@@ -243,171 +227,5 @@ import {cusList} from "frame_cpm/http/interface.js"
 </script>
 
 <style lang="scss" scoped>
-  .my_dialog {
-    /deep/ .el-dialog {
-      // width: calc(576px + 224px);
-      width: 892px;
-      height: 576px;
-      border-radius: 4px;
-      .el-dialog__header{
-        padding: 14px 20px 10px;
-      }
-      .el-dialog__title {
-        font-family: MicrosoftYaHei;
-        font-size: 14px;
-        color: #333333;
-        letter-spacing: 0;
-        line-height: 28px;
-      }
-      .el-dialog__headerbtn .el-dialog__close{
-        color: #979797;
-        font-size: 16px; 
-      }
-      .el-form-item__label {
-        font-size: 12px;
-      }
-
-      .el-form-item {
-        margin-bottom: 0;
-      }
-
-      .el-dialog__header::after {
-        content: "";
-        display: block;
-        // width: calc(536px + 224px);
-        width: 852px;
-        height: 1px;
-        background: #e5e5e5;
-      }
-
-      .choose_table {
-        display: flex;
-        margin-top: 11px;
-        border-left: 1px solid #E5E5E5;
-        border-bottom: 1px solid #E5E5E5;
-
-        .choose_ul {
-          background: #FFFFFF;
-          border: 1px solid #E5E5E5;
-          border-bottom: none;
-          width: 224px;
-
-          .ul_header {
-            display: flex;
-            padding: 10px 16px;
-            justify-content: space-between;
-            position: relative;
-
-            // border-bottom: 1px solid #F5F5F5;
-            &::after {
-              display: block;
-              position: absolute;
-              top: 37px;
-              content: "";
-              width: 192px;
-              height: 1px;
-              background-color: #F5F5F5;
-            }
-
-            span {
-              font-family: MicrosoftYaHei;
-              font-size: 12px;
-              color: #666666;
-              letter-spacing: 0;
-            }
-          }
-
-          .ul_body {
-            margin-top: 10px;
-            overflow-y: scroll;
-            height: 350px;
-
-            li {
-              padding: 4px 16px;
-              display: flex;
-              justify-content: space-between;
-
-              span {
-                font-family: MicrosoftYaHei;
-                font-size: 12px;
-                color: #666666;
-                letter-spacing: 0;
-              }
-
-              .delate_span {
-                cursor: pointer;
-              }
-            }
-          }
-        }
-      }
-
-      .el-dialog__body {
-        padding: 0 20px;
-
-        tr th,
-        tr td {
-          height: 30px;
-          line-height: 30px;
-        }
-
-        .two_search {
-          // width: 214px;
-          // font-size: 12px;
-        }
-
-        .one_search {
-          width: 268px;
-        }
-
-        .el-table__header-wrapper,
-        .el-table__body-wrapper,
-        .el-table__footer-wrapper {
-          // width: 536px;
-          width: calc(536px + 92px);
-        }
-
-        .el-table {
-          height: 353px;
-          // width: 536px;
-          width: calc(536px + 92px);
-          flex: 0 1 auto;
-          box-sizing: border-box;
-
-          .has-gutter tr th {
-            padding: 0;
-          }
-
-          .cell {
-            font-size: 12px;
-            line-height: 30px;
-            // float: left;
-            // text-align: center;
-          }
-
-          .el-radio__label {
-            padding: 0;
-            display: none;
-          }
-        }
-
-        .block {
-          padding: 10px;
-
-          .el-pagination {
-            text-align: center;
-          }
-        }
-      }
-
-      .btn-area {
-        display: flex;
-        justify-content: center;
-      }
-
-      /deep/ .content .el-input {
-        width: 50px;
-      }
-    }
-  }
+  @import "../../assets/dialogs.scss";
 </style>

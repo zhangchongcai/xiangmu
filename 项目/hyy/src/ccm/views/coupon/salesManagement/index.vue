@@ -14,14 +14,14 @@
     <section class="table-section">
         <el-table :data="table.data" style="width: 100%">
             <template v-for="(item,index) in table.title">
-                <el-table-column :key="index" v-if="!item.hasTemplate" :prop="item.prop" :label="item.label" :width="item.width"></el-table-column>
-                <el-table-column :key="index" v-if="item.hasTemplate" :prop="item.prop" :label="item.label" :width="item.width" :fixed="item.fixed">
+                <el-table-column :key="index" v-if="!item.hasTemplate" :prop="item.prop" :label="item.label" :width="item.width" show-overflow-tooltip></el-table-column>
+                <el-table-column :key="index" v-if="item.hasTemplate" :prop="item.prop" :label="item.label" :width="item.width" :fixed="item.fixed" show-overflow-tooltip>
                     <template slot-scope="scope">
                         <div v-if="item.prop == 'couponType'">
                             {{scope.row.couponType == '0' ? '兑换券' : scope.row.couponType == '1' ? '代金券' : '优惠券'}}
                         </div>
                         <div v-if="item.prop == 'state'">
-                            {{ticketStatus(scope.row.state)}}
+                            {{ticketStatus(scope.row)}}
                         </div>
                         <div v-else-if="item.prop == 'auditState'">
                             {{auditStatus(scope.row.auditState)}}
@@ -32,12 +32,12 @@
                         <div v-else-if="item.label == '操作'">
                             <el-row>
                                 <!-- 此处返回一级操作菜单 -->
-                                <el-button v-for="(item,index) in level1Template(scope.row.auditState, scope.row.state)" :key="index" type="text" @click="controlEmitFn(item.emitFn,scope.row)">{{item.label}}</el-button>
+                                <el-button v-for="(item,index) in level1Template(scope.row.auditState, scope.row.state,scope.row)" :key="index" type="text" @click="controlEmitFn(item.emitFn,scope.row)">{{item.label}}</el-button>
                                 <!-- 此处返回更多操作菜单 -->
                                 <el-dropdown @command="commandLevel2">
                                     <span class="el-dropdown-link">更多<i class="el-icon-arrow-down el-icon--right"></i></span>
                                     <el-dropdown-menu slot="dropdown">
-                                        <el-dropdown-item v-for="(item,index) in level2Template(scope.row.auditState, scope.row.state)" :key="index" :command="[scope.row,item]">{{item.label}}</el-dropdown-item>
+                                        <el-dropdown-item v-for="(item,index) in level2Template(scope.row.auditState, scope.row.state,scope.row)" :key="index" :command="[scope.row,item]">{{item.label}}</el-dropdown-item>
                                     </el-dropdown-menu>
                                 </el-dropdown>
                             </el-row>
@@ -55,7 +55,7 @@
     </section>
 
     <!-- 弹窗 -->
-    <el-dialog title="票券延期" :visible.sync="delayWindow.isShow">
+    <el-dialog title="票券延期" :visible.sync="delayWindow.isShow" :close-on-click-modal=false>
         <el-form>
             <el-form-item label="调整票券有效期:" :label-width="delayWindow.labelWidth">
                 <el-row class="flex-base">
@@ -70,30 +70,49 @@
             <el-button type="primary" @click="sureDelay">确 定</el-button>
         </div>
     </el-dialog>
+    <!-- 查看审批 -->
+    <checkApporveDialog v-if="dialogFormVisible" @close="close" :dialogFormVisible="dialogFormVisible" :bizNo="bizNo"></checkApporveDialog>
 </div>
 </template>
 
 <script>
 import searchLan from '../../../components/search/index.vue';
+import config from 'frame_cpm/http/config.js';
+import checkApporveDialog from 'cmm/dialogs/approval/approvalDialog'
+import minxins from 'frame_cpm/mixins/cacheMixin.js'
+
+import Axios from 'axios'
 export default {
     components: {
-        searchLan
+        searchLan,
+        checkApporveDialog
     },
+    mixins: [minxins.cacheMixin],
+
     data() {
+        
         let pointer = this;
         return {
+            /* 缓存数据 */
+            cacheField: ["pageConfig","table","searchParam"],
+            subComName:'salesManagement',
+            //查看审批
+            dialogFormVisible:false,
+            bizNo:'',
+            baseUrl : config.baseURL,
             modelName: 'salesManagement',
             searchLevelButton: true,
             searchConfig: [{
                     keyName: 'incomeCinemaId',
+                    alertCompontsName:'cinemaSingle',
                     name: '入账影院',
                     type: 'input',
                     value: {
                         value: '',
                         text: ''
                     },
-                    readonly: true,
                     alertButton: true,
+                    clearable: true,
                     alertSrc: 'http://192.168.100.148:8080/alertWindow',
                 }, {
                     keyName: 'applyCode',
@@ -116,7 +135,7 @@ export default {
                     // alertButton: true,
                     // readonly: true,
                     value:'',
-                    alertSrc: 'http://192.168.100.148:8080/alertWindow',
+                    alertSrc: '',
                 },
                 {
                     keyName: 'proposDate',
@@ -132,16 +151,17 @@ export default {
                     value: ''
                 }, {
                     keyName: 'custId',
-                    name: '客户名称',
+                    alertCompontsName:'tradeMerchantSingle',
+                    name: '客商名称',
                     type: 'input',
                     level: 'hight',
                     value: {
                         value: '',
                         text: ''
                     },
-                    readonly: true,
+                    clearable:true,
                     alertButton: true,
-                    alertSrc: 'http://192.168.100.148:8080/alertWindow',
+                    alertSrc: '',
                 },
                 {
                     keyName: 'couponType',
@@ -189,10 +209,12 @@ export default {
                     }, {
                         label: '已过期',
                         value: '5'
-                    }, {
-                        label: '已删除',
-                        value: '6'
-                    }, {
+                    }, 
+                    {
+                        label: '修订中',
+                        value: '-1'
+                    },
+                     {
                         label: '票券验证中',
                         value: '7'
                     }, {
@@ -202,13 +224,15 @@ export default {
                         label: '票券生成中',
                         value: '9'
                     }]
-                }, {
-                    keyName: 'batchCode',
-                    name: '销售批次号',
-                    type: 'input',
-                    level: 'hight',
-                    value: '',
-                }, {
+                }, 
+                // {
+                //     keyName: 'batchCode',
+                //     name: '销售批次号',
+                //     type: 'input',
+                //     level: 'hight',
+                //     value: '',
+                // }, 
+                {
                     keyName: 'auditState',
                     name: '审批状态',
                     type: 'select',
@@ -216,16 +240,16 @@ export default {
                     value: '',
                     options: [{
                         label: '全部',
+                        value: ''
+                    }, {
+                        label: '审批通过',
+                        value: '0'
+                    }, {
+                        label: '审批未通过',
                         value: '1'
                     }, {
                         label: '未审批',
                         value: '2'
-                    }, {
-                        label: '审批通过',
-                        value: '3'
-                    }, {
-                        label: '审批未通过',
-                        value: '4'
                     }]
                 }, {
                     keyName: 'ticketTimeUp',
@@ -239,52 +263,52 @@ export default {
                 title: [{
                     label: '申请单号',
                     prop: 'applyCode',
-                    width: '200'
+                    width: '190'
                 }, {
                     label: '票券名称',
                     prop: 'couponName',
-                    width: '200'
+                    width: ''
                 }, {
                     label: '票券类型',
                     prop: 'couponType',
-                    width: '200'
+                    width: ''
                 }, {
                     label: '数量',
                     prop: 'couponCount',
-                    width: '200'
+                    width: ''
                 }, {
                     label: '有效期起',
                     prop: 'validDateStart',
-                    width: '200',
+                    width: '',
                     hasTemplate: true
                 }, {
                     label: '有效期止',
                     prop: 'validDateEnd',
-                    width: '200',
+                    width: '',
                     hasTemplate: true
                 }, {
-                    label: '客户名称',
+                    label: '客商名称',
                     prop: 'custName',
-                    width: '200'
+                    width: '100'
                 }, {
                     label: '申请人',
                     prop: 'createUserName',
-                    width: '200'
+                    width: ''
                 }, {
                     label: '状态',
                     prop: 'state',
-                    width: '200',
+                    width: '',
                     hasTemplate: true
                 }, {
                     label: '审批状态',
                     prop: 'auditState',
-                    width: '200',
+                    width: '',
                     hasTemplate: true
                 }, {
                     label: '操作',
                     hasTemplate: true,
                     fixed: 'right',
-                    width: '300'
+                    width: '200'
                 }],
                 data: []
             },
@@ -301,7 +325,13 @@ export default {
                 isShow: false,
                 pickerOptions: {
                     disabledDate(time) {
-                        return time.getTime() < new Date(pointer.delayWindow.validDateStart);
+                        let date = new Date();
+                        let y = date.getFullYear()
+                        let m = date.getMonth()+1
+                        let d = date.getDate()
+                        let dateString = `${y}-${m}-${d}`
+                        // pointer.delayWindow.validDateStart
+                        return time.getTime() < new Date(dateString);
                     }
                 },
                 applyCode: '',
@@ -311,6 +341,7 @@ export default {
         }
     },
     created() {
+
         this.search();
     },
     methods: {
@@ -334,7 +365,7 @@ export default {
          */
         setParams(params) {
             console.log(params)
-            params = params ? params : {};
+            params = params ? params : '';
             let searchParam = this.searchParam;
             let keysArr = ['applyCode', 'auditState', 'batchCode', 'contractCode', 'couponName', 'couponType', 'state', 'queryCreateUserName'];
 
@@ -375,7 +406,12 @@ export default {
                     _params[`${item}`] = this.pageConfig[`${item}`];
                 }
             })
-
+            if(params){   //每次点击查询按钮，  理应页数返回第一页
+                this.pageConfig['pageNo'] = 1
+                _params[`pageNo`] = 1
+                console.log(this.pageConfig['pageNo'] ,'页数回到第一页')
+                console.log(_params)
+            }
             return _params;
         },
         /**
@@ -419,7 +455,10 @@ export default {
          */
         create() {
             this.$router.push({
-                name: 'createSales'
+                name: 'createSales',
+                query:{
+                    pageName:'create'
+                }
             });
         },
 
@@ -431,13 +470,13 @@ export default {
             let statusText = '';
             switch (statusVal) {
                 case "0":
-                    statusText = '兑换卷';
+                    statusText = '兑换券';
                     break;
                 case "1":
-                    statusText = '代金卷';
+                    statusText = '代金券';
                     break;
                 case "2":
-                    statusText = '优惠卷';
+                    statusText = '优惠券';
                     break;
                 default:
                     statusText = '全部';
@@ -449,9 +488,9 @@ export default {
          * @function ticketStatus - 票券状态
          * @param {Number} statusVal - 状态码
          */
-        ticketStatus(statusVal) {
+        ticketStatus(row) {
             let statusText = '';
-            switch (statusVal) {
+            switch (row.state) {
                 case 0:
                     statusText = '未提交';
                     break;
@@ -460,6 +499,19 @@ export default {
                     break;
                 case 2:
                     statusText = '已激活';
+                    statusText = row.isRevision==1&&row.state==2? '修订中' : statusText
+                    if(row.genStatus){              //genStatus==2 生成中优先级大于修订中
+                        // if(row.genStatus==1){
+                        //     statusText = '已经生成'
+                        // }else if(row.genStatus == 0){
+                        //     statusText = '未生成'
+                        // }else if (row.genStatus == 2){
+                        //     statusText = '生成中'
+                        // }
+                        if(row.genStatus == 2 ) {
+                            statusText = '票券生成中'
+                        }
+                    }
                     break;
                 case 3:
                     statusText = '已停用';
@@ -480,7 +532,7 @@ export default {
                     statusText = '票券生成中';
                     break;
                 default:
-                    statusText = '未知';
+                    statusText = '未知'
                     break;
             }
             return statusText;
@@ -511,7 +563,7 @@ export default {
          * @param {Number} auditStatus - 审批状态
          * @param {Number} ticketStatus - 票券状态
          */
-        level1Template(auditStatus, ticketStatus) {
+        level1Template(auditStatus, ticketStatus, row) {
             // use中第一位为auditStatus，第二位为ticketStatus
             let controls = [{
                 label: '查看',
@@ -524,12 +576,18 @@ export default {
             }, {
                 label: '修改',
                 emitFn: 'change',
-                use: '2&&0,2&&8,1&&1'
+                use: '2&&0,2&&8,1&&1,1&&0'
             }];
-
+            if(row.genStatus == 2){
+                return [{
+                        label: '查看',
+                        emitFn: 'check',
+                        use: 'all'
+                    }
+                ]
+            }
             let controlArray = [];
             let currentStatus = `${auditStatus}&&${ticketStatus}`;
-
             for (let i = 0; i < controls.length; i++) {
                 let currentUse = controls[i].use;
                 if (currentUse == 'all') {
@@ -545,7 +603,7 @@ export default {
          * @param {Number} auditStatus - 审批状态
          * @param {Number} ticketStatus - 票券状态
          */
-        level2Template(auditStatus, ticketStatus) {
+        level2Template(auditStatus, ticketStatus, row) {
             let controls = [{
                 label: '删除',
                 emitFn: 'delete',
@@ -557,11 +615,11 @@ export default {
             }, {
                 label: '提交审批',
                 emitFn: 'submit',
-                use: '2&&0,1&&1,2&&8'
+                use: '1&&1,2&&0,2&&8'
             }, {
                 label: '查看审批单',
                 emitFn: 'checkApporve',
-                use: '2&&1,2&&0,0&&9,0&&2,0&&3,0&&4,0&&5,1&&1'
+                use: '2&&1,0&&9,0&&2,0&&3,0&&4,0&&5,1&&1,2&&7,1&&0'
             }, {
                 label: '作废',
                 emitFn: 'blankOut',
@@ -569,15 +627,16 @@ export default {
             }, {
                 label: '修订',
                 emitFn: 'revise',
-                use: '0&&2,2&&1,1&&1'
-            }, {
+                use: '0&&2'
+            }, 
+            {
                 label: '停用',
                 emitFn: 'stop',
                 use: '0&&2'
             }, {
                 label: '延期',
                 emitFn: 'delay',
-                use: '0&&2'
+                use: '0&&2,0&&5'
             }, {
                 label: '启用',
                 emitFn: 'start',
@@ -585,13 +644,35 @@ export default {
             }];
 
             let controlArray = [];
+            if(row.genStatus == 2){
+                return [
+                    {
+                        label: '复制',
+                        emitFn: 'copy',
+                        use: 'all'
+                    },{
+                        label: '查看审批单',
+                        emitFn: 'checkApporve',
+                        use: '2&&1,2&&0,0&&9,0&&2,0&&3,0&&4,0&&5,1&&1,2&&7,1&&0'
+                    },{
+                        label: '作废',
+                        emitFn: 'blankOut',
+                        use: '0&&9,0&&2,0&&3'
+                    },
+                ]
+            }
             let currentStatus = `${auditStatus}&&${ticketStatus}`;
-
             for (let i = 0; i < controls.length; i++) {
                 let currentUse = controls[i].use;
                 if (currentUse == 'all') {
                     controlArray.push(controls[i]);
                 } else if (currentUse.indexOf(currentStatus) != -1) {
+                    if(controls[i]['emitFn']=='revise'){
+                        if(row.isRevision == 1) {
+                            console.log('修订中---------')
+                            continue
+                        }   //如果是修订中 则去除修订菜单
+                    }
                     controlArray.push(controls[i]);
                 }
             }
@@ -630,9 +711,11 @@ export default {
         change(param) {
             this.$router.push({
                 name: 'createSales',
-                params: {
+                query: {
                     applyCode: param.applyCode,
-                    isEdit: true
+                    isEdit: true,
+                    ischange:true,
+                    pageName:'edit'
                 }
             })
         },
@@ -641,6 +724,42 @@ export default {
          */
         export (param) {
             console.log('导出:', param)
+            let pointer = this;
+            let type = "warning";
+            let url = this.baseUrl + "/coupon/apply/export?applyCode="+param.applyCode ;
+            let headers = {
+                 "Cpm-User-Token": localStorage.getItem("token")
+            }
+            // this.$ccmList.couponExport({applyCode:param.applyCode})
+            Axios(url, {
+                headers,
+                method: "post",
+                responseType: "blob"
+            })
+            .then(data => {
+                console.log(data.headers)
+                let flag = data.headers.flag;
+                let message = '导出失败，请稍后尝试！';
+                if (flag == '1') {
+                    type = "success";
+                    message = '导出成功！';
+                    const blob = new Blob([data.data]);
+                    const fileName = data.headers.filename;
+                    const elink = document.createElement('a');
+                    elink.download = fileName;
+                    elink.style.display = 'none';
+                    elink.href = URL.createObjectURL(blob);
+                    document.body.appendChild(elink);
+                    elink.click();
+                    URL.revokeObjectURL(elink.href); // 释放URL 对象
+                    document.body.removeChild(elink);
+                }
+                this.$message({
+                    type,
+                    message
+                });
+
+            });
         },
         /**
          * @function delete - 删除
@@ -650,21 +769,24 @@ export default {
             let params = {
                 applyCode: param.applyCode
             };
-            this.$ccmList.deleteSaleList(params).then(data => {
-                console.log(data)
-                let type = 'warning';
-                if (data.flag == 1) {
-                    type = 'success';
-                }
-                this.$message({
-                    type,
-                    message: '删除票券申请单成功'
-                });
-                if (type == 'success') {
-                    this.search();
-                }
-            }).catch(msg => {
-                console.log('删除票券申请单错误', msg);
+            this.$confirm('是否删除','提示',{type:'warning'}).then(_=>{
+                this.$ccmList.deleteSaleList(params).then(res => {
+                    let type = 'warning';
+                    if (res.code == 200) {
+                        type = 'success';
+                    }
+                    this.$message({
+                        type,
+                        message: '删除票券申请单成功',
+                        onClose: _ => {
+                            if(res.code == 200){
+                                this.search();
+                            }
+                        }
+                    })
+                }).catch(msg => {
+                    console.log('删除票券申请单错误', msg);
+                })
             })
         },
         /**
@@ -673,7 +795,7 @@ export default {
         copy(param) {
             this.$router.push({
                 name: 'createSales',
-                params: {
+                query: {
                     applyCode: param.applyCode,
                     isEdit: true,
                     isCopy: true
@@ -685,12 +807,40 @@ export default {
          */
         submit(param) {
             console.log('提交审批:', param);
+            let params = {
+                applyCode : param.applyCode
+            }
+            this.$ccmList.createAuditBill(params).then(res => {
+                let type = 'warning'
+                let message = '提交审批单失败，请稍后尝试'
+                if(res.code == 200) {
+                    type = 'success'
+                    message = '提交审批单成功'
+                }
+                this.$message({
+                    type,
+                    message,
+                    duration:1000
+                })
+                if(res.code == 200){
+                    this.search()
+                }
+            }).catch(msg => {
+                console.log('提交审批单失败：', msg);
+            });
         },
         /**
          * @function checkApporve - 查看审批单
          */
         checkApporve(param) {
-            console.log('查看审批单:', param);
+            console.log('查看审批单:', param.applyCode);
+            this.bizNo = param.applyCode
+            // this.bizNo = param.batchCode
+            this.dialogFormVisible = true
+
+        },
+        close(blool) {
+            this.dialogFormVisible = false
         },
         /**
          * @function blankOut - 作废
@@ -701,7 +851,7 @@ export default {
             };
             this.$ccmList.abandonSaleList(params).then(data => {
                 let type = 'warning';
-                let message = '作废票券销售单失败，请稍后尝试';
+                let message = data.msg
                 if (data.flag == 3) {
                     type = 'success';
                     message = '作废销售单成功';
@@ -721,8 +871,18 @@ export default {
         /**
          * @function revise - 修订
          */
+       
         revise(param) {
             console.log('修订:', param);
+            this.$router.push({
+                name: 'createSales',
+                query: {
+                    applyCode: param.applyCode,
+                    incomeCinemaId:param.incomeCinemaId,
+                    isEdit: true,
+                    isrevise: true
+                }
+            })
         },
         /**
          * @function start - 启用
@@ -799,25 +959,31 @@ export default {
                 applyCode: this.delayWindow[`applyCode`],
                 validDateEnd: this.ruleTime(this.delayWindow[`validDateEnd`])
             };
-            this.$ccmList.delaySaleList(params).then(data => {
-                let type = 'warning';
-                let message = '票券延期失败，请您稍后再尝试';
-                if (data.flag == 2) {
-                    type = 'success';
-                    message = '票券延期成功';
-                }
-                this.$message({
-                    type,
-                    message
-                });
-                this.setDelayParam(false, '', '', '');
-                if (type == 'success') {
-                    this.search();
-                }
-            }).catch(msg => {
-                console.log(msg);
-                this.setDelayParam(false, '', '', '');
-            });
+            this.$confirm('延期操作时，系统默认暂停票券申请单，请手启动恢复使用！', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    this.$ccmList.delaySaleList(params).then(data => {
+                        let type = 'warning';
+                        let message = data.msg;
+                        if (data.flag == 2) {
+                            type = 'success';
+                            message = '票券延期成功';
+                        }
+                        this.$message({
+                            type,
+                            message
+                        });
+                        this.setDelayParam(false, '', '', '');
+                        if (type == 'success') {
+                            this.search();
+                        }
+                    }).catch(msg => {
+                        console.log(msg);
+                        this.setDelayParam(false, '', '', '');
+                    });
+                })
         },
         /**
          * @function cancleDelay - 取消延期

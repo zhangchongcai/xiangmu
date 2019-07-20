@@ -1,117 +1,143 @@
 <template>
+<div class="imtc-style">
   <div class="content">
-    <div class="breadcrumb">
+    <!-- <div class="breadcrumb">
       <el-breadcrumb separator-class="el-icon-arrow-right">
-        <el-breadcrumb-item to @click.native="handleCancel">库存管理</el-breadcrumb-item>
-        <el-breadcrumb-item to>库存管理入库登记</el-breadcrumb-item>
-        <el-breadcrumb-item>{{typeText}}领用退回入库</el-breadcrumb-item>
+        <el-breadcrumb-item :to="{ path: '/retail/InventoryManagement/inventoryManagement/list'}">盘点单管理</el-breadcrumb-item>
+        <el-breadcrumb-item>{{typeText}}盘点单</el-breadcrumb-item>
       </el-breadcrumb>
-    </div>
+    </div> -->
     <div class="tittle"></div>
     <el-form
       :inline="true"
+      ref="ruleForm"
       :model="queryData"
       label-position="left"
       label-width="100px"
       label-suffix=":"
     >
-      <!-- 基础信息 start-->
-      <div>
-        <div class="sub-tittle">基础信息</div>
-        <el-row>
-          <el-col :span="8">
-            <el-form-item label="盘点单号">
-              <span>{{queryData.billCode}}</span>
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-input v-model="queryData.cinemaName" placeholder="请选择门店" style="width:150px;">
-              <i class="el-icon-close el-input__icon" slot="suffix" @click="onCinemalSumit()"></i>
-            </el-input>
-            <el-button @click="selectCinemalDialog">选择</el-button>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="8">
-            <el-form-item label="盘点方案">
-              <el-select v-model="queryData.solutionUid" @focus="pdfnSelEvent()" @change="changePdfnEvent()">
-                <el-option 
-                  v-for = "item in pdfnData"
-                  :key="item.uid"
-                  :label="item.name"
-                  :value="item.uid"
-                ></el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label=''>
-              <el-select v-model="queryData.storeType" @focus="ckhjEvent()">
-                <!-- <el-option label="全部" value></el-option> -->
-                <el-option label="盘点仓库" value="1"></el-option>
-                <el-option label="盘点货架" value="2"></el-option>
-              </el-select>
-              <span>:</span>
-              <el-select v-model="queryData.storehouseCode" @focus="storeSelEvent()" @change="changeStoreEvent()">
-                <el-option 
-                  v-for = "item in storeData"
-                  :key="item.code"
-                  :label="item.name"
-                  :value="item.code"
-                ></el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </div>
-      <!-- 基础信息 end-->
-    <!-- {{this.queryData}} -->
-      <!-- 商品清单 start-->
-      <div>
-<!--         <div class="text-right" v-if="routeQuery.type!=3">
-          <el-button @click="selectedGoodsDialogVisible=true">添加商品</el-button>
-        </div> -->
-        <div class="sub-tittle">商品清单</div>
-        <el-table :data="queryData.checkBillMerEntityList" stripe height="300"> 
-          <el-table-column
-            v-for="item in tableColumn"
-            :key="item.key"
-            :prop="item.key"
-            :label="item.label"
-            :formatter="item.formatter"
-          >
-            <template slot-scope="{row}" name="header">
-              <div v-if="item.edit">
-                <el-input size="small" v-model="row[item.key]" placeholder></el-input>
-              </div>
-              <div v-else-if="item.selsect">
-                 <el-select  v-model="row[item.key]">
-                  <el-option key="0" label="瓶" value="0"></el-option>
-                  <el-option key="1" label="箱" value="1"></el-option>
-                </el-select>
-              </div>
-              <div v-else>
-                <span>{{row[item.key]}}</span>
-              </div>
-            </template>
-          </el-table-column>
-        </el-table>
-        <el-row>
-          <el-col :span="12">
-            <el-form-item prop="bunesRate" label-width="60px" label="备注">
-              <span v-if="routeQuery.type==3">{{queryData.remarks}}</span>
-              <el-input
-                type="textarea"
-                placeholder="请输入"
-                v-else
-                class="remark-input"
-                v-model="queryData.remarks"
-              ></el-input>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </div>
-      <!-- 商品清单 end-->
+      <el-collapse  v-model="activeNames">
+        <!-- 基础信息 start-->
+        <el-collapse-item title="基础信息" name="1">
+          <div>
+            <el-row>
+              <el-col :span="10">
+                <el-form-item label="盘点单号">
+                  <span>{{queryData.billCode}}</span>
+                </el-form-item>
+              </el-col>
+              <el-col :span="10">
+                <el-form-item 
+                  label="盘点门店" 
+                  class="select-input"
+                  prop="cinemaName"
+                  :rules="[{ required: routeQuery.type==3 ? false : true, message: '选择登记门店',trigger: 'change' }]"
+                  >
+                  <template v-if="routeQuery.type=='1'">     
+                    <el-input
+                            v-model="queryData.cinemaName"
+                            clearable
+                            @clear="onCinemalSumit"
+                            @focus="selectCinemalDialog"
+                            placeholder="请选择门店"
+                    ></el-input>
+                    <el-button @click="selectCinemalDialog" type="primary cinemaSel-btn" plain>选择</el-button>
+                  </template>
+                  <span v-else>{{this.queryData.cinemaName}}</span>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="10">
+                <el-form-item 
+                  label="盘点方案"
+                  prop="solutionName"
+                  :rules="[{ required: routeQuery.type==3 ? false : true, message: '请选择盘点方案',trigger: 'change' }]"
+                  >
+                  <el-select v-model="queryData.solutionUid" @focus="pdfnSelEvent()" @change="changePdfnEvent()" v-if="routeQuery.type==1">
+                    <el-option 
+                      v-for = "item in pdfnData"
+                      :key="item.uid"
+                      :label="item.name"
+                      :value="item.uid"
+                    ></el-option>
+                  </el-select>
+                  <span v-if="routeQuery.type==2">{{queryData.solutionName}}</span>
+                </el-form-item>
+              </el-col>
+              <el-col :span="10">
+                <el-form-item 
+                  label=''
+                  prop="storehouseName"
+                  :rules="[{ required: routeQuery.type==3 ? false : true, message: '请选择盘点仓库或货架',trigger: 'change' }]"
+                  >
+                  <el-select v-model="queryData.storeType" @focus="ckhjEvent()" v-if="routeQuery.type==1">
+                    <!-- <el-option label="全部" value></el-option> -->
+                    <el-option label="盘点仓库" value="1"></el-option>
+                    <el-option label="盘点货架" value="2"></el-option>
+                  </el-select>
+                  <span v-if="routeQuery.type==2">{{queryData.storeType == "1" ? "盘点仓库" : "盘点货架"}}</span>
+                  <span>:</span>
+                  <el-select v-model="queryData.storehouseCode" @focus="storeSelEvent()" @change="changeStoreEvent()" v-if="routeQuery.type==1">
+                    <el-option 
+                      v-for = "item in storeData"
+                      :key="item.code"
+                      :label="item.name"
+                      :value="item.code"
+                    ></el-option>
+                  </el-select>
+                  <span v-if="routeQuery.type==2">{{queryData.storehouseName}}</span>
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </div>
+        </el-collapse-item>
+        <!-- 基础信息 end-->
+        <!-- 商品清单 start-->
+        <el-collapse-item title="盘点商品清单" name="2">
+          <div>
+            <el-table :data="queryData.checkBillMerEntityList" stripe height="300"> 
+              <el-table-column
+                v-for="item in tableColumn"
+                :key="item.key"
+                :prop="item.key"
+                :label="item.label"
+                :formatter="item.formatter"
+              >
+                <template slot-scope="{row}" name="header">
+                  <div v-if="item.edit">
+                    <el-input size="small" v-model="row[item.key]" placeholder></el-input>
+                  </div>
+                  <div v-else-if="item.selsect">
+                    <el-select  v-model="row[item.key]">
+                      <el-option key="0" label="瓶" value="0"></el-option>
+                      <el-option key="1" label="箱" value="1"></el-option>
+                    </el-select>
+                  </div>
+                  <div v-else>
+                    <span>{{row[item.key]}}</span>
+                  </div>
+                </template>
+              </el-table-column>
+            </el-table>
+            <el-row>
+              <el-col :span="12">
+                <el-form-item prop="bunesRate" label-width="60px" label="备注">
+                  <span v-if="routeQuery.type==3">{{queryData.remarks}}</span>
+                  <el-input
+                    type="textarea"
+                    placeholder="请输入"
+                    v-else
+                    class="remark-input"
+                    v-model="queryData.remarks"
+                  ></el-input>
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </div>
+        </el-collapse-item>
+        <!-- 商品清单 end-->
+      </el-collapse>
       <!-- 选择供应商弹窗 -->
       <suppliers-dialog ref="mySuppliersDialog"></suppliers-dialog>
       <!-- 选择商品 -->
@@ -121,14 +147,15 @@
         @cimSelectedGoodsDialogCallBack="selectedGoodsDialogCallBack"
       ></selected-goods>
       <!-- 选择影院弹窗 -->
-      <cinemal-dialog ref="myCinemalDialog" @onSumit="onCinemalSumit"></cinemal-dialog>
+      <cinemal-dialog ref="myCinemalDialog" @onSumit="onCinemalSumit" :dialogFeedbackData="saleCinemaList"></cinemal-dialog>
       <div class="submit-box">
         <el-button type="primary" @click="ThandleSubmit">保存并提交</el-button>
-        <el-button type="primary" @click="ChandleSubmit">保存为草稿</el-button>
-        <el-button @click="handleCancel">取 消</el-button>
+        <el-button type="primary" @click="ChandleSubmit" v-if="this.queryData.status != 2">保存为草稿</el-button>
+        <el-button @click="handleCancel">{{routeQuery.type !="3" ? "取消":"关闭"}}</el-button>
       </div>
     </el-form>
   </div>
+</div>  
 </template>
 
 <script>
@@ -142,6 +169,8 @@ export default {
   mixins: [mixin],
   data() {
     return {
+      activeNames:['1','2','3'],
+      saleCinemaList:[],
       // 盘点商品当前分页数
       currentPage:"",
       // 盘点商品总数
@@ -154,8 +183,8 @@ export default {
       //查询数据
       queryData: {
         billCode:"",
-        cinemaName:"万达影城",
-        cinemaUid:"111111",
+        cinemaName:"",
+        cinemaUid:"",
         remarks:"",
         saveStatus:"",
         solutionName:"",
@@ -187,31 +216,25 @@ export default {
           key: "merName"
         },
         {
-          label: "商品规格",
-          key: "merSpec"
-        },
-        {
           label: "SKU编码",
           key: "skuCode"
+        },
+        {
+          label: "商品规格",
+          key: "merSpec"
         },
         {
           label: "基本单位",
           key: "unitName"
         },
         {
-          label: "实盘库存数字",
+          label: "实盘库存数",
           key: "checkStoreCount",
           edit:true,
         }
       ],
       // 表格数据
-      tableData: [
-        {
-          supplierCode: "CG201904010001",
-          supplierName: "中影德金影城客村丽影店",
-          areaName: "美联经营部"
-        }
-      ]
+      tableData: []
     };
   },
   mounted() {
@@ -223,7 +246,10 @@ export default {
     init() {
       if(this.$route.query.type == "1"){
         this.resCheckBillCreateBillCode()
-        console.log(JSON.parse(this.$route.query.data))
+        // console.log(JSON.parse(this.$route.query.data))
+      }else if(this.$route.query.type == "2"){
+        this.queryData = JSON.parse(this.$route.query.data)
+        console.log(this.queryData)
       }
     },
     // 查询
@@ -233,15 +259,23 @@ export default {
       this.findSemifinishedMater(this.materialQueryData);
     },
         // 选泽门店回调
-    onCinemalSumit(val = []) {
-      if (val.length > 0) {
-        this.queryData.cinemaName = val[0].name;
-        this.queryData.cinemaUid = val[0].cinemaUid;
+    onCinemalSumit(data = []) {
+      this.clearQueryData()
+      if (data.length > 0) {
+        this.queryData.cinemaName = data[0].name || data[0].cinemaName;
+        this.queryData.cinemaUid = data[0].uid || data[0].cinemaUid;
       } else {
         this.queryData.cinemaName = "";
         this.queryData.cinemaUid = "";
       }
-      console.log(val);
+      let newArr = []
+      data.forEach((val,index,arr)=>{
+        let newObj = {}
+        newObj.cinemaUid = val.cinemaUid ||  val.uid
+        newObj.name = val.cinemaName || val.name
+        newArr.push(newObj)
+      })
+      this.saleCinemaList = newArr
     },
     // 获取分类列表
     getCategoryTrees(param) {
@@ -259,18 +293,81 @@ export default {
     },
     //
     ThandleSubmit() {
-      this.queryData.saveStatus = 2
-      this.resCheckBillSave(this.queryData)
-      this.$router.go(-1);
+      let newAvtive = {}
+      let dqActive = ""
+      this.queryData.checkBillMerEntityList.some((val,newindex,arr)=>{
+        let check = /(^[1-9][0-9]{0,})|(^0)/g
+        if(val.checkStoreCount === "" || val.checkStoreCount === null || !check.test(val.checkStoreCount)){
+          return newAvtive = {a1:true,a2:val}
+        }
+      })
+      if(newAvtive.a1 === true){
+        this.$message(newAvtive.a2.merName+":没有填入实盘库存数字");
+      }else{
+        this.$refs["ruleForm"].validate(valid => {
+          if (valid) {
+            if(this.$route.query.type == "1"){
+              this.queryData.saveStatus = 2
+              this.queryData.checkBillMerEntityList.forEach((val,index,arr)=>{
+                delete val.uid
+              })
+              console.log(this.queryData.checkBillMerEntityList)
+              this.resCheckBillSave(this.queryData)
+            }else if(this.$route.query.type == "2"){
+              this.queryData.saveStatus = 2
+              this.resCheckBillUpdate(this.queryData)
+            }
+          }else{
+            return false;
+          }
+        })  
+      }
     },
     ChandleSubmit() {
-      this.queryData.saveStatus = 1
-      this.resCheckBillSave(this.queryData)
-      this.$router.go(-1);
+      let newAvtive = {}
+      let dqActive = ""
+      this.queryData.checkBillMerEntityList.some((val,newindex,arr)=>{
+        let check = /(^[1-9][0-9]{0,})|(^0)/g
+        if(val.checkStoreCount === "" || val.checkStoreCount === null || !check.test(val.checkStoreCount)){
+          return newAvtive = {a1:true,a2:val}
+        }
+      })
+      if(newAvtive.a1 === true){
+        this.$message(newAvtive.a2.merName+":实盘库存数必须大于等于0");
+      }else{
+        this.$refs["ruleForm"].validate(valid => {
+          if (valid) {
+            if(this.$route.query.type == "1"){
+              this.queryData.saveStatus = 1
+              console.log(this.queryData)
+              this.queryData.checkBillMerEntityList.forEach((val,index,arr)=>{
+                delete val.uid
+              })
+              this.resCheckBillSave(this.queryData)
+              
+            }else if(this.$route.query.type == "2"){
+              this.queryData.saveStatus = 2
+              this.resCheckBillUpdate(this.queryData)
+            }
+          }else{
+            return false;
+          }
+        }) 
+      }
     },
     //
     handleCancel() {
-      this.$router.go(-1);
+      console.log(JSON.stringify(this.queryData))
+      this.returnList({
+        returnType:true,
+        cinema: JSON.stringify(this.queryData)
+      });
+    },
+    returnList(param) {
+      this.$router.push({
+        path: "list",
+        query: param
+      });
     },
     saleCinemaType(type) {
       switch (type) {
@@ -288,6 +385,14 @@ export default {
     selectCinemalDialog() {
       this.$refs.myCinemalDialog.handleDialog(true);
     },
+    clearQueryData(){
+      this.queryData.solutionName = ""
+      this.queryData.solutionUid = ""
+      this.queryData.storehouseCode = ""
+      this.queryData.storehouseName = ""
+      this.queryData.checkBillMerEntityList = []
+
+    },
     selectSuppliersDialog() {
       this.$refs.mySuppliersDialog.handleDialog(true);
     },
@@ -301,15 +406,19 @@ export default {
     },
     // 仓库货架事件
     storeSelEvent(){
-      if(this.queryData.storeType == "1"){
-        this.rescheckBillStorehouse("111111")
-      }else if(this.queryData.storeType == "2"){
-        this.resCheckBillStorageRack("111111")
+      if(this.queryData.cinemaUid == "" || this.queryData.cinemaUid == undefined || this.queryData.cinemaUid == null){
+        this.$message("请选择门店");
+      }else{
+        if(this.queryData.storeType == "1"){
+          this.rescheckBillStorehouse(this.queryData.cinemaUid)
+        }else if(this.queryData.storeType == "2"){
+          this.resCheckBillStorageRack(this.queryData.cinemaUid)
+        }
       }
     },
     // 盘点方案事件
     pdfnSelEvent(){
-      if(this.queryData.cinemaName == ""){
+      if(this.queryData.cinemaUid == "" || this.queryData.cinemaUid == undefined || this.queryData.cinemaUid == null){
         this.$message("请选择门店");
       }else{
         this.resCheckBillNames("row")
@@ -336,8 +445,9 @@ export default {
     // 请求仓库列表
     rescheckBillStorehouse(row){
       let val = {
-        cinemaUid:row.uid
+        cinemaUid:row
       }
+      console.log(val)
       this.$cimList.inventoryManagement
         .checkBillStorehouse(val)
         .then(res => {
@@ -354,7 +464,7 @@ export default {
     // 请求货架列表
     resCheckBillStorageRack(row){
       let val = {
-        cinemaUid:row.uid
+        cinameUid:row
       }
       this.$cimList.inventoryManagement
         .checkBillStorageRack(val)
@@ -386,7 +496,7 @@ export default {
     // 请求盘点方案
     resCheckBillNames(row){
       let val = {
-        cinemaUid:"111111",
+        cinemaUid:this.queryData.cinemaUid,
       }
       this.$cimList.inventoryManagement
         .checkBillNames(val)
@@ -428,12 +538,26 @@ export default {
         .checkBillSave(row)
         .then(res => {
           if (res.code === 200) {
-            this.queryData.checkBillMerEntityList = res.data.list
-            console.log(res)
-            debugger
+            this.handleCancel()
+            this.$message("新增成功");
           } else {
             this.$message(res.msg);
-            this.error(res.msg);
+          }
+        })
+        .catch(err => {});
+    },
+    // 请求修改盘点单
+    resCheckBillUpdate(row){
+      this.$cimList.inventoryManagement
+        .checkBillUpdate(row)
+        .then(res => {
+          if (res.code === 200) {
+            // this.queryData.checkBillMerEntityList = res.data.list
+            console.log(res)
+             this.handleCancel()
+            this.$message("修改成功");
+          } else {
+            this.$message(res.msg);
           }
         })
         .catch(err => {});
@@ -479,116 +603,118 @@ export default {
 <style lang="scss">
 @import "../../../../assets/css/common.scss";
 @import "../../../../assets/css/element-common.scss";
-.basic-input {
-  min-width: 250px;
-}
-.select-input {
-  .el-input {
-    width: 65%;
+.imtc-style{
+  .basic-input {
+    min-width: 250px;
   }
-}
-.remark-input {
-  min-width: 450px;
-  margin-top: 10px;
-  input {
-    width: 80%;
-  }
-}
-.putaway-timer {
-  .el-form-item__content {
-    min-width: 150px;
-  }
-}
-
-.recipe-box {
-  margin: 30px 0;
-}
-.recipe-tittle-box {
-  margin: 10px 0;
-}
-.recipe-tittle {
-  line-height: 40px;
-  text-align: center;
-  font-size: 20px;
-}
-.change-dialog {
-  .el-form-item__content {
-    width: 60%;
-  }
-}
-.el-date-editor.el-input,
-.el-date-editor.el-input__inner {
-  width: 180px;
-}
-.delete-recipe-group {
-  font-size: 20px;
-}
-.recipe-name-inp {
-  width: 200px;
-}
-.price-inp {
-  width: 100px;
-}
-.content {
-  padding: 20px;
-  .el-form-item {
-    // margin-bottom: 10;
-  }
-}
-.tittle {
-  font-weight: 900;
-  font-size: 18px;
-}
-.sub-tittle {
-  height: 40px;
-  line-height: 40px;
-  width: 100%;
-  background: #f5f5f5;
-  margin-top: 10px;
-  margin-bottom: 10px;
-}
-.submit-box {
-  margin-top: 50px;
-  text-align: center;
-}
-.table-box {
-  margin-top: 10px;
-}
-.both-edit-inp {
-  width: 60px;
-}
-.breadcrumb {
-  margin-bottom: 30px;
-}
-.text-right {
-  text-align: right;
-  margin-bottom: 10px;
-}
-.endTime-input {
-  width: 110px;
-}
-.empty-box {
-  padding: 10px;
-  .selected-content {
-    margin-top: 6px;
-  }
-  .el-button {
-    padding-left: 0;
-    padding-right: 0;
-  }
-  .empty-content {
-    height: 300px;
-    overflow-y: auto;
-    li {
-      margin-top: 5px;
+  .select-input {
+    .el-input {
+      width: 65%;
     }
   }
-  .el-tag {
-    width: 100%;
+  .remark-input {
+    min-width: 450px;
+    margin-top: 10px;
+    input {
+      width: 80%;
+    }
   }
-  .el-tag .el-icon-close {
-    float: right;
-    top: 4px;
+  .putaway-timer {
+    .el-form-item__content {
+      min-width: 150px;
+    }
+  }
+
+  .recipe-box {
+    margin: 30px 0;
+  }
+  .recipe-tittle-box {
+    margin: 10px 0;
+  }
+  .recipe-tittle {
+    line-height: 40px;
+    text-align: center;
+    font-size: 20px;
+  }
+  .change-dialog {
+    .el-form-item__content {
+      width: 60%;
+    }
+  }
+  .el-date-editor.el-input,
+  .el-date-editor.el-input__inner {
+    width: 180px;
+  }
+  .delete-recipe-group {
+    font-size: 20px;
+  }
+  .recipe-name-inp {
+    width: 200px;
+  }
+  .price-inp {
+    width: 100px;
+  }
+  .content {
+    padding: 20px;
+  }
+  .tittle {
+    font-weight: 900;
+    font-size: 18px;
+  }
+  .sub-tittle {
+    height: 40px;
+    line-height: 40px;
+    width: 100%;
+    background: #f5f5f5;
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+  .submit-box {
+    margin-top: 50px;
+    text-align: center;
+  }
+  .table-box {
+    margin-top: 10px;
+  }
+  .both-edit-inp {
+    width: 60px;
+  }
+  .breadcrumb {
+    margin-bottom: 30px;
+  }
+  .text-right {
+    text-align: right;
+    margin-bottom: 10px;
+  }
+  .endTime-input {
+    width: 110px;
+  }
+  .empty-box {
+    padding: 10px;
+    .selected-content {
+      margin-top: 6px;
+    }
+    .el-button {
+      padding-left: 0;
+      padding-right: 0;
+    }
+    .empty-content {
+      height: 300px;
+      overflow-y: auto;
+      li {
+        margin-top: 5px;
+      }
+    }
+    .el-tag {
+      width: 100%;
+    }
+    .el-tag .el-icon-close {
+      float: right;
+      top: 4px;
+    }
+  }
+  .el-form-item{
+    margin-bottom: 14px;
   }
 }
 </style>

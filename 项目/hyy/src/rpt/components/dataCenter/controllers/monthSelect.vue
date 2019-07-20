@@ -1,44 +1,53 @@
 <template>
   <div class="month-select">
     <el-date-picker
-      v-model="monthStartValue"
+      v-model="monthValue"
       type="month"
-      @change="monthStartValChange"
-      value-format="yyyy-MM"
-    ></el-date-picker>
-    <span>至</span>
-    <el-date-picker
-      v-model="monthEndValue"
-      type="month"
-      @change="monthEndValChange"
+      @change="monthValChange"
       value-format="yyyy-MM"
     ></el-date-picker>
   </div>
 </template>
 
 <script>
+import Moment from "moment";
+import mixins from "src/frame_cpm/mixins/cacheMixin.js";
 export default {
+  mixins: [mixins.cacheMixin],
+  props: {
+    resetStatus: Boolean,
+    queryName: String
+  },
   data() {
     return {
-      monthStartValue: "",
-      monthEndValue: "",
-      mothValue: ""
+      cacheField: [
+        "monthValue"
+      ],
+      subComName: "monthSelect",
+      monthValue: ""
     };
   },
   methods: {
-    monthStartValChange() {
-      if (this.monthStartValue === null) {
-        this.monthStartValue = "";
+    monthValChange() {
+      if (this.monthValue === null) {
+        this.monthValue = "";
       }
-      console.log(this.monthStartValue);
-      this.$emit("selectMonthStartData", this.monthStartValue);
+      this.$emit("selectMonthData", this.monthValue, this.queryName);
     },
-    monthEndValChange() {
-      if (this.monthEndValue === null) {
-        this.monthEndValue = "";
+    init() {
+      let currentMonth = Moment().format("YYYY-MM");
+      this.monthValue = currentMonth;
+      this.$emit("selectMonthData", currentMonth, this.queryName);
+    }
+  },
+  mounted() {
+    this.init();
+  },
+  watch: {
+    resetStatus(newVal) {
+      if (newVal === true) {
+        this.init();
       }
-      console.log(this.monthEndValue);
-      this.$emit("selectMonthEndData", this.monthEndValue);
     }
   }
 };

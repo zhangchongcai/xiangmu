@@ -2,14 +2,14 @@
 <div class="search-window">
     <el-form v-if="isShowForm" :inline="true" :model="baseConfig.form">
         <template v-for="(item,index) in baseConfig.system">
-            <el-form-item v-if="isShowLevelItem(item)" :key="index" :prop="item.keyName" :required="item.required" :label="item.name+':'" :rules="item.rules">
+            <el-form-item :class="item.keyName" v-if="isShowLevelItem(item)" :key="index" :prop="item.keyName" :required="item.required" :label="item.name+':'" :rules="item.rules">
                 <!-- 单个输入框 - 是否带唤起弹窗按钮-->
                 <template v-if="item.type == 'input'">
                     <el-row class="flex-base">
                         <el-input class="input-type-166" v-if="!item.alertButton" :clearable="item.clearable" @clear="clearInputVal(item.keyName,item.alertButton)" :readonly="item.readonly" v-model="baseConfig.form[`${item.keyName}`]" :placeholder="item.placeholider"></el-input>
                         <template v-if="item.alertButton">
-                            <el-input class="input-type-166" :clearable="item.clearable" @clear="clearInputVal(item.keyName,item.alertButton)" :readonly="item.readonly" v-model="item.value" :placeholder="item.placeholider"></el-input>
-                            <el-button type="primary callWindowBtn" plain @click="callWindow(item.alertCompontsName,item.keyName,item.isNeedReturn)">{{item.alertButtonText ? item.alertButtonText : '选择'}}</el-button>
+                            <el-input class="input-type-166 windowInput" :clearable="item.clearable" @clear="clearInputVal(item.keyName,item.alertButton)" readonly v-model="item.value" :placeholder="item.placeholider"></el-input>
+                            <el-button class="windowBtn" type="primary callWindowBtn" plain @click="callWindow(item.alertCompontsName,item.keyName,item.isNeedReturn)">{{item.alertButtonText ? item.alertButtonText : '选择'}}</el-button>
                         </template>
                     </el-row>
                 </template>
@@ -28,19 +28,20 @@
                 </template>
                 <!-- 选择框 -->
                 <template v-if="item.type == 'select'">
-                    <el-select class="input-type-166" v-model="baseConfig.form[`${item.keyName}`]" :placeholder="item.placeholder ? item.placeholder : '请选择'" :multiple="item.multiple" :multiple-limit="item.multipleLimit">
+                    <el-select class="input-type-166" style="width:264px;" v-model="baseConfig.form[`${item.keyName}`]" :placeholder="item.placeholder ? item.placeholder : '请选择'" :multiple="item.multiple" :multiple-limit="item.multipleLimit">
                         <el-option v-for="item in item.options" :key="item.value" :label="item.label" :value="item.value"></el-option>
                     </el-select>
                 </template>
                 <!-- 日期选择 -->
                 <template v-if="item.type == 'date-picker'">
-                    <el-date-picker v-model="baseConfig.form[`${item.keyName}`]" :type="item.dateType ? item.dateType : 'daterange'" :placeholder="item.placeholder ? item.placeholder : '选择日期'" :range-separator="item.rangeSeparator ? item.rangeSeparator : '至'" :start-placeholder="item.startPlaceholder ? item.startPlaceholder : '请选择开始日期'" :end-placeholder="item.endPlaceholder ? item.endPlaceholder : '请选择结束日期'"></el-date-picker>
+                    <el-date-picker value-format="yyyy-MM-dd"  v-model="baseConfig.form[`${item.keyName}`]" :type="item.dateType ? item.dateType : 'daterange'" :placeholder="item.placeholder ? item.placeholder : '选择日期'" :range-separator="item.rangeSeparator ? item.rangeSeparator : '至'" :start-placeholder="item.startPlaceholder ? item.startPlaceholder : 'yyyy-MM-dd'" :end-placeholder="item.endPlaceholder ? item.endPlaceholder : 'yyyy-MM-dd'"></el-date-picker>
                 </template>
             </el-form-item>
         </template>
+        <br/>
         <el-form-item class="btn-group">
             <el-row class="flex-base" :class="{'isTicketManagement': modelName == 'salesManagement'}">
-                <el-button type="primary" @click="emitSearch">查询</el-button>
+                <el-button class="searchBtn" type="primary" @click="emitSearch">查询</el-button>
                 <el-button type="text" v-if="searchLevelButton" @click="changeSearchType">高级查询<i class="el-icon--right" :class="{'el-icon-arrow-down': !isShowHightLevel, 'el-icon-arrow-up': isShowHightLevel}"></i></el-button>
             </el-row>
         </el-form-item>
@@ -87,10 +88,10 @@
 <script>
 // 弹窗混入回调方法，注册弹窗和设置回调都在此处
 import searchAlertHandle from 'cmm/mixins/marketing/searchAlertHandle.js';
-
+import minxins from 'frame_cpm/mixins/cacheMixin.js'
 export default {
     components: {},
-    mixins: [searchAlertHandle],
+    mixins: [searchAlertHandle,minxins.cacheMixin],
     props: {
         config: {
             required: true,
@@ -102,10 +103,15 @@ export default {
         searchLevelButton: {
             type: Boolean,
             default: false
+        },
+        isCache:{
+            default: true
         }
     },
     data() {
         return {
+            /* 缓存数据 */
+            cacheField: ["baseConfig"],
             /* 基本配置 */
             isShowForm: false,
             aaa:{},
@@ -129,49 +135,81 @@ export default {
         }
     },
     created() {
-        /* 根据输入config 构建form */
-        let form = {};
-        let system = JSON.parse(JSON.stringify(this.config));
-        try {
-            for (let i = 0; i < system.length; i++) {
-                let item = system[i];
-                let isMore = item.type == 'input-more' ? true : false;
-                if (isMore) {
-                    let options = item.options;
-                    for (let j = 0; j < options.length; j++) {
-                        let jtem = options[j];
-                        if (!form[`${jtem.keyName}`]) {
-                            form[`${jtem.keyName}`] = jtem.value ? jtem.value : '';
+        this.init();       
+    },
+    mounted(){
+        if(!this.isCache){
+            this.baseConfig.form = {}
+        }
+    },
+    methods: {
+        init(){
+            /* 根据输入config 构建form */
+            let form = {};
+            let system = {}
+               system = JSON.parse(JSON.stringify(this.config));
+            
+            try {
+                for (let i = 0; i < system.length; i++) {
+                    let item = system[i];
+                    let isMore = item.type == 'input-more' ? true : false;
+                    if (isMore) {
+                        let options = item.options;
+                        for (let j = 0; j < options.length; j++) {
+                            let jtem = options[j];
+                            if (!form[`${jtem.keyName}`]) {
+                                form[`${jtem.keyName}`] = jtem.value ? jtem.value : '';
+                            } else {
+                                throw new Error('在传入config渲染搜索框时,请确保keyName的值为唯一');
+                            }
+                        }
+                    } else {
+                        if (!form[`${item.keyName}`]) {
+                            form[`${item.keyName}`] = item.value ? item.value : '';
                         } else {
                             throw new Error('在传入config渲染搜索框时,请确保keyName的值为唯一');
                         }
                     }
-                } else {
-                    if (!form[`${item.keyName}`]) {
-                        form[`${item.keyName}`] = item.value ? item.value : '';
-                    } else {
-                        throw new Error('在传入config渲染搜索框时,请确保keyName的值为唯一');
+                }
+            } catch (msg) {
+                console.log(msg);
+            }
+
+            // 实时将数据变化返回
+            this.watchDataChange = this.$watch('baseConfig.form', (new_val, old_val) => {
+                this.$emit('searchValueChange', new_val);
+            }, {
+                deep: true
+            })
+            console.log(this.baseConfig)
+            /*------star--------*/
+            let _form = this.baseConfig.form
+            let cacheForm = false
+            for(var item of Object.keys(_form)){
+                console.log(item)
+                if(typeof(_form[item])=='object'){
+                    if(_form[item].text !=''){
+                        console.log(_form[item])
+                        console.log(`有值的项${item}:`,_form[item].text)
+                        cacheForm = true
+                    }
+                }else if(typeof(_form[item])=='string'){
+                    if(_form[item] !=''){
+                        console.log(`有值的项${item}:`,_form[item])
+                        cacheForm = true
                     }
                 }
             }
-        } catch (msg) {
-            console.log(msg);
-        }
-
-        // 实时将数据变化返回
-        this.watchDataChange = this.$watch('baseConfig.form', (new_val, old_val) => {
-            this.$emit('searchValueChange', new_val);
-        }, {
-            deep: true
-        })
-
-        this.baseConfig = {
-            form,
-            system
-        }
-        this.isShowForm = true;
-    },
-    methods: {
+            if(cacheForm) {
+                form = _form
+            }
+            /*-----end---------*/
+            this.baseConfig = {
+                form,
+                system
+            }
+            this.isShowForm = true;
+        },
         /**
          * @function callWindow - 唤起弹窗
          * @param {Boolean} isNeedReturn - 是否需要回传参数给弹窗
@@ -290,37 +328,111 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.flex-base {
-    display: flex;
-    display: -webkit-flex;
-    align-content: center;
-    justify-content: center;
-}
+// .flex-base {
+//     display: flex;
+//     display: -webkit-flex;
+//     align-content: center;
+//     justify-content: center;
+// }
 
-.search-window {
-    background: #F5F5F5;
-
-    .el-form {
-        padding: 24px;
-
-        .el-form-item {
-            margin-bottom: 8px;
-        }
-
-        .btn-group {
-            margin-bottom: unset;
-            margin-top: 5px;
+/deep/.search-window {
+    overflow: hidden;
+    font-size: 12px;
+    background: #F3F3F3;
+    padding: 24px;
+    .windowBtn{
+        width: 80px;
+        padding-left: 0;
+        padding-right: 0;
+        height: 32px;
+        font-size: 12px;
+        margin-left: 10px;
+        position: relative;
+        top: 1px;
+    }
+    .searchBtn{
+        width: 80px;
+        padding-left: 0;
+        padding-right: 0;
+        height: 32px;
+        font-size: 12px;
+        position: relative;
+        top: 4px;
+    }
+    .el-form-item{
+        margin-right: 32px;
+        margin-bottom:0px; 
+    }
+    .searchActivityName{
+        .el-input{
+            width: 264px;
         }
     }
-
-    .callWindowBtn {
-        margin-left: 5px;
-        margin-top: 1px;
+    .validDate{
+        // .el-icon-date {
+        //     position: absolute;
+        //     top: 0;
+        //     right: 9px;
+        // }
+        .el-range-input{
+            font-size: 12px;
+            color: #666666;
+        }
+        .el-range-separator{
+            width:50px;
+            font-size: 12px;
+            color: #666666;
+        }
+        .el-form-item__label{
+            padding-right: 24px;
+        }
+        .el-date-editor{
+            width: 264px;
+        }
     }
-
+    .searchCreaterId{
+        .el-form-item__label{
+            padding-right: 24px;
+        }
+        .el-input{
+            width: 174px;
+        }
+    }
+    .searchApprovalmanId{
+        .el-form-item__label{
+            padding-right: 24px;
+        }
+        .el-input{
+            width: 174px;
+        }
+    }
+    .searchCreaterArea,.searchBusinessCode{
+        .el-input{
+            width: 174px;
+        }
+    }
+    .windowInput{
+        input{
+            background: #f5f5f5;
+        }
+    }
+    .el-form-item__label,.el-form-item__content,.el-input__inner {
+        color: #666666;
+        font-size: 12px !important;
+    }
+    .btn-group{
+        float: right;
+        margin-right:8px; 
+    }
 }
-
-/* 范围输入框 */
+.el-select-dropdown__item{
+    font-size: 12px !important;
+    color: #666666;
+}
+.selected{
+    color: #3B74FF;
+}
+// /* 范围输入框 */
 .input-more {
     .input-row {
         .line {
@@ -328,7 +440,6 @@ export default {
         }
 
     }
-
     .el-form-item {
         margin-right: unset;
     }
@@ -341,16 +452,5 @@ export default {
         }
     }
 
-}
-
-/* 设计规范 输入框 选择框宽度 */
-@each $i in 360,
-217,
-166,
-124,
-94 {
-    .input-type-#{$i} {
-        width: #{$i}px;
-    }
 }
 </style>

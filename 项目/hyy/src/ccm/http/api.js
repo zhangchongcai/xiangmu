@@ -1,5 +1,5 @@
 import axios from 'axios'; //引入 axios
-import config from "../../frame_cpm/http/config"; //倒入默认配置
+import config from "./config"; //导入默认配置
 import qs from 'qs'; //序列化数据，视服务端的要求
 import store from "../../frame_cpm/vuex/index";
 import md5 from 'js-md5';
@@ -50,11 +50,13 @@ export default function $axios(options) {
     return new Promise((resolve, reject) => {
         const instance = axios.create({
             baseURL: config.baseURL,
+            responseType : 'blob',
             headers: {},
             transformResponse: [function(data) {}]
         });
         instance.interceptors.request.use(
             (config) => {
+            
                 if (store.state.loginToken) {
                     config.headers['Authorization'] = store.state.loginToken;
                 }
@@ -66,13 +68,13 @@ export default function $axios(options) {
                     config.headers['Cpm-User-Token'] = localStorage.getItem('token');
                 }
                 //根据请求方法，序列化传来的参数，根据后端需求是否序列化
-                if (
-                    config.method.toLocaleLowerCase() === 'post' ||
-                    config.method.toLocaleLowerCase() === 'put' ||
-                    config.method.toLocaleLowerCase() === 'delete'
-                ) {
+                // if (
+                //     config.method.toLocaleLowerCase() === 'post' ||
+                //     config.method.toLocaleLowerCase() === 'put' ||
+                //     config.method.toLocaleLowerCase() === 'delete'
+                // ) {
                     // config.data = qs.stringify(config.data);
-                }
+                // }
                 // 请求开始显示loading方法 需要先判断是否为影片和影院的请求
                 // if(config.url.indexOf('movie') != -1 || config.url.indexOf('cinema') != -1) {
                 //     showFullScreenLoading()
@@ -115,40 +117,40 @@ export default function $axios(options) {
                 // if(response.config.url.indexOf('movie') != -1 || response.config.url.indexOf('cinema') != -1) {
                 //     tryHideFullScreenLoading()
                 // }
-                let data;
-                //IE9 时 response.data 是 undefined， 因此需要使用 response.request.responseText(Stringify后的字符串)
-                if (response.data == undefined) {
-                    data = JSON.parse(response.request.responseText);
-                } else {
-                    data = response.data;
-                }
+                // let data;
+                // //IE9 时 response.data 是 undefined， 因此需要使用 response.request.responseText(Stringify后的字符串)
+                // if (response.data == undefined) {
+                //     data = JSON.parse(response.request.responseText);
+                // } else {
+                //     data = response.data;
+                // }
 
                 // let result = null ;
                 //根据返回的code值来做不同的处理(和后端约定)
-                switch (data.code) {
-                    case 200:
-                        return data;
-                        break;
-                    case 514:
-                        return Promise.reject();
-                        break;
-                    case 444:
-                        // alert(data.msg);
-                        Message({
-                            message: data.msg,
-                            type: 'warning'
-                        });
-                        window.location.href = '#/login';
-                        break;
-                    default:
-                        // alert(data.msg);
-                        Message({
-                            message: data.msg,
-                            type: 'warning'
-                        });
-                        return Promise.reject();
-                        break;
-                }
+                // switch (data.code) {
+                //     case 200:
+                //         return data;
+                //         break;
+                //     case 514:
+                //         return Promise.reject();
+                //         break;
+                //     case 444:
+                //         // alert(data.msg);
+                //         Message({
+                //             message: data.msg,
+                //             type: 'warning'
+                //         });
+                //         window.location.href = '#/login';
+                //         break;
+                //     default:
+                //         // alert(data.msg);
+                //         Message({
+                //             message: data.msg,
+                //             type: 'warning'
+                //         });
+                //         return Promise.reject();
+                //         break;
+                // }
                 //若不是正确的返回code，且已登录，就显示错误
                 // const err = new Error(data.description);
                 // err.data = data ;

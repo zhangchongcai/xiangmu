@@ -2,35 +2,33 @@
   <div>
     <dialogWarp :dialogVisible="dialogVisible" name="会员卡政策" @crmDialogOutputFlag="handleCrmDialogFlag">
       <el-form :inline="true" :model="formData" ref="formData" class="form-data-wrap">
-          <el-form-item label="政策名称：" prop="cardProductName">
-            <el-input v-model="formData.cardProductName" placeholder="政策名称" clearable maxlength="30"></el-input>
-          </el-form-item>
-          <el-form-item label="政策编号：" prop="cardProductNo">
-            <el-input v-model="formData.cardProductNo" placeholder="政策编号" clearable maxlength="30"></el-input>
-          </el-form-item>
-          <el-form-item class="btn-wrap">
-            <el-button type="primary" @click="handleSearch" class="el-btn-custom">搜索</el-button>
-            <el-button @click="resetForm('formData')" class="el-btn-custom">重置</el-button>
-          </el-form-item>
-        </el-form>
+        <el-form-item label="政策名称：" prop="cardProductName">
+          <el-input v-model="formData.cardProductName" placeholder="政策名称" clearable maxlength="30"></el-input>
+        </el-form-item>
+        <el-form-item label="政策编号：" prop="cardProductNo">
+          <el-input v-model="formData.cardProductNo" placeholder="政策编号" clearable maxlength="30"></el-input>
+        </el-form-item>
+        <el-form-item class="btn-wrap">
+          <el-button type="primary" @click="handleSearch" class="_el-btn-custom">搜索</el-button>
+          <el-button @click="resetForm('formData')" class="_el-btn-custom">重置</el-button>
+        </el-form-item>
+      </el-form>
       <div class="_crm-card-type-dialog-wrap">
         <div class="_m-member-table-custom">
-          <el-table ref="multipleTable" :empty-text="tipMessage" :data="tableData" stripe style="width: 100%" @select="handleSelect" @select-all="handleSelect"
-            :row-key="getRowKeys">
+          <el-table ref="multipleTable" :empty-text="tipMessage" :data="tableData" stripe style="width: 100%" @select="handleSelect"
+            @select-all="handleSelect" :row-key="getRowKeys">
             <el-table-column type="selection" width="55" :reserve-selection="true">
             </el-table-column>
-            <el-table-column prop="productNo" :formatter="emptyShow" label="政策编号" min-width="120"
-              show-overflow-tooltip></el-table-column>
-            <el-table-column prop="cardName" :formatter="emptyShow" label="政策名称" min-width="120"
-              show-overflow-tooltip></el-table-column>
+            <el-table-column prop="productNo" :formatter="emptyShow" label="政策编号" min-width="120" show-overflow-tooltip></el-table-column>
+            <el-table-column prop="cardName" :formatter="emptyShow" label="政策名称" min-width="120" show-overflow-tooltip></el-table-column>
           </el-table>
         </div>
         <!-- 分页 start -->
-    <div class="page-wrap">
-      <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="formData.current-0"
-        :page-size="formData.size-0" layout="prev, pager, next, jumper, sizes" :page-sizes="[20 , 50 , 100]" :total="total-0"></el-pagination>
-    </div>
-    <!-- 分页 end -->
+        <div class="page-wrap">
+          <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="formData.current-0"
+            :page-size="formData.size-0" layout="total, sizes, prev, pager, next, jumper" :page-sizes="[20 , 50 , 100]" :total="total-0"></el-pagination>
+        </div>
+        <!-- 分页 end -->
       </div>
     </dialogWarp>
   </div>
@@ -42,14 +40,14 @@ export default {
   data() {
     return {
       tipMessage: "",
-      total:0,
+      total: 0,
       // 查询卡政策的数据
       formData: {
         cardProductName: "", //政策名称
-        cardProductNo: "",//政策编号：
+        cardProductNo: "", //政策编号：
         cardType: "", //卡类型
         channelNo: "", //适用影院（渠道id）
-        status: "",
+        status: "start",
         current: 1,
         size: 20,
         tenantId: this.$store.state.loginUser.consumerId //租户id
@@ -64,8 +62,8 @@ export default {
   },
   props: {
     dialogVisible: {
-      type:Boolean,
-      default:false
+      type: Boolean,
+      default: false
     },
     innerData: {
       // 默认查询的基础数据（查询条件）
@@ -123,7 +121,7 @@ export default {
       this.formData.current = val;
       this.search();
     },
-     // 搜索自有权益
+    // 搜索自有权益
     search() {
       let params = JSON.parse(JSON.stringify(this.formData));
       this.tipMessage = "数据加载中...";
@@ -140,7 +138,11 @@ export default {
           this.rowMultipleChecked(this.multipleSelectionItem);
         })
         .catch(err => {
-          this.tipMessage = err.message;
+          if (err && err.msg) {
+            this.tipMessage = err.msg;
+          } else {
+            this.tipMessage = "系统繁忙，请稍后重试！";
+          }
         });
     },
     //数据为空格式化
@@ -153,9 +155,7 @@ export default {
     //单一数据toggle
     rowOneToggle(row) {
       for (let index = 0; index < this.multipleSelectionItem.length; index++) {
-        if (
-          row.productNo == this.multipleSelectionItem[index].productNo
-        ) {
+        if (row.productNo == this.multipleSelectionItem[index].productNo) {
           this.multipleSelectionItem.splice(index, 1);
           return;
         }
@@ -165,9 +165,7 @@ export default {
     //单一数据add
     rowOneAdde(row) {
       for (let index = 0; index < this.multipleSelectionItem.length; index++) {
-        if (
-          row.productNo == this.multipleSelectionItem[index].productNo
-        ) {
+        if (row.productNo == this.multipleSelectionItem[index].productNo) {
           return;
         }
       }
@@ -176,9 +174,7 @@ export default {
     //单一数据reomove
     rowOneRemove(row) {
       for (let index = 0; index < this.multipleSelectionItem.length; index++) {
-        if (
-          row.productNo == this.multipleSelectionItem[index].productNo
-        ) {
+        if (row.productNo == this.multipleSelectionItem[index].productNo) {
           this.multipleSelectionItem.splice(index, 1);
           return;
         }
@@ -230,7 +226,6 @@ export default {
         whereUse: this.whereUse,
         data: this.callBackData
       };
-      console.log("selectedData", selectedData);
       this.$emit("crmCardPolicyDialogCallBack", selectedData);
     }
   }

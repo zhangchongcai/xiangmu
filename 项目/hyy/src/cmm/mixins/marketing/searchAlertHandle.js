@@ -1,7 +1,7 @@
 // 支付方式
 import cinemaDialog from "cmm/dialogs/cinema/cinemaDialog.vue"; //影院弹窗
 import userDialog from "cmm/dialogs/user/userDialog.vue"; //用户弹窗
-import orgStructureDialog from "cmm/dialogs/orgStructure/orgStructureDialog.vue"; //组织结构弹窗
+import orgStructureDialog from "cmm/dialogs/orgStructure/orgStructureSingleDialog.vue"; //组织结构单个节点多选弹窗
 
 
 
@@ -29,22 +29,22 @@ let alertHandle = {
             //组织结构弹窗
             orgStructureDialog: {
                 orgStructureDialogVisible: false,
-                title: "组织结构弹窗",
+                title: "选择组织结构",
             },
             //影院弹窗
             cinemaDialog: {
                 cinemaDialogVisible: false,
-                title: "影院弹窗",
+                title: "选择适用影院",
             },
             //审批人用户弹窗
             userApprovalDialog: {
                 userApprovalDialogVisible: false,
-                title: "审批人用户弹窗",
+                title: "选择审批人",
             },
             //创建人用户弹窗
             userCreaterDialog: {
                 userCreaterDialogVisible: false,
-                title: "创建人用户弹窗",
+                title: "选择创建人",
             }
 
         }

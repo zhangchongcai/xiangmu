@@ -1,6 +1,6 @@
 <template>
   <div class="my_dialog">
-    <el-dialog :title="title" :visible.sync="mydialogTableVisible">
+    <el-dialog :title="title" :close-on-click-modal="false" :visible.sync="mydialogTableVisible">
       <el-form label-width="" :inline="true">
         <div style="position:relative">
           <el-form-item label="品牌编码" class="two_search">
@@ -100,7 +100,7 @@ import {findBrandList} from "cim/http/cim/basicSettings.js"
             let valueArr = []
             this.chooseItem.forEach(item => {
                 textArr.push(item.name)
-                valueArr.push(item.code)
+                valueArr.push(item.uid)
             })
             let data = {
               whereUse : '',

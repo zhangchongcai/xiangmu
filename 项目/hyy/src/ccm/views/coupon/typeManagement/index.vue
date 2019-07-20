@@ -247,7 +247,7 @@ export default {
             let deleteId = data.id;
             let ticketName = data.couponName;
             let ticketType = data.couponType == '0' ? '兑换券' : data.couponType == '2' ? '优惠券' : '代金券';
-            pointer.$confirm(`确定删除${ticketType}(${ticketName})`, '提示')
+            pointer.$confirm(`确定删除${ticketType}(${ticketName})`, '提示',{type:'warning'})
                 .then(_ => {
                     pointer.sendDeleteItem([`${deleteId}`]);
                 }).catch(_ => {});
@@ -273,13 +273,22 @@ export default {
                     type: 'warning'
                 });
             }
+            let message = multipleSelection.length>1? '批量':''
+                //     .$confirm(msg, "提示", {
+                //   confirmButtonText: "确定",
+                //   cancelButtonText: "取消",
+                //   type: "warning"
+                // })
+            pointer.$confirm(`确认${message}删除?`, '提示',{type:'warning'})
+                .then(_ => {
+                    let deleteArray = [];
+                    for (let i = 0; i < multipleSelection.length; i++) {
+                        deleteArray.push(multipleSelection[i].id);
+                    }
+                    pointer.sendDeleteItem(deleteArray);
+                }).catch(_ => {});
 
-            let deleteArray = [];
-            for (let i = 0; i < multipleSelection.length; i++) {
-                deleteArray.push(multipleSelection[i].id);
-            }
-
-            pointer.sendDeleteItem(deleteArray);
+            
         },
         /**
          * @function sendDeleteItem - 发送删除项

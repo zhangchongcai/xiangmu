@@ -1,6 +1,6 @@
 <template>
 <div>
-    <el-dialog :title="dialog.title" :visible.sync="dialog.visible" :width="dialog.width">
+    <el-dialog :title="dialog.title" :visible.sync="dialog.visible" :width="dialog.width" :close-on-click-modal="false">
         <!-- 搜索栏 -->
         <searchLan class="margin-bottom-10" :modelName="searchConfig.name" :config="searchConfig.elements" :searchLevelButton="searchConfig.isShowLevel" @pressSearch="search" @searchValueChange="setSearch"></searchLan>
         <!-- 表格内容 -->

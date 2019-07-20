@@ -39,6 +39,7 @@ export default {
     }
 }
 
+
 /* 此样式用于查看时规范样式 */
 .isTableCheck {
     $font-color: #666666;
@@ -168,4 +169,9 @@ export default {
 .bottom-control-group {
         margin-bottom: 100px;
     }
+    //实在无法改动的全局样式
+.el-select-dropdown__item {
+    font-size: 12px !important;
+    font-family: "MicrosoftYaHei" !important;
+}
 </style>

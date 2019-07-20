@@ -30,8 +30,8 @@ tableOptions:{  label:"操作",
 -->
 
 <template>
-<div>
-    <el-table :data="tableData" stripe border style="width: 100%" @selection-change="handleSelectionChange">
+<div class="commonTable">
+    <el-table :data="tableData" stripe border style="width: 100%" @selection-change="handleSelectionChange" :height="tableData.length > 10 ? 501 : 46*tableData.length+41">
 
         <!-- 多选框 -->
         <el-table-column v-if="selection" type="selection" width="100">
@@ -39,17 +39,28 @@ tableOptions:{  label:"操作",
 
         <!-- 数据列 -->
         <template v-for="(item,index) in tableLabels">
-            <el-table-column :key="index" v-if="item.hasTemplate" :prop="item.prop?item.prop:''" :label="item.label?item.label:''" :width="item.width?item.width:''" :fixed="item.fixed?item.fixed:''" :sortable="item.sortable?item.sortable:false">
+            <el-table-column :key="index" v-if="item.hasTemplate" :prop="item.prop?item.prop:''" :label="item.label?item.label:''" :width="item.width?item.width:''" :fixed="item.fixed?item.fixed:false" :sortable="item.sortable?item.sortable:false">
 
                 <template slot-scope="scope" v-if="item.formatRole">
-                    {{item.formatRole(scope)}}
+                    <div v-if="item.prop=='approvalResult'&&scope.row.approvalResult==2" style="font-size:12px;color:#739BFF;">
+                        {{item.formatRole(scope)}}
+                    </div>
+                    <div v-else-if="item.prop=='approvalResult'&&scope.row.approvalResult==3" style="font-size:12px;color:#2DBC2D;">
+                        {{item.formatRole(scope)}}
+                    </div>
+                    <div v-else-if="item.prop=='approvalResult'&&scope.row.approvalResult==4" style="font-size:12px;color:#F33430;">
+                        {{item.formatRole(scope)}}
+                    </div>
+                    <template v-else>
+                        {{item.formatRole(scope)}}
+                    </template>
                 </template>
             </el-table-column>
-            <el-table-column :key="index" v-else :prop="item.prop?item.prop:''" :label="item.label?item.label:''" :width="item.width?item.width:''" :fixed="item.fixed?item.fixed:''"></el-table-column> -->
+            <el-table-column :key="index" v-else :prop="item.prop?item.prop:''" :label="item.label?item.label:''" :width="item.width?item.width:''" :fixed="item.fixed?item.fixed:false"></el-table-column> -->
         </template>
 
         <!-- 操作列 -->
-        <el-table-column :label="tableOptions.label?tableOptions.label:''" :fixed="tableOptions.fixed?tableOptions.fixed:''">
+        <el-table-column :label="tableOptions.label?tableOptions.label:''" :fixed="tableOptions.fixed?tableOptions.fixed:false" :min-width="tableOptions.width?tableOptions.width:''">
             <template slot-scope="scope">
                 <div v-if="tableOptions.options.length<=3">
                     <div v-for="(btn,index) in options" :key="index">
@@ -58,15 +69,15 @@ tableOptions:{  label:"操作",
                 </div>
                 <div v-else>
                     <span v-for="(btn,index) in options" :key="index">
-                            <el-button v-if="btn.condition(scope)"  type="text" @click="handleButton(btn.method,scope)">{{btn.text}}</el-button>
-                        </span>
-                    <el-dropdown trigger="click" @command="handleCommand">
+                        <el-button v-if="btn.condition(scope)"  type="text" @click="handleButton(btn.method,scope)">{{btn.text}}</el-button>
+                    </span>
+                    <el-dropdown trigger="click" @command="handleCommand" >
                         <span class="el-dropdown-link">
-                                更多<i class="el-icon-arrow-down el-icon--right"></i>
-                            </span>
+                            更多<i class="el-icon-arrow-down el-icon--right"></i>
+                        </span>
                         <el-dropdown-menu slot="dropdown">
                             <template v-for="(op,index) in moreOptions">
-                                 <el-dropdown-item v-if="op.condition(scope)" :key='index' :command="composeValue(op,scope)">{{op.text}}</el-dropdown-item>
+                                <el-dropdown-item v-if="op.condition(scope)" :key='index' :command="composeValue(op,scope)">{{op.text}}</el-dropdown-item>
                             </template>
                         </el-dropdown-menu>
                     </el-dropdown>
@@ -74,7 +85,6 @@ tableOptions:{  label:"操作",
 
             </template>
         </el-table-column>
-
     </el-table>
 </div>
 </template>
@@ -116,16 +126,21 @@ export default {
         }
     },
     created() {
-        if (this.tableOptions && this.tableOptions.options) {
-            if (this.tableOptions.options.length > 4) {
-                this.options = this.tableOptions.options.slice(0, 4);
-                this.moreOptions = this.tableOptions.options.slice(4, this.tableOptions.options.length);
-            } else {
-                this.options = this.tableOptions.options;
-            }
-        }
+        console.log("this.tableOptions.options",this.tableOptions.options)
+        this.handleMoreOptions()
     },
     methods: {
+        //加载更多
+        handleMoreOptions(){
+            if (this.tableOptions && this.tableOptions.options) {
+                if (this.tableOptions.options.length > 4) {
+                    this.options = this.tableOptions.options.slice(0, 4);
+                    this.moreOptions = this.tableOptions.options.slice(4, this.tableOptions.options.length);
+                } else {
+                    this.options = this.tableOptions.options;
+                }
+            }
+        },
         handleButton(method, scope) {
             this.$emit('handleButton', {
                 method: method,
@@ -151,3 +166,29 @@ export default {
 
 }
 </script>
+<style lang="scss" scoped>
+    /deep/.commonTable{
+        .el-table__fixed-right-patch{
+            background: #e7ebff !important;
+        }
+    }
+    .el-dropdown-menu__item{
+        font-size: 12px;
+        color: #3B74FF;
+    }
+    .el-select-dropdown__item{
+        font-size: 12px !important;
+    }
+    .primary {
+        color: #409EFF;
+    }
+    .success {
+        color: #67C23A;
+    }
+    .danger {
+        color: #F56C6C;
+    }
+    .warning {
+        color: #FEC107;
+    }
+</style>

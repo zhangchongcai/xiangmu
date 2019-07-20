@@ -1,117 +1,141 @@
 <template>
   <div class="content">
-    <div class="breadcrumb">
+    <!-- <div class="breadcrumb">
       <el-breadcrumb separator-class="el-icon-arrow-right">
-        <el-breadcrumb-item to @click.native="handleCancel">库存管理</el-breadcrumb-item>
-        <el-breadcrumb-item to>盘点方案管理</el-breadcrumb-item>
+        <el-breadcrumb-item  :to="{ path: '/retail/InventoryManagement/inventoryPlan/list' }">盘点方案管理</el-breadcrumb-item>
         <el-breadcrumb-item>{{typeText}}盘点方案</el-breadcrumb-item>
       </el-breadcrumb>
-    </div>
-    {{this.$route.query.type}}
+    </div> -->
     <div class="tittle"></div>
     <el-form
       :inline="true"
       :model="queryData"
+      ref="ruleForm"
       label-position="left"
       label-width="100px"
       label-suffix=":"
       :rules="changeRules"
     >
-      <!-- 基础信息 start-->
-      <div>
-        <div class="sub-tittle">基础信息</div>
-        <el-row>
-          <el-col :span="8">
-            <el-form-item label="门店名称" class="select-input">
-              <el-input v-model="queryData.cinemaUid" placeholder="请选择门店"></el-input>
-              <el-button @click="selectCinemalDialog">选择</el-button>
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="方案名称">
-              <span v-if="routeQuery.type==3">{{queryData.caseName}}</span>
-              <el-input
-                v-model="queryData.caseName"
-                v-else
-                placeholder="请输内容"
-                prefix-icon="el-icon-search"
-              ></el-input>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="12">
-            <el-form-item prop="remarks" label="方案描述">
-              <span v-if="routeQuery.type==3">{{queryData.remarks}}</span>
-              <el-input
-                type="textarea"
-                placeholder="请输入"
-                v-else
-                class="remark-input"
-                v-model="queryData.remarks"
-              ></el-input>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </div>
+    <el-collapse  v-model="activeNames">
+      <!-- 基础信息 start retail/InventoryManagement/inventoryPlan/list-->
+      <el-collapse-item title="基础信息" name="1">
+        <div>
+          <el-row>
+            <el-col :span="10">
+              <el-form-item 
+                label="门店名称" 
+                class="select-input"
+                prop="cinemaName"
+                :rules="[{ required: routeQuery.type==3 ? false : true, message: '选择门店',trigger: 'change' }]"
+                >
+                <template v-if="routeQuery.type=='1'">     
+                  <el-input
+                          v-model="queryData.cinemaName"
+                          clearable
+                          @clear="onCinemalSumit"
+                          @focus="selectCinemalDialog"
+                          placeholder="请选择门店"
+                  ></el-input>
+                  <el-button @click="selectCinemalDialog" type="primary cinemaSel-btn" plain>选择</el-button>
+                </template>
+                <span v-else>{{this.queryData.cinemaName}}</span>
+              </el-form-item>
+            </el-col>
+            <el-col :span="10">
+              <el-form-item 
+                label="方案名称"
+                prop="caseName"
+                :rules="[{ required: routeQuery.type==3 ? false : true, message: '请输入方案名称',trigger: 'change' }]"
+                >
+                <span v-if="routeQuery.type==3">{{queryData.caseName}}</span>
+                <el-input
+                  v-model="queryData.caseName"
+                  v-else
+                  placeholder="请输内容"
+                  prefix-icon="el-icon-search"
+                ></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col >
+              <el-form-item prop="remarks" label="方案描述">
+                <span v-if="routeQuery.type==3">{{queryData.remarks}}</span>
+                <el-input
+                  type="textarea"
+                  placeholder="请输入"
+                  v-else
+                  class="remark-input"
+                  v-model="queryData.remarks"
+                ></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </div>
+      </el-collapse-item>
       <!-- 基础信息 end-->
 
       <!-- 商品清单 start-->
-      <div>
-        <div class="text-right" v-if="routeQuery.type!=3">
-          <el-button @click="selectedGoodsDialogVisible=true">添加商品</el-button>
+      <el-collapse-item title="商品清单" name="2">
+        <div>
+          <div class="text-right" v-if="routeQuery.type!=3">
+            <!-- <el-button @click="addgoodsEvent">添加商品</el-button> -->
+              <button @click="addgoodsEvent" type="button" class="el-button el-button--primary is-plain">
+                <span>添加商品</span>
+              </button>
+          </div>
+          <el-table :data="goodList" height="300" stripe>
+            <el-table-column
+              v-for="item in tableColumn"
+              :key="item.key"
+              :prop="item.key"
+              :label="item.label"
+              :formatter="item.formatter"
+            >
+
+              <template slot-scope="{row}" name="header">
+                <div v-if="item.edit">
+                  <el-input size="small" v-model="row[item.key]" placeholder></el-input>
+                </div>
+                <div v-else-if="item.selsect">
+                  <el-select  v-model="row[item.key]">
+                    <el-option key="0" label="瓶" value="0"></el-option>
+                    <el-option key="1" label="箱" value="1"></el-option>
+                  </el-select>
+                </div>
+                <div v-else>
+                  <span>{{row[item.key]}}</span>
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" style="width:180px;" v-if="routeQuery.type!=3">
+              <template slot-scope="{row,$index}">
+                <el-button 
+                  type="text" 
+                  size="small" 
+                  @click.stop="handleOperateEvent(row,$index)"
+                  >删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
         </div>
-        <div class="sub-tittle">盘点商品清单</div>
-        <el-table :data="goodList" height="300" stripe>
-          <el-table-column
-            v-for="item in tableColumn"
-            :key="item.key"
-            :prop="item.key"
-            :label="item.label"
-            :formatter="item.formatter"
-          >
-
-            <template slot-scope="{row}" name="header">
-              <div v-if="item.edit">
-                <el-input size="small" v-model="row[item.key]" placeholder></el-input>
-              </div>
-              <div v-else-if="item.selsect">
-                 <el-select  v-model="row[item.key]">
-                  <el-option key="0" label="瓶" value="0"></el-option>
-                  <el-option key="1" label="箱" value="1"></el-option>
-                </el-select>
-              </div>
-              <div v-else>
-                <span>{{row[item.key]}}</span>
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" style="width:180px;" v-if="routeQuery.type!=3">
-            <template slot-scope="{row,$index}">
-              <el-button 
-                type="text" 
-                size="small" 
-                @click.stop="handleOperateEvent(row,$index)"
-                >删除</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
+      </el-collapse-item>
       <!-- 商品清单 end-->
-
+    </el-collapse>
       <!-- 选择影院弹窗 -->
-      <cinemal-dialog ref="myCinemalDialog"></cinemal-dialog>
+    <cinemal-dialog ref="myCinemalDialog" @onSumit="onCinemalSumit"></cinemal-dialog>
       <!-- 选择供应商弹窗 -->
       <suppliers-dialog ref="mySuppliersDialog"></suppliers-dialog>
       <!-- 选择商品 -->
       <selected-goods
         :dialogVisible.sync="selectedGoodsDialogVisible"
         :dialogFeedbackData="goodList"
+        :cinemaUid="queryData.cinemaUid"
         @cimSelectedGoodsDialogCallBack="selectedGoodsDialogCallBack"
       ></selected-goods>
       <div class="submit-box">
-        <el-button type="primary" @click="handleSubmit" v-if="routeQuery.type!=3">确认</el-button>
-        <el-button @click="handleCancel">取 消</el-button>
+        <el-button type="primary" @click="handleSubmit" v-if="routeQuery.type!=3">保存</el-button>
+        <el-button @click="handleCancel">{{routeQuery.type!=3 ? "取 消":"关闭"}}</el-button>
       </div>
     </el-form>
   </div>
@@ -128,11 +152,13 @@ export default {
   mixins: [mixin],
   data() {
     return {
+      activeNames:['1','2','3'],
       selectedGoodsDialogVisible:false,
       goodList:[],
       //查询数据
       queryData: {
-        cinemaUid:"111111",
+        cinemaUid:"",
+        cinemaName:"",
         pageSize: 10,
         page: 1,
         remarks:"",
@@ -162,12 +188,12 @@ export default {
           key: "merName"
         },
         {
-          label: "商品规格",
-          key: "merSpec"
-        },
-        {
           label: "SKU编码",
           key: "skuCode"
+        },
+        {
+          label: "商品规格",
+          key: "merSpec"
         },
         {
           label: "基本单位",
@@ -198,8 +224,9 @@ export default {
   },
   methods: {
     init() {
-      if(this.$route.query.type != "1"){
+      if(this.$route.query.type != 1){
         this.queryData.cinemaUid = JSON.parse(this.routeQuery.data).cinemaUid
+        this.queryData.cinemaName = JSON.parse(this.routeQuery.data).cinemaName
         this.queryData.remarks = JSON.parse(this.routeQuery.data).remarks
         this.queryData.uid = JSON.parse(this.routeQuery.data).uid
         this.queryData.caseName = JSON.parse(this.routeQuery.data).caseName
@@ -222,33 +249,43 @@ export default {
           }
         });
     },
+    addgoodsEvent(){
+       if (!this.queryData.cinemaUid) {
+            this.$message({
+                message: "请选择一个门店!"
+            });
+            return;
+        }
+        this.selectedGoodsDialogVisible = true
+    },
     handleOperateEvent(row,index) {
       this.goodList.splice(index, 1)
       console.log(this.goodList)
     },
     // 新增事件
     handleSubmit() {
-      this.queryData.checkSolutionMerEntityList = this.chuliGoodSelected(this.goodList)
-      if(this.routeQuery.type == "1"){
-        if(this.queryData.checkSolutionMerEntityList.length == 0 ){
-          this.$message("请添加商品");
+      this.$refs["ruleForm"].validate(valid => {
+        if (valid) {
+          this.queryData.checkSolutionMerEntityList = this.chuliGoodSelected(this.goodList)
+          if(this.routeQuery.type == "1"){
+            if(this.queryData.checkSolutionMerEntityList.length == 0 ){
+              this.$message("请添加商品");
+            }else{
+              this.resCheckSolutionSave(this.queryData)
+              this.handleCancel()
+            }
+          }else{
+            if(this.queryData.checkSolutionMerEntityList.length == 0 ){
+              this.$message("请添加商品");
+            }else{
+              this.resCheckSolutionUpdate(this.queryData)
+              this.handleCancel()
+            }
+          }
         }else{
-          this.resCheckSolutionSave(this.queryData)
-          this.$router.go(-1)
+          return false;
         }
-      }else{
-        if(this.queryData.checkSolutionMerEntityList.length == 0 ){
-          this.$message("请添加商品");
-        }else{
-          this.resCheckSolutionUpdate(this.queryData)
-          this.$router.go(-1)
-        }
-      }
-      
-    },
-    //
-    handleCancel() {
-      this.$router.go(-1);
+      })  
     },
     saleCinemaType(type) {
       switch (type) {
@@ -263,12 +300,36 @@ export default {
           break;
       }
     },
-    selectedGoodsDialogCallBack(value) {
-      this.goodList = value.data;
-      console.log(value);
+    handleCancel() {
+      console.log(JSON.stringify(this.queryData))
+      this.returnList({
+        returnType:true,
+        cinema: JSON.stringify(this.queryData)
+      });
+    },
+    returnList(param) {
+      this.$router.push({
+        path: "list",
+        query: param
+      });
+    },
+    // 选泽门店回调
+    onCinemalSumit(val = []) {
+      if (val.length > 0) {
+        this.queryData.cinemaName = val[0].name;
+        this.queryData.cinemaUid = val[0].uid;
+      } else {
+        this.queryData.cinemaName = null;
+        this.queryData.cinemaUid = null;
+      }
+      console.log(val);
     },
     selectCinemalDialog() {
       this.$refs.myCinemalDialog.handleDialog(true);
+    },
+    selectedGoodsDialogCallBack(value) {
+      this.goodList = value.data;
+      console.log(value);
     },
     selectSuppliersDialog() {
       this.$refs.mySuppliersDialog.handleDialog(true);
@@ -302,7 +363,6 @@ export default {
             this.$message("新建成功");
           } else {
             this.$message(res.msg);
-            this.error(res.msg);
           }
         })
         .catch(err => {});
@@ -316,7 +376,6 @@ export default {
             this.$message("修改成功");
           } else {
             this.$message(res.msg);
-            this.error(res.msg);
           }
         })
         .catch(err => {});
@@ -414,9 +473,6 @@ export default {
 }
 .content {
   padding: 20px;
-  .el-form-item {
-    // margin-bottom: 10;
-  }
 }
 .tittle {
   font-weight: 900;
@@ -473,5 +529,8 @@ export default {
     float: right;
     top: 4px;
   }
+}
+.bigBox .el-dialog .el-dialog__body{
+  padding: 30px 20px;
 }
 </style>

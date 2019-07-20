@@ -1,0 +1,119 @@
+.ctm {
+  .el-form.el-form--inline.base-form {
+    .el-form-item__label {
+      line-height: 34px;
+    }
+
+    .el-cascader {
+      line-height: 32px;
+    }
+
+    .el-form-item__content {
+      line-height: 32px;
+    }
+
+    .el-form-item {
+      margin-right: 32px;
+      margin-bottom: 24px;
+    }
+
+    .el-input {
+      width: 192px;
+    }
+
+    .el-date-editor--daterange.el-input,
+    .el-date-editor--daterange.el-input__inner,
+    .el-date-editor--timerange.el-input,
+    .el-date-editor--timerange.el-input__inner {
+      width: 256px;
+    }
+  }
+
+  .el-form.base-form {
+
+    // .el-form-item {
+    //   margin-bottom: 24px;
+    // }
+    .el-date-editor .el-range__close-icon {
+      line-height: 24px;
+    }
+
+    .el-input {
+      width: 192px;
+    }
+
+    .el-date-editor--daterange.el-input,
+    .el-date-editor--daterange.el-input__inner,
+    .el-date-editor--timerange.el-input,
+    .el-date-editor--timerange.el-input__inner {
+      width: 256px;
+    }
+
+    .el-textarea {
+      width: 192px;
+    }
+
+    .el-textarea__inner {
+      font-size: 12px;
+    }
+
+    .el-date-editor .el-range__icon {
+      line-height: 24px;
+    }
+
+    .el-date-editor .el-range-separator {
+      line-height: 24px;
+      width: 8%;
+    }
+
+    .el-form-item__label {
+      font-size: 12px;
+      color: #333333;
+      // text-align: left;
+      padding-right: 8px;
+    }
+
+    .el-input__inner {
+      font-size: 12px;
+    }
+
+    .el-cascader__label {
+      font-size: 12px;
+    }
+
+    .el-radio__label {
+      font-size: 12px;
+    }
+
+    .el-checkbox__label {
+      font-size: 12px;
+    }
+
+    .el-range-editor {
+      .el-range-input {
+        font-size: 12px;
+      }
+    }
+
+    .el-button {
+      font-size: 12px !important;
+    }
+
+    .el-date-editor .el-range-separator {
+      font-size: 12px;
+    }
+  }
+
+  .el-collapse {
+
+    .el-collapse-item__header::after {
+      height: 0;
+      width: 0;
+      background: transparent;
+    }
+
+    .el-collapse-item__content {
+      padding-bottom: 0;
+    }
+  }
+}

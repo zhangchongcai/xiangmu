@@ -1,17 +1,26 @@
 <template>
-  <el-select v-model="warehouseValue" placeholder="请选择" @focus="getWarehouseData">
-    <el-option label="全部" value></el-option>
+  <el-select
+    popper-class="rpt-select"
+    v-model="warehouseValue"
+    placeholder="请选择"
+    @focus="getWarehouseData"
+  >
     <el-option v-for="item in warehouseData" :key="item.code" :label="item.name" :value="item.code"></el-option>
   </el-select>
 </template>
 
 <script>
+import mixins from "src/frame_cpm/mixins/cacheMixin.js";
 export default {
+  mixins: [mixins.cacheMixin],
   props: {
-    cenimaUid: String
+    cenimaUid: String,
+    resetStatus: Boolean
   },
   data() {
     return {
+      cacheField: ["warehouseValue"],
+      subComName: "wareHouse",
       warehouseValue: "",
       warehouseData: []
     };
@@ -19,7 +28,7 @@ export default {
   methods: {
     getWarehouseData() {
       this.$rptList
-        .checkBillStorehouse({ uid: this.cenimaUid })
+        .checkBillStorehouse({ cenimaUid: this.cenimaUid })
         .then(res => {
           if (res.code === 200) {
             this.warehouseData = res.data;
@@ -34,8 +43,15 @@ export default {
   },
   watch: {
     warehouseValue(val) {
-        console.log(val)
+      console.log(val);
       this.$emit("selectWarehouseData", val);
+    },
+    resetStatus(newVal) {
+      if (newVal) {
+        this.warehouseValue = "";
+        this.usefulData = [];
+        this.usefulObj = {};
+      }
     }
   }
 };

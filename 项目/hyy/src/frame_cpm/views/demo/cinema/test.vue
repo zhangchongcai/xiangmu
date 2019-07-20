@@ -1,41 +1,97 @@
 <template>
   <div class="page-wrapper">
-    <crmCardTypeDialog @crmCardTypeDialogCallBack="handleCallback1" :reviewData="huixianData1" :dialogVisible.sync="dialogVisible2" />
-    <el-button type="primary" @click="()=>{dialogVisible2=true}">会员卡政策</el-button>
+    <frameMulticinema @frameCinemaDialogCallBack="handleCallback" 
+    :reviewData="huixianData" 
+    :dialogVisible.sync="dialogVisible" 
+    :whereUse="whereUse"
+    :innerCinemaMultiData="innerData"
+    :disabledData="disabledData"/>
+    <el-button type="primary" @click="handleSelect(1)">影院1</el-button>
+    <div>
+      <el-tag v-for="item in selectedCinama1" :key="item.id">{{item.fullName}}</el-tag>
+    </div>
+    <el-button type="primary" @click="handleSelect(2)">影院2</el-button>
+     <div>
+      <el-tag v-for="item in selectedCinama2" :key="item.id">{{item.fullName}}</el-tag>
+    </div>
+    <el-button type="primary" @click="handleSelect(3)">影院3</el-button>
+     <div>
+      <el-tag v-for="item in selectedCinama3" :key="item.id">{{item.fullName}}</el-tag>
+    </div>
   </div>
 </template>
 
 <script>
-import crmCardTypeDialog from "frame_cpm/dialogs/film/testdialog.vue";
-import { userList, resetPassword, orgList } from "frame_cpm/http/interface.js";
+import frameMulticinema from "frame_cpm/dialogs/cinemaDialog/multiCinema2.vue";
 export default {
-  name: "userList",
+  name: "cinemaDialogDemo",
    components: {
-    crmCardTypeDialog,
+    frameMulticinema,
   },
   data() {
     return {
-      dialogVisible1: false,
-      dialogVisible2: false,
-      dialogVisible3: false,
-      huixianData1: [],
-      huixianData2: [],
-      huixianData3: []
+      dialogVisible: false,
+      huixianData: [],
+      disabledData: [],
+      whereUse:undefined,
+      innerData:{
+        // 1 所有影院  2 用户授权影院
+        type: 2
+      },
+      selectedCinama1: [],
+      selectedCinama2: [],
+      selectedCinama3: [],
     }
   },
   created() {
     // this.getUserList()
   },
   methods: {
-    handleCallback1(res) {
-      this.huixianData1 = res.data;
-      console.log(this.huixianData1)
+    handleSelect(index){
+      switch(index){
+        case 1:
+          this.whereUse=1
+          this.huixianData = this.selectedCinama1
+          this.disabledData= [ ...this.selectedCinama2, ...this.selectedCinama3]
+          console.log(this.disabledData)
+          break;
+        case 2:
+          this.whereUse=2
+          this.huixianData = this.selectedCinama2
+          this.disabledData= [...this.selectedCinama1, ...this.selectedCinama3]
+          console.log(this.disabledData)
+          break;
+        case 3:
+          this.whereUse=3
+          this.huixianData = this.selectedCinama3
+          this.disabledData= [...this.selectedCinama1, ...this.selectedCinama2]
+          console.log(this.disabledData)
+          break;  
+      }
+      this.dialogVisible=true
     },
-    handleCallback2(res) {
-      this.huixianData2 = res.data;
+    selectableFunc(row, index) {
+      if (row.disabled == true) {
+        return false;
+      } else {
+        return true;
+      }
     },
-    handleCallback3(res) {
-      this.huixianData3 = res.data;
+    handleCallback(res) {
+      switch (this.whereUse){
+        case 1:
+          this.selectedCinama1 = res.data;
+          this.disabledData= [...this.selectedCinama1, this.selectedCinama2, this.selectedCinama3]
+          break;
+        case 2:
+          this.selectedCinama2 = res.data;
+          this.disabledData= [...this.selectedCinama1, this.selectedCinama2, this.selectedCinama3]
+          break;
+        case 3:
+          this.selectedCinama3 = res.data;
+          this.disabledData= [...this.selectedCinama1, this.selectedCinama2, this.selectedCinama3]
+          break;    
+      }
     }
   }
 };

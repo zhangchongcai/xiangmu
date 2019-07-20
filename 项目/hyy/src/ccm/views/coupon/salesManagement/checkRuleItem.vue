@@ -221,9 +221,9 @@ export default {
                     let filmPlanTimeRangeVal = '全天';
                     if (filmPlanTimeRange) {
                         let keysObj = {
-                            MorningOperator: '上午',
-                            AfternoonOperator: '下午',
-                            NightOperator: '晚上',
+                            MorningOperator: '上午（09:00—12:59）',
+                            AfternoonOperator: '下午（13:00—16:59）',
+                            NightOperator: '晚上（17:00—02:00）',
                             TimeRangeContainOperator: '自定义：'
                         };
 
@@ -361,6 +361,7 @@ export default {
                 case 'exchange':
                     //  抵用金额方式
                     let moneyMethod = actions[`moneyMethod`];
+                    console.log("moneyMethod",moneyMethod)
                     if (moneyMethod) {
                         let opUniqueName = moneyMethod.value;
                         let keysObj = {
@@ -378,7 +379,7 @@ export default {
                         });
                     }
 
-                    if (moneyMethod.opUniqueName == 'sale_price') {
+                    if (moneyMethod.value == 'sale_price') {
                         // 加价金额
                         let addPriceValue = actions[`addPriceValue`];
                         if (addPriceValue) {
@@ -390,15 +391,24 @@ export default {
                         }
                     } else {
                         // 	低于零售价时，由'什么角色支付'
-                        let payer = actions[`payer `];
+                        let payer = actions[`payer`];
                         if (payer) {
                             let keysObj = {
                                 cinema: '影院',
-                                client: '客户'
+                                clientAll: '客户支付全部差额',
+                                client:'客户'
+
                             };
-                            let payerVal = keysObj[`${payer.value}`] + '支付';
-                            if (payer.value == 'client') {
-                                payerVal += `限额${actions[`payerPayAmount`].value}元`;
+                            console.log('keysObj----------===',payer)
+                            let payerVal = keysObj[`${payer.value}`] + `支付,`
+                            if (payer.value == 'cinema'){
+                                payerVal += `限额${actions[`payerPayAmount`].value}元后,再顾客补齐差额`;
+                            }else if (payer.value == 'client') {
+                                if(actions[`payerPayAmount`]){
+                                    payerVal += `限额${actions[`payerPayAmount`].value}元后，元后,再影院补贴补足差额`;
+                                }else{
+                                    payerVal = '客户支付全部差额'
+                                }
                             }
                             actionsArr.push({
                                 text: '低于零售价时，由',

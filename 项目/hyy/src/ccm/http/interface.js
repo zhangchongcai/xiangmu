@@ -1,5 +1,6 @@
 import axios from "frame_cpm/http/api.js"
 
+import exportEXLAxios from './api'
 /**
  * 将所有接口统一起来便于维护
  * 如果项目很大可以将 URL 独立成文件，接口分成不同的模块
@@ -394,7 +395,51 @@ export const findSaleList = (data) => {
         data
     })
 };
+/**
+ * 票务销售申请单管理 - 销售申请单提交审批
+ * 
+ * @function createAuditBill
+ * 
+ * @param {String} data.applyCode - 销售申请单号
+ */
 
+export const createAuditBill = (data) => {
+    return axios({
+        url: '/coupon/apply/createAuditBill',
+        method: 'post',
+        data
+    })
+}
+/**
+ * 票务销售申请单导出 - 销售申请单导出
+ * 
+ * @function couponExport
+ * 
+ * @param {String} applyCode - 销售申请单号
+ */
+export const couponExport = (data) => {
+    return exportEXLAxios({
+        url: '/coupon/apply/export?applyCode='+data.applyCode,
+        method: 'post',
+        data
+    })
+}
+/**
+ * 票务销售申请单管理 - 预生成编号单查询
+ * 
+ * @function findByStartAndNum
+ * 
+ * @param {incomeCinemaId} data.applyCode - 预生成编号单查询
+ * @param {startId} data.applyCode -
+ * @param {pageSize} data.applyCode - 
+ */
+export const findByStartAndNum = (data) => {
+    return axios({
+        url: '/coupon/code/findByStartAndNum',
+        method: 'post',
+        data
+    })
+}
 /**
  * 票务销售申请单管理 - 票券申请单作废
  * 
@@ -404,7 +449,7 @@ export const findSaleList = (data) => {
  */
 export const abandonSaleList = (data) => {
     return axios({
-        url: '/coupon/apply/cancle',
+        url: '/coupon/apply/cancel',
         method: 'post',
         data
     })
@@ -519,18 +564,40 @@ export const cancelCode = (data) => {
         data
     })
 }
-
 /**
+ *   票券编号查询统计
+ * 
+ * @function cancelCode 
+ * 
+ * @param {String} data.couponCode - 票券编号
+ */
+export const queryCodeListCount = (data) => {
+    return axios({
+        url: '/coupon/code/queryCodeListCount',
+        method: 'post',
+        data
+    })
+}
+/**      ---------------票版接口----------
  * @function findcouponPrintModelDef - 查看票券模板元素定义
  */
 export const findcouponPrintModelDef = (data) => {
     return axios({
-        url: '/couponPrint/findcouponPrintModelDef',
+        url: '/couponPrint/selectdef',
         method: 'get',
         data
     })
 }
-
+/**      ---------------票版接口----------couponPrint/selectmodel
+ * @function findcouponPrintModelDef - 查看票券模板元素定义
+ */
+export const selectmodel = (data) => {
+    return axios({
+        url: '/couponPrint/selectmodel',
+        method: 'post',
+        data
+    })
+}
 /**
  * 票卷批次记录弹窗
  * 
@@ -538,18 +605,40 @@ export const findcouponPrintModelDef = (data) => {
  */
 export const alertSaleList = (data) => {
     return axios({
-        url: '/coupon/apply/query',
+        url: 'coupon/apply/query',
         method: 'post',
         data
     })
 }
 
 /**
- * 票卷编号统计查询
+ *  组织结构树   用途  -入账影院
  * 
- * @function alertSaleList 
+ * @function getOrgTreeAndCinema 
+ * @param uid  -localStore use的uid
  */
 
+export const getOrgTreeAndCinema = (data) => {
+    return axios({
+        url: '/common/consumer/getOrgAndCinemaTree',
+        method: 'post',
+        data
+    })
+} 
+/**
+ *  组织结构树   用途  -交易客商
+ * 
+ * @function listBuyerCondition 
+ * @param uid  -localStore use的uid
+ */
+
+export const listBuyerCondition = (data) => {
+    return axios({
+        url: '/common/buyer/listBuyerCondition',
+        method: 'post',
+        data
+    })
+}
 export default {
     testGet,
     testPost,
@@ -579,6 +668,9 @@ export default {
     saleListCheckName,
     saleListSaveOrUpdate,
     abandonSaleList,
+    createAuditBill,
+    couponExport,
+    findByStartAndNum,
     stopSaleList,
     startSaleList,
     deleteSaleList,
@@ -589,10 +681,13 @@ export default {
     queryCodeList,
     cancelCode,
     exportTemplate,
-
+    queryCodeListCount,
     /* 票券模板 */
     findcouponPrintModelDef,
+    selectmodel,
 
     /* 票卷批次记录弹窗 */
-    alertSaleList
+    alertSaleList,
+    getOrgTreeAndCinema,
+    listBuyerCondition
 };

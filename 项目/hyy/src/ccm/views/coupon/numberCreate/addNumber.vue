@@ -1,7 +1,7 @@
 <template>
 <div>
     <!-- 面包屑 -->
-    <curmbs :address="address"></curmbs>
+    <!-- <curmbs :address="address"></curmbs> -->
     <!-- 基本信息 -->
     <el-collapse v-model="activeNames" @change="handleChange">
         <el-collapse-item title="基础信息" name="baseConfig">
@@ -13,21 +13,27 @@
                         <el-radio v-model="baseConfig.couponNumber" label="1">外部导入</el-radio>
                     </div>
                 </li>
-                <li class="flex-base" v-if="baseConfig.couponNumber == '0'">
-                    <span>票券编号数量：</span>
-                    <div class="flex-base">
-                        <el-form  ref="validateForm" :model="baseConfig" :rules="formRules">
-                            <el-form-item prop="couponCount">
-                                <el-input class="table-search-inner-width"  v-model="baseConfig.couponCount" placeholder="请输入内容"></el-input>
+                <li v-if="baseConfig.couponNumber == '0'">
+                        <el-form  ref="validateForm" :model="baseConfig" :rules="formRules" label-width="120px">
+                            <el-form-item prop="couponCount" label="票券编号数量：">
+                                <el-input style="width:165px" v-model="baseConfig.couponCount" placeholder="请输入内容"></el-input>
+                                <span class="tips-info">（&lt;=50000张）</span>
                             </el-form-item>
                         </el-form>
-                        <span class="tips-info">（&lt;=50000张）</span>
-                    </div>
                 </li>
                 <li class="flex-base" v-if="baseConfig.couponNumber == '1'">
                     <span>导入票券数据：</span>
-                    <div class="flex-base">
-                        <el-upload class="upload-demo" :auto-upload="false" action="" :limit="1" :before-upload="beforeUpload" ref="newupload" :on-change="onUploadChange">
+                    <div class="flex-base import-template">
+                        <el-upload class="upload-demo" :auto-upload="false"  action="" 
+                        :http-request="beforeUpload" 
+                        :limit="2" 
+                        :before-upload="beforeUpload" 
+                        ref="newupload" 
+                        :on-remove="removeFile"
+                        :on-change="onUploadChange"
+                        :list-type="'excel'"
+                        :file-list="fileList"
+                        >
                             <el-button slot="trigger" size="small" type="primary">选择文件</el-button>
                         </el-upload>
                         <div>
@@ -49,7 +55,7 @@
     <!-- 按钮组 -->
     <section class="flex-base flex-center">
         <el-row>
-            <el-button type="primary" @click="addNumber">确定123</el-button>
+            <el-button type="primary" @click="addNumber">确定</el-button>
             <el-button @click="cancle">取消</el-button>
         </el-row>
     </section>
@@ -58,7 +64,7 @@
 
 <script>
 import curmbs from "../../../components/crumbs/index.vue";
-import config from '../../../http/config.js';
+import config from 'frame_cpm/http/config.js';
 import axios from 'axios'
 export default {
     components: {
@@ -66,12 +72,14 @@ export default {
     },
     data() {
         var counts = (rule, value, callback) => {
-            if (value === '' || value!="0") {
-                callback(new Error('请输入大于零的编号数量'));
-            } else {
-                if (value>50000) {
-                    callback(new Error('请输入小于50000的数字'));
-                }
+            console.log(typeof(value))
+            console.log(Number(value).toString()=='NaN')
+            let regExp = /^[1-9]\d*$/;
+            if (!regExp.test(value)) {
+                return callback(new TypeError('请输入大于零小于等于50000的数字'));
+            }else if (!value || value==0 || Number(value).toString()=='NaN' || value>50000) {
+                callback(new Error('请输入大于零小于等于50000的数字'));
+            }else{
                 callback()
             }
         };
@@ -80,6 +88,8 @@ export default {
             baseUrl: config.baseURL,
             returnTime: null, //定时器
             returnTime2: null, //定时器
+            fileList:[],
+            file:'',
             address: [{
                     name: "票券",
                     path: ""
@@ -132,7 +142,7 @@ export default {
             },
             formRules:{
                 couponCount:[
-                    { validator: counts, trigger: 'blur' }
+                    {required: true,validator: counts, trigger: 'blur' }
                 ]
             }
         }
@@ -148,7 +158,11 @@ export default {
          */
         downLoadTem() {
             let url = this.baseUrl + "/coupon/prebuild/exportTemplate";
+            let headers = {
+                 "Cpm-User-Token": localStorage.getItem("token")
+            }
             axios(url, {
+                headers,
                 method: "get",
                 responseType: "blob"
             }).then(data => {
@@ -181,16 +195,15 @@ export default {
         },
         addNumber() {
             let mark = this.baseConfig.couponNumber;
-            this.$refs.validateForm.validate((valid) => {
-                console.log(valid)
-                if(valid){
-                    if (mark == '0') {
+            if (mark == '0') {
+                this.$refs.validateForm.validate((valid) => {
+                    if(valid) {
                         this.createCouponSys();
-                    } else if (mark == '1') {
-                        this.createCouponImport();
                     }
-                }
-            })
+                })
+            } else if (mark == '1') {
+                this.beforeUpload()
+            }
             
         },
         //系统生成
@@ -223,39 +236,63 @@ export default {
          * @function onloadChange - 改变文件
          */
         onUploadChange(file) {
+            this.file = file
+            this.fileList = []
+            this.fileList.push({
+                name:file.name
+            })
             var reader = new FileReader();
             reader.readAsDataURL(file.raw);
             reader.onload = function (e) {
-                console.log("图片的base64数据 " + this.result) //图片的base64数据
+                // console.log("图片的base64数据 " + this.result) //图片的base64数据
             }
         },
-
-        beforeUpload(file) {
-            let _this = this;
-            let params = new FormData();
-            params.append('file', file); //传文件
-            params.append('couponColor', this.baseConfig.couponColor.value);
-
-            _this.$ccmList.importExcel(params).then((data) => {
-                let flag = data.flag;
-                let message = data.msg;
-                let type = "warning";
-                if (data.flag == 4) {
-                    type = "success";
-                    clearTimeout(_this.returnTime2);
-                    _this.returnTime2 = setTimeout(function () {
-                        _this.$router.push('numberCreate');
-                    }, 1000)
-                }
-                _this.$message({
-                    type,
-                    message
-                });
-            });
+        removeFile() {
+            this.file = ''
+            this.fileList=[]
         },
-        //外部导入 确定请求
-        createCouponImport() {
-            this.$refs.newupload.submit();
+        beforeUpload() {
+            let file = this.file
+            console.log(this.fileList)
+            if(!this.fileList.length){
+                return this.$message({
+                    type:'warning',
+                    message:'请选择导入文件'
+                })
+            }
+            console.log('file',file)
+            let name = file.name.substring(file.name.lastIndexOf('.')+1)
+            console.log('文件后缀：',name)
+            if(name == 'xls' || name == 'xlsx') {
+                let _this = this;
+                let params = new FormData();
+                params.append('file', file.raw); //传文件
+                params.append('couponColor', this.baseConfig.couponColor.value);
+
+                _this.$ccmList.importExcel(params).then((data) => {
+                    let flag = data.flag;
+                    let message = data.msg;
+                    let type = "warning";
+                    if (data.flag == 4) {
+                        type = "success";
+                        clearTimeout(_this.returnTime2);
+                        _this.returnTime2 = setTimeout(function () {
+                            _this.$router.push('numberCreate');
+                        }, 1000)
+                    }
+                    _this.$message({
+                        type,
+                        message
+                    });
+                });
+
+            }else {
+                return this.$message({
+                    type:'warning',
+                    message:'请选择excel文件'
+                })
+            }
+            
         },
         cancle() {
             this.$router.push({
@@ -280,5 +317,16 @@ export default {
 .tips-info {
     color: grey;
     font-size: 12px;
+}
+.import-template{
+    .upload-demo{
+        display: flex;
+    }
+    .el-upload-list{
+        display: inline-block!important;
+    }
+    .el-upload-list .el-upload-list--excel{
+        display: inline-block!important;
+    }
 }
 </style>

@@ -7,9 +7,9 @@
             :row-key="getRowKeys">
             <el-table-column type="selection" width="55" :reserve-selection="true">
             </el-table-column>
-            <el-table-column prop="cardTypeCode" :formatter="emptyShow" label="会员卡类型编号" min-width="120"
-              show-overflow-tooltip></el-table-column>
             <el-table-column prop="cardType" :formatter="emptyShow" label="会员卡类型名称" min-width="120"
+              show-overflow-tooltip></el-table-column>
+            <el-table-column prop="cardTypeCode" :formatter="emptyShow" label="会员卡类型编号" min-width="120"
               show-overflow-tooltip></el-table-column>
           </el-table>
         </div>
@@ -25,21 +25,22 @@ export default {
     return {
       multipleSelectionItem: [], //临时选择的自有权益
       callBackData: [], //暴露出去的已选数据
-      tableData: [
-        //table表格数据
-        {
-          cardTypeCode: "stored_card",
-          cardType: "储值卡"
-        },
-        {
-          cardTypeCode: "equity_card",
-          cardType: "权益卡"
-        },
-        {
-          cardTypeCode: "cobranded_card",
-          cardType: "联名卡"
-        }
-      ]
+      tableData: [] //table表格数据
+      // tableData: [
+      //   //table表格数据
+      //   {
+      //     cardTypeCode: "stored_card",
+      //     cardType: "储值卡"
+      //   },
+      //   {
+      //     cardTypeCode: "equity_card",
+      //     cardType: "权益卡"
+      //   },
+      //   {
+      //     cardTypeCode: "cobranded_card",
+      //     cardType: "联名卡"
+      //   }
+      // ]
     };
   },
   components: {
@@ -47,8 +48,8 @@ export default {
   },
   props: {
     dialogVisible: {
-      type:Boolean,
-      default:false
+      type: Boolean,
+      default: false
     },
     innerData: {
       // 默认查询的基础数据（查询条件）
@@ -71,17 +72,15 @@ export default {
       default: "mainPageUnique"
     }
   },
-  created() {},
   mounted() {
-    this.$refs.multipleTable.clearSelection();
-    this.rowMultipleChecked(this.reviewData);
+    this.multipleSelectionItem = this.reviewData;
   },
   watch: {
     dialogVisible: {
       handler(newVal, oldVal) {
         if (newVal) {
-          this.$refs.multipleTable.clearSelection();
-          this.rowMultipleChecked(this.reviewData);
+          this.multipleSelectionItem = this.reviewData;
+          this.search();
         }
       }
     },
@@ -89,6 +88,30 @@ export default {
     immediate: true
   },
   methods: {
+    // 查询卡类型
+    search() {
+      this.tipMessage = "数据加载中...";
+      this.$crmList
+        .getCardType({ tenantId: this.$store.state.loginUser.consumerId })
+        .then(data => {
+          this.tipMessage = "暂无数据";
+          if (!data.length) {
+            this.tipMessage = "暂无数据";
+          }
+          this.tableData = data.map(item => {
+            return { cardType: item.desc, cardTypeCode: item.code };
+          });
+          this.$refs.multipleTable.clearSelection();
+          this.rowMultipleChecked(this.multipleSelectionItem);
+        })
+        .catch(err => {
+          if (err && err.msg) {
+            this.tipMessage = err.msg;
+          } else {
+            this.tipMessage = "系统繁忙，请稍后重试！";
+          }
+        });
+    },
     //数据为空格式化
     emptyShow(row, column, cellValue, index) {
       return cellValue ? cellValue : "-";
@@ -176,7 +199,6 @@ export default {
         whereUse: this.whereUse,
         data: this.callBackData
       };
-      console.log("selectedData", selectedData);
       this.$emit("crmCardTypeDialogCallBack", selectedData);
     }
   }

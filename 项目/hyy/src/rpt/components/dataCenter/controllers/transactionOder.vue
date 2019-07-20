@@ -1,6 +1,13 @@
 <template>
   <section>
-    <el-select v-model="value" @change="valueChange" multiple placeholder="请选择">
+    <el-select
+      popper-class="rpt-select"
+      v-model="value"
+      @change="valueChange"
+      class="transaction-order-type"
+      multiple
+      placeholder="请选择"
+    >
       <el-option
         v-for="item in options"
         :key="item.keyCode"
@@ -12,10 +19,19 @@
 </template>
 
 <script>
+import mixins from "src/frame_cpm/mixins/cacheMixin.js";
 export default {
+  mixins: [mixins.cacheMixin],
   name: "TradeTicketType",
+  props: {
+    resetStatus: Boolean
+  },
   data() {
     return {
+      cacheField: [
+        "value"
+      ],
+      subComName: "transactionOrder",
       options: [],
       value: [],
       oldValue: []
@@ -23,6 +39,18 @@ export default {
   },
   methods: {
     valueChange(val) {
+      let transactionOrderTypeDom = document.getElementsByClassName(
+        "transaction-order-type"
+      );
+      let el = transactionOrderTypeDom[0].children[0];
+      console.log(el);
+      let el_span = el.querySelector("span");
+      el_span && el.removeChild(el_span);
+      el.style.padding = " 0 10px";
+      el.style.textOverflow = "ellipsis";
+      el.style.fontSize = "12px";
+      el.textContent = String(val).replace(/,/g, "、");
+
       const allValues = this.options.map(item => {
         return item.keyCode;
       });
@@ -57,12 +85,10 @@ export default {
       // 储存当前选择的最后结果 作为下次的老数据
       this.oldValue = this.value;
 
-      this.$emit(
-        "selectTransactionOrderData",
-        this.value.filter(item => {
-          return item != "ALL_SELECT";
-        })
-      );
+      let orderValue = this.value.filter(item => {
+        return item != "ALL_SELECT";
+      });
+      this.$emit("selectTransactionOrderData", orderValue.join(","));
     },
 
     MER_INTERFACE_STORE_BILL_SUBJECT() {
@@ -88,9 +114,27 @@ export default {
   },
   mounted() {
     this.MER_INTERFACE_STORE_BILL_SUBJECT();
+  },
+  watch: {
+    resetStatus(newVal) {
+      if (newVal) {
+        this.value = [];
+      }
+    }
   }
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+/deep/ .el-select__tags {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+  width: 130px !important;
+}
+
+li.selected span {
+  color: #3b74ff !important;
+}
 </style>

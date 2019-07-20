@@ -1,6 +1,6 @@
 <template>
   <div class="my_dialog">
-    <el-dialog :title="title" :visible.sync="mydialogTableVisible">
+    <el-dialog :title="title" :close-on-click-modal="false" :visible.sync="mydialogTableVisible">
       <el-form label-width="" :inline="true">
         <div style="position:relative">
            <!-- <el-form-item label="渠道类型:">
@@ -16,7 +16,7 @@
           <el-form-item label="影院名称">
             <el-input v-model="cinemaName" style="width:184px"></el-input>
           </el-form-item>
-          <el-button type="primary" style="position:absolute;right:0;top:5px;" @click="searchUser">查询</el-button> -->
+          <el-button type="primary" style="margin:4px 0;" @click="searchUser">查询</el-button> -->
         </div>
       </el-form>
       <!-- highlight-current-row  -->
@@ -35,11 +35,11 @@
             <el-table-column property="propertyName" label="影片类型名称" width="294"></el-table-column>
           </el-table>
           <!-- 分页 -->
-          <div class="block">
+          <!-- <div class="block">
             <el-pagination @current-change="handleCurrentChange" background :current-page.sync="pageData.pageNum"
               :page-size="pageData.size" layout="total,prev, pager, next, jumper" :total="pageData.total">
             </el-pagination>
-          </div>
+          </div> -->
         </div>
         <div class="choose_ul">
           <p class="ul_header">
@@ -58,8 +58,8 @@
 
       <div style="height:12px;background:transparent;"></div>
       <div class="btn-area">
-        <el-button @click="mydialogTableVisible = false">取消</el-button>
         <el-button type="primary" @click="chooseUser" style="margin-right:22px;">确定</el-button>
+        <el-button @click="mydialogTableVisible = false">取消</el-button>
       </div>
     </el-dialog>
   </div>
@@ -168,7 +168,7 @@ import {movieType} from "rpt/http/interface.js"
             movieType().then(res=>{
             if(res.data&&res.code==200)
                 this.tableList=res.data.propertyList
-                this.pageData.total=res.data.propertyList.length
+                // this.pageData.total=res.data.propertyList.length
                 // this.selectData()
             })
         },
@@ -218,171 +218,5 @@ import {movieType} from "rpt/http/interface.js"
 </script>
 
 <style lang="scss" scoped>
-  .my_dialog {
-    /deep/ .el-dialog {
-      // width: calc(576px + 224px);
-      width: 892px;
-      height: 576px;
-      border-radius: 4px;
-      .el-dialog__header{
-        padding: 14px 20px 10px;
-      }
-      .el-dialog__title {
-        font-family: MicrosoftYaHei;
-        font-size: 14px;
-        color: #333333;
-        letter-spacing: 0;
-        line-height: 28px;
-      }
-      .el-dialog__headerbtn .el-dialog__close{
-        color: #979797;
-        font-size: 16px; 
-      }
-      .el-form-item__label {
-        font-size: 12px;
-      }
-
-      .el-form-item {
-        margin-bottom: 0;
-      }
-
-      .el-dialog__header::after {
-        content: "";
-        display: block;
-        // width: calc(536px + 224px);
-        width: 852px;
-        height: 1px;
-        background: #e5e5e5;
-      }
-
-      .choose_table {
-        display: flex;
-        margin-top: 11px;
-        border-left: 1px solid #E5E5E5;
-        border-bottom: 1px solid #E5E5E5;
-
-        .choose_ul {
-          background: #FFFFFF;
-          border: 1px solid #E5E5E5;
-          border-bottom: none;
-          width: 224px;
-
-          .ul_header {
-            display: flex;
-            padding: 10px 16px;
-            justify-content: space-between;
-            position: relative;
-
-            // border-bottom: 1px solid #F5F5F5;
-            &::after {
-              display: block;
-              position: absolute;
-              top: 37px;
-              content: "";
-              width: 192px;
-              height: 1px;
-              background-color: #F5F5F5;
-            }
-
-            span {
-              font-family: MicrosoftYaHei;
-              font-size: 12px;
-              color: #666666;
-              letter-spacing: 0;
-            }
-          }
-
-          .ul_body {
-            margin-top: 10px;
-            overflow-y: scroll;
-            height: 350px;
-
-            li {
-              padding: 4px 16px;
-              display: flex;
-              justify-content: space-between;
-
-              span {
-                font-family: MicrosoftYaHei;
-                font-size: 12px;
-                color: #666666;
-                letter-spacing: 0;
-              }
-
-              .delate_span {
-                cursor: pointer;
-              }
-            }
-          }
-        }
-      }
-
-      .el-dialog__body {
-        padding: 0 20px;
-
-        tr th,
-        tr td {
-          height: 30px;
-          line-height: 30px;
-        }
-
-        .two_search {
-          width: 214px;
-          font-size: 12px;
-        }
-
-        .one_search {
-          width: 268px;
-        }
-
-        .el-table__header-wrapper,
-        .el-table__body-wrapper,
-        .el-table__footer-wrapper {
-          // width: 536px;
-          width: calc(536px + 92px);
-        }
-
-        .el-table {
-          height: 353px;
-          // width: 536px;
-          width: calc(536px + 92px);
-          flex: 0 1 auto;
-          box-sizing: border-box;
-
-          .has-gutter tr th {
-            padding: 0;
-          }
-
-          .cell {
-            font-size: 12px;
-            line-height: 30px;
-            // float: left;
-            // text-align: center;
-          }
-
-          .el-radio__label {
-            padding: 0;
-            display: none;
-          }
-        }
-
-        .block {
-          padding: 10px;
-
-          .el-pagination {
-            text-align: center;
-          }
-        }
-      }
-
-      .btn-area {
-        display: flex;
-        justify-content: center;
-      }
-
-      /deep/ .content .el-input {
-        width: 50px;
-      }
-    }
-  }
+  @import "../../assets/dialogs.scss";
 </style>

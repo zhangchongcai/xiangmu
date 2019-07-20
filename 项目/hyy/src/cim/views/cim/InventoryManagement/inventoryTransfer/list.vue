@@ -1,7 +1,7 @@
 <template>
-  <div>
+  <div class="grTR-style">
+    <!-- {{this.queryData}} -->
     <div class="common-header">
-        {{this.queryData}}
       <el-form
         :inline="true"
         :model="queryData"
@@ -10,20 +10,27 @@
         label-suffix=":"
       >
         <el-form-item label="转移门店" class="select-input">
-          <el-input v-model="queryData.cinemaName" placeholder="请选择门店"></el-input>
-          <el-button @click="selectCinemalDialog">选择</el-button>
+            <el-input
+                    v-model="queryData.cinemaName"
+                    clearable
+                    @clear="onCinemalSumit"
+                    @focus="selectCinemalDialog"
+                    placeholder="请选择门店"
+            ></el-input>
+            <el-button @click="selectCinemalDialog" type="primary cinemaSel-btn" plain>选择</el-button>
         </el-form-item>
         <el-form-item label="单据号">
           <el-input
             v-model="queryData.billCode"
             placeholder="请输内容"
-            prefix-icon="el-icon-search"
           ></el-input>
         </el-form-item>
         <el-form-item label="制单日期">
           <el-date-picker
             v-model="queryData.billTime"
             type="date"
+            format="yyyy-MM-dd HH:mm"
+            value-format="yyyy-MM-dd HH:mm"
             placeholder="选择日期">
           </el-date-picker>
         </el-form-item>
@@ -36,7 +43,7 @@
         </el-form-item>
 
         <el-form-item class="query-btn-box">
-          <el-button type="primary" @click="onQuery()">查询</el-button>
+          <el-button type="primary query-btn" @click="onQuery()">查询</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -45,7 +52,7 @@
         <el-button type="primary" size="small" plain @click="addinvent()">新建</el-button>
       </div>
       <div>
-        <el-table :data="tableData" stripe>
+        <el-table :data="tableData" stripe :height="this.defaultTableHeight">
           <el-table-column
             v-for="item in tableColumn"
             :key="item.key"
@@ -54,14 +61,11 @@
             :formatter="item.formatter"
           ></el-table-column>
           <el-table-column label="操作" style="width:180px;">
-            <template slot-scope="{row}" v-if="row.status == 1">
+            <template slot-scope="{row}">
               <el-button type="text" size="small" @click.stop="handleOperateEvent('1', row)">查看</el-button>
-              <el-button type="text" size="small" @click.stop="handleOperateEvent('2', row)">修改</el-button>
-              <el-button type="text" size="small" @click.stop="handleOperateEvent('3', row)">提交</el-button>
-              <el-button type="text" size="small" @click.stop="handleOperateEvent('4', row)">删除</el-button>
-            </template>
-            <template slot-scope="{row}" v-if="row.status == 2">
-              <el-button type="text" size="small" @click.stop="handleOperateEvent('1', row)">查看</el-button>
+              <el-button type="text" size="small" @click.stop="handleOperateEvent('2', row)" v-if="row.status == 1">编辑</el-button>
+              <el-button type="text" size="small" @click.stop="handleOperateEvent('3', row)" v-if="row.status == 1">提交</el-button>
+              <el-button type="text" size="small" @click.stop="handleOperateEvent('4', row)" v-if="row.status == 1">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -71,16 +75,16 @@
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
             :current-page="queryData.page"
-            :page-sizes="[10,20,30]"
+            :page-sizes="this.pageSizes"
             :page-size="queryData.pageSize"
             layout="total, sizes, prev, pager, next, jumper"
-            :total="total"
+            :total="this.total"
           ></el-pagination>
         </div>
       </div>
     </div>
     <!-- 选择影院弹窗 -->
-    <cinemal-dialog ref="myCinemalDialog" @onSumit="onCinemalSumit"></cinemal-dialog>
+    <cinemal-dialog ref="myCinemalDialog" @onSumit="onCinemalSumit" :dialogFeedbackData="[{cinemaUid:queryData.cinemaUid,cinemaName:queryData.cinemaName}]"></cinemal-dialog>
     <suppliers-dialog ref="mySuppliersDialog"></suppliers-dialog>
   </div>
 </template>
@@ -90,10 +94,12 @@ import qs from "qs";
 import mixin from "cim/mixins/cim/paginationConfig.js";
 import cinemalDialog from "cim/components/cinemalDialog/cinemaDialog.vue";
 import suppliersDialog from "cim/components/suppliersDialog/suppliersDialog.vue";
+import mixins from "frame_cpm/mixins/cacheMixin";
 export default {
-  mixins: [mixin],
+  mixins: [mixin,mixins.cacheMixin],
   data() {
     return {
+      cacheField:["queryData"],
       selData:{},
       //查询数据
       queryData: {
@@ -103,7 +109,7 @@ export default {
         cinemaUid: "",
         cinemaName:"",
         status: "",
-        pageSize: 10,
+        pageSize: 15,
         page: 1
       },
       total: 0,
@@ -151,13 +157,7 @@ export default {
         }
       ],
       // 表格数据
-      tableData: [
-        {
-          supplierCode: "CG201904010001",
-          supplierName: "中影德金影城客村丽影店",
-          areaName: "美联经营部"
-        }
-      ],
+      tableData: [],
     };
   },
   mounted() {
@@ -166,13 +166,25 @@ export default {
   methods: {
     // 初始化
     init() {
-      this.goodsDataQueryGoodsList()
+      this.queryData.pageSize = this.pageSize
+       this.$nextTick(() => {
+          this.returnType = this.$route.query.returnType
+            if(this.returnType === true){
+              this.queryData.cinemaUid = JSON.parse(this.$route.query.cinema).cinemaUid
+              this.queryData.cinemaName = JSON.parse(this.$route.query.cinema).cinemaName
+            }
+            if(this.queryData.cinemaUid == "" || this.queryData.cinemaUid == null){
+            }else{
+              this.goodsDataQueryGoodsList()
+            }
+      })
+      
     },
     // 选泽门店回调
     onCinemalSumit(val = []) {
       if (val.length > 0) {
         this.queryData.cinemaName = val[0].name;
-        this.queryData.cinemaUid = val[0].cinemaUid;
+        this.queryData.cinemaUid = val[0].uid;
       } else {
         this.queryData.cinemaName = "";
         this.queryData.cinemaUid = "";
@@ -181,8 +193,13 @@ export default {
     },
     // 查询
     onQuery() {
-      this.goodsDataQueryGoodsList()
-      console.log(this.queryData);
+      if(this.queryData.cinemaUid == "" || this.queryData.cinemaUid == ""){
+        this.$message("请选择门店");
+      }else{
+        this.goodsDataQueryGoodsList()
+        console.log(this.queryData);
+      }
+      
     },
     // 新增库存转移
     addinvent(){
@@ -204,29 +221,38 @@ export default {
       switch (type) {
         case "1":
           // 查看
+          this.seetable(row)
           break;
         case "2":
           //编辑
+          this.edirtable(row)
           break;
         case "3":
           //提交
+           this.tjtable(row)
           break;
         case "4":
           //删除
-          this.handleeDlete(row);
+          this.detable(row)
           break;
       }
     },
-    // 删除操作
-    handleeDlete(row) {
-      this.$api
-        .delStorehouse(row.id)
-        .then(data => {})
-        .catch(err => {
-          console.log(err);
-        });
+    // 查看操作
+    seetable(row){
+      this.resMoveBillFindMoveDetailInfo(row,"3")
     },
-
+    // 修改操作
+    edirtable(row){
+      this.resMoveBillFindMoveDetailInfo(row,"2")
+    },
+    // 提交操作
+    tjtable(row){
+      this.resMoveBillSubmitMoveBillInfo(row)
+    },
+    // 删除操作
+    detable(row){
+      this.resMoveBillDelMoveBillInfo(row)
+    },
     selectCinemalDialog() {
       this.$refs.myCinemalDialog.handleDialog(true);
     },
@@ -247,7 +273,7 @@ export default {
     goodsDataQueryGoodsList(){
       let val = {
         billCode: this.queryData.billCode,
-        billTime: this.queryData.billTime,
+        submitTime: this.queryData.billTime,
         billUserUid:this.queryData.billUserUid,
         cinemaUid: this.queryData.cinemaUid,
         status: this.queryData.status,
@@ -259,32 +285,75 @@ export default {
         .then(res => {
           if (res.code === 200) {
             this.tableData = res.data.list
+            this.total = res.data.total
             console.log(res)
-            debugger
           } else {
-            this.error(res.msg);
             this.$message(res.msg);
           }
         })
     },
     // 转移管理查询接口
-    resMoveBillFindMoveDetailInfo(row){
+    resMoveBillFindMoveDetailInfo(row,type){
       let val = {
-        uid:row == undefined ? "":row
+        uid:row == undefined ? "":row.uid
       }
       this.$cimList.inventoryTransfer
         .moveBillFindMoveDetailInfo(val)
         .then(res => {
           if (res.code === 200) {
             this.selData = res.data
-            console.log(res)
-            debugger
+            if(type == "3" || type == "2"){
+              this.handleNewPurchaseNote({
+                type:type,
+                data:JSON.stringify(res.data)
+              })
+            }
           } else {
             this.error(res.msg);
             this.$message(res.msg);
           }
         })
     },
+    // 转移提交请求
+    resMoveBillSubmitMoveBillInfo(row) {
+      let val = {
+        billCode:row.billCode
+      }
+      this.$cimList.inventoryTransfer
+        .moveBillSubmitMoveBillInfo(val)
+        .then(res => {
+          if (res.code == 200) {
+            this.$message("提交成功");
+            // this.queryData.billCode = res.data.billCode
+            console.log(res)
+          }
+        });
+      },
+      // 转移删除请求
+    resMoveBillDelMoveBillInfo(row) {
+      this.$confirm("确认删除吗, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(() => {
+          //删除
+          let val = {
+            billCode:row.billCode
+          }
+          this.$cimList.inventoryTransfer
+            .moveBillDelMoveBillInfo(val)
+            .then(res => {
+              if (res.code == 200) {
+                this.onQuery()
+                this.$message("删除成功");
+              }
+            });
+        })
+        .catch(() => {});
+
+
+      },
   },
   components: {
     cinemalDialog,
@@ -296,25 +365,27 @@ export default {
 <style lang="scss">
 @import "../../../../assets/css/common.scss";
 @import "../../../../assets/css/element-common.scss";
+.grTR-style{
+  .select-input {
+    .el-input {
+      width: 70%;
+    }
+  }
 
-.select-input {
-  .el-input {
-    width: 70%;
+  .newPro-box {
+    .title {
+      margin: 10px 0;
+      font-size: 16px;
+    }
+    .selectName {
+      font-size: 16px;
+      margin: 10px 0;
+    }
+    .newProTree {
+      height: 330px;
+      overflow: auto;
+    }
   }
 }
 
-.newPro-box {
-  .title {
-    margin: 10px 0;
-    font-size: 16px;
-  }
-  .selectName {
-    font-size: 16px;
-    margin: 10px 0;
-  }
-  .newProTree {
-    height: 330px;
-    overflow: auto;
-  }
-}
 </style>

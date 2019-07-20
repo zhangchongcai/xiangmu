@@ -1,5 +1,5 @@
 import axios from 'frame_cpm/http/api';
-import config from './config';
+import config from '../config';
 export default {
     // 盘点方案
     inventoryPlan: {
@@ -105,11 +105,74 @@ export default {
                 data
             })
         },
-        // 新增盘点方案
+        // 新增盘点单
         checkBillSave: data => {
             return axios({
                 baseURL:config.baseURL,
                 url: '/checkBill/save',
+                method: 'post',
+                data
+            })
+        },
+        // 删除盘点单
+        checkBillDelete: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/checkBill/delete',
+                method: 'post',
+                data
+            })
+        },
+        // 处理提交审核
+        checkBillSubmitCheck: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/checkBill/submitCheck',
+                method: 'post',
+                data
+            })
+        },
+        // 跳转修改页面
+        checkBillToPage: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/checkBill/toPage',
+                method: 'post',
+                data
+            })
+        },
+        // 盘点单修改
+        checkBillUpdate: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/checkBill/update',
+                method: 'post',
+                data
+            })
+        },
+        // 查看盘点单商品信息
+        checkBillQueryCheckBill: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/checkBill/queryCheckBill',
+                method: 'post',
+                data
+            })
+        },
+        // 差异类别列表
+        checkBillCategory: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/checkBill/category',
+                method: 'post',
+                data
+            })
+        },
+        // 处理差异(接受盘亏)
+        checkBillDifferenceManage: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/checkBill/differenceManage',
                 method: 'post',
                 data
             })
@@ -153,5 +216,253 @@ export default {
                 data
             })
         },
+        // 确认并提交 保存为草稿
+        moveBillSaveMoveBillInfo: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/move/bill/saveMoveBillInfo',
+                method: 'post',
+                data
+            })
+        },
+        // 转移提交
+        moveBillSubmitMoveBillInfo: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/move/bill/submitMoveBillInfo',
+                method: 'post',
+                data
+            })
+        },
+        // 转移删除
+        moveBillDelMoveBillInfo: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/move/bill/delMoveBillInfo',
+                method: 'post',
+                data
+            })
+        },
+    },    
+    // 商品入库登记
+    goodsWarehousingIn: {
+        // 商品入库登记首页查询
+        storeInBillRegisterGetList: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/store/in/bill/register/getList',
+                method: 'post',
+                data
+            })
+        },
+        // 生产入库单编码
+        storeInBillRegisterGetStoreInBillCode: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/store/in/bill/register/getStoreInBillCode',
+                method: 'post',
+                data
+            })
+        },
+        // 保存商品入库
+        storeInBillRegisterSave: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/store/in/bill/register/save',
+                method: 'post',
+                data
+            })
+        },
+        //选择商品
+        storeInGetList: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/store/in/bill/register/cinemaMer/getList',
+                method: 'post',
+                data
+            })
+        },
+        //删除商品入库
+        storeInDelete: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/store/in/bill/register/delete',
+                method: 'post',
+                data
+            })
+        },
+        //提交商品入库
+        storeInSubmit: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/store/in/bill/register/submit',
+                method: 'post',
+                data
+            })
+        },
+        //查看修改进入详情页
+        storeInDetail: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/store/in/bill/register/detail',
+                method: 'post',
+                data
+            })
+        },
+        //修改
+        storeInUpdate: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/store/in/bill/register/update',
+                method: 'post',
+                data
+            })
+        },
+    },    
+    // 商品出库登记
+    goodsWarehousingOut: {
+        // 商品出库登记首页查询
+        storeoutBillList: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/storeoutBill/list',
+                method: 'post',
+                data
+            })
+        },
+        // 跳转新增/修改页面
+        storeoutBillToPage: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/storeoutBill/toPage',
+                method: 'post',
+                data
+            })
+        },
+        // 选择商品
+        storeoutBillQuerySkus: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/storeoutBill/querySkus',
+                method: 'post',
+                data
+            })
+        },
+        // 修改新增保存
+        storeoutBillSave: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/storeoutBill/save',
+                method: 'post',
+                data
+            })
+        },
+        // 删除
+        storeoutBillDelete: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/storeoutBill/delete',
+                method: 'post',
+                data
+            })
+        },
+        // 提交
+        storeoutBillCommit: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/storeoutBill/commit',
+                method: 'post',
+                data
+            })
+        },
     },
+    // 门店商品坤村查询
+    storeInventoryQuery: {
+        // 商品出库登记首页查询
+        cinemaMerStockQueryStock: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/cinemaMerStock/queryStock',
+                method: 'post',
+                data
+            })
+        }
+    },
+    // 调拨申请allotBill/save
+    goodsWarehousingApply: {
+        // 调拨申请编号
+        allotBillGetBillCode: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/allotBill/getBillCode',
+                method: 'post',
+                data
+            })
+        },
+        // 调拨申请单保存
+        allotBillSave: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/allotBill/save',
+                method: 'post',
+                data
+            })
+        },
+        // 调拨申请选择商品
+        allotBillFindGoods: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/allotBill/findGoods',
+                method: 'post',
+                data
+            })
+        },
+        // 调拨申请首页查询
+        allotBillList: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/allotBill/list',
+                method: 'post',
+                data
+            })
+        },
+        // 调拨申请单详情
+        allotBillFind: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/allotBill/find',
+                method: 'post',
+                data
+            })
+        },
+        // 调拨申请单未提交修改
+        allotBillUpdate: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/allotBill/update',
+                method: 'post',
+                data
+            })
+        },
+        // 调拨申请单提交
+        allotBillRefer: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/allotBill/refer',
+                method: 'post',
+                data
+            })
+        },
+        // 调拨申请单删除
+        allotBillDelete: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/allotBill/delete',
+                method: 'post',
+                data
+            })
+        },
+        
+    },
+
 }

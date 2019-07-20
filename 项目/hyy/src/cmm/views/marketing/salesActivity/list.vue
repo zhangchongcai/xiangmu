@@ -3,13 +3,13 @@
     <div v-if="pageShow=='actList'">
         <!-- 搜索栏 -->
         <section>
-            <searchLan :modelName="modelName" :config="searchConfig" @pressSearch="search" @searchValueChange="setSearch"></searchLan>
+            <searchLan :modelName="modelName" :config="searchConfig" :isCache="isCache" @pressSearch="search" @searchValueChange="setSearch"></searchLan>
         </section>
 
         <!-- 按钮组 -->
         <section class="flex-base flex-end">
             <el-row>
-                <el-button type="primary" @click="addAct">新建</el-button>
+                <el-button class="addBtn" @click="addAct">新建</el-button>
             </el-row>
         </section>
 
@@ -19,8 +19,8 @@
         </section>
 
         <!-- 分页 -->
-        <section class="flex-base flex-center">
-            <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="pageConfig.currentPage" :page-sizes="pageConfig.pageSizes" :page-size="pageConfig.pageSize" layout="total, sizes, prev, pager, next, jumper" :total="pageConfig.total">
+        <section class="flex-base flex-center pageStyle">
+            <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="pageConfig.currentPage" :page-sizes="pageConfig.pageSizes" :page-size="pageConfig.pageSize" background layout="total, prev, pager, next, jumper, sizes" :total="pageConfig.total">
             </el-pagination>
         </section>
 
@@ -40,28 +40,39 @@
 
     <add-sales v-if="pageShow=='addAct'" ref="addOrUpdate" @refreshDataList="search"></add-sales>
     <audit-view v-if="pageShow=='auditView'" ref="auditView" @refreshDataList="search"></audit-view>
+     <!-- 查看审批单弹窗 -->
+    <approvalDialog v-if="showApproval"  ref="approvalDialog" :bizNo="bizNo" :dialogFormVisible="showApproval" @close="approvalDetailClose"></approvalDialog>
 
 </div>
 </template>
 
 <script>
-import '../../../assets/common.scss';
 import AddSales from './add-or-update';
 import AuditView from './auditView';
 import searchLan from 'cmm/components/search/index.vue';
 import commonTable from '../../../components/Table/commonTable.vue';
 
+import approvalDialog from '../../../dialogs/approval/approvalDialog.vue';
+import minxins from 'frame_cpm/mixins/cacheMixin.js'
 export default {
     components: {
         AddSales,
         AuditView,
         searchLan,
-        commonTable
+        commonTable,
+        approvalDialog
     },
+    mixins: [minxins.cacheMixin],
     data() {
         return {
-            tenantId: '1', //商户id
+            /* 缓存数据 */
+            cacheField: ["pageConfig","tableLabels","tableData"],
+            subComName:"salesActivity",
+            bizNo:"",//审批单业务编码
+            showApproval:false,//是否显示查看审批单弹窗
+            tenantId: JSON.parse(localStorage.getItem('user')).consumerId, //商户id
             modelName: "movieTicketManagement",
+            isCache:true,
             pageShow: 'actList',
             searchConfig: [{
                     keyName: 'searchActivityName',
@@ -96,7 +107,7 @@ export default {
                     alertButton: true,
                     alertCompontsName: 'userApprovalDialog',
                 }, {
-                    keyName: 'businessCode',
+                    keyName: 'searchBusinessCode',
                     name: '适用影院',
                     type: 'input',
                     value: '',
@@ -121,10 +132,10 @@ export default {
                     keyName: 'ruleTemplateId',
                     name: '活动类型',
                     type: 'select',
-                    value: '',
+                    value: '17,18,19,20',
                     options: [{
                             label: '不限',
-                            value: ''
+                            value: '17,18,19,20'
                         }, {
                             label: '卖品打折',
                             value: '17'
@@ -189,7 +200,7 @@ export default {
                 {
                     prop: 'activityName',
                     label: '活动名称',
-                    width: '150'
+                    width: '200'
                 },
                 {
                     prop: 'executeMode',
@@ -203,12 +214,12 @@ export default {
                 {
                     prop: 'priority',
                     label: '优先级',
-                    width: '80'
+                    width: '110'
                 },
                 {
                     prop: 'validDateStart',
                     label: '有效期',
-                    width: '200',
+                    width: '110',
                     hasTemplate: true,
                     formatRole: (scope) => {
                         return scope.row.validDateStart ? scope.row.validDateStart + " 至 " + scope.row.validDateEnd : '';
@@ -217,12 +228,12 @@ export default {
                 {
                     prop: 'createrName',
                     label: '创建人',
-                    width: '80'
+                    width: '100'
                 },
                 {
-                    prop: 'createrAreaName',
+                    prop: 'orgName',
                     label: '创建单位',
-                    width: '80'
+                    width: '150'
                 },
                 {
                     prop: 'createTime',
@@ -232,12 +243,12 @@ export default {
                 {
                     prop: 'approvalmanName',
                     label: '审批人',
-                    width: '80'
+                    width: '100'
                 },
                 {
                     prop: 'approvalResult',
                     label: '审批状态',
-                    width: '80',
+                    width: '100',
                     hasTemplate: true,
                     formatRole: (scope) => {
                         switch (scope.row.approvalResult) {
@@ -250,8 +261,11 @@ export default {
                             case 3:
                                 return '审批通过';
                                 break;
-                            default:
+                            case 4:
                                 return '审批不通过';
+                                break;
+                            default:
+                                return '';
                                 break;
                         };
                     }
@@ -288,7 +302,7 @@ export default {
             tableOptions: {
                 label: "操作",
                 fixed: "right",
-                width: '200',
+                width: '250',
                 options: [{
                         text: "查看",
                         method: "actDetail",
@@ -298,23 +312,35 @@ export default {
                     },
                     {
                         text: "修订",
-                        method: "updateAct",
+                        method: "reviseAct",
                         condition: (scope) => {
-                            return (scope.row.approvalResult != 2 || scope.row.activityState != 2) && (scope.row.approvalResult != 3 || scope.row.activityState != 5) && scope.row.approvalResult === 3;
+                            // return (scope.row.approvalResult != 2 || scope.row.activityState != 2) && (scope.row.approvalResult != 3 || scope.row.activityState != 5) && scope.row.approvalResult === 3;
+                            return scope.row.approvalResult == 3 && (scope.row.activityState == 3 || scope.row.activityState == 4)
                         }
                     },
                     {
                         text: "修改",
                         method: "updateAct",
                         condition: (scope) => {
-                            return (scope.row.approvalResult != 2 || scope.row.activityState != 2) && (scope.row.approvalResult != 3 || scope.row.activityState != 5) && scope.row.approvalResult !== 3
+                            // return (scope.row.approvalResult != 2 || scope.row.activityState != 2) && (scope.row.approvalResult != 3 || scope.row.activityState != 5) && scope.row.approvalResult !== 3
+                            return scope.row.activityState == 1 && (scope.row.approvalResult == 1 || scope.row.approvalResult == 4)
                         }
                     },
                     {
                         text: "作废",
                         method: "cancelAct",
                         condition: (scope) => {
-                            return (scope.row.approvalResult != 2 || scope.row.activityState != 2) && (scope.row.approvalResult != 3 || scope.row.activityState != 5);
+                            // return (scope.row.approvalResult != 2 || scope.row.activityState != 2) && (scope.row.approvalResult != 3 || scope.row.activityState != 5) && (scope.row.approvalResult != 1 && scope.row.activityState != 1);
+                            return (scope.row.approvalResult == 3 && (scope.row.activityState == 3 || scope.row.activityState == 4))
+                            ||(scope.row.approvalResult == 4 && scope.row.activityState == 1)
+                        }
+                    },
+                    {
+                        text: "删除",
+                        method: "removeAct",
+                        condition: (scope) => {
+                            // return scope.row.approvalResult === 1 && scope.row.activityState === 1;
+                            return scope.row.activityState == 1 && scope.row.approvalResult == 1
                         }
                     },
                     {
@@ -342,14 +368,18 @@ export default {
                         text: "提交审批",
                         method: "submitApproval",
                         condition: (scope) => {
-                            return scope.row.approvalResult == 1;
+                            // return scope.row.approvalResult != 2 && scope.row.approvalResult != 3;;
+                            return scope.row.activityState == 1 && (scope.row.approvalResult == 1 || scope.row.approvalResult == 4)
                         }
                     },
                     {
                         text: "查看审批单",
                         method: "approvalDetail",
                         condition: (scope) => {
-                            return scope.row.approvalResult != 1;
+                            // return scope.row.approvalResult != 1 && scope.row.activityState != 5;
+                            return ( scope.row.approvalResult == 2 && scope.row.activityState == 2)
+                            ||(scope.row.approvalResult == 3 && (scope.row.activityState == 3 || scope.row.activityState == 4))
+                            ||(scope.row.approvalResult == 4 && scope.row.activityState == 1)
                         }
                     },
                 ]
@@ -376,7 +406,23 @@ export default {
     methods: {
         /* @function search - 搜索
          */
-        search() {
+        search(bool) {
+            if(bool == true){
+                this.isCache = false;
+                this.pageConfig.currentPage = 1;
+                this.pageConfig.pageSize = 10;
+                this.searchParam = {
+                    searchActivityName:"",
+                    validDate:"",
+                    searchCreaterId:"",
+                    searchCreaterArea:"",
+                    searchApprovalmanId:"",
+                    searchBusinessCode:"",
+                    executeMode:"",
+                    ruleTemplateId:"",
+                    searchState:""
+                };
+            }
             let _param = this.setParam();
             this.getDataList(_param);
         },
@@ -413,6 +459,27 @@ export default {
          */
         setSearch(param) {
             this.searchParam = param;
+            for(let item of this.searchConfig){
+                if(item.keyName == 'searchActivityName'){
+                    item.value = this.searchParam.searchActivityName
+                }else if(item.keyName == 'validDate'){
+                    item.value = this.searchParam.validDate
+                }else if(item.keyName == 'searchCreaterId'){
+                    item.value = this.searchParam.searchCreaterId
+                }else if(item.keyName == 'searchCreaterArea'){
+                    item.value = this.searchParam.searchCreaterArea
+                }else if(item.keyName == 'searchApprovalmanId'){
+                    item.value = this.searchParam.searchApprovalmanId
+                }else if(item.keyName == 'searchBusinessCode'){
+                    item.value = this.searchParam.searchBusinessCode
+                }else if(item.keyName == 'executeMode'){
+                    item.value = this.searchParam.executeMode
+                }else if(item.keyName == 'ruleTemplateId'){
+                    item.value = this.searchParam.ruleTemplateId
+                }else if(item.keyName == 'searchState'){
+                    item.value = this.searchParam.searchState
+                }
+            }
             this.pageConfig.currentPage = 1; //改变搜索条件，从第一页开始查询
         },
 
@@ -421,23 +488,55 @@ export default {
             this.pageShow = 'actList'
             this.$cmmList.marketingList(params).then(data => {
                 if (data && data.code === 200) {
-                    this.tableData = data.data.result;
-                    this.pageConfig.total = data.data.totalCount;
-                    this.$message({
-                        message: "查询成功",
-                        type: "success",
-                        duration: 1000
-                    });
+                    console.log("result",data.data.result)
+                    if(data.data.result.length <= 0 && params.pageNo > 1){
+                        params.pageNo--;
+                        this.$cmmList.marketingList(params).then(data => {
+                            if (data && data.code === 200) {
+                                this.tableData = data.data.result;
+                                this.pageConfig.total = data.data.totalCount;
+                                this.pageConfig.currentPage = data.data.currentPageNo;
+                                for(let item of this.tableData){
+                                    if(item.priority === 100){
+                                        item.priority = "按最优先执行"
+                                    }
+                                }
+                            }else {
+                                this.tableData = [];
+                                this.pageConfig.total = 0;
+                            }
+                            this.isCache = true;
+                        }).catch(err => {
+                            this.isCache = true;
+                            console.log(err)
+                        })
+                    }else{
+                        this.tableData = data.data.result;
+                        this.pageConfig.total = data.data.totalCount;
+                        this.pageConfig.currentPage = data.data.currentPageNo;
+                        for(let item of this.tableData){
+                            if(item.priority === 100){
+                                item.priority = "按最优先执行"
+                            }
+                        }
+                        // this.$message({
+                        //     message: "查询成功",
+                        //     type: "success",
+                        //     duration: 1000
+                        // });
+                    }
                 } else {
                     this.tableData = [];
                     this.pageConfig.total = 0;
-                    this.$message({
-                        message: data.msg,
-                        type: "warning",
-                        duration: 1000
-                    });
+                    // this.$message({
+                    //     message: data.msg,
+                    //     type: "warning",
+                    //     duration: 1000
+                    // });
                 }
+                this.isCache = true;
             }).catch(err => {
+                this.isCache = true;
                 console.log(err)
             })
         },
@@ -453,6 +552,12 @@ export default {
                     break;
                 case 'cancelAct':
                     this.cancelAct(data.scope);
+                    break;
+                case 'removeAct':
+                    this.removeAct(data.scope);
+                    break;
+                case 'reviseAct':
+                    this.reviseAct(data.scope);
                     break;
                 case 'updateAct':
                     this.updateAct(data.scope);
@@ -482,11 +587,31 @@ export default {
         },
         /* 作废活动 */
         cancelAct(scope) {
-            this.deleteHandle(scope.row.id)
+            this.$confirm(`您确定要作废此记录吗?`, '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                this.deleteHandle(scope.row.id)
+            }).catch(() => {})
+        },
+        /* 删除活动 */
+        removeAct(scope){
+            this.$confirm(`您确定要删除此记录吗?`, '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                this.deleteHandle(scope.row.id)
+            }).catch(() => {})
         },
         /* 新建活动 */
         addAct() {
             this.addOrUpdateHandle(null, "add");
+        },
+        /* 修订活动 */
+        reviseAct(scope){
+            this.addOrUpdateHandle(scope.row, "revise");
         },
         /* 修改活动 */
         updateAct(scope) {
@@ -533,34 +658,25 @@ export default {
         },
         // 删除
         deleteHandle(id) {
-            console.log(id)
-            this.$confirm(`您确定要删除此记录吗?`, '提示', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
-                type: 'warning'
-            }).then(() => {
-                this.$cmmList.marketingDel({
-                    "id": id,
-                    "tenantId": this.tenantId
-                }).then(data => {
-                    console.log(data)
-                    if (data && data.code === 200) {
-                        this.$message({
-                            message: '操作成功',
-                            type: 'success',
-                            duration: 1500,
-                            onClose: () => {
-                                this.getDataList()
-                            }
-                        })
-                    } else {
-                        this.$message.error(data.msg)
-                    }
-
-                }).catch(err => {
-                    console.log(err)
-                })
-            }).catch(() => {})
+            this.$cmmList.marketingDel({
+                "id": id,
+                "tenantId": this.tenantId
+            }).then(data => {
+                if (data && data.code === 200) {
+                    this.$message({
+                        message: '操作成功',
+                        type: 'success',
+                        duration: 1500,
+                        onClose: () => {
+                            this.search();
+                        }
+                    })
+                } else {
+                    this.$message.error(data.msg)
+                }
+            }).catch(err => {
+                console.log(err)
+            })
         },
         // 停用或启用
         stopOrStartHandle(id, status) {
@@ -591,7 +707,7 @@ export default {
                                 duration: 1500,
                                 onClose: () => {
                                     this.startOrStopShow = false
-                                    this.getDataList()
+                                    this.search();
                                 }
                             })
                         } else {
@@ -630,20 +746,32 @@ export default {
                     console.log(err)
                 })
             } else { //查看审批单
-                this.pageShow = 'auditView'
-                this.$nextTick(() => {
-                    this.$refs.auditView.init()
-                })
+                // this.pageShow = 'auditView'
+                // this.$nextTick(() => {
+                //     this.$refs.auditView.init()
+                // })
+                this.approvalDetailOpen(scope)
             }
 
-        }
+        },
+          /* 开启审批单 */
+        approvalDetailOpen(scope) {
+            console.log(scope)
+            this.bizNo=scope.row.activityCode
+            this.showApproval=true
+        },
+         //关闭查看审批单
+        approvalDetailClose(){
+            this.showApproval=false
+        },
 
     }
 }
 </script>
 
 <style lang="scss" scoped>
-section {
-    margin-bottom: 15px;
+@import "../../../assets/comList.scss";
+.el-dropdown-menu__item{
+    font-size: 12px !important;
 }
 </style>

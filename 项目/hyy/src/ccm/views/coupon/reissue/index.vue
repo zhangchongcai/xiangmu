@@ -48,14 +48,15 @@ export default {
                 keyName: 'requsetNo',
                 name: '销售申请单号',
                 type: 'input',
-                value: {
-                    value: '',
-                    text: ''
-                },
-                alertButton: true,
-                readonly: true,
-                clearable: true,
-                alertSrc: 'http://192.168.100.148:8080/alertWindow',
+                value:''
+                // value: {
+                //     value: '',
+                //     text: ''
+                // },
+                // alertButton: true,
+                // readonly: true,
+                // clearable: true,
+                // alertSrc: 'http://192.168.100.148:8080/alertWindow',
             }],
             tableConfig: [{
                 label: '手机号码',

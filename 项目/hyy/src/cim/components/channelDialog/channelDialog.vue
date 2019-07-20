@@ -1,5 +1,5 @@
 <template>
-  <el-dialog class="cinema-dialog" width="40%" :title="title" :visible.sync="channelDialog">
+  <el-dialog class="channel-dialog" :width="multiple?'750px': '576px'" :title="title" :visible.sync="channelDialog" @open="openCallBack">
     <el-form
       :inline="true"
       :model="queryData"
@@ -12,38 +12,64 @@
       </el-form-item>
       <el-button @click="handlechannelDialogQuery">搜索</el-button> -->
     </el-form>
-    <div class="table-box">
-      <el-table
-        ref="channelTable"
-        :data="tableData"
-        height="300"
-        @selection-change="handleSelectionchannel"
-        stripe
-        empty-text="暂无记录"
-      >
-        <el-table-column type="selection" width="40"></el-table-column>
-        <el-table-column
-          v-for="item in channelTableColumn"
-          :key="item.key"
-          :prop="item.key"
-          :label="item.label"
-          :formatter="item.formatter"
-        ></el-table-column>
-      </el-table>
-      <!-- <div class="page-wrap">
-        <el-pagination
-          :current-page="queryData.page"
-          :page-size="queryData.pageSize"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-          :total="channelTotal"
-          layout="total, prev, pager, next, jumper"
-        ></el-pagination>
-      </div> -->
-    </div>
+    <el-row>
+      <el-col :span="multiple ? 18 : 24">
+        <div class="table-box">
+          <el-table
+                  ref="channelTable"
+                  :data="tableData"
+                  row-key="channelUid"
+                  height="400"
+                  v-loading="tableLoding"
+                  @selection-change="handleSelectionchannel"
+                  stripe
+                  empty-text="暂无记录"
+          >
+            <el-table-column type="selection" width="40" reserve-selection v-if="!check"></el-table-column>
+            <el-table-column
+                    v-for="item in channelTableColumn"
+                    :key="item.key"
+                    :prop="item.key"
+                    :label="item.label"
+                    :formatter="item.formatter"
+            ></el-table-column>
+          </el-table>
+          <div class="page-wrap">
+            <el-pagination
+                    background
+                    :current-page="queryData.page"
+                    :page-size="queryData.pageSize"
+                    @size-change="handleSizeChange"
+                    @current-change="handleCurrentChange"
+                    :total="total"
+                    layout="total, prev, pager, next, jumper"
+            ></el-pagination>
+          </div>
+        </div>
+      </el-col>
+      <el-col :span="6" v-if="multiple">
+        <div class="empty-box">
+          <div class="clearfix">
+            <span class="selected-content left">已选内容</span>
+            <el-button type="text" class="right" @click="handleEmptyMaterials">清 空</el-button>
+          </div>
+          <ul class="empty-content">
+            <li :key="item.merCode" v-for="(item) in selectedData" class="clearfix">
+              <span class="left title">{{item.channelName || item.name}}</span>
+              <i class="el-icon-close right" @click="deleteSelected(item,false)"></i>
+            </li>
+          </ul>
+        </div>
+      </el-col>
+    </el-row>
     <span slot="footer">
-      <el-button @click="handleDialog(false)">取 消</el-button>
-      <el-button type="primary" @click="handleSubmit">确 定</el-button>
+      <div v-if="check">
+          <el-button @click="handleDialog(false)">关 闭</el-button>
+       </div>
+      <div v-else>
+         <el-button type="primary" @click="handleSubmit">确 定</el-button>
+         <el-button @click="handleDialog(false)">取 消</el-button>
+      </div>
     </span>
   </el-dialog>
 </template>
@@ -51,7 +77,7 @@
 <script>
 export default {
   props: {
-    //是否多选
+    //标题
     title: {
       type: String,
       default: "选择渠道"
@@ -60,7 +86,21 @@ export default {
     multiple: {
       type: Boolean,
       default: false
-    }
+    },
+    //查看
+    check: {
+      type: Boolean,
+      default: false
+    },
+    cinemaUid: {
+      type: String,
+      default: '',
+    },
+    // 回选数据
+    dialogFeedbackData: {
+      type: [Array],
+      default: () => []
+    },
   },
   data() {
     return {
@@ -68,12 +108,13 @@ export default {
       //渠道弹窗查询数据
       queryData: {
         cinemaName: "",
+        cinemaUid:this.cinemaUid,
         page: 1,
         pageSize: 10
       },
 
       channelTotal: 0,
-      channelTableSelection: [],
+      selectedData: [],
       channelTableColumn: [
         {
           label: "渠道名称",
@@ -88,69 +129,127 @@ export default {
           key: "company"
         },
       ],
-
-      tableData: [
-        // {
-        //   channelCode: "CG201904010001",
-        //   cinemaName: "辰星测试渠道1",
-        //   areaName: "北京"
-        // },
-      ]
+      tableLoding:false,
+      tableData: [],
+      total:0,
     };
   },
   created() {
-    this.init();
+
   },
-  mounted() {},
+  mounted() {
+
+
+  },
   methods: {
     init() {
-      this.queryBaseChannel(this.queryData);
+      console.log(this.dialogFeedbackData)
+      this.queryData.page = 1;
+      if(this.check){
+        this.tableData = this.dialogFeedbackData.slice(this.queryData.page-1,this.queryData.pageSize);
+        this.total = this.dialogFeedbackData.length;
+      }else{
+        this.queryBaseChannel(this.queryData,"open");
+      }
+
+    },
+    openCallBack() {
+      this.init();
     },
     handleDialog(flag) {
       this.channelDialog = flag;
     },
     // 获取渠道列表
-    queryBaseChannel(param) {
+    queryBaseChannel(param={},type) {
+      this.tableLoding = true;
       this.$cimList.headquartersGoods
         .queryBaseChannel(param)
         .then(resData => {
           if (resData.code == 200) {
-            this.tableData = resData.data;
+            if(type="open"){
+              this.$nextTick(() => {
+                this.$refs.channelTable.clearSelection();
+                if (this.dialogFeedbackData && this.dialogFeedbackData.length > 0) {
+                  this.dialogFeedbackData.forEach(row => {
+                    this.$refs.channelTable.toggleRowSelection(row, true);
+                  });
+                }
+              })
+            }
+            resData.data.list = resData.data.list || [];
+            this.tableData = resData.data.list.map(item => {
+              item.channelUid = item.uid;
+              return item;
+            })
+            this.total = resData.data.total;
           }
+          this.tableLoding = false;
         })
-        .catch(err => {});
+        .catch(err => {
+          this.tableLoding = false;
+        });
     },
     //渠道弹窗搜索
     handlechannelDialogQuery() {
-      this.getMerchannelist(this.queryData);
+
     },
 
     //渠道弹窗选择确定
     handleSubmit() {
-      this.$emit("onSumit", this.channelTableSelection);
+      this.$emit("onSumit", this.selectedData);
       this.handleDialog(false);
     },
     //选中渠道
     handleSelectionchannel(rows) {
-      this.channelTableSelection = rows;
+      console.log("选中渠道", rows)
+      this.selectedData = rows;
       //不是多选
       if (!this.multiple) {
-        if (this.channelTableSelection.length > 1) {
+        if (this.selectedData.length > 1) {
           this.$refs.channelTable.toggleRowSelection(
-            this.channelTableSelection[0]
+            this.selectedData[0]
           );
         }
       } else {
       }
     },
+    //去重(根据uid相同，避免数据问题)
+    unRepeat(arr) {
+      let hash = {};
+      return arr.reduce((item, next) => {
+        if (!hash[next.uid]) {
+          hash[next.uid] = true;
+          item.push(next);
+        }
+        return item;
+      }, []);
+    },
+    //删除选择
+    deleteSelected(row, flag) {
+      console.log(row)
+      this.$refs.channelTable.toggleRowSelection(row, false);
+    },
+    // 清空选择
+    handleEmptyMaterials() {
+      this.$refs.channelTable.clearSelection();
+    },
     handleSizeChange(val) {
       this.queryData.pageSize = val;
-      this.getMerchannelist(this.queryData);
+      if(this.check){
+        this.tableData = this.dialogFeedbackData.slice(0,this.queryData.pageSize);
+      }else{
+        this.queryBaseChannel(this.queryData);
+      }
       console.log(`每页 ${val} 条`);
     },
     handleCurrentChange(val) {
       this.queryData.page = val;
-      this.getMerchannelist(this.queryData);
+      if(this.check){
+        let pageNum =  (this.queryData.page-1) * this.queryData.pageSize;
+        this.tableData = this.dialogFeedbackData.slice(pageNum,pageNum + this.queryData.pageSize);
+      }else{
+        this.queryBaseChannel(this.queryData);
+      }
       console.log(`当前页: ${val}`);
     }
   },
@@ -158,13 +257,41 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-.cinema-dialog {
+<style lang="scss">
+.channel-dialog {
   .el-form-item__content {
-    width: 250px;
+    width: 200px;
   }
-  .el-button {
-    margin-top: 5px;
+  .empty-box {
+    padding: 0 10px 10px 10px;
+    border: 1px solid #E5E5E5;
+    border-left: none;
+    .selected-content {
+      padding: 10px 0;
+    }
+    .el-icon-close{
+      cursor:pointer;
+    }
+    .title{
+      width: 85%;
+      overflow: hidden; /*超出部分隐藏*/
+      white-space: nowrap; /*不换行*/
+      text-overflow: ellipsis; /*超出部分文字以...显示*/
+    }
+    .el-button {
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    .empty-content {
+      height: 354px;
+      overflow-y: auto;
+      border-top: 1px solid #F5F5F5;
+      padding: 5px 0;
+      li {
+        padding: 6px 0;
+      }
+    }
   }
 }
 </style>

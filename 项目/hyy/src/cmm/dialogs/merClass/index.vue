@@ -9,6 +9,7 @@
       @handleBtnComfirmClick="confirmTreeBtn"
       @handleBtnCancelClick="cancelTreeBtn"
       @close="handleClose"
+      :close-on-click-modal="false"
     >
       <div slot="dialog-content">
         <div class="search-content">
@@ -69,8 +70,7 @@ export default {
   methods: {
     selectMerClass(uid) {
       let proClass = { uid: uid };
-      this.$cimList.headquartersGoods
-        .setmealLoadCategoies(proClass)
+      this.$cimList.getCategoryTrees(proClass)
         .then(res => {
           if (res.code === 200) {
             let merClassData = [];
@@ -101,7 +101,7 @@ export default {
         textArr
       }
       this.$emit('selectMerClassCallBack', data);
-      this.$emit('sameMerClassBack',data)
+      this.$emit('sameMerClassCallBack',data)
       this.$emit('maiPingMerClassCallBack',data)
     },
     cancelTreeBtn() {},

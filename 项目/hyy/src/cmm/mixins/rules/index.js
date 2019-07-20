@@ -2,14 +2,16 @@ import qs from 'qs'
 
 export default {
     data() {
-        
-        return{
-            commonRules:{
-                valActivityName: [{ 
-                    required: true, 
+
+        return {
+            commonRules: {
+                valActivityName: [{
+                    required: true,
                     validator: (rule, value, callback) => {
-                        if(!value){
-                            return callback(new Error('活动名称不能为空'))
+                        if (!value) {
+                            return callback(new Error('活动名称不能为空'));
+                        }else if(value.length>15){
+                            return callback(new Error('活动名称不能超过15位字符'));
                         }
                         let params = qs.stringify({
                             id: this.activityId,
@@ -26,7 +28,7 @@ export default {
                                             this.$message.error("活动名称已存在");
                                             callback(new Error('活动名称已存在'))
                                             return;
-                                        }else{
+                                        } else {
                                             callback()
                                         }
                                     } else {
@@ -37,15 +39,16 @@ export default {
                                 .catch(err => {
                                     console.log(err);
                                 });
-                        }else{
+                        } else {
                             callback()
                         }
+                        
                     },
-                    trigger: 'blur' 
+                    trigger: 'blur'
                 }]
             }
         }
     },
-    methods:{},
-    created(){}
+    methods: {},
+    created() {}
 }

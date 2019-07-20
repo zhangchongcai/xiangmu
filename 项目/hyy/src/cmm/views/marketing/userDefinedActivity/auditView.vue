@@ -1,10 +1,5 @@
 <template>
 <div class="auditView">
-    <div class="breadcrumb">
-      <el-breadcrumb separator-class="el-icon-arrow-right">
-        <el-breadcrumb-item>查看审批单</el-breadcrumb-item>
-      </el-breadcrumb>
-    </div>
     <el-form :model="dataForm" label-width="200px" class="common-form">
       <el-form-item label="任务编号：">
         <!-- <el-input v-model="dataForm.activityName"></el-input> -->

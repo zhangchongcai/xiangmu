@@ -1,7 +1,7 @@
 <template>
-<div>
+<div class="coupon-setRuleItem">
     <!-- 面包屑 -->
-    <curmbs :address="address"></curmbs>
+    <!-- <curmbs :address="address"></curmbs> -->
     <el-collapse v-model="activeNames">
         <el-form :model="ruleChild" ref="ruleChild" label-width="120px">
             <el-collapse-item title="规则基本信息" name="ruleInfo">
@@ -14,7 +14,7 @@
                 <!-- 兑换规则专有 -->
                 <template v-if="model.type == 'exchange'">
                     <el-form-item label="加价金额:">
-                        <span class="addPrice">{{ruleChild.bizPropertyMap.totalAddPrice}} 元 (需在兑换商品中设置加价金额)</span>
+                        <span class="addPrice">{{ruleChild.bizPropertyMap.totalAddPrice.toFixed(2)}} 元 (需在兑换商品中设置加价金额)</span>
                     </el-form-item>
                 </template>
             </el-collapse-item>
@@ -75,7 +75,12 @@
                                     <el-radio v-for="item in addConfig.system.planStartTimeOp" :key="item.value" :label="item.value">{{item.label}}</el-radio>
                                 </el-radio-group>
                                 <el-form-item v-if="addConfig.form.planStartTimeOp == 'TimeBetweenOperator'" prop="planTime">
-                                    <el-date-picker v-model="addConfig.form.planTime" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期">
+                                    <el-date-picker 
+                                    v-model="addConfig.form.planTime" 
+                                    type="daterange" 
+                                    range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期"
+                                    :picker-options="disabledDate"
+                                    >
                                     </el-date-picker>
                                 </el-form-item>
                             </el-form-item>
@@ -87,20 +92,25 @@
                                     <template v-for="(item,index) in addConfig.form.filmPlanInvalidTime_more">
                                         <el-row class="flex-base" :key="index">
                                             <el-form-item :prop="'filmPlanInvalidTime_more.'+index+'.value'" :rules="addConfig.rules.filmPlanInvalidTime_more">
-                                                <el-date-picker v-model="item.value" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期"></el-date-picker>
+                                                <el-date-picker 
+                                                v-model="item.value" 
+                                                type="daterange" 
+                                                range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期"
+                                                :picker-options="disabledDate"
+                                                ></el-date-picker>
                                             </el-form-item>
                                             <el-button type="text" @click="addOrRemove('filmPlanInvalidTime_more',index)">{{index == 0 ? '添加' : '删除'}}</el-button>
                                         </el-row>
                                     </template>
                                 </template>
                             </el-form-item>
-                            <el-form-item label="放映星期范围:" prop="filmPlanWeekRange">
+                            <el-form-item label="放映星期范围:" prop="filmPlanWeekRange" >
                                 <el-select v-model="addConfig.form.filmPlanWeekRange" placeholder="请选择">
                                     <el-option v-for="item in addConfig.system.filmPlanWeekRange" :key="item.value" :label="item.label" :value="item.value">
                                     </el-option>
                                 </el-select>
                                 <template v-if="addConfig.form.filmPlanWeekRange == 'WeekDateRangeOperator'">
-                                    <el-form-item prop="week">
+                                    <el-form-item prop="week" :rules="addConfig.rules.filmPlanInvalidWeek_more">
                                         <el-checkbox-group v-model="addConfig.form.week">
                                             <template v-for="(item, index) in addConfig.system.week">
                                                 <el-checkbox v-if="!item.isBr" :key="index" :label="item.value" @change="selectWeek($event,item)">{{item.label}}</el-checkbox>
@@ -118,7 +128,7 @@
                                 <template v-if="addConfig.form.filmPlanTimeRange == 'TimeRangeContainOperator'">
                                     <el-row class="flex-base" :key="index" v-for="(item,index) in addConfig.form.filmPlanTimeRange_more">
                                         <el-form-item :prop="'filmPlanTimeRange_more.'+index+'.value'" :rules="addConfig.rules.filmPlanTimeRange_more">
-                                            <el-time-picker is-range v-model="item.value" range-separator="至" start-placeholder="开始时间" end-placeholder="结束时间" placeholder="选择时间范围">
+                                            <el-time-picker is-range v-model="item.value" range-separator="至" start-placeholder="开始时间" end-placeholder="结束时间" placeholder="选择时间范围" format='HH:mm' value-format="HH:mm" >
                                             </el-time-picker>
                                         </el-form-item>
                                         <el-button type="text" @click="addOrRemove('filmPlanTimeRange_more',index)">{{index == 0 ? '添加' : '删除'}}</el-button>
@@ -129,7 +139,7 @@
                             <template v-for="(item,index) in addConfig.filmEffect">
                                 <el-form-item :key="index" :label="item.label+':'" :prop="item.prop">
                                     <el-row class="flex-base height40">
-                                        <el-radio-group class="margin-right-15" v-model="addConfig.form[`${item.prop}`]">
+                                        <el-radio-group class="margin-right-15" v-model="addConfig.form[`${item.prop}`]" >
                                             <el-radio v-for="(item,index) in item.radioOptions" :key="index" :label="item.value">{{item.label}}</el-radio>
                                         </el-radio-group>
                                         <template v-if="addConfig.form[`${item.prop}`] == item.children.showValue">
@@ -137,7 +147,13 @@
                                             <template v-if="!item.children.type">
                                                 <el-form-item :prop="`${item.children.prop}.text`" :rules="item.children.rules">
                                                     <el-row>
-                                                        <el-input class="input-type-166" v-model="addConfig.form[`${item.children.prop}`].text" :placeholder="'请选择'+item.children.placeholder"  clearable @clear="clearInputValue(item.children.prop,'both')"></el-input>
+                                                        <el-input class="input-type-166" 
+                                                        v-model="addConfig.form[`${item.children.prop}`].text" 
+                                                        :placeholder="'请选择'+item.children.placeholder"  
+                                                        :readonly=true
+                                                        >
+                                                            <i slot="suffix" class="el-icon-circle-close" @click="clearInputValue(item.children.prop,'both')" v-show="addConfig.form[`${item.children.prop}`].text"></i>
+                                                        </el-input>
                                                         <el-button type="primary" plain @click="selectInputValue(item.prop)">选择</el-button>
                                                     </el-row>
                                                 </el-form-item>
@@ -157,21 +173,40 @@
                             <template v-if="addConfig.form.productType == '0'">
                                 <el-form-item label="商品名称:" prop="merName.text" :rules="addConfig.rules.merName">
                                     <el-row class="flex-base">
-                                        <el-input class="input-type-166" v-model="addConfig.form.merName.text"  clearable @clear="clearInputValue('merName','both')"></el-input>
-                                        <el-button class="margin-left-10" type="primary" plain @click="selectInputValue('merName')">选择</el-button>
+                                        <el-input class="input-type-166" 
+                                        v-model="addConfig.form.merName.text" 
+                                        :readonly=true
+                                        >
+                                            <i slot="suffix" class="el-icon-circle-close" 
+                                            @click="clearInputValue('merName','both')" 
+                                            v-if="addConfig.form.merName.text"></i>
+
+                                        </el-input>
+                                        <el-button class="margin-left-10" type="primary" plain 
+                                        @click="selectInputValue('merName')">选择</el-button>
                                     </el-row>
                                 </el-form-item>
                             </template>
                             <template v-else-if="addConfig.form.productType == '1'">
                                 <el-form-item label="商品类别:" prop="className.text" :rules="addConfig.rules.className">
                                     <el-row class="flex-base">
-                                        <el-input class="input-type-166" v-model="addConfig.form.className.text"  clearable @clear="clearInputValue('merName','both')"></el-input>
+                                        <el-input class="input-type-166" 
+                                        v-model="addConfig.form.className.text"
+                                        :readonly=true  
+                                        >
+                                            <i slot="suffix" class="el-icon-circle-close" @click="clearInputValue('className','both')" v-show="addConfig.form.className.text"></i>
+                                        </el-input>
                                         <el-button class="margin-left-10" type="primary" plain @click="selectInputValue('className')">选择</el-button>
                                     </el-row>
                                 </el-form-item>
                                 <el-form-item label="品牌:" prop="brandName.text" :rules="addConfig.rules.brandName">
                                     <el-row class="flex-base">
-                                        <el-input class="input-type-166" v-model="addConfig.form.brandName.text"  clearable @clear="clearInputValue('merName','both')"></el-input>
+                                        <el-input class="input-type-166" 
+                                        v-model="addConfig.form.brandName.text"  
+                                        :readonly=true
+                                        >
+                                            <i slot="suffix" class="el-icon-circle-close" @click="clearInputValue('brandName','both')" v-show="addConfig.form.brandName.text"></i>
+                                        </el-input>
                                         <el-button class="margin-left-10" type="primary" plain @click="selectInputValue('brandName')">选择</el-button>
                                     </el-row>
                                 </el-form-item>
@@ -205,7 +240,7 @@
                                     </el-select>
                                     <template v-if="addConfig.form.priceModifyMethod != 'lowest_price'">
                                         <el-form-item class="margin-left-5" prop="priceModifyValue" :rules="addConfig.rules.priceModifyValue">
-                                            <el-input class="input-type-94" v-model="addConfig.form.priceModifyValue"></el-input> {{addConfig.form.priceModifyMethod == 'appointPercent' ? '%' : '元' }}
+                                            <el-input class="input-type-94" style="width:150px;" v-model="addConfig.form.priceModifyValue"></el-input> {{addConfig.form.priceModifyMethod == 'appointPercent' ? '%' : '元' }}
                                         </el-form-item>
                                     </template>
                                 </el-row>
@@ -219,7 +254,7 @@
                                         </el-select>
                                         <template v-if="addConfig.form.moneyMethod == 'fix_price'">
                                             <el-form-item class="margin-left-5" prop="fixPriceValue" :rules="addConfig.rules.fixPriceValue">
-                                                <el-input class="input-type-94" v-model="addConfig.form.fixPriceValue"></el-input> 元
+                                                <el-input class="input-type-94" style="width:150px;" v-model="addConfig.form.fixPriceValue"></el-input> 元
                                             </el-form-item>
                                         </template>
                                     </el-row>
@@ -232,19 +267,21 @@
                                         </el-form-item>
                                     </template>
                                     <template v-if="addConfig.form.moneyMethod == 'fix_price'">
-                                        <el-row class="flex-base">
+                                        <el-row class="flex-base" style="padding:5px 0;">
                                             <span class='margin-right-5 tips-font'>低于零售价时，由</span>
                                             <el-form-item prop="payer">
-                                                <el-select class="input-type-94" v-model="addConfig.form.payer" placeholder="请选择">
+                                                <el-select class="input-type-94" style="width:180px" v-model="addConfig.form.payer" placeholder="请选择">
                                                     <el-option v-for="item in addConfig.system.payer" :key="item.value" :label="item.label" :value="item.value">
                                                     </el-option>
                                                 </el-select>
                                             </el-form-item>
-                                            <span class="margin-right-5 margin-left-5 tips-font">支付</span>
-                                            <template v-if="addConfig.form.payer == 'cinema'">
-                                                <span class="margin-right-5 tips-font">限额</span>
+                                            <!-- <span class="margin-right-5 margin-left-5 tips-font">支付</span> -->
+                                            <template v-if="addConfig.form.payer == 'cinema' || addConfig.form.payer == 'client'">
+                                                <span class="margin-right-5 m-l-5 tips-font">限额</span>
                                                 <el-form-item prop="payerPayAmount">
-                                                    <el-input v-model="addConfig.form.payerPayAmount" class="input-type-94 margin-right-5"></el-input> 元
+                                                    <el-input v-model="addConfig.form.payerPayAmount" style="width:150px;" class="input-type-94 margin-right-5"></el-input> 元后,
+                                                    <span v-if="addConfig.form.payer == 'cinema'">再顾客补齐差额 </span>
+                                                    <span v-if="addConfig.form.payer == 'client'">再影院补贴补足差额</span>
                                                 </el-form-item>
                                             </template>
                                         </el-row>
@@ -273,8 +310,26 @@
     </el-collapse>
     <!-- 弹窗 -->
     <section v-if="alert.isShow">
-        <alertWindow :config="alert.config" @alertCallBack="alertCallBack"></alertWindow>
+        <!-- <alertWindow :config="alert.config" @alertCallBack="alertCallBack"></alertWindow> -->
     </section>
+    <!-- 影片弹窗 -->
+    <filmDialog :title="filmDialog.title" :dialogTableVisible.sync="filmDialog.filmDialogVisible" ref="movieNameOp" @callBack="handleFilmCallBack"></filmDialog>
+    <!-- 影片类型 -->
+    <filmTypeDialog :title="filmTypeDialog.title" :dialogTableVisible.sync="filmTypeDialog.filmTypeDialogVisible" ref="filmTypeNameOp" @callBack="handleFilmTypeCallBack"></filmTypeDialog>
+    <!-- 影院类型 -->
+    <cinemaTypeDialog title="选择影厅类型" :dialogTableVisible.sync="cinemaTypeDialog.cinemaTypeDialogVisible" ref="hallTypeNameOp" @callBack="handleCinemaTypeCallBack"></cinemaTypeDialog>
+    <!-- 影片效果 -->
+    <projectionEffectDialog :title="projectionEffectDialog.title" :dialogTableVisible.sync="projectionEffectDialog.projectionEffectDialogVisible" ref="showEffectOp" @callBack="handleProjectionEffectCallBack"></projectionEffectDialog>
+    <!-- 商品单选 -->
+    <selectedGoodsSingle ref="merName" 
+    :merNameId="addConfig.form.merName"  
+    @selectedGoodsSingleCallBack="selectedGoodsSingleCallBack"
+    :innerData="innerData"
+    ></selectedGoodsSingle>
+    <!-- 商品品牌单选 -->
+    <selectedBrandSingle ref="brandName" @selectedBrandSingleCallBack="selectedBrandSingleCallBack"></selectedBrandSingle>
+    <!-- 商品分类 -->
+    <merClassSingle ref="className" @merClassSingleCallBack="merClassSingleCallBack"></merClassSingle>
 </div>
 </template>
 
@@ -282,14 +337,47 @@
 import curmbs from "../../../components/crumbs/index.vue";
 import alertWindow from '../../../components/alertWindow/index.vue';
 const saleListUtil = require('../../../util/saleList.js');
+import alertHandle from 'ccm/mixins/marketing/alertHandle.js'
 export default {
     components: {
         curmbs,
         alertWindow
     },
+    mixins:[alertHandle],
     data() {
         let pointer = this;
         return {
+                /**
+             * 弹窗参数
+             */
+            innerData:'',
+            //返回有效日期
+            disabledDate :{
+                disabledDate(time){
+                    let date = new Date();
+                    let y = date.getFullYear()
+                    let m = date.getMonth()+1
+                    let d = date.getDate()
+                    let dateString = `${y}-${m}-${d}`
+                    // pointer.delayWindow.validDateStart
+                    return time.getTime() < new Date(dateString);
+
+                }
+            },
+            //影片类型弹窗
+            filmTypeDialog: {
+                filmTypeDialogVisible: false,
+                title: "影片类型弹窗",
+            },
+            //影片弹窗
+            filmDialog: {
+                filmDialogVisible: false,
+                title: "影片弹窗",
+            },//影院类型弹窗
+            cinemaTypeDialog: {
+                cinemaTypeDialogVisible: false,
+                title: "影院类型弹窗",
+            },
             address: [{
                     name: "票券",
                     path: ""
@@ -342,16 +430,16 @@ export default {
                                 return callBack(new Error('票券使用数量不能为空'));
                             }
 
-                            let reg = /^([1,9]{0,2})|(100)$/;
-                            if (!reg.test(value)) {
-                                return callBack(new TypeError('请输入数字'));
+                            let regExp = /^[1-9]\d*$/;
+                            if (!regExp.test(value)) {
+                                return callBack(new TypeError('请输入正整数'));
                             }
 
                             if (value < 0 || value > 100) {
                                 return callBack(new TypeError('请输入1-100的整数数字'));
                             }
 
-                            callBack();
+                            return callBack();
                         }
                     }
                 }
@@ -428,7 +516,9 @@ export default {
                 isShow: false,
                 isEdition: false,
                 type: '',
-                form: {},
+                form: {
+                    // merName:{value:''}
+                },
                 rules: {
                     amount: {
                         required: true,
@@ -441,6 +531,8 @@ export default {
 
                             if (!reg.test(value)) {
                                 callBack(new Error('请输入小于99的整数'));
+                            }else if(value == 0){
+                                return callBack(new TypeError('请输入正整数'));
                             } else {
                                 callBack();
                             }
@@ -455,6 +547,11 @@ export default {
                         message: '请选择日期范围',
                         trigger: 'blur'
                     },
+                    filmPlanInvalidWeek_more: {
+                        required: true,
+                        message: '请选择星期范围',
+                        trigger: 'blur'
+                    },
                     filmPlanTimeRange_more: {
                         required: true,
                         message: '请选择时间段',
@@ -467,14 +564,24 @@ export default {
                             if (!value) {
                                 return callBack(new Error('请输入金额'));
                             }
+                            if(this.addConfig.form.priceModifyMethod != 'appointPercent'){
+                                let reg = /(^[1-9]([0-9]+)?(\.[0-9]{1,2})?$)|(^(0){1}$)|(^[0-9]\.[0-9]([0-9])?$)/;
 
-                            let reg = /^\d{0,3}(\.){0,1}\d{1,2}$/;
+                                if (!reg.test(value)) {
+                                    return callBack(new TypeError('请输入正数,且允许两位小数'));
+                                }else if(value == 0){
+                                    return callBack(new TypeError('请输入正数,且允许两位小数'));
+                                }
 
-                            if (reg.test(value)) {
-                                callBack();
+                            }else{
+                                let reg = /^(?:(?!0\d)\d{1,2}(?:\.\d{1,2})?|100(?:\.0{1,2})?)$/;
+                                if (!reg.test(value)) {
+                                    return callBack(new TypeError('请输入0~100的正数,且允许两位小数'));
+                                }
                             }
+                            
 
-                            callBack(new TypeError('请输入正确的数值！整数位不超过3位,小数位不超过2位！'));
+                            return callBack();
                         }
                     },
                     fixPriceValue: {
@@ -485,13 +592,15 @@ export default {
                                 return callBack(new Error('请输入金额'));
                             }
 
-                            let reg = /^\d{0,3}(\.){0,1}\d{1,2}$/;
+                            const reg = /(^[1-9]([0-9]+)?(\.[0-9]{1,2})?$)|(^(0){1}$)|(^[0-9]\.[0-9]([0-9])?$)/;
 
-                            if (reg.test(value)) {
-                                callBack();
+                            if (!reg.test(value)) {
+                                return callBack(new TypeError('请输入正数,且允许两位小数'));
+                            }else if(value == 0){
+                                return callBack(new TypeError('请输入正数,且允许两位小数'));
                             }
 
-                            callBack(new TypeError('请输入正确的数值！整数位不超过3位,小数位不超过2位！'));
+                            return callBack();
                         }
                     },
                     addPriceValue: {
@@ -501,26 +610,41 @@ export default {
                             if (!value) {
                                 return callBack(new Error('请输入金额'));
                             }
+                            const reg = /(^[1-9]([0-9]+)?(\.[0-9]{1,2})?$)|(^(0){1}$)|(^[0-9]\.[0-9]([0-9])?$)/;
 
-                            let reg = /^\d{0,3}(\.){0,1}\d{1,2}$/;
-
-                            if (reg.test(value)) {
-                                callBack();
+                            if (!reg.test(value)) {
+                                return callBack(new TypeError('请输入正数,且允许两位小数'));
+                            }else if(Number(value)>999.99){
+                                return callBack(new TypeError('请输入金额范围,0~999.99'));
                             }
 
-                            callBack(new TypeError('请输入正确的数值！整数位不超过3位,小数位不超过2位！'));
+                            return callBack();
                         }
                     },
                     payerPayAmount: {
                         required: true,
-                        message: '请输入限额',
+                        validator: (rules, value, callBack) => {
+                            if (!value) {
+                                return callBack(new Error('请输入金额'));
+                            }
+
+                            const reg = /(^[1-9]([0-9]+)?(\.[0-9]{1,2})?$)|(^(0){1}$)|(^[0-9]\.[0-9]([0-9])?$)/;
+
+                            if (!reg.test(value)) {
+                                return callBack(new TypeError('请输入正数,且允许两位小数'));
+                            }else if(value == 0){
+                                return callBack(new TypeError('请输入正数,且允许两位小数'));
+                            }
+
+                            return callBack();
+                        },
                         trigger: 'blur',
                         type: 'number'
                     },
                     // 卖品
                     merName: {
                         required: true,
-                        trigger: 'blur',
+                        trigger: 'change',
                         validator: (rules, value, callBack) => {
                             if (!value) {
                                 return callBack(new Error('请选择商品名称'));
@@ -530,7 +654,7 @@ export default {
                     },
                     className: {
                         required: true,
-                        trigger: 'blur',
+                        trigger: 'change',
                         validator: (rules, value, callBack) => {
                             if (!value) {
                                 return callBack(new Error('请选择商品类别'));
@@ -540,7 +664,7 @@ export default {
                     },
                     brandName: {
                         required: true,
-                        trigger: 'blur',
+                        trigger: 'change',
                         validator: (rules, value, callBack) => {
                             if (!value) {
                                 return callBack(new Error('请选择品牌'));
@@ -557,9 +681,12 @@ export default {
                             }
 
                             let priceEnd = pointer.addConfig.form.priceEnd;
-                            let reg = /^([0-9]{1,3})$/;
+                            const reg = /(^[1-9]([0-9]+)?(\.[0-9]{1,2})?$)|(^(0){1}$)|(^[0-9]\.[0-9]([0-9])?$)/;
+
                             if (!reg.test(value)) {
-                                return callBack(new Error('请输入小于999大于等于0的值'))
+                                return callBack(new TypeError('请输入正数,且允许两位小数'));
+                            }else if(value == 0){
+                                return callBack(new TypeError('请输入正数,且允许两位小数'));
                             }
 
                             if (priceEnd && value > priceEnd) {
@@ -580,9 +707,12 @@ export default {
 
                             let priceStart = pointer.addConfig.form.priceStart;
 
-                            let reg = /^([0-9]{1,3})$/;
+                            const reg = /(^[1-9]([0-9]+)?(\.[0-9]{1,2})?$)|(^(0){1}$)|(^[0-9]\.[0-9]([0-9])?$)/;
+
                             if (!reg.test(value)) {
-                                return callBack(new Error('请输入小于999大于等于0的值'))
+                                return callBack(new TypeError('请输入正数,且允许两位小数'));
+                            }else if(value == 0){
+                                return callBack(new TypeError('请输入正数,且允许两位小数'));
                             }
 
                             if (priceStart && value < priceStart) {
@@ -845,12 +975,16 @@ export default {
                         }
                     ],
                     payer: [{
-                        label: '影院',
+                        label: '影院支付',
                         value: 'cinema'
                     }, {
-                        label: '客户',
-                        value: 'client'
-                    }],
+                        label: '客户支付全部差额',
+                        value: 'clientAll'
+                    },{
+                        label:'客户支付',
+                        value:'client'
+                    }
+                    ],
                     decimalRoundMode: [{
                         label: '四舍五入',
                         value: 'ROUND_HALF_UP'
@@ -898,7 +1032,7 @@ export default {
                         rules: [{
                             required: true,
                             message: '请选择影片效果',
-                            trigger: 'blur'
+                            trigger: 'change'
                         }]
                     }
                 }, {
@@ -918,7 +1052,7 @@ export default {
                         rules: [{
                             required: true,
                             message: '请选择影片名称',
-                            trigger: 'blur'
+                            trigger: 'change'
                         }]
                     }
                 }, {
@@ -938,7 +1072,7 @@ export default {
                         rules: [{
                             required: true,
                             message: '请选择影片类型',
-                            trigger: 'blur'
+                            trigger: 'change'
                         }]
                     }
                 }, {
@@ -948,7 +1082,7 @@ export default {
                         label: '不限',
                         value: ''
                     }, {
-                        label: '指定影片类型',
+                        label: '指定影厅类型',
                         value: 'normalIn'
                     }],
                     children: {
@@ -958,7 +1092,7 @@ export default {
                         rules: [{
                             required: true,
                             message: '请选择影厅类型',
-                            trigger: 'blur'
+                            trigger: 'change'
                         }]
                     }
                 }]
@@ -1048,7 +1182,7 @@ export default {
                  * @param {String}  bizPropertyMap.containSaleItemType - 包含的商品类型 "0,1"
                  */
                 bizPropertyMap: {
-                    "couponAmount": null,
+                    "couponAmount": '',
                     "totalAddPrice": 0,
                     "containSaleItemType": ""
                 }
@@ -1065,6 +1199,7 @@ export default {
     },
     created() {
         let query = this.$route.query;
+        console.log(query)
         this.enterQuery = query;
         // 设置当前模式
         this.setModeType(query.type);
@@ -1073,9 +1208,11 @@ export default {
         if (isEdition && isEdition != 'false') {
             this.isEditionRule = true;
             this.editIndex = query.editIndex;
-            let params = this.$store.getters[`saleList/getChildRule`];
+            let params =  JSON.parse(JSON.stringify(this.$store.getters[`saleList/getChildRule`]));
             let ruleChild = params.ruleChild;
             // 拆解数据用于显示
+            console.log("this.addConfig",this.addConfig)
+            console.log('获取vuex子规则:',ruleChild)
             saleListUtil.unPackageRuleTable(ruleChild,this);
             this.ruleChild = ruleChild;
         }
@@ -1085,6 +1222,13 @@ export default {
         this.model.familyIdBaseNum = query.familyIdBaseNum;
     },
     methods: {
+        
+        // change(val){
+            // console.log(val)
+        // },
+        // timeBlur(val){
+            // console.log(val)
+        // },
         /**
          * @function setModeType - 设置模式
          * @param {String} type- 类型模式 exchange兑换 favourable优惠
@@ -1110,13 +1254,19 @@ export default {
          * @function addRuleItem - 添加商品
          */
         addRuleItem(val) {
+            console.log('添加商品----------star------------------',this.ruleChild)
             this.$refs[`addConfig`].clearValidate();
             let type = this.model.type;
-
-            // 修改添加模式
+            // 设置当前状态为正在编辑中            
+            this.addConfig.isEdition = true;
+            // 备份
+            this.ruleChildCopy = JSON.parse(JSON.stringify(this.ruleChild));
+            this.tableDataCopy = JSON.parse(JSON.stringify(this.tableConfig.data));
+            // 修改添加模式修改添加模式
             this.addConfig.form = this.addConfig.options[`${type}_${val}`];
             this.addConfig.type = val;
             this.addConfig.isShow = true;
+            console.log('添加商品----------end------------------',this.ruleChild)
         },
         /**
          * @function addOrRemove - 添加或移除时间段
@@ -1125,7 +1275,7 @@ export default {
          */
         addOrRemove(itemName, index) {
             let pointer = this;
-            let itemArray = JSON.parse(JSON.stringify(pointer.addConfig.form[`${itemName}`]));
+            let itemArray = pointer.addConfig.form[`${itemName}`];
 
             if (index == 0) {
                 itemArray.push({
@@ -1136,6 +1286,7 @@ export default {
             }
 
             pointer.addConfig.form[`${itemName}`] = itemArray;
+            console.log(itemName,pointer.addConfig.form[`${itemName}`])
         },
         /**
          * @function selectWeek - 选择放映排除日期指定范围
@@ -1179,6 +1330,7 @@ export default {
                 if (validate) {
                     if (formName == 'addConfig') {
                         // 组装子规则
+                        console.log(this.addConfig.form.filmPlanTimeRange_more)
                         this.packageAddConfig(this.addConfig.form, this.addConfig.type, this.model.familyIdBaseNum, (new Date()).getTime());
 
                         // 当前是否为编辑状态，如果是则重置编辑状态
@@ -1188,7 +1340,9 @@ export default {
 
                         this.$refs[formName].resetFields();
                     } else {
-
+                        if(this.addConfig.isEdition){
+                            return this.$message({message:'当前处于编辑状态,请保存修改',type:'warning'})
+                        }
                         let containSaleItemType = this.ruleChild.bizPropertyMap.containSaleItemType;
                         if (containSaleItemType) {
                             // let couponAmount = this.ruleChild.count;
@@ -1196,16 +1350,22 @@ export default {
                             this.$store.commit('saleList/updateChildRule', {
                                 ruleChild: this.ruleChild
                             });
-
+                            this.$store.commit("tagNav/removeTagNav", {
+                                name: this.$route.name,
+                                path: this.$route.path,
+                                title: this.$route.meta.title,
+                                query: this.$route.query
+                            })
                             this.$router.push({
                                 name: 'createSales',
-                                params: {
+                                query: {
                                     isGetRule: true,
                                     isGetForm: true,
                                     isEditionRule: this.isEditionRule,
                                     editIndex: this.editIndex
                                 }
                             });
+                            
                         } else {
                             this.$message({
                                 message: '需要添加商品或影票',
@@ -1222,26 +1382,41 @@ export default {
          */
         closeAddItem(formName) {
             if (formName == 'addConfig') {
-                this.restForm();
-
                 if (this.addConfig.isEdition) {
-
-                    this.ruleChild = JSON.parse(JSON.stringify(this.ruleChildCopy));
-                    this.tableConfig.data = JSON.parse(JSON.stringify(this.tableDataCopy));
-
-                    this.ruleChildCopy = {};
-                    this.tableDataCopy = [];
-                    this.addConfig.isEdition = false;
+                    this.$confirm('放弃编辑?', '提示', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        this.restForm();
+                        this.ruleChild = JSON.parse(JSON.stringify(this.ruleChildCopy));
+                        console.log('表格关闭的ruleChild:',this.ruleChild)
+                        this.tableConfig.data = JSON.parse(JSON.stringify(this.tableDataCopy));
+                        this.ruleChildCopy = {};
+                        this.tableDataCopy = [];
+                        this.addConfig.isEdition = false;
+                    }).catch((msg) => {
+                        console.log(msg)
+                    })
                 }
             } else {
-                this.$confirm('确定不提交就退出？', '提示', {
+                if(this.addConfig.isEdition){
+                    return  this.$message({message:'当前处于编辑状态,请保存修改',type:'warning'})
+                }
+                this.$confirm('确定不提交就退出?', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
                     type: 'warning'
                 }).then(() => {
+                    this.$store.commit("tagNav/removeTagNav", {
+                        name: this.$route.name,
+                        path: this.$route.path,
+                        title: this.$route.meta.title,
+                        query: this.$route.query
+                    })
                     this.$router.push({
                         name: 'createSales',
-                        params: {
+                        query: {
                             isGetForm: true
                         }
                     })
@@ -1268,6 +1443,7 @@ export default {
          */
         packageAddConfig(form, type, baseNum, childNum) {
             let ruleConditions = JSON.parse(JSON.stringify(this.ruleChild[`ruleConditions`]));
+            console.log('规则',form)
             let actions = JSON.parse(JSON.stringify(this.ruleChild[`actions`]));
 
             let familyId = `${baseNum}_${childNum}`;
@@ -1332,6 +1508,7 @@ export default {
                 // 放映星期范围
                 let filmPlanWeekRangeVal = form[`filmPlanWeekRange`];
                 if (filmPlanWeekRangeVal) {
+                    // console.log('放映星期范围',filmPlanWeekRangeVal)
                     let obj = {
                         key: 'filmPlanWeekRange',
                         category: 'FilmTicketInfo',
@@ -1349,6 +1526,7 @@ export default {
                             }
                         }
                         obj[`value`] = _weekArr.join(',');
+
                     }
                     ruleConditions.push(obj);
                 }
@@ -1356,6 +1534,8 @@ export default {
                 // 放映时段范围
                 let filmPlanTimeRangeVal = form[`filmPlanTimeRange`];
                 if (filmPlanTimeRangeVal) {
+                    console.log('放映时段范围:',filmPlanTimeRangeVal)
+                    console.log('放映时段范围:',form[`filmPlanTimeRange_more`])
                     let obj = {
                         key: 'filmPlanTimeRange',
                         category,
@@ -1368,9 +1548,11 @@ export default {
                         let _timeArr = [];
                         for (let i = 0; i < timeArr.length; i++) {
                             let item = timeArr[i].value;
-                            _timeArr.push([this.ruleTime(item[0], 'time'), this.ruleTime(item[1], 'time')]);
+                            _timeArr.push([item[0], item[1]]);
                         }
                         obj[`value`] = JSON.stringify(_timeArr);
+                        console.log('放映时段范围-------',obj[`value`])
+                        console.log(timeArr)
                     }
                     ruleConditions.push(obj);
                 }
@@ -1528,7 +1710,6 @@ export default {
 
                     // 累加总修改加价金额
                     this.ruleChild.bizPropertyMap.totalAddPrice += Number(form[`addPriceValue`]);
-
                 }
                 // 固定金额
                 if (moneyMethodVal == 'fix_price') {
@@ -1538,21 +1719,27 @@ export default {
                         familyId
                     });
 
-                    // 低于零售价时，由谁支付
+                     // 低于零售价时，由谁支付 多少金额 
                     let payerVal = form[`payer`];
-                    actions.push({
-                        key: 'payer',
-                        value: payerVal,
-                        familyId
-                    });
+                    
                     // 支付限额
-                    if (payerVal == 'cinema') {
+                    if (payerVal == 'cinema' || payerVal == 'client') {
                         actions.push({
                             key: 'payerPayAmount',
                             value: form[`payerPayAmount`],
                             familyId
                         });
                     }
+
+                    // 低于零售价时，由谁支付
+                    if(payerVal == 'clientAll'){
+                        payerVal = 'client'
+                    }
+                    actions.push({
+                        key: 'payer',
+                        value: payerVal,
+                        familyId
+                    });
 
                     // 是否高于零售价
                     let couponMoneyAsPriceInVal = form[`couponMoneyAsPriceIn`];
@@ -1627,7 +1814,6 @@ export default {
             if (type == 'time') {
                 returnStr = `${_hours}:${_minutes}`;
             }
-
             return returnStr;
         },
 
@@ -1671,7 +1857,6 @@ export default {
             // 备份
             this.ruleChildCopy = JSON.parse(JSON.stringify(this.ruleChild));
             this.tableDataCopy = JSON.parse(JSON.stringify(this.tableConfig.data));
-
             let c_type = param.type;
             let familyId = param.familyId
             // 取出对应faimlyId的ruleConditions和actions
@@ -1691,9 +1876,13 @@ export default {
          * @function deleteRuleItem - 删除子规则
          */
         deleteRuleItem(param) {
-            let familyId = param.familyId;
-            // 移除对应faimlyId的ruleConditions和actions
-            this.ruleChild = this.removeruleConditionsActions(this.ruleChild, familyId);
+            let pointer = this 
+            pointer.$confirm(`确定删除?`, '提示',{type:'warning'}).then(_ => {
+                let familyId = param.familyId;
+                // 移除对应faimlyId的ruleConditions和actions
+                this.ruleChild = this.removeruleConditionsActions(this.ruleChild, familyId);
+                }).catch(_ => {});
+            
         },
         /**
          * @function removeruleConditionsActions - 移除对应faimlyId的ruleConditions和actions,table数据
@@ -1738,7 +1927,7 @@ export default {
 
                 // 减去对应加价金额
                 if (item.familyId == familyId && item.key == 'addPriceValue') {
-                    ruleChild.bizPropertyMap.totalAddPrice -= item.value;
+                    ruleChild.bizPropertyMap.totalAddPrice -= Number(item.value);
                 }
 
                 if (item.familyId != familyId) {
@@ -1764,9 +1953,11 @@ export default {
             if (!options[`${inputName}`]) {
                 return TypeError('alertConfigs对象中不包含：', inputName);
             }
-
-            this.alert.config = options[`${inputName}`];
-            this.alert.isShow = true;
+            console.log('打开弹窗名：',inputName,'回参：',this.addConfig.form[inputName].value)
+            this.$refs[inputName].openDialog(true)
+            this.innerData = this.addConfig.form[inputName].value
+            // this.alert.config = options[`${inputName}`];
+            // this.alert.isShow = true;
         },
         /**
          * @function clearInputValue - 清空输入框
@@ -1778,7 +1969,8 @@ export default {
                 this.addConfig.form[`${inputName}`].text = '';
             }
 
-            this.form[`${inputName}`].value = '';
+            this.addConfig.form[`${inputName}`].value = '';
+            console.log('清除input框数据',this.addConfig.form[`${inputName}`])
         },
         /**
          * @function alertCallBack - 弹窗回调
@@ -1883,3 +2075,11 @@ bottom {
     height: 40px;
 }
 </style>
+<style lang="scss">
+.coupon-setRuleItem{
+    .el-date-editor .el-range-separator{
+        width: 8%
+    }
+}
+</style>
+

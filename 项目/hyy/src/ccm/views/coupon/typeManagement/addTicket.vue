@@ -5,7 +5,7 @@
     <!-- 填写栏 -->
     <el-form :model="form" :rules="rules" ref="form" label-width="100px">
         <el-collapse v-model="activeNames">
-            <el-collapse-item title="票券基本信息" name="baseConfig">
+            <!-- <el-collapse-item title="票券基本信息" name="baseConfig"> -->
                 <el-form-item label="类型:" prop="couponType">
                     <el-select class="input-type-166" v-model="form.couponType" :disabled="isChangeType" placeholder="请选择">
                         <el-option v-for="item in baseConfig.ticketType.options" :key="item.value" :label="item.label" :value="item.value">
@@ -21,7 +21,7 @@
                 <el-form-item v-if="isChangeType" label="状态:" prop="couponTypeStatus">
                     <el-radio v-for="item in baseConfig.couponTypeStatus.options" v-model="form.couponTypeStatus" :label="item.value" :key="item.value">{{item.label}}</el-radio>
                 </el-form-item>
-            </el-collapse-item>
+            <!-- </el-collapse-item> -->
         </el-collapse>
         <section class="flex-base flex-center">
             <el-row>
@@ -43,7 +43,17 @@ export default {
         console.log(this.$route.query);
         let isQueryNull = JSON.stringify(this.$route.query) == '{}' ? true : false;
         let param;
+        let _address = {
+                name: "新建票券分类设置",
+                path: "",
+                active: true
+            }
         if (!isQueryNull) {
+            _address = {
+                    name: "修改票券分类设置",
+                    path: "",
+                    active: true
+                }
             param = this.$route.query;
             let isChangeType = param.isChangeType ? param.isChangeType : false;
             if (isChangeType) {
@@ -51,6 +61,8 @@ export default {
                 this.form = param.data;
             }
         }
+            
+        this.address.push(_address)
 
     },
     data() {
@@ -68,11 +80,7 @@ export default {
                     name: "票券分类设置",
                     path: ""
                 },
-                {
-                    name: "修改票券分类设置",
-                    path: "",
-                    active: true
-                }
+                
             ],
             baseConfig: {
                 /* 类型 */
@@ -131,7 +139,7 @@ export default {
                                     if (data.flag == 1) {
                                         callback();
                                     } else {
-                                        callback(new Error('票券名称已存在,请重新输入'));
+                                        callback(new Error('分类名称已存在,请重新输入'));
                                     }
                                 }).catch(msg => {
                                     console.log('查询票券分类名称唯一性错误:', msg);

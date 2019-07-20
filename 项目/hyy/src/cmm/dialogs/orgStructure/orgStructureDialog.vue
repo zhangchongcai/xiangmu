@@ -1,6 +1,6 @@
 <template>
   <div class="my_dialog">
-    <el-dialog :title="title" :visible.sync="mydialogTableVisible">
+    <el-dialog :close-on-click-modal="false" :title="title" :visible.sync="mydialogTableVisible">
            <div class="header-wrap">
               <div class="search-wrap">
                 <span>查询组织：</span>
@@ -19,7 +19,7 @@
                 ref="tree"
                 default-expand-all
                 :filter-node-method="filterNode"
-                :check-strictly="true"
+                :check-strictly="false"
                 :expand-on-click-node="false"
                 :props="defaultProps">
               </el-tree>
@@ -125,7 +125,7 @@ import {organizationList} from "frame_cpm/http/interface.js"
         display: inline-block;
         .el-button--primary{
           width:80px;
-          height: 30px;
+          height: 32px;
           padding-top:7px;
           span{
             font-size: 12px;
@@ -135,19 +135,62 @@ import {organizationList} from "frame_cpm/http/interface.js"
     }
     /deep/ .el-dialog {
       // width: calc(576px + 224px);
-      width: 892px;
+      width: 576px;
       // height: 576px;
       overflow: hidden;
       border-radius: 4px;
-   
-
+      .el-dialog__header {
+        padding: 14px 20px 10px;
+       
+        .el-dialog__title{
+          color: #333;
+        }
+      }
+      .el-dialog__headerbtn{
+        top: 15px;
+      }
+      .el-dialog__header::after {
+        content: "";
+        display: block;
+        // width: calc(536px + 224px);
+        width: 536px;
+        height: 1px;
+        background: #e5e5e5;
+      }
+      .header-wrap{
+        margin-bottom:20px;
+      }
+      .el-input__inner{
+        font-size: 12px;
+      }
+      .el-icon-close {
+        font-size: 8px;
+      }
+      .el-dialog__body{
+        padding: 20px;
+      }
       .btn-area {
         // margin-bottom: 10px;
         display: flex;
         justify-content: center;
       }
-
-      /deep/ .content .el-input {
+      .el-tree{
+        .el-tree-node__label{
+          font-size: 12px;
+          color: #666666;
+        }
+      }
+      .el-button--primary{
+        width:80px;
+        height: 32px;
+        padding-top:7px;
+      }
+      .el-button{
+        width:80px;
+        height: 32px;
+        font-size: 12px;
+      }
+      .content .el-input {
         width: 50px;
       }
     }

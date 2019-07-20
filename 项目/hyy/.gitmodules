@@ -1,0 +1,27 @@
+[submodule "src/cam"]
+	path = src/cam
+	url = http://git.tech.nanhaicorp.com.cn/oristarcloud/cam.git
+[submodule "src/ctm"]
+	path = src/ctm
+	url = http://git.tech.nanhaicorp.com.cn/oristarcloud/ctm.git
+[submodule "src/ccm"]
+	path = src/ccm
+	url = http://git.tech.nanhaicorp.com.cn/oristarcloud/ccm.git
+[submodule "src/cmm"]
+	path = src/cmm
+	url = http://git.tech.nanhaicorp.com.cn/oristarcloud/cmm.git
+[submodule "src/crm"]
+	path = src/crm
+	url = http://git.tech.nanhaicorp.com.cn/oristarcloud/crm.git
+[submodule "src/rpt"]
+	path = src/rpt
+	url = http://git.tech.nanhaicorp.com.cn/oristarcloud/rpt.git
+[submodule "src/cim"]
+	path = src/cim
+	url = http://git.tech.nanhaicorp.com.cn/oristarcloud/cim.git
+[submodule "src/csm"]
+	path = src/csm
+	url = http://git.tech.nanhaicorp.com.cn/oristarcloud/csm.git
+[submodule "src/cwf"]
+	path = src/cwf
+	url = http://git.tech.nanhaicorp.com.cn/oristarcloud/cwf.git

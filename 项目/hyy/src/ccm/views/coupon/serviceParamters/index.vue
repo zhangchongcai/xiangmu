@@ -4,7 +4,7 @@
         <el-collapse-item title="基础设置" name="base">
             <ul class="base">
                 <li class="flex-base">
-                    <span><i class="zoom-keep-font">占位占位占位占位</i>批量导出次数设置：</span>
+                    <span><i class="zoom-keep-font">占位占位占位占位</i>批次导出次数设置：</span>
                     <div class="flex-base">
                         <el-radio-group v-model="baseConfig.exportNumSet.value" @change="changeExportNumSet">
                             <el-radio :label="'1'">只能一次</el-radio>
@@ -28,7 +28,7 @@
                         </el-radio-group>
                     </div>
                 </li>
-                <li class="flex-base">
+                <!-- <li class="flex-base">
                     <span><i class="zoom-keep-font">占位占位占位占位</i>短信发送次数设置：</span>
                     <div class="flex-base">
                         <el-radio-group v-model="baseConfig.sendMsgNumSet.value" @change="changeSendMsgNumSet"> 
@@ -40,13 +40,13 @@
                             <el-radio  :label="'3'">无限制</el-radio>
                         </el-radio-group>
                     </div>
-                </li>
-                <li class="flex-base">
+                </li> -->
+                <!-- <li class="flex-base">
                     <span><i class="zoom-keep-font">占位占位占位占位</i>票券短信提取方式：</span>
                     <div class="flex-base">
                         <el-checkbox v-model="baseConfig.sendMsgType.value">文字短信</el-checkbox>
                     </div>
-                </li>
+                </li> -->
                 <li class="flex-base">
                     <span><i class="zoom-keep-font">占位占</i>只能选择销售本商户票券编号：</span>
                     <div class="flex-base">
@@ -61,13 +61,13 @@
                         <el-radio v-model="baseConfig.allowDelayTicket.value" :label="'2'">否</el-radio>
                     </div>
                 </li>
-                <li class="flex-base">
+                <!-- <li class="flex-base">
                     <span><i class="zoom-keep-font">占位</i>营销活动赠送票券是否发送短信：</span>
                     <div class="flex-base">
                         <el-radio v-model="baseConfig.giftTicketWithMsg.value" :label="'1'">是</el-radio>
                         <el-radio v-model="baseConfig.giftTicketWithMsg.value" :label="'2'">否</el-radio>
                     </div>
-                </li>
+                </li> -->
                 <li class="flex-base">
                     <span>是否允许不同销售单的票券混合使用：</span>
                     <div class="flex-base">
@@ -280,28 +280,46 @@ export default {
          * @function save - 保存
          */
         save() {
-            let tmp = Object.assign({},this.baseConfig);
-            this.baseConfig.sendMsgType.value == true?tmp.sendMsgType.value = '1':tmp.sendMsgType.value = '2';
-            this.baseConfig = JSON.parse(JSON.stringify(tmp));
-            let targetArr = [];
-            for(let key in this.baseConfig){
-                targetArr.push(this.baseConfig[key]);
-            }
-            let params = targetArr;
-           
-            this.$ccmList.updateBaseConfig(params).then((data)=>{
-                let flag = data.flag;
-                let type  = "warning";
-                let message = data.msg;
-                if(flag==2){
-                    type  = "success"; 
-                    this.getBaseConfig();
-                }
+            let reg = /^[1-9][0-9]{0,8}$/;
+            if(!reg.test(this.baseConfig.exportNum.value)){
                 this.$message({
-                    type,
-                    message
+                    type: 'warning',
+                    message:"批次导出次数只能输入1~999999999的正整数"
                 });
-            });
+            }else if(!reg.test(this.baseConfig.printNum.value)){
+                this.$message({
+                    type: 'warning',
+                    message:"批量打印次数只能输入1~999999999的正整数"
+                });
+            }else if(!reg.test(this.baseConfig.sendMsgNum.value)){
+                this.$message({
+                    type: 'warning',
+                    message:"短信发送次数只能输入1~999999999的正整数"
+                });
+            }else{
+                let tmp = Object.assign({},this.baseConfig);
+                this.baseConfig.sendMsgType.value == true?tmp.sendMsgType.value = '1':tmp.sendMsgType.value = '2';
+                this.baseConfig = JSON.parse(JSON.stringify(tmp));
+                
+                let targetArr = [];
+                for(let key in this.baseConfig){
+                    targetArr.push(this.baseConfig[key]);
+                }
+                let params = targetArr;
+                this.$ccmList.updateBaseConfig(params).then((data)=>{
+                    let flag = data.flag;
+                    let type  = "warning";
+                    let message = data.msg;
+                    if(flag==2){
+                        type  = "success"; 
+                        this.getBaseConfig();
+                    }
+                    this.$message({
+                        type,
+                        message
+                    });
+                });
+            }
         },
 
         /**
@@ -315,7 +333,7 @@ export default {
          /* 改变导出次数设置*/
         changeExportNumSet(){
             if(this.baseConfig.exportNumSet.value!='2'){
-                this.baseConfig.exportNum.value = 0;
+                this.baseConfig.exportNum.value = 1;
             }
             console.log("this.baseConfig "+JSON.stringify(this.baseConfig));
              console.log("this.baseConfigOrigin "+JSON.stringify(this.baseConfigOrigin));
@@ -323,13 +341,13 @@ export default {
          /* 改变打印次数设置*/
         changePrintNumSet(){
             if(this.baseConfig.printNumSet.value!='2'){
-                this.baseConfig.printNum.value = 0;
+                this.baseConfig.printNum.value = 1;
             }
         },
          /* 改变短信发送次数设置*/
         changeSendMsgNumSet(){
              if(this.baseConfig.sendMsgNumSet.value!='2'){
-                this.baseConfig.sendMsgNum.value= 0;
+                this.baseConfig.sendMsgNum.value= 1;
             }
         },
     }

@@ -39,11 +39,11 @@ export const marketingList = data => {
  * @param {Number } params.id - 营销活动id
  * @param {String } params.tenantId - 租户id
  */
-export const marketingDel = data => {
+export const marketingDel = params => {
     return axios({
         url: '/marketing/delete',
         method: 'post',
-        data
+        params
     })
 }
 
@@ -153,6 +153,8 @@ export const marketingSubmitAudit = params => {
     })
 }
 
+
+
 /**
  * @function payType - 提交审核营销活动
  * 
@@ -178,6 +180,110 @@ export const querySalePlace = data => {
     })
 }
 
+/**
+ * @function createApproval - 创建审批单
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ */
+// export const createApproval = data => {
+//     return axios({
+//         url: '/workflow/AuthorizationSearching/findspAuditBill ',
+//         method: 'post',
+//         data
+//     })
+// }
+
+/**
+ * @function payType - 获取影院行政区域
+ * 
+ * @param {Object} data 
+ * @param {Number} data.placeName -  可空，模糊匹配，销售地点名称
+ * @param {Number} data.code - 可空，精确匹配，销售地点编码
+ * @param {Number} data.pageNum - 可空，默认1，当前页数
+ * @param {Number} data.pageSize - 可空，默认10000，每页记录数
+ * @param {Number} data.cinemaUid - 可空，精确匹配，影院UID
+ * @param {Number} data.status - 可空，精确匹配，状态，0：停用，1：启用
+ * 
+ */
+
+export const getCinemaAdminRegionList = data => {
+    return axios({
+        url: '/ticket/salePlace/page',
+        method: 'post',
+        data
+    })
+}
+
+/**
+ * @function getCinemaList - 获取影院列表
+ * 
+ * @param {Object} data 
+ * @param {Number} data.userUid -  用户uid
+ * @param {Number} data.code 影院编码
+ * @param {Number} data.pageNum - 页数
+ * @param {Number} data.pageSize - 每页记录数
+ * @param {Number} data.fullName -影院名
+ * 	
+ */
+
+export const getCinemaList = data => {
+    return axios({
+        url: '/common/cinema/getAuthCinemasByUserUid',
+        method: 'post',
+        data
+    })
+}
+
+/**
+ * @function getCinemaProjectionEffectList - 获取放映效果
+ * @param {Object} data 
+ * @param {Number} data.userUid -  用户uid
+ * @param {Number} data.code 影院编码
+ * @param {Number} data.pageNum - 页数
+ * @param {Number} data.pageSize - 每页记录数
+ * @param {Number} data.fullName -影院名
+ * 	
+ */
+
+export const getCinemaProjectionEffectList = data => {
+    return axios({
+        url: 'common/dict/getDictInfo',
+        method: 'post',
+        data
+    })
+}
+export const goodsDataQueryGoodsList = data => {
+    return axios({
+        url: 'cim/goodsData/queryGoodsList',
+        // url: 'cim/goodsData/queryMerBySkuInfo',
+        method: 'post',
+        data
+    })
+}
+
+/**
+ * @function getChannelList - 获取交易渠道、交易客商 
+ * @param {Object} data 
+ * @param {Number} data.name -  渠道名字
+ * @param {Number} data.code -渠道编码
+ * @param {Number} data.pageNum - 页数
+ * @param {Number} data.pageSize - 每页记录数
+ * @param {Number} data.channelNature -类型 1：是交易渠道（自营渠道） 2：是交易客商 （第三方渠道）
+ * @param {Number} data.tenantId -租户id
+ * 	
+ */
+
+export const getChannelList = params => {
+    return axios({
+        url: 'ticket/base/channel/findByTenantId',
+        method: 'get',
+        params
+    })
+}
 
 
 export default {
@@ -189,7 +295,14 @@ export default {
     marketingValActivityName,
     marketingViewActivity,
     marketingSubmitAudit,
-    //支付
+    //支付接口
     payType,
-    querySalePlace
+    querySalePlace,
+    //影院接口
+    getCinemaAdminRegionList,
+    getCinemaList,
+    getCinemaProjectionEffectList,
+    //卖品接口
+    goodsDataQueryGoodsList,
+    getChannelList
 };

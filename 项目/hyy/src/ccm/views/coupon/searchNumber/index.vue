@@ -56,12 +56,16 @@
 
 <script>
 import searchLan from '../../../components/search/index.vue';
+import minxins from 'frame_cpm/mixins/cacheMixin.js'
 export default {
     components: {
         searchLan
     },
+    mixins: [minxins.cacheMixin],
     data() {
         return {
+            /* 缓存数据 */
+            cacheField: ["searchConfig","pageConfig","tableConfig","searchInfo"],
             // 弹窗
             dialogVisible:false,
             abandonCope:'',
@@ -84,12 +88,16 @@ export default {
                     key:"refundCount",
                     value:0
                 }, {
-                    label: '停用',
+                    label: '已停用',
                     key:"stopCount",
                     value:0
                 }, {
-                    label: '已打印',
-                    key:"printCount",
+                    label: '已作废',
+                    key:"cancelCount",
+                    value:0
+                },{
+                    label: '已过期',
+                    key:"stopCount",
                     value:0
                 },
             ],
@@ -124,11 +132,14 @@ export default {
                         label: '已退货',
                         value: '3'
                     }, {
-                        label: '停用',
+                        label: '已停用',
                         value: '4'
                     }, {
                         label: '已作废',
                         value: '6'
+                    },{
+                        label: '已过期',
+                        value: '7'
                     }]
                 },
                 //  {
@@ -232,7 +243,6 @@ export default {
     created() {
 
         let applyCode = this.$route.query[`applyCode`];
-        // console.log(applyCode)
         if (applyCode) {
             this.searchConfig[0].value = applyCode;
             this.searchParam.applyCode = applyCode;
@@ -343,7 +353,7 @@ export default {
          * @function counponStatus - 修改票卷状态显示对应text
          */
         counponStatus(status) {
-            console.log(status)
+            // console.log(status)
                 var text = ''
                 switch(status){
                     case 0: text = "未激活"
@@ -439,8 +449,10 @@ export default {
             this.$ccmList.queryCodeListCount(data).then(res => {
                 let {data} = res
                 pointer.searchInfo.forEach(item => {
-                    if(data[item.key]) {
+                    if( data.hasOwnProperty([item.key]) ) {
                         item.value = data[item.key]
+                    }else{
+                        item.value = 0
                     }
                 })
             })
@@ -456,7 +468,7 @@ $fontSize: 12px;
 .searchInfo {
     font-family: MicrosoftYaHei;
     letter-spacing: 0;
-    padding: 20px;
+    padding: 20px 0;
 
     .searchInfo_title {
         color: #666666;

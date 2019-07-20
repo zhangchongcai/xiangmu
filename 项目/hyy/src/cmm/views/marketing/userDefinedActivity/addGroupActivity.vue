@@ -1,20 +1,14 @@
 <template>
 <div class="add-group-default">
-    <div class="breadcrumb">
-        <el-breadcrumb separator-class="el-icon-arrow-right">
-            <el-breadcrumb-item>自定义营销活动</el-breadcrumb-item>
-            <el-breadcrumb-item>设置子活动条件</el-breadcrumb-item>
-        </el-breadcrumb>
-    </div>
-
     <el-collapse v-model="activeNames">
+        <el-form :model="basicDataForm" :rules="basicDataRule" ref="basicDataForm">
         <!-- 子活动基础信息 -->
         <el-collapse-item title="子活动基础信息" name="1">
-            <el-form :model="basicDataForm" :rules="basicDataRule" ref="basicDataForm">
+            
                 <el-form-item label="分组活动名称:" prop="activityName">
                     <el-input class="input-type-217" v-model="basicDataForm.activityName" placeholder="请输入分组活动名称" :disabled="disabled"></el-input>
                 </el-form-item>
-            </el-form>
+            
         </el-collapse-item>
         <!-- 子活动适用条件 -->
         <el-collapse-item title="子活动适用条件" name="2">
@@ -24,6 +18,7 @@
                 <div class="box-content">
                     <div class="box-tabs">
                         <el-tabs v-model="activeName" tab-position="left" type="border-card">
+                            <!-- 会员类 -->
                             <el-tab-pane label name="first">
                                 <span slot="label">
                                     <el-badge
@@ -40,48 +35,53 @@
                                     <el-checkbox v-for="item in memberOptions" :label="item" :key="item.key" :value="item">{{item.value}}</el-checkbox>
                                 </el-checkbox-group>
                             </el-tab-pane>
-
+                            <!-- 影票类 -->
                             <el-tab-pane name="second">
                                 <span slot="label">
-                    <el-badge
-                      v-if="checkedTicketsOption.length>0"
-                      type="primary"
-                      size="small"
-                      :value="checkedTicketsOption.length"
-                    >影票类</el-badge>
-                    <span v-else>影票类</span>
+                                    <el-badge
+                                        v-if="checkedTicketsOption.length>0"
+                                        type="primary"
+                                        size="small"
+                                        :value="checkedTicketsOption.length"
+                                    >
+                                        影票类
+                                    </el-badge>
+                                    <span v-else>影票类</span>
                                 </span>
                                 <el-checkbox-group v-model="checkedTicketsOption" @change="handleCheckedOption">
                                     <el-checkbox v-for="item in movieTicketsOptions" :label="item" :key="item.key" :value="item">{{item.value}}</el-checkbox>
                                 </el-checkbox-group>
                             </el-tab-pane>
-
+                            <!-- 卖品类 -->
                             <el-tab-pane name="third">
                                 <span slot="label">
-                    <el-badge
-                      v-if="checkedGoodsOption.length>0"
-                      type="primary"
-                      size="small"
-                      :value="checkedGoodsOption.length"
-                    >卖品类</el-badge>
-                    <span v-else>卖品类</span>
+                                    <el-badge
+                                        v-if="checkedGoodsOption.length>0"
+                                        type="primary"
+                                        size="small"
+                                        :value="checkedGoodsOption.length"
+                                    >
+                                        卖品类
+                                    </el-badge>
+                                    <span v-else>卖品类</span>
                                 </span>
                                 <el-checkbox-group v-model="checkedGoodsOption" @change="handleCheckedOption">
                                     <el-checkbox v-for="item in goodsOptions" :label="item" :value="item" :key="item.key">{{item.value}}</el-checkbox>
                                 </el-checkbox-group>
                             </el-tab-pane>
-
+                            <!-- 交易类 -->
                             <el-tab-pane label name="fourth">
                                 <span slot="label">
-                    <el-badge
-                      v-if="checkedTradeOption.length>0"
-                      type="primary"
-                      size="small"
-                      :value="checkedTradeOption.length"
-                    >交易类</el-badge>
-                    <span v-else>交易类</span>
+                                    <el-badge
+                                        v-if="checkedTradeOption.length>0"
+                                        type="primary"
+                                        size="small"
+                                        :value="checkedTradeOption.length"
+                                    >
+                                        交易类
+                                    </el-badge>
+                                    <span v-else>交易类</span>
                                 </span>
-
                                 <el-checkbox-group v-model="checkedTradeOption" @change="handleCheckedOption">
                                     <el-scrollbar style="height:500px;overflow-x: hidden;">
                                         <el-checkbox v-for="item in tradeOptions" :label="item" :key="item.key" :value="item">{{item.value}}</el-checkbox>
@@ -94,7 +94,7 @@
                     <div class="box-cond">
                         <el-scrollbar style="height:500px">
                             <p>已选活动条件（共{{selectedOptions.length}}项）：</p>
-                            <el-form v-for="item of selectedOptions" :key="item.value">
+                            <div v-for="item of selectedOptions" :key="item.value">
                                 <!-- 会员类 -->
                                 <el-form-item v-if="item.value=='生日'" label="生日">
                                     <el-row>
@@ -107,7 +107,9 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="10">
-                                            <el-input v-if="basicDataForm.birthday7.opUniqueName=='EqualCurrentMonthOffset'" v-model="basicDataForm.birthday7.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                            <el-form-item prop="birthday7.value" v-if="basicDataForm.birthday7.opUniqueName=='EqualCurrentMonthOffset'">
+                                                <el-input v-model="basicDataForm.birthday7.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                            </el-form-item>
                                         </el-col>
                                     </el-row>
                                 </el-form-item>
@@ -116,6 +118,7 @@
                                     <el-row>
                                         <el-col :span="8">
                                             <el-select v-model="basicDataForm.age9.opUniqueName" :disabled="disabled" clearable @change="handleChangeAge">
+                                                <el-option label="不限" value></el-option>
                                                 <el-option label="大于" value="normalGreater"></el-option>
                                                 <el-option label="等于" value="normalEqual"></el-option>
                                                 <el-option label="小于" value="normalLess"></el-option>
@@ -129,20 +132,26 @@
                                         <el-col :span="10">
                                             <div v-if="basicDataForm.age9.opUniqueName=='BetweenOperator' || basicDataForm.age9.opUniqueName=='not_BetweenOperator'">
                                                 <div v-for="(item,index) in basicDataForm.ageRange" :key="index">
-                                                    <el-input style="width:30%;" v-model="item.minAge" :disabled="disabled" placeholder="请输入"></el-input>
-                                                    <span>-</span>
-                                                    <el-input style="width:30%;" v-model="item.maxAge" :disabled="disabled" placeholder="请输入"></el-input>
-                                                    <el-button size="small" type="text" @click="delAgeRange(index)">删除</el-button>
+                                                    <el-row class="flex-base margin-bottom-10">
+                                                        <el-form-item :prop="'ageRange.'+index+'.minAge'" :rules="{required: true, message: '年龄不能为空', trigger: 'blur'}">
+                                                            <el-input class="input-type-94" v-model="item.minAge" :disabled="disabled" placeholder="请输入"></el-input>
+                                                        </el-form-item>
+                                                        <span>-</span>
+                                                        <el-form-item :prop="'ageRange.'+index+'.maxAge'" :rules="{required: true, message: '年龄不能为空', trigger: 'blur'}">
+                                                            <el-input class="input-type-94" v-model="item.maxAge" :disabled="disabled" placeholder="请输入"></el-input>
+                                                        </el-form-item>
+                                                        <el-button size="small" type="text" @click="delAgeRange(index)">删除</el-button>
+                                                    </el-row>
                                                 </div>
                                                 <el-button size="small" type="text" @click="addAgeRange()">
                                                     <i class="el-icon-circle-plus-outline"></i>添加
                                                 </el-button>
                                             </div>
-                                            <span
-                          v-if="basicDataForm.age9.opUniqueName!='' && basicDataForm.age9.opUniqueName!='BetweenOperator' && basicDataForm.age9.opUniqueName!='not_BetweenOperator'"
-                        >
-                          <el-input v-model="basicDataForm.age9.value" placeholder="请输入"></el-input>
-                        </span>
+                                            <span v-if="basicDataForm.age9.opUniqueName!='' && basicDataForm.age9.opUniqueName!='BetweenOperator' && basicDataForm.age9.opUniqueName!='not_BetweenOperator'">
+                                                <el-form-item prop="age9.value">    
+                                                    <el-input v-model="basicDataForm.age9.value" placeholder="请输入"></el-input>
+                                                </el-form-item>
+                                            </span>
                                         </el-col>
                                     </el-row>
                                 </el-form-item>
@@ -156,28 +165,34 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="10">
-                                            <el-select v-if="basicDataForm.sex8.opUniqueName!=''" v-model="basicDataForm.sexState" multiple collapse-tags @change="handleChangeSex" :title="basicDataForm.sexStateName.join(',')" clearable>
-                                                <el-option label="全选" value></el-option>
-                                                <el-option label="男" value="0"></el-option>
-                                                <el-option label="女" value="1"></el-option>
-                                            </el-select>
+                                            <el-form-item prop="sexState" v-if="basicDataForm.sex8.opUniqueName!=''">
+                                                <el-select v-model="basicDataForm.sexState" multiple collapse-tags @change="handleChangeSex" :title="basicDataForm.sexStateName.join(',')" clearable>
+                                                    <el-option label="全选" value></el-option>
+                                                    <el-option label="男" value="0"></el-option>
+                                                    <el-option label="女" value="1"></el-option>
+                                                </el-select>
+                                            </el-form-item>
                                         </el-col>
                                     </el-row>
                                 </el-form-item>
 
-                                <el-form-item v-if="item.value=='会员等级'" label="会员等级">
+                                <el-form-item v-if="item.value=='会员卡政策'" label="会员卡政策">
                                     <el-row>
                                         <el-col :span="8">
-                                            <el-select v-model="basicDataForm.cardTypeKey10.opUniqueName" :disabled="disabled">
-                                                <el-option label="全部会员" value="AllMember"></el-option>
-                                                <el-option label="指定会员等级" value="normalIn"></el-option>
+                                            <el-select v-model="basicDataForm.cardRightCode100.opUniqueName" :disabled="disabled">
+                                                <el-option label="不限" value></el-option>
+                                                <el-option label="包含" value="normalIn"></el-option>
+                                                <el-option label="不包含" value="normalNotIn"></el-option> 
+                                                <el-option label="全部卡政策" value="AllMember"></el-option>
                                             </el-select>
                                         </el-col>
                                         <el-col :span="8">
-                                            <el-input v-if="basicDataForm.cardTypeKey10.opUniqueName=='normalIn'" v-model="basicDataForm.cardTypeKey10.text" ></el-input>
+                                            <el-form-item prop="cardRightCode100.text" v-if="basicDataForm.cardRightCode100.opUniqueName!=''">
+                                                <el-input v-model="basicDataForm.cardRightCode100.text" readonly></el-input>
+                                            </el-form-item>
                                         </el-col>
                                         <el-col :span="4">
-                                            <el-button type="primary" v-if="basicDataForm.cardTypeKey10.opUniqueName=='normalIn'" @click="membershipLevelClick('crmMemberLevelDialog')" plain>选择</el-button>
+                                            <el-button type="primary" v-if="basicDataForm.cardRightCode100.opUniqueName=='normalIn' ||basicDataForm.cardRightCode100.opUniqueName=='normalNotIn'" @click="cardPolicyClick('crmCardPolicyDialog')" plain>选择</el-button>
                                         </el-col>
                                     </el-row>
                                 </el-form-item>
@@ -199,15 +214,19 @@
                                         </el-col>
 
                                         <el-col :span="10">
-                                            <el-date-picker v-if="basicDataForm.openDate12.opUniqueName!='DateRangeContainOperator'&&basicDataForm.openDate12.opUniqueName!='not_DateRangeContainOperator'&&basicDataForm.openDate12.opUniqueName!=''" v-model="basicDataForm.openDate12.value" style="width: 200px;" type="date" placeholder="选择日期" value-format="yyyy-MM-dd" :disabled="disabled"></el-date-picker>
+                                            <el-form-item prop="openDate12.value" v-if="basicDataForm.openDate12.opUniqueName!='DateRangeContainOperator'&&basicDataForm.openDate12.opUniqueName!='not_DateRangeContainOperator'&&basicDataForm.openDate12.opUniqueName!=''">
+                                                <el-date-picker v-model="basicDataForm.openDate12.value" style="width: 200px;" :picker-options="pickerOptions" type="date" placeholder="选择日期" value-format="yyyy-MM-dd" :disabled="disabled"></el-date-picker>
+                                            </el-form-item>
                                         </el-col>
                                     </el-row>
 
                                     <div v-if="basicDataForm.openDate12.opUniqueName=='DateRangeContainOperator'||basicDataForm.openDate12.opUniqueName=='not_DateRangeContainOperator'">
                                         <el-form-item label v-for="(item,index) in basicDataForm.openCardDateOptions" :key="index">
                                             <el-row>
-                                                <el-date-picker v-model="item.openCardDateOption" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" :disabled="disabled"></el-date-picker>
-                                                <el-button size="small" type="text" @click="delOpenCardDate(index)">删除</el-button>
+                                                <el-form-item :prop="'openCardDateOptions.'+index+'.openCardDateOption'" :rules="{required: true, message: '开卡日期不能为空', trigger: 'blur'}">
+                                                    <el-date-picker v-model="item.openCardDateOption" :picker-options="pickerOptions" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" :disabled="disabled"></el-date-picker>
+                                                    <el-button size="small" type="text" @click="delOpenCardDate(index)">删除</el-button>
+                                                </el-form-item>
                                             </el-row>
                                         </el-form-item>
 
@@ -235,21 +254,27 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="10">
-                                            <span
-                          v-if="basicDataForm.openYears11.opUniqueName!='' && basicDataForm.openYears11.opUniqueName!='BetweenOperator' && basicDataForm.openYears11.opUniqueName!='not_BetweenOperator'"
-                        >
-                          <el-input
-                            v-model="basicDataForm.openYears11.value"
-                            :disabled="disabled"
-                            placeholder="请输入"
-                          ></el-input>
-                        </span>
+                                            <span v-if="basicDataForm.openYears11.opUniqueName!='' && basicDataForm.openYears11.opUniqueName!='BetweenOperator' && basicDataForm.openYears11.opUniqueName!='not_BetweenOperator'">
+                                                <el-form-item prop="openYears11.value">
+                                                    <el-input
+                                                        v-model="basicDataForm.openYears11.value"
+                                                        :disabled="disabled"
+                                                        placeholder="请输入"
+                                                    ></el-input>
+                                                </el-form-item>
+                                            </span>
                                             <div v-if="basicDataForm.openYears11.opUniqueName=='BetweenOperator' || basicDataForm.openYears11.opUniqueName=='not_BetweenOperator'">
                                                 <div v-for="(item,index) in basicDataForm.openCardYearsRange" :key="index">
-                                                    <el-input style="width:30%" v-model="item.minYear" :disabled="disabled" placeholder="请输入"></el-input>
-                                                    <span>-</span>
-                                                    <el-input style="width:30%" v-model="item.maxYear" :disabled="disabled" placeholder="请输入"></el-input>
-                                                    <el-button size="small" type="text" @click="delOpenCardYearsRange(index)">删除</el-button>
+                                                    <el-row class="flex-base margin-bottom-10">
+                                                        <el-form-item :prop="'openCardYearsRange.'+index+'.minYear'" :rules="{required: true, message: '开卡年限不能为空', trigger: 'blur'}">
+                                                            <el-input class="input-type-94" v-model="item.minYear" :disabled="disabled" placeholder="请输入"></el-input>
+                                                        </el-form-item>
+                                                        <span>-</span>
+                                                        <el-form-item :prop="'openCardYearsRange.'+index+'.maxYear'" :rules="{required: true, message: '开卡年限不能为空', trigger: 'blur'}">
+                                                            <el-input class="input-type-94" v-model="item.maxYear" :disabled="disabled" placeholder="请输入"></el-input>
+                                                        </el-form-item>
+                                                        <el-button size="small" type="text" @click="delOpenCardYearsRange(index)">删除</el-button>
+                                                    </el-row>
                                                 </div>
                                                 <el-button size="small" type="text" @click="addOpenCardYearsRange()">
                                                     <i class="el-icon-circle-plus-outline"></i>添加
@@ -275,21 +300,27 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="10">
-                                            <span
-                          v-if="basicDataForm.openMonths87.opUniqueName!='' && basicDataForm.openMonths87.opUniqueName!='BetweenOperator' && basicDataForm.openMonths87.opUniqueName!='not_BetweenOperator'"
-                        >
-                          <el-input
-                            v-model="basicDataForm.openMonths87.value"
-                            :disabled="disabled"
-                            placeholder="请输入"
-                          ></el-input>
-                        </span>
+                                            <span v-if="basicDataForm.openMonths87.opUniqueName!='' && basicDataForm.openMonths87.opUniqueName!='BetweenOperator' && basicDataForm.openMonths87.opUniqueName!='not_BetweenOperator'">
+                                                <el-form-item prop="openMonths87.value">
+                                                    <el-input
+                                                        v-model="basicDataForm.openMonths87.value"
+                                                        :disabled="disabled"
+                                                        placeholder="请输入"
+                                                    ></el-input>
+                                                </el-form-item>
+                                            </span>
                                             <div v-if="basicDataForm.openMonths87.opUniqueName=='BetweenOperator' || basicDataForm.openMonths87.opUniqueName=='not_BetweenOperator'">
                                                 <div v-for="(item,index) in basicDataForm.openMonthsRange" :key="index">
-                                                    <el-input style="width:30%" v-model="item.minMonth" :disabled="disabled" placeholder="请输入"></el-input>
-                                                    <span>-</span>
-                                                    <el-input style="width:30%" v-model="item.maxMonth" :disabled="disabled" placeholder="请输入"></el-input>
-                                                    <el-button size="small" type="text" @click="delOpenMonthsRange(index)">删除</el-button>
+                                                    <el-row class="flex-base margin-bottom-10">
+                                                        <el-form-item :prop="'openMonthsRange.'+index+'.minMonth'" :rules="{required: true, message: '开卡月限不能为空', trigger: 'blur'}">
+                                                            <el-input class="input-type-94" v-model="item.minMonth" :disabled="disabled" placeholder="请输入"></el-input>
+                                                        </el-form-item>
+                                                        <span>-</span>
+                                                        <el-form-item :prop="'openMonthsRange.'+index+'.maxMonth'" :rules="{required: true, message: '开卡月限不能为空', trigger: 'blur'}">
+                                                            <el-input class="input-type-94" v-model="item.maxMonth" :disabled="disabled" placeholder="请输入"></el-input>
+                                                        </el-form-item>
+                                                        <el-button size="small" type="text" @click="delOpenMonthsRange(index)">删除</el-button>
+                                                    </el-row>
                                                 </div>
                                                 <el-button size="small" type="text" @click="addOpenMonthsRange()">
                                                     <i class="el-icon-circle-plus-outline"></i>添加
@@ -313,7 +344,9 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="10">
-                                            <el-input v-if="basicDataForm.balance3.opUniqueName!=''" v-model="basicDataForm.balance3.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                            <el-form-item prop="balance3.value" v-if="basicDataForm.balance3.opUniqueName!=''">
+                                                <el-input v-model="basicDataForm.balance3.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                            </el-form-item>
                                         </el-col>
                                     </el-row>
                                 </el-form-item>
@@ -332,7 +365,9 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="10">
-                                            <el-input v-if="basicDataForm.integral4.opUniqueName!=''" v-model="basicDataForm.integral4.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                            <el-form-item prop="integral4.value" v-if="basicDataForm.integral4.opUniqueName!=''">
+                                                <el-input v-model="basicDataForm.integral4.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                            </el-form-item>
                                         </el-col>
                                     </el-row>
                                 </el-form-item>
@@ -351,7 +386,9 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="10">
-                                            <el-input v-if="basicDataForm.integralTotall52.opUniqueName!=''" v-model="basicDataForm.integralTotall52.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                            <el-form-item prop="integralTotall52.value" v-if="basicDataForm.integralTotall52.opUniqueName!=''">
+                                                <el-input v-model="basicDataForm.integralTotall52.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                            </el-form-item>
                                         </el-col>
                                     </el-row>
                                 </el-form-item>
@@ -360,15 +397,18 @@
                                     <el-row>
                                         <el-col :span="8">
                                             <el-select v-model="basicDataForm.registerBusinessCode13.opUniqueName" :disabled="disabled">
+                                                <el-option label="不限" value></el-option>
                                                 <el-option label="包含" value="normalIn"></el-option>
                                                 <el-option label="不包含" value="normalNotIn"></el-option>
                                             </el-select>
                                         </el-col>
                                         <el-col :span="8">
-                                            <el-input v-model="basicDataForm.registerBusinessCode13.text" ></el-input>
+                                            <el-form-item prop="registerBusinessCode13.text" v-if="basicDataForm.registerBusinessCode13.opUniqueName!=''">
+                                                <el-input v-model="basicDataForm.registerBusinessCode13.text" readonly></el-input>
+                                            </el-form-item>
                                         </el-col>
                                         <el-col :span="4">
-                                            <el-button type="primary"  @click="cinemaClick('cinemaRegisterDialog')" plain>选择</el-button>
+                                            <el-button v-if="basicDataForm.registerBusinessCode13.opUniqueName=='normalIn'||basicDataForm.registerBusinessCode13.opUniqueName=='normalNotIn'" type="primary"  @click="cinemaClick('cinemaRegisterDialog')" plain>选择</el-button>
                                         </el-col>
                                     </el-row>
                                 </el-form-item>
@@ -376,7 +416,7 @@
                                 <el-form-item v-if="item.value=='单次消费金额'" label="单次消费金额">
                                     <el-row>
                                         <el-col :span="8">
-                                            <el-select v-model="basicDataForm.sumPrice.opUniqueName" :disabled="disabled" clearable>
+                                            <el-select v-model="basicDataForm.sumPrice2.opUniqueName" :disabled="disabled" clearable>
                                                 <el-option label="不限" value></el-option>
                                                 <el-option label="大于" value="normalGreater"></el-option>
                                                 <el-option label="等于" value="normalEqual"></el-option>
@@ -387,7 +427,9 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="10">
-                                            <el-input v-if="basicDataForm.sumPrice.opUniqueName!=''" v-model="basicDataForm.sumPrice.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                            <el-form-item prop="sumPrice2.value" v-if="basicDataForm.sumPrice2.opUniqueName!=''">
+                                                <el-input v-model="basicDataForm.sumPrice2.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                            </el-form-item>
                                         </el-col>
                                     </el-row>
                                 </el-form-item>
@@ -406,10 +448,314 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="10">
-                                            <el-input v-if="basicDataForm.consumeSum6.opUniqueName!=''" v-model="basicDataForm.consumeSum6.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                            <el-form-item prop="consumeSum6.value" v-if="basicDataForm.consumeSum6.opUniqueName!=''">
+                                                <el-input v-model="basicDataForm.consumeSum6.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                            </el-form-item>
                                         </el-col>
                                     </el-row>
                                 </el-form-item>
+
+                                <el-form-item v-if="item.value=='会员卡类型'" label="会员卡类型">
+                                    <el-row>
+                                        <el-col :span="8">
+                                            <el-select v-model="basicDataForm.cardTypeKey10.opUniqueName" :disabled="disabled" clearable>
+                                                <el-option label="不限" value></el-option>
+                                                <el-option label="包含" value="normalIn"></el-option>
+                                                <el-option label="不包含" value="normalNotIn"></el-option> 
+                                            </el-select>
+                                        </el-col>
+                                         <el-col :span="8">
+                                            <el-form-item prop="cardTypeKey10.text" v-if="basicDataForm.cardTypeKey10.opUniqueName!=''">
+                                                <el-input v-model="basicDataForm.cardTypeKey10.text" readonly></el-input>
+                                            </el-form-item>
+                                        </el-col>
+                                        <el-col :span="4">
+                                            <el-button v-if="basicDataForm.cardTypeKey10.opUniqueName=='normalIn'||basicDataForm.cardTypeKey10.opUniqueName=='normalNotIn'" @click="cardRightCodeClick('crmCardTypeDialog')" type="primary" plain>选择</el-button>
+                                        </el-col>
+                                    </el-row>
+                                </el-form-item>
+
+                                <el-form-item v-if="item.value=='会员等级'" label="会员等级">
+                                    <el-row>
+                                        <el-col :span="8">
+                                            <el-select v-model="basicDataForm.customerLevelCode101.opUniqueName" :disabled="disabled" clearable>
+                                                <el-option label="不限" value></el-option>
+                                                <el-option label="包含" value="normalIn"></el-option>
+                                                <el-option label="不包含" value="normalNotIn"></el-option> 
+                                                <el-option label="非会员" value="not_memberOperator"></el-option>
+                                            </el-select>
+                                        </el-col>
+                                         <el-col :span="8">
+                                            <el-form-item prop="customerLevelCode101.text" v-if="basicDataForm.customerLevelCode101.opUniqueName!=''">
+                                                <el-input v-model="basicDataForm.customerLevelCode101.text" readonly></el-input>
+                                            </el-form-item>
+                                        </el-col>
+                                        <el-col :span="4">
+                                            <el-button v-if="basicDataForm.customerLevelCode101.opUniqueName=='normalIn'||basicDataForm.customerLevelCode101.opUniqueName=='normalNotIn'" @click="membershipLevelClick('crmMemberLevelDialog')" type="primary" plain>选择</el-button>
+                                        </el-col>
+                                    </el-row>
+                                </el-form-item>
+
+                                <el-form-item v-if="item.value=='首充金额'" label="首充金额">
+                                    <el-row>
+                                        <el-col :span="8">
+                                            <el-select v-model="basicDataForm.firstRecharge98.opUniqueName" :disabled="disabled" clearable>
+                                                <el-option label="不限" value></el-option>
+                                                <el-option label="大于" value="normalGreater"></el-option>
+                                                <el-option label="等于" value="normalEqual"></el-option>
+                                                <el-option label="小于" value="normalLess"></el-option>
+                                                <el-option label="大于等于" value="normalGreaterEqual"></el-option>
+                                                <el-option label="小于等于" value="normalLessEqual"></el-option>
+                                                <el-option label="不等于" value="normalNotEqual"></el-option>
+                                            </el-select>
+                                        </el-col>
+                                        <el-col :span="10">
+                                            <el-form-item prop="firstRecharge98.value" v-if="basicDataForm.firstRecharge98.opUniqueName!=''">
+                                                <el-input v-model="basicDataForm.firstRecharge98.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                            </el-form-item>
+                                        </el-col>
+                                    </el-row>
+                                </el-form-item>
+
+                                <el-form-item v-if="item.value=='单次充值金额'" label="单次充值金额:">
+                                    <el-row>
+                                        <el-col :span="8">
+                                            <el-select v-model="basicDataForm.sumPrice1.opUniqueName" :disabled="disabled" clearable>
+                                                <el-option label="不限" value></el-option>
+                                                <el-option label="大于" value="customGreater"></el-option>
+                                                <el-option label="等于" value="customEqual"></el-option>
+                                                <el-option label="小于" value="customLess"></el-option>
+                                                <el-option label="小于等于" value="customLessEqual"></el-option>
+                                                <el-option label="大于等于" value="customGreaterEqual"></el-option>
+                                            </el-select>
+                                        </el-col>
+                                        <el-col :span="10">
+                                            <el-form-item prop="sumPrice1.value" v-if="basicDataForm.sumPrice1.opUniqueName!=''">
+                                                <el-input v-model="basicDataForm.sumPrice1.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                <span>元</span>
+                                            </el-form-item>
+                                        </el-col>
+                                    </el-row>
+                                </el-form-item>
+
+                                <!-- <el-form-item v-if="item.value=='动态周期消费次数'" label>
+                                    <el-form-item label="动态周期">
+                                        <el-row>
+                                            <el-col :span="8">
+                                                <el-select v-model="basicDataForm.consumeNum.dynamicPeriod15.opUniqueName" :disabled="disabled">
+                                                    <el-option label="等于" value="normalEqual"></el-option>
+                                                </el-select>
+                                            </el-col>
+                                            <el-col :span="10">
+                                                <el-form-item prop="consumeNum.dynamicPeriod15.value">
+                                                    <el-select v-model="basicDataForm.consumeNum.dynamicPeriod15.value" :disabled="disabled">
+                                                        <el-option label="当日" value="CurrentDay"></el-option>
+                                                        <el-option label="当月" value="CurrentMonth"></el-option>
+                                                        <el-option label="当季" value="CurrentSeason"></el-option>
+                                                        <el-option label="当年" value="CurrentYear"></el-option>
+                                                        <el-option label="指定周期" value="AppointDayRange"></el-option>
+                                                    </el-select>
+                                                </el-form-item>
+                                            </el-col>
+                                        </el-row>
+                                    </el-form-item>  
+
+                                    <el-form-item label="指定周期">
+                                        <el-row>
+                                            <el-col :span="8">
+                                                <el-select v-model="basicDataForm.consumeNum.appointPeriod15.opUniqueName" :disabled="disabled">
+                                                    <el-option label="不限" value></el-option>
+                                                    <el-option label="包含区间" value="AppointDateEqual"></el-option>
+                                                </el-select>
+                                            </el-col>
+                                            <el-col :span="12">
+                                                <div v-if="basicDataForm.consumeNum.appointPeriod15.opUniqueName=='AppointDateEqual'">
+                                                    <el-form-item label v-for="(item,index) in basicDataForm.appointPeriodOptions" :key="index">
+                                                        <el-row>
+                                                            <el-form-item :prop="'appointPeriodOptions.'+index+'.appointPeriodOption'" :rules="{required: true, message: '指定周期不能为空', trigger: 'blur'}">
+                                                                <el-date-picker v-model="item.appointPeriodOption" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" :disabled="disabled"></el-date-picker>
+                                                                <el-button size="small" type="text" @click="delAppointPeriod(index)">删除</el-button>
+                                                            </el-form-item>
+                                                        </el-row>
+                                                    </el-form-item>
+
+                                                    <el-form-item label>
+                                                        <div class="addDate" @click="addAppointPeriod">
+                                                            <i class="el-icon-circle-plus-outline"></i>添加周期
+                                                        </div>
+                                                    </el-form-item>
+                                                </div>
+                                            </el-col>
+                                        </el-row>
+                                    </el-form-item>
+
+                                    <el-form-item label="交易渠道">
+                                        <el-row>
+                                            <el-col :span="8">
+                                                <el-select v-model="basicDataForm.consumeNum.consumeWayCode15.opUniqueName" :disabled="disabled">
+                                                    <el-option label="不限" value></el-option>
+                                                    <el-option label="包含" value="DynamicInEqual"></el-option>
+                                                </el-select>
+                                            </el-col>
+                                            <el-col :span="10">
+                                                <el-form-item prop="consumeWayState" v-if="basicDataForm.consumeNum.consumeWayCode15.opUniqueName!=''">
+                                                    <el-select v-model="basicDataForm.consumeWayState" multiple collapse-tags @change="handleChangeConsumeWayState" :title="basicDataForm.consumeWayStateName.join(',')" clearable>
+                                                        <el-option label="全选" value></el-option>
+                                                        <el-option label="柜台" value="0"></el-option>
+                                                        <el-option label="自助终端" value="1"></el-option>
+                                                        <el-option label="官方网站" value="2"></el-option>
+                                                        <el-option label="手机APP" value="3"></el-option>
+                                                        <el-option label="电话" value="4"></el-option>
+                                                        <el-option label="微信" value="5"></el-option>
+                                                        <el-option label="第三方渠道" value="T"></el-option>
+                                                    </el-select>
+                                                </el-form-item>
+                                            </el-col>
+                                        </el-row>
+                                    </el-form-item> 
+
+                                    <el-form-item label="消费次数">
+                                        <el-row>
+                                            <el-col :span="8">
+                                                <el-select v-model="basicDataForm.consumeNum.dynamicConsumeCount15.opUniqueName" :disabled="disabled" clearable>
+                                                    <el-option label="不限" value></el-option>
+                                                    <el-option label="大于" value="normalGreater"></el-option>
+                                                    <el-option label="等于" value="normalEqual"></el-option>
+                                                    <el-option label="小于" value="normalLess"></el-option>
+                                                    <el-option label="大于等于" value="normalGreaterEqual"></el-option>
+                                                    <el-option label="小于等于" value="normalLessEqual"></el-option>
+                                                    <el-option label="不等于" value="normalNotEqual"></el-option>
+                                                </el-select>
+                                            </el-col>
+                                            <el-col :span="10">
+                                                <el-form-item prop="consumeNum.dynamicConsumeCount15.value" v-if="basicDataForm.consumeNum.dynamicConsumeCount15.opUniqueName!=''">
+                                                    <el-input v-model="basicDataForm.consumeNum.dynamicConsumeCount15.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                </el-form-item>
+                                            </el-col>
+                                        </el-row>
+                                    </el-form-item> 
+                                </el-form-item> -->
+
+                                <!-- <el-form-item v-if="item.value=='动态周期消费额'" label>
+                                    <el-form-item label="动态周期">
+                                        <el-row>
+                                            <el-col :span="8">
+                                                <el-select v-model="basicDataForm.cycleConsumeNum.dynamicPeriod17.opUniqueName" :disabled="disabled">
+                                                    <el-option label="等于" value="normalEqual"></el-option>
+                                                </el-select>
+                                            </el-col>
+                                            <el-col :span="10">
+                                                <el-form-item prop="cycleConsumeNum.dynamicPeriod17.value">
+                                                    <el-select v-model="basicDataForm.cycleConsumeNum.dynamicPeriod17.value" :disabled="disabled">
+                                                        <el-option label="当日" value="CurrentDay"></el-option>
+                                                        <el-option label="当月" value="CurrentMonth"></el-option>
+                                                        <el-option label="当季" value="CurrentSeason"></el-option>
+                                                        <el-option label="当年" value="CurrentYear"></el-option>
+                                                        <el-option label="指定周期" value="AppointDayRange"></el-option>
+                                                    </el-select>
+                                                </el-form-item>
+                                            </el-col>
+                                        </el-row>
+                                    </el-form-item>
+
+                                    <el-form-item label="指定周期">
+                                        <el-row>
+                                            <el-col :span="8">
+                                                <el-select v-model="basicDataForm.cycleConsumeNum.appointPeriod17.opUniqueName" :disabled="disabled">
+                                                    <el-option label="不限" value></el-option>
+                                                    <el-option label="包含区间" value="AppointDateEqual"></el-option>
+                                                </el-select>
+                                            </el-col>
+                                            <el-col :span="12">
+                                                <div v-if="basicDataForm.cycleConsumeNum.appointPeriod17.opUniqueName=='AppointDateEqual'">
+                                                    <el-form-item label v-for="(item,index) in basicDataForm.appointPeriodOptions17" :key="index">
+                                                        <el-row>
+                                                            <el-form-item :prop="'appointPeriodOptions17.'+index+'.appointPeriodOption17'" :rules="{required: true, message: '指定周期不能为空', trigger: 'blur'}">
+                                                                <el-date-picker v-model="item.appointPeriodOption17" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" :disabled="disabled"></el-date-picker>
+                                                                <el-button size="small" type="text" @click="delAppointPeriod17(index)">删除</el-button>
+                                                            </el-form-item>
+                                                        </el-row>
+                                                    </el-form-item>
+
+                                                    <el-form-item label>
+                                                        <div class="addDate" @click="addAppointPeriod17">
+                                                            <i class="el-icon-circle-plus-outline"></i>添加周期
+                                                        </div>
+                                                    </el-form-item>
+                                                </div>
+                                            </el-col>
+                                        </el-row>
+                                    </el-form-item>
+
+                                    <el-form-item label="交易渠道">
+                                        <el-row>
+                                            <el-col :span="8">
+                                                <el-select v-model="basicDataForm.cycleConsumeNum.consumeWayCode17.opUniqueName" :disabled="disabled">
+                                                    <el-option label="不限" value></el-option>
+                                                    <el-option label="包含" value="DynamicInEqual"></el-option>
+                                                </el-select>
+                                            </el-col>
+                                            <el-col :span="10">
+                                                <el-form-item prop="cycleConsumeWayState" v-if="basicDataForm.cycleConsumeNum.consumeWayCode17.opUniqueName!=''">
+                                                    <el-select v-model="basicDataForm.cycleConsumeWayState" multiple collapse-tags @change="handleChangeCycleConsumeWayState" :title="basicDataForm.cycleConsumeWayStateName.join(',')" clearable>
+                                                        <el-option label="全选" value></el-option>
+                                                        <el-option label="柜台" value="0"></el-option>
+                                                        <el-option label="自助终端" value="1"></el-option>
+                                                        <el-option label="官方网站" value="2"></el-option>
+                                                        <el-option label="手机APP" value="3"></el-option>
+                                                        <el-option label="电话" value="4"></el-option>
+                                                        <el-option label="微信" value="5"></el-option>
+                                                        <el-option label="第三方渠道" value="T"></el-option>
+                                                    </el-select>
+                                                </el-form-item>
+                                            </el-col>
+                                        </el-row>
+                                    </el-form-item>
+
+                                    <el-form-item label="商品类型">
+                                        <el-row>
+                                            <el-col :span="8">
+                                                <el-select v-model="basicDataForm.cycleConsumeNum.saleItemType17.opUniqueName" :disabled="disabled">
+                                                    <el-option label="不限" value></el-option>
+                                                    <el-option label="包含" value="normalIn"></el-option>
+                                                    <el-option label="不包含" value="normalNotIn"></el-option>
+                                                </el-select>
+                                            </el-col>
+                                            <el-col :span="10">
+                                                <el-form-item prop="goodsItemTypeState" v-if="basicDataForm.cycleConsumeNum.saleItemType17.opUniqueName!=''">
+                                                    <el-select v-model="basicDataForm.goodsItemTypeState" multiple collapse-tags @change="handleChangeGoodsItemType" :title="basicDataForm.goodsItemTypeStateName.join(',')" clearable>
+                                                        <el-option label="全选" value></el-option>
+                                                        <el-option label="卖品" value="1"></el-option>
+                                                        <el-option label="电影票" value="0"></el-option>
+                                                    </el-select>
+                                                </el-form-item>
+                                            </el-col>
+                                        </el-row>
+                                    </el-form-item>
+
+                                    <el-form-item label="动态周期消费额">
+                                        <el-row>
+                                            <el-col :span="8">
+                                                <el-select v-model="basicDataForm.cycleConsumeNum.dynamicConsumeSum17.opUniqueName" :disabled="disabled" clearable>
+                                                    <el-option label="不限" value></el-option>
+                                                    <el-option label="大于" value="normalGreater"></el-option>
+                                                    <el-option label="等于" value="normalEqual"></el-option>
+                                                    <el-option label="小于" value="normalLess"></el-option>
+                                                    <el-option label="大于等于" value="normalGreaterEqual"></el-option>
+                                                    <el-option label="小于等于" value="normalLessEqual"></el-option>
+                                                    <el-option label="不等于" value="normalNotEqual"></el-option>
+                                                </el-select>
+                                            </el-col>
+                                            <el-col :span="10">
+                                                <el-form-item prop="cycleConsumeNum.dynamicConsumeSum17.value" v-if="basicDataForm.cycleConsumeNum.dynamicConsumeSum17.opUniqueName!=''">
+                                                    <el-input v-model="basicDataForm.cycleConsumeNum.dynamicConsumeSum17.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                </el-form-item>
+                                            </el-col>
+                                        </el-row>
+                                    </el-form-item> 
+                                </el-form-item> -->
+
+                                
 
                                 <!--影票类 -->
                                 <el-form-item v-if="item.value=='放映效果'" label="放映效果">
@@ -422,10 +768,12 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="8">
-                                            <el-input v-if="basicDataForm.showEffect35.opUniqueName!=''" v-model="basicDataForm.showEffect35.value" ></el-input>
+                                            <el-form-item prop="showEffect35.text" v-if="basicDataForm.showEffect35.opUniqueName!=''">
+                                                <el-input v-model="basicDataForm.showEffect35.text" readonly></el-input>
+                                            </el-form-item>
                                         </el-col>
                                         <el-col :span="4">
-                                            <el-button type="primary" disabled="disabled" v-if="basicDataForm.showEffect35.opUniqueName!=''" @click="selectEffectOfScreening" plain>选择</el-button>
+                                            <el-button type="primary" v-if="basicDataForm.showEffect35.opUniqueName!=''" @click="projectionEffectClick" plain>选择</el-button>
                                         </el-col>
                                     </el-row>
                                 </el-form-item>
@@ -440,7 +788,9 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="8">
-                                            <el-input v-if="basicDataForm.hallTypeKey36.opUniqueName!=''" v-model="basicDataForm.hallTypeKey36.text" ></el-input>
+                                            <el-form-item prop="hallTypeKey36.text" v-if="basicDataForm.hallTypeKey36.opUniqueName!=''">
+                                                <el-input v-model="basicDataForm.hallTypeKey36.text" readonly></el-input>
+                                            </el-form-item>
                                         </el-col>
                                         <el-col :span="4">
                                             <el-button type="primary" v-if="basicDataForm.hallTypeKey36.opUniqueName!=''" @click="cinemaTypeClick" plain>选择</el-button>
@@ -458,7 +808,9 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="8">
-                                            <el-input v-if="basicDataForm.uniformCode79.opUniqueName!=''" v-model="basicDataForm.uniformCode79.text" ></el-input>
+                                            <el-form-item prop="uniformCode79.text" v-if="basicDataForm.uniformCode79.opUniqueName!=''">
+                                                <el-input v-model="basicDataForm.uniformCode79.text" ></el-input>
+                                            </el-form-item>
                                         </el-col>
                                         <el-col :span="4">
                                             <el-button type="primary"  v-if="basicDataForm.uniformCode79.opUniqueName!=''" @click="filmClick" plain>选择</el-button>
@@ -476,7 +828,9 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="8">
-                                            <el-input v-if="basicDataForm.filmTypeKey34.opUniqueName!=''" v-model="basicDataForm.filmTypeKey34.text" ></el-input>
+                                            <el-form-item prop="filmTypeKey34.text" v-if="basicDataForm.filmTypeKey34.opUniqueName!=''" >
+                                                <el-input v-model="basicDataForm.filmTypeKey34.text" readonly></el-input>
+                                            </el-form-item>
                                         </el-col>
                                         <el-col :span="4">
                                             <el-button type="primary"  v-if="basicDataForm.filmTypeKey34.opUniqueName!=''" @click="filmTypeClick" plain>选择</el-button>
@@ -495,15 +849,15 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="12">
-                                            <span
-                          v-if="basicDataForm.planStartTime81.opUniqueName=='DayContainOperator'||basicDataForm.planStartTime81.opUniqueName=='not_DayContainOperator'"
-                        >
-                          <el-input
-                            v-model="basicDataForm.planStartTime81.value"
-                            :disabled="disabled"
-                          ></el-input>
-                        </span>
-                                            <el-date-picker v-if="basicDataForm.planStartTime81.opUniqueName=='TimeBetweenOperator'" v-model="basicDataForm.screeningValidityOption" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" :disabled="disabled" @change="setScreeningValidity"></el-date-picker>
+                                            <el-form-item prop="planStartTime81.value" v-if="basicDataForm.planStartTime81.opUniqueName=='DayContainOperator'||basicDataForm.planStartTime81.opUniqueName=='not_DayContainOperator'">
+                                                <el-input
+                                                    v-model="basicDataForm.planStartTime81.value"
+                                                    :disabled="disabled"
+                                                ></el-input> 
+                                            </el-form-item>  
+                                            <el-form-item prop="screeningValidityOption" v-if="basicDataForm.planStartTime81.opUniqueName=='TimeBetweenOperator'">
+                                                <el-date-picker v-model="basicDataForm.screeningValidityOption" :picker-options="pickerOptions" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" :disabled="disabled" @change="setScreeningValidity"></el-date-picker>
+                                            </el-form-item>
                                         </el-col>
                                     </el-row>
                                 </el-form-item>
@@ -524,7 +878,9 @@
                                         <el-form-item label v-for="(item,index) in basicDataForm.excludeDateOptions" :key="index">
                                             <el-row>
                                                 <el-col :span="18">
-                                                    <el-date-picker v-model="item.excludeDateOption" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" :disabled="disabled" @change="setExcludeDate"></el-date-picker>
+                                                    <el-form-item :prop="'excludeDateOptions.'+index+'.excludeDateOption'" :rules="{required: true, message: '放映排除日期不能为空', trigger: 'change'}">
+                                                        <el-date-picker v-model="item.excludeDateOption" :picker-options="pickerOptions" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" :disabled="disabled" @change="setExcludeDate"></el-date-picker>
+                                                    </el-form-item>
                                                 </el-col>
                                                 <el-col :span="2">
                                                     <el-button size="small" type="text" @click="delExcludeDate(index)">删除</el-button>
@@ -543,22 +899,26 @@
                                 <el-form-item v-if="item.value=='放映星期范围'" label="放映星期范围">
                                     <el-row>
                                         <el-col :span="8">
-                                            <el-select v-model="basicDataForm.filmPlanWeekRange83.opUniqueName" :disabled="disabled" clearable>
-                                                <el-option label="周一到周五" value="WeekDateOperator"></el-option>
-                                                <el-option label="指定星期范围" value="WeekDateRangeOperator"></el-option>
-                                            </el-select>
+                                            <el-form-item prop="filmPlanWeekRange83.opUniqueName">
+                                                <el-select v-model="basicDataForm.filmPlanWeekRange83.opUniqueName" :disabled="disabled" clearable>
+                                                    <el-option label="周一到周五" value="WeekDateOperator"></el-option>
+                                                    <el-option label="指定星期范围" value="WeekDateRangeOperator"></el-option>
+                                                </el-select>
+                                            </el-form-item>
                                         </el-col>
                                         <el-col :span="10">
-                                            <el-select v-if="basicDataForm.filmPlanWeekRange83.opUniqueName =='WeekDateRangeOperator'" v-model="basicDataForm.weekRangeState" multiple collapse-tags @change="handleChangeweekRange" :title="basicDataForm.weekRangeStateName.join(',')" clearable>
-                                                <el-option label="全选" value></el-option>
-                                                <el-option v-for="item in weekOptions" :key="item.value" :label="item.label" :value="item.value"></el-option>
-                                            </el-select>
+                                            <el-form-item prop="weekRangeState" v-if="basicDataForm.filmPlanWeekRange83.opUniqueName =='WeekDateRangeOperator'">
+                                                <el-select v-model="basicDataForm.weekRangeState" multiple collapse-tags @change="handleChangeweekRange" :title="basicDataForm.weekRangeStateName.join(',')" clearable>
+                                                    <el-option label="全选" value></el-option>
+                                                    <el-option v-for="item in weekOptions" :key="item.value" :label="item.label" :value="item.value"></el-option>
+                                                </el-select>
+                                            </el-form-item>
                                         </el-col>
                                     </el-row>
                                 </el-form-item>
 
                                 <el-form-item v-if="item.value=='放映时段范围'" label="放映时段范围">
-                                    <el-select v-model="basicDataForm.filmPlanTimeRange84.opUniqueName" :disabled="disabled" style="margin-bottom:10px" clearable>
+                                    <el-select v-model="basicDataForm.filmPlanTimeRange84.opUniqueName" @change="handleFilmPlanTime" :disabled="disabled" style="margin-bottom:10px" clearable>
                                         <el-option label="不限" value></el-option>
                                         <el-option label="上午09:00-12:59" value="MorningOperator"></el-option>
                                         <el-option label="下午13:00-16:59" value="AfternoonOperator"></el-option>
@@ -569,16 +929,14 @@
                                     <div v-if="basicDataForm.filmPlanTimeRange84.opUniqueName=='TimeRangeContainOperator'">
                                         <el-form-item label v-for="(item,index) in basicDataForm.screeningPeriodOptions" :key="index">
                                             <el-row>
-                                                <el-col :span="18">
-                                                    <el-date-picker v-model="item.screeningPeriodOption" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" :disabled="disabled"></el-date-picker>
-                                                </el-col>
-                                                <el-col :span="2">
+                                                <el-form-item :prop="'screeningPeriodOptions.'+index+'.screeningPeriodOption'" :rules="{required: true, message: '放映时段范围不能为空', trigger: 'change'}">
+                                                    <el-time-picker @change="setScreeningPeriod" is-range v-model="item.screeningPeriodOption" range-separator="至" start-placeholder="开始时间" end-placeholder="结束时间" value-format="HH:mm:ss" :disabled="disabled" style="float:left;" ></el-time-picker>
                                                     <el-button size="small" type="text" @click="delScreeningPeriod(index)">删除</el-button>
-                                                </el-col>
+                                                </el-form-item>
                                             </el-row>
                                         </el-form-item>
                                         <div class="addDate" @click="addScreeningPeriod">
-                                            <i class="el-icon-circle-plus-outline"></i>添加时间
+                                            <i class="el-icon-circle-plus-outline"></i>添加日期
                                         </div>
                                     </div>
                                 </el-form-item>
@@ -598,12 +956,15 @@
                                         </el-col>
                                         <el-col :span="10">
                                             <span v-if="basicDataForm.lowestPrice38.opUniqueName!=''">
-                          <el-input
-                            v-model="basicDataForm.lowestPrice38.value"
-                            :disabled="disabled"
-                            placeholder="请输入"
-                          ></el-input>
-                          <span>元</span>
+                                                <el-form-item prop="lowestPrice38.value">
+                                                    <el-input
+                                                        class="input-type-94"
+                                                        v-model="basicDataForm.lowestPrice38.value"
+                                                        :disabled="disabled"
+                                                        placeholder="请输入"
+                                                    ></el-input>
+                                                    <span>元</span>
+                                                </el-form-item>
                                             </span>
                                         </el-col>
                                     </el-row>
@@ -623,7 +984,9 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="8">
-                                            <el-input v-if="basicDataForm.hallSeatAmout37.opUniqueName!=''" v-model="basicDataForm.hallSeatAmout37.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                            <el-form-item prop="hallSeatAmout37.value" v-if="basicDataForm.hallSeatAmout37.opUniqueName!=''">
+                                                <el-input v-model="basicDataForm.hallSeatAmout37.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                            </el-form-item>
                                         </el-col>
                                     </el-row>
                                 </el-form-item>
@@ -637,10 +1000,12 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="10">
-                                            <el-select v-model="basicDataForm.seatLevelState" multiple collapse-tags @change="handleChangeSeatLevel" :title="basicDataForm.seatLevelStateName.join(',')" clearable>
-                                                <el-option label="全选" value></el-option>
-                                                <el-option v-for="(item,index) in 10" :key="index" :label="index" :value="index"></el-option>
-                                            </el-select>
+                                            <el-form-item prop="seatLevelState">
+                                                <el-select v-model="basicDataForm.seatLevelState" multiple collapse-tags @change="handleChangeSeatLevel" :title="basicDataForm.seatLevelStateName.join(',')" clearable>
+                                                    <el-option label="全选" value></el-option>
+                                                    <el-option v-for="(item,index) in 10" :key="index" :label="index" :value="index"></el-option>
+                                                </el-select>
+                                            </el-form-item>
                                         </el-col>
                                     </el-row>
                                 </el-form-item>
@@ -656,10 +1021,12 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="8">
-                                            <el-input  v-model="basicDataForm.brandId40.text" readonly placeholder="请输入"></el-input>
+                                            <el-form-item prop="brandId40.text" v-if="basicDataForm.brandId40.opUniqueName!=''">
+                                                <el-input v-model="basicDataForm.brandId40.text" readonly placeholder="请输入"></el-input>
+                                            </el-form-item>
                                         </el-col>
                                         <el-col :span="4">
-                                            <el-button type="primary"  v-if="basicDataForm.brandId40.opUniqueName!=''" @click="brandNameClick('selBrand',basicDataForm.brandId40.value)" plain>{{basicDataForm.brandId40.value==''?'选择':'更改'}}</el-button>
+                                            <el-button type="primary" v-if="basicDataForm.brandId40.opUniqueName!=''" @click="brandNameClick('selBrand',basicDataForm.brandId40.value)" plain>{{basicDataForm.brandId40.value==''?'选择':'更改'}}</el-button>
                                         </el-col>
                                     </el-row>
                                 </el-form-item>
@@ -674,7 +1041,9 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="8">
-                                            <el-input v-if="basicDataForm.classCode41.opUniqueName!=''" v-model="basicDataForm.classCode41.text"  placeholder="请输入"></el-input>
+                                            <el-form-item prop="classCode41.text" v-if="basicDataForm.classCode41.opUniqueName!=''">
+                                                <el-input readonly v-model="basicDataForm.classCode41.text"  placeholder="请输入"></el-input>
+                                            </el-form-item>
                                         </el-col>
                                         <el-col :span="4">
                                             <el-button type="primary"  v-if="basicDataForm.classCode41.opUniqueName!=''" @click="selectType('MerClass',basicDataForm.classCode41.text)" plain>选择</el-button>
@@ -692,7 +1061,9 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="8">
-                                            <el-input v-if="basicDataForm.merKey46.opUniqueName!=''" placeholder="请输入" v-model="basicDataForm.merKey46.text" ></el-input>
+                                            <el-form-item prop="merKey46.text" v-if="basicDataForm.merKey46.opUniqueName!=''">
+                                                <el-input readonly placeholder="请输入" v-model="basicDataForm.merKey46.text" ></el-input>
+                                            </el-form-item>
                                         </el-col>
                                         <el-col :span="4">
                                             <el-button type="primary"  v-if="basicDataForm.merKey46.opUniqueName!=''" @click="selectGoodsClick('tradeGoods',basicDataForm.merKey46.value)" plain>{{basicDataForm.merKey46.value?'编辑':'选择'}}</el-button>
@@ -732,7 +1103,7 @@
                                 </el-form-item> -->
 
                                 <!-- 交易类 -->
-                                <el-form-item v-if="item.value=='交易影院'" label="交易影院">
+                                <!-- <el-form-item v-if="item.value=='交易影院'" label="交易影院">
                                     <el-row>
                                         <el-col :span="8">
                                             <el-select v-model="basicDataForm.cinemaCode19.opUniqueName" :disabled="disabled">
@@ -742,13 +1113,13 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="8">
-                                            <el-input v-if="basicDataForm.cinemaCode19.opUniqueName!=''" v-model="basicDataForm.cinemaCode19.text"></el-input>
+                                            <el-input v-if="basicDataForm.cinemaCode19.opUniqueName!=''" v-model="basicDataForm.cinemaCode19.text" readonly></el-input>
                                         </el-col>
                                         <el-col :span="3">
                                             <el-button v-if="basicDataForm.cinemaCode19.opUniqueName!=''" type="primary"  @click="cinemaClick('cinemaTradeDialog')" plain>选择</el-button>
                                         </el-col>
                                     </el-row>
-                                </el-form-item>
+                                </el-form-item> -->
 
                                 <el-form-item v-if="item.value=='交易影院行政区域'" label="交易影院行政区域">
                                     <el-row>
@@ -760,14 +1131,16 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="8">
-                                            <el-input v-if="basicDataForm.cinemaAreaId25.opUniqueName!=''" v-model="basicDataForm.cinemaAreaId25.value" ></el-input>
+                                            <el-form-item prop="cinemaAreaId25.text" v-if="basicDataForm.cinemaAreaId25.opUniqueName!=''">
+                                                <el-input v-model="basicDataForm.cinemaAreaId25.text" readonly></el-input>
+                                            </el-form-item>
                                         </el-col>
                                         <el-col :span="3">
-                                            <el-button v-if="basicDataForm.cinemaAreaId25.opUniqueName!=''" type="primary"  @click="selectTradeCinemaArea()" plain>选择</el-button>
+                                            <el-button v-if="basicDataForm.cinemaAreaId25.opUniqueName!=''" type="primary"  @click="orgStructureClick()" plain>选择</el-button>
                                         </el-col>
                                     </el-row>
                                 </el-form-item>
-                                <el-form-item v-if="item.value=='交易渠道'" label="交易渠道">
+                                <!-- <el-form-item v-if="item.value=='交易渠道'" label="交易渠道">
                                     <el-row>
                                         <el-col :span="8">
                                             <el-select v-model="basicDataForm.consumeWayCode32.opUniqueName" :disabled="disabled">
@@ -776,29 +1149,32 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="8">
-                                            <el-input v-model="basicDataForm.consumeWayCode32.text" ></el-input>
+                                            <el-input v-model="basicDataForm.consumeWayCode32.text" readonly></el-input>
                                         </el-col>
                                         <el-col :span="4">
                                             <el-button type="primary"  @click="handleChangeTradeChannel" plain>选择</el-button>
                                         </el-col>
                                     </el-row>
-                                </el-form-item>
-                                <el-form-item v-if="item.value=='交易商户'" label="交易商户">
+                                </el-form-item> -->
+                                <!-- <el-form-item v-if="item.value=='交易客商'" label="交易客商">
                                     <el-row>
                                         <el-col :span="8">
                                             <el-select v-model="basicDataForm.businessCode14.opUniqueName" :disabled="disabled">
+                                                <el-option label="不限" value></el-option>
                                                 <el-option label="包含" value="normalIn"></el-option>
                                                 <el-option label="不包含" value="normalNotIn"></el-option>
                                             </el-select>
                                         </el-col>
                                         <el-col :span="8">
-                                            <el-input v-model="basicDataForm.businessCode14.text" ></el-input>
+                                            <el-form-item prop="businessCode14.text" v-if="basicDataForm.businessCode14.opUniqueName!=''">
+                                                <el-input v-model="basicDataForm.businessCode14.text" readonly></el-input>
+                                            </el-form-item>
                                         </el-col>
                                         <el-col :span="4">
-                                            <el-button type="primary"  @click="tradingMerchantClick" plain>选择</el-button>
+                                            <el-button v-if="basicDataForm.businessCode14.opUniqueName!=''" type="primary"  @click="tradingMerchantClick" plain>选择</el-button>
                                         </el-col>
                                     </el-row>
-                                </el-form-item>
+                                </el-form-item> -->
 
                                 <el-form-item v-if="item.value=='交易类型'" label="交易类型">
                                     <el-row>
@@ -810,33 +1186,39 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="10">
-                                            <el-select v-if="basicDataForm.tradeType33.opUniqueName!=''" v-model="basicDataForm.tradeTypeState" multiple collapse-tags @change="handleChangeTradeType" :title="basicDataForm.tradeTypeStateName.join(',')" clearable>
-                                                <el-option label="全选" value></el-option>
-                                                <el-option label="消费" value="BUY"></el-option>
-                                                <el-option label="充值" value="MEMBER_ADD_AMOUNT"></el-option>
-                                                <el-option label="退货" value="REJECT"></el-option>
-                                            </el-select>
+                                            <el-form-item prop="tradeTypeState" v-if="basicDataForm.tradeType33.opUniqueName!=''">
+                                                <el-select v-model="basicDataForm.tradeTypeState" multiple collapse-tags @change="handleChangeTradeType" :title="basicDataForm.tradeTypeStateName.join(',')" clearable>
+                                                    <el-option label="全选" value></el-option>
+                                                    <el-option label="消费" value="BUY"></el-option>
+                                                    <el-option label="充值" value="MEMBER_ADD_AMOUNT"></el-option>
+                                                    <el-option label="退货" value="REJECT"></el-option>
+                                                </el-select>
+                                            </el-form-item>
                                         </el-col>
                                     </el-row>
                                 </el-form-item>
 
-                                <el-form-item v-if="item.value=='消费者身份'" label="消费者身份">
+                                <!-- <el-form-item v-if="item.value=='消费者身份'" label="消费者身份">
                                     <el-row>
                                         <el-col :span="8">
-                                            <el-select v-model="basicDataForm.consumerTypeKey27.opUniqueName" :disabled="disabled">
-                                                <el-option label="全部会员" value="AllMember"></el-option>
-                                                <el-option label="指定会员等级" value="AppointMember"></el-option>
-                                                <el-option label="非会员" value="not_memberOperator"></el-option>
-                                            </el-select>
+                                            <el-form-item prop="consumerTypeKey27.opUniqueName">
+                                                <el-select v-model="basicDataForm.consumerTypeKey27.opUniqueName" :disabled="disabled">
+                                                    <el-option label="全部会员" value="AllMember"></el-option>
+                                                    <el-option label="指定会员卡政策" value="AppointMember"></el-option>
+                                                    <el-option label="非会员" value="not_memberOperator"></el-option>
+                                                </el-select>
+                                            </el-form-item>
                                         </el-col>
                                         <el-col :span="8">
-                                            <el-input v-if="basicDataForm.consumerTypeKey27.opUniqueName=='AppointMember'" v-model="basicDataForm.consumerTypeKey27.text" ></el-input>
+                                            <el-form-item prop="consumerTypeKey27.text" v-if="basicDataForm.consumerTypeKey27.opUniqueName=='AppointMember'">
+                                                <el-input v-model="basicDataForm.consumerTypeKey27.text" readonly></el-input>
+                                            </el-form-item>
                                         </el-col>
                                         <el-col :span="4">
-                                            <el-button type="primary"  v-if="basicDataForm.consumerTypeKey27.opUniqueName=='AppointMember'" @click="membershipLevelClick('consumerIdentityDialog')" plain>选择</el-button>
+                                            <el-button type="primary"  v-if="basicDataForm.consumerTypeKey27.opUniqueName=='AppointMember'" @click="cardPolicyClick('consumerIdentityDialog')" plain>选择</el-button>
                                         </el-col>
                                     </el-row>
-                                </el-form-item>
+                                </el-form-item> -->
 
                                 <el-form-item v-if="item.value=='商品单价'" label="商品单价">
                                     <el-row>
@@ -851,10 +1233,35 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="10">
-                                            <el-input v-if="basicDataForm.price31.opUniqueName!=''" v-model="basicDataForm.price31.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                            <el-form-item prop="price31.value">
+                                                <el-input v-model="basicDataForm.price31.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                            </el-form-item>
                                         </el-col>
                                     </el-row>
                                 </el-form-item>
+
+                                <el-form-item v-if="item.value=='商品类型'" label="商品类型">
+                                    <el-row>
+                                        <el-col :span="8">
+                                            <el-select v-model="basicDataForm.saleItemType100.opUniqueName" :disabled="disabled">
+                                                <el-option label="不限" value></el-option>
+                                                <el-option label="包含" value="normalIn"></el-option>
+                                                <el-option label="不包含" value="normalNotIn"></el-option>
+                                            </el-select>
+                                        </el-col>
+                                        <el-col :span="10">
+                                            <el-form-item prop="SaleItemTypeState" v-if="basicDataForm.saleItemType100.opUniqueName!=''">
+                                                <el-select v-model="basicDataForm.SaleItemTypeState" multiple collapse-tags @change="handleChangeSaleItemType" :title="basicDataForm.SaleItemTypeStateName.join(',')" clearable>
+                                                    <el-option label="全选" value></el-option>
+                                                    <el-option label="卖品" value="1"></el-option>
+                                                    <el-option label="电影票" value="0"></el-option>
+                                                </el-select>
+                                            </el-form-item>
+                                        </el-col>
+                                    </el-row>
+                                </el-form-item>
+
+
 
                                 <el-form-item v-if="item.value=='影票单价'" label="影票单价">
                                     <el-row>
@@ -869,7 +1276,9 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="10">
-                                            <el-input v-if="basicDataForm.filmPrice92.opUniqueName!=''" v-model="basicDataForm.filmPrice92.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                            <el-form-item prop="filmPrice92.value" v-if="basicDataForm.filmPrice92.opUniqueName!=''">
+                                                <el-input v-model="basicDataForm.filmPrice92.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                            </el-form-item>
                                         </el-col>
                                     </el-row>
                                 </el-form-item>
@@ -887,7 +1296,9 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="10">
-                                            <el-input v-if="basicDataForm.merPrice93.opUniqueName!=''" v-model="basicDataForm.merPrice93.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                            <el-form-item prop="merPrice93.value" v-if="basicDataForm.merPrice93.opUniqueName!=''">
+                                                <el-input v-model="basicDataForm.merPrice93.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                            </el-form-item>
                                         </el-col>
                                     </el-row>
                                 </el-form-item>
@@ -904,7 +1315,9 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="10">
-                                            <el-input v-if="basicDataForm.filmTicketAmount80.opUniqueName!=''" v-model="basicDataForm.filmTicketAmount80.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                            <el-form-item prop="filmTicketAmount80.value" v-if="basicDataForm.filmTicketAmount80.opUniqueName!=''">
+                                                <el-input v-model="basicDataForm.filmTicketAmount80.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                            </el-form-item>
                                         </el-col>
                                     </el-row>
                                 </el-form-item>
@@ -922,7 +1335,9 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="10">
-                                            <el-input v-if="basicDataForm.filmSumPrice90.opUniqueName!=''" v-model="basicDataForm.filmSumPrice90.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                            <el-form-item prop="filmSumPrice90.value" v-if="basicDataForm.filmSumPrice90.opUniqueName!=''">
+                                                <el-input v-model="basicDataForm.filmSumPrice90.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                            </el-form-item>
                                         </el-col>
                                     </el-row>
                                 </el-form-item>
@@ -940,7 +1355,9 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="10">
-                                            <el-input v-if="basicDataForm.merSumPrice91.opUniqueName!=''" v-model="basicDataForm.merSumPrice91.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                            <el-form-item prop="merSumPrice91.value" v-if="basicDataForm.merSumPrice91.opUniqueName!=''">
+                                                <el-input v-model="basicDataForm.merSumPrice91.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                            </el-form-item>
                                         </el-col>
                                     </el-row>
                                 </el-form-item>
@@ -950,11 +1367,13 @@
                                         <el-row>
                                             <el-col :span="8">
                                                 <el-select v-model="basicDataForm.buyNum.merKey21.opUniqueName" :disabled="disabled">
-                                                    <el-option label="等于" value="normalEqual"></el-option>
+                                                    <el-option label="包含" value="normalIn"></el-option>
                                                 </el-select>
                                             </el-col>
                                             <el-col :span="8">
-                                                <el-input v-model="basicDataForm.buyNum.merKey21.text" ></el-input>
+                                                <el-form-item prop="buyNum.merKey21.text">
+                                                    <el-input v-model="basicDataForm.buyNum.merKey21.text" readonly></el-input>
+                                                </el-form-item>
                                             </el-col>
                                             <el-col :span="4">
                                                 <el-button type="primary" style="margin-left:10px;" @click="selectGoodsClick('appointGoods',basicDataForm.buyNum.merKey21.value)" plain>选择</el-button>
@@ -974,7 +1393,9 @@
                                                 </el-select>
                                             </el-col>
                                             <el-col :span="10">
-                                                <el-input v-if="basicDataForm.buyNum.amount21.opUniqueName!=''" v-model="basicDataForm.buyNum.amount21.text" placeholder="请输入"></el-input>
+                                                <el-form-item prop="buyNum.amount21.value" v-if="basicDataForm.buyNum.amount21.opUniqueName!=''">
+                                                    <el-input v-model="basicDataForm.buyNum.amount21.value" placeholder="请输入"></el-input>
+                                                </el-form-item>
                                             </el-col>
                                         </el-row>
                                     </el-form-item>
@@ -994,7 +1415,9 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="10">
-                                            <el-input v-if="basicDataForm.sumPrice26.opUniqueName!=''" v-model="basicDataForm.sumPrice26.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                            <el-form-item prop="sumPrice26.value" v-if="basicDataForm.sumPrice26.opUniqueName!=''">
+                                                <el-input v-model="basicDataForm.sumPrice26.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                            </el-form-item>
                                         </el-col>
                                     </el-row>
                                 </el-form-item>
@@ -1008,7 +1431,9 @@
                                                 </el-select>
                                             </el-col>
                                             <el-col :span="8">
-                                                <el-input v-model="basicDataForm.buyNumByType.classCode28.text" ></el-input>
+                                                <el-form-item prop="buyNumByType.classCode28.text">
+                                                    <el-input v-model="basicDataForm.buyNumByType.classCode28.text" readonly></el-input>
+                                                </el-form-item>
                                             </el-col>
                                             <el-col :span="4">
                                                 <el-button type="primary"  style="margin-left:10px;" @click="selectType('sameMerClass',basicDataForm.buyNumByType.classCode28.value)" plain>选择</el-button>
@@ -1028,7 +1453,9 @@
                                                 </el-select>
                                             </el-col>
                                             <el-col :span="10">
-                                                <el-input v-if="basicDataForm.buyNumByType.sumAmount28.opUniqueName!=''" v-model="basicDataForm.buyNumByType.sumAmount28.value" placeholder="请输入"></el-input>
+                                                <el-form-item prop="buyNumByType.sumAmount28.value" v-if="basicDataForm.buyNumByType.sumAmount28.opUniqueName!=''">
+                                                    <el-input v-model="basicDataForm.buyNumByType.sumAmount28.value" placeholder="请输入"></el-input>
+                                                </el-form-item>
                                             </el-col>
                                         </el-row>
                                     </el-form-item>
@@ -1043,7 +1470,7 @@
                                                 </el-select>
                                             </el-col>
                                             <el-col :span="8">
-                                                <el-input v-model="basicDataForm.buyNumByBrand.brandId29.value" ></el-input>
+                                                <el-input v-model="basicDataForm.buyNumByBrand.brandId29.text" readonly></el-input>
                                             </el-col>
                                             <el-col :span="4">
                                                 <el-button type="primary" disabled="disabled" style="margin-left:10px;" @click="selectBrandId29()" plain>选择</el-button>
@@ -1080,7 +1507,9 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="8">
-                                            <el-input v-if="basicDataForm.payTypeCode86.opUniqueName!=''" v-model="basicDataForm.payTypeCode86.text" ></el-input>
+                                            <el-form-item prop="payTypeCode86.text" v-if="basicDataForm.payTypeCode86.opUniqueName!=''">
+                                                <el-input v-model="basicDataForm.payTypeCode86.text" readonly></el-input>
+                                            </el-form-item>
                                         </el-col>
                                         <el-col :span="4">
                                             <el-button type="primary" v-if="basicDataForm.payTypeCode86.opUniqueName!=''" style="margin-left:10px;" @click="payTypeClick" plain >选择</el-button>
@@ -1101,7 +1530,9 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="10">
-                                            <el-input v-if="basicDataForm.filmStartDayBefore94.opUniqueName!=''" v-model="basicDataForm.filmStartDayBefore94.value" placeholder="请输入"></el-input>
+                                            <el-form-item prop="filmStartDayBefore94.value" v-if="basicDataForm.filmStartDayBefore94.opUniqueName!=''">
+                                                <el-input v-model="basicDataForm.filmStartDayBefore94.value" placeholder="请输入"></el-input>
+                                            </el-form-item>
                                         </el-col>
                                     </el-row>
                                 </el-form-item>
@@ -1119,12 +1550,14 @@
                                             </el-select>
                                         </el-col>
                                         <el-col :span="10">
-                                            <el-input v-if="basicDataForm.filmStartHourBefore95.opUniqueName!=''" v-model="basicDataForm.filmStartHourBefore95.value" placeholder="请输入"></el-input>
+                                            <el-form-item prop="filmStartHourBefore95.value" v-if="basicDataForm.filmStartHourBefore95.opUniqueName!=''">
+                                                <el-input v-model="basicDataForm.filmStartHourBefore95.value" placeholder="请输入"></el-input>
+                                            </el-form-item>
                                         </el-col>
                                     </el-row>
                                 </el-form-item>
 
-                                <el-form-item v-if="item.value=='MOVIE365首次购票'" label="MOVIE365首次购票">
+                                <el-form-item v-if="item.value=='首次购票'" label="首次购票">
                                     <el-row>
                                         <el-col :span="8">
                                             <el-select v-model="basicDataForm.firstBuyTicket96.opUniqueName" :disabled="disabled">
@@ -1133,12 +1566,12 @@
                                         </el-col>
                                         <el-col :span="10">
                                             <el-select v-model="basicDataForm.firstBuyTicket96.value" :disabled="disabled">
-                                                <el-option label="是" value="1"></el-option>
+                                                <el-option label="是" value="true"></el-option>
                                             </el-select>
                                         </el-col>
                                     </el-row>
                                 </el-form-item>
-                            </el-form>
+                            </div>
                         </el-scrollbar>
                     </div>
                 </div>
@@ -1205,14 +1638,16 @@
                         <el-scrollbar style="height:500px">
                             <p>已选执行方法（共{{selectedActions.length}}项）：</p>
 
-                            <el-form v-for="item of selectedActions" :key="item.key">
+                            <div v-for="item of selectedActions" :key="item.key">
                                 <!-- 会员类 -->
                                 <div v-if="item.value=='赠送积分'">
                                     <div class="actionLabel">【赠送积分】</div>
                                     <el-form-item label="赠送积分:">
                                         <el-row>
                                             <el-col :span="10">
-                                                <el-input v-model="basicDataForm.presentPoint1.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                <el-form-item prop="presentPoint1.value">
+                                                    <el-input v-model="basicDataForm.presentPoint1.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                </el-form-item>
                                             </el-col>
                                         </el-row>
                                     </el-form-item>
@@ -1223,7 +1658,9 @@
                                     <el-form-item label="赠送积分倍率:">
                                         <el-row>
                                             <el-col :span="10">
-                                                <el-input v-model="basicDataForm.pointPersent18.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                <el-form-item prop="pointPersent18.value">
+                                                    <el-input v-model="basicDataForm.pointPersent18.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                </el-form-item>
                                             </el-col>
                                         </el-row>
                                     </el-form-item>
@@ -1234,7 +1671,9 @@
                                     <el-form-item label="赠送会员卡储值额:">
                                         <el-row>
                                             <el-col :span="10">
-                                                <el-input v-model="basicDataForm.presentMoney2.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                <el-form-item prop="presentMoney2.value">
+                                                    <el-input v-model="basicDataForm.presentMoney2.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                </el-form-item>
                                             </el-col>
                                         </el-row>
                                     </el-form-item>
@@ -1245,27 +1684,33 @@
                                     <el-form-item label="票券名称:">
                                         <el-row>
                                             <el-col :span="8">
-                                                <el-input v-model="basicDataForm.giftTicket.couponApplyCode3.text" ></el-input>
+                                                <el-form-item prop="giftTicket.couponApplyCode3.text">
+                                                    <el-input v-model="basicDataForm.giftTicket.couponApplyCode3.text" readonly></el-input>
+                                                </el-form-item>
                                             </el-col>
                                             <el-col :span="4">
-                                                <el-button type="primary" @click="couponBatchClick('couponBatchDialog')" plain>选择</el-button>
+                                                <el-button type="primary" @click="couponBatchSingleClick('couponBatchSingleDialog')" plain>选择</el-button>
                                             </el-col>
                                         </el-row>
                                     </el-form-item>
                                     <el-form-item label="数量:">
                                         <el-row>
                                             <el-col :span="8">
-                                                <el-input v-model="basicDataForm.giftTicket.amount3.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                <el-form-item prop="giftTicket.amount3.value">
+                                                    <el-input v-model="basicDataForm.giftTicket.amount3.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                </el-form-item>
                                             </el-col>
                                         </el-row>
                                     </el-form-item>
                                     <el-form-item label="是否发送短信:">
                                         <el-row>
                                             <el-col :span="10">
-                                                <el-select v-model="basicDataForm.giftTicket.isSendSms3.value" :disabled="disabled">
-                                                    <el-option label="是" value="send"></el-option>
-                                                    <el-option label="否" value="unsend"></el-option>
-                                                </el-select>
+                                                <el-form-item prop="giftTicket.isSendSms3.value">
+                                                    <el-select v-model="basicDataForm.giftTicket.isSendSms3.value" :disabled="disabled">
+                                                        <el-option label="是" value="send"></el-option>
+                                                        <el-option label="否" value="unsend"></el-option>
+                                                    </el-select>
+                                                </el-form-item>
                                             </el-col>
                                         </el-row>
                                     </el-form-item>
@@ -1277,19 +1722,23 @@
                                     <el-form-item label="调价方式:">
                                         <el-row>
                                             <el-col :span="8">
-                                                <el-select v-model="basicDataForm.updateTicketPriceBySeatGrade.modifyWay29.value" :disabled="disabled">
-                                                    <el-option label="固定金额 ( 元 )" value="fixPrice"></el-option>
-                                                    <el-option label="零售价打折 ( % )" value="discountPrice"></el-option>
-                                                    <el-option label="零售价-N ( 元 )" value="subPrice"></el-option>
-                                                    <el-option label="最低发行价±N元" value="addToLowestPrice"></el-option>
-                                                </el-select>
+                                                <el-form-item prop="updateTicketPriceBySeatGrade.modifyWay29.value">
+                                                    <el-select v-model="basicDataForm.updateTicketPriceBySeatGrade.modifyWay29.value" :disabled="disabled">
+                                                        <el-option label="固定金额 ( 元 )" value="fixPrice"></el-option>
+                                                        <el-option label="零售价打折 ( % )" value="discountPrice"></el-option>
+                                                        <el-option label="零售价-N ( 元 )" value="subPrice"></el-option>
+                                                        <el-option label="最低发行价±N元" value="addToLowestPrice"></el-option>
+                                                    </el-select>
+                                                </el-form-item>
                                             </el-col>
 
                                             <el-col :span="10" v-if="basicDataForm.updateTicketPriceBySeatGrade.modifyWay29.value!='' ">
                                                 <el-form-item label="调整额:">
                                                     <el-row>
                                                         <el-col :span="10">
-                                                            <el-input v-model="basicDataForm.updateTicketPriceBySeatGrade.modifyValue29.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                            <el-form-item prop="updateTicketPriceBySeatGrade.modifyValue29.value">
+                                                                <el-input v-model="basicDataForm.updateTicketPriceBySeatGrade.modifyValue29.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                            </el-form-item>
                                                         </el-col>
                                                     </el-row>
                                                 </el-form-item>
@@ -1299,7 +1748,9 @@
                                     <el-form-item label="折扣后加减N元:" v-if="basicDataForm.updateTicketPriceBySeatGrade.modifyWay29.value=='discountPrice' ">
                                         <el-row>
                                             <el-col :span="8">
-                                                <el-input v-model="basicDataForm.updateTicketPriceBySeatGrade.addAmountAfterDiscount29.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                <el-form-item>
+                                                    <el-input v-model="basicDataForm.updateTicketPriceBySeatGrade.addAmountAfterDiscount29.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                </el-form-item>
                                             </el-col>
                                         </el-row>
                                     </el-form-item>
@@ -1309,7 +1760,9 @@
                                             <el-form-item label="积分定价（分）:">
                                                 <el-row>
                                                     <el-col :span="12">
-                                                        <el-input v-model="basicDataForm.updateTicketPriceBySeatGrade.integralAmount29.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                        <el-form-item>
+                                                            <el-input v-model="basicDataForm.updateTicketPriceBySeatGrade.integralAmount29.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                        </el-form-item>
                                                     </el-col>
                                                 </el-row>
                                             </el-form-item>
@@ -1319,7 +1772,9 @@
                                             <el-form-item label="加金额（元）:">
                                                 <el-row>
                                                     <el-col :span="12">
-                                                        <el-input v-model="basicDataForm.updateTicketPriceBySeatGrade.integralMoney29.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                        <el-form-item>
+                                                            <el-input v-model="basicDataForm.updateTicketPriceBySeatGrade.integralMoney29.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                        </el-form-item>
                                                     </el-col>
                                                 </el-row>
                                             </el-form-item>
@@ -1348,31 +1803,59 @@
                                                     <el-option label="用户补贴" value="clientPay"></el-option>
                                                 </el-select>
                                             </el-col>
-                                            <el-col :span="10" v-if="basicDataForm.updateTicketPriceBySeatGrade.lessProcessMethod29.value=='cinemaPay'">
-                                                <el-form-item label="影院补贴N元:">
+                                            <el-col :span="10" v-if="basicDataForm.updateTicketPriceBySeatGrade.lessProcessMethod29.value!='notAllowSale'">
+                                                <el-form-item label="最多补贴N元:">
                                                     <el-row>
                                                         <el-col :span="10">
-                                                            <el-input v-model="basicDataForm.updateTicketPriceBySeatGrade.cinemaPayAmount29.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                            <el-form-item prop="updateTicketPriceBySeatGrade.cinemaPayAmount29.value">
+                                                                <el-input v-model="basicDataForm.updateTicketPriceBySeatGrade.cinemaPayAmount29.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                            </el-form-item>
                                                         </el-col>
                                                     </el-row>
                                                 </el-form-item>
                                             </el-col>
                                         </el-row>
                                     </el-form-item>
+                                    <!-- <el-form-item v-if="basicDataForm.updateTicketPriceBySeatGrade.lessProcessMethod29.value=='cinemaPay'" label="补贴金额不足部分，由用户补齐/第三方最多补贴M元:">
+                                        <el-row>
+                                            <el-col :span="10">
+                                                <el-form-item>
+                                                    <el-input class="input-type-94" :disabled="disabled" placeholder="请输入"></el-input>
+                                                </el-form-item>
+                                            </el-col>
+                                        </el-row>
+                                    </el-form-item>
+                                    <el-form-item v-if="basicDataForm.updateTicketPriceBySeatGrade.lessProcessMethod29.value=='clientPay'" label="补贴金额不足部分，由用户补齐/影院最多补贴M元:">
+                                        <el-row>
+                                            <el-col :span="10">
+                                                <el-form-item>
+                                                    <el-input class="input-type-94" :disabled="disabled" placeholder="请输入"></el-input>
+                                                </el-form-item>
+                                            </el-col>
+                                        </el-row>
+                                    </el-form-item> -->
 
                                     <el-form-item label="调价商品数量:">
                                         <el-row>
                                             <el-col :span="8">
-                                                <el-select v-model="basicDataForm.updateTicketPriceBySeatGrade.modifyAmountMethod29.value" :disabled="disabled">
-                                                    <el-option label="指定数量" value="appointAmount"></el-option>
-                                                    <el-option label="全部影票" value="all"></el-option>
-                                                </el-select>
+                                                <el-form-item prop="updateTicketPriceBySeatGrade.modifyAmountMethod29.value">
+                                                    <el-select v-model="basicDataForm.updateTicketPriceBySeatGrade.modifyAmountMethod29.value" :disabled="disabled">
+                                                        <el-option label="指定数量" value="appointAmount"></el-option>
+                                                        <el-option label="全部影票" value="all"></el-option>
+                                                        <!-- <el-option label="每订单数量" value="orderAmount"></el-option> -->
+                                                        <el-option label="每会员每日数量" value="perMemberDay"></el-option>
+                                                        <el-option label="每会员每周数量" value="perMemberWeek"></el-option>
+                                                        <el-option label="每会员每月数量" value="perMemberMonth"></el-option>
+                                                    </el-select>
+                                                </el-form-item>
                                             </el-col>
-                                            <el-col :span="10" v-if="basicDataForm.updateTicketPriceBySeatGrade.modifyAmountMethod29.value=='appointAmount'">
+                                            <el-col :span="10" v-if="basicDataForm.updateTicketPriceBySeatGrade.modifyAmountMethod29.value!='all'">
                                                 <el-form-item label="数量:">
                                                     <el-row>
                                                         <el-col :span="10">
-                                                            <el-input v-model="basicDataForm.updateTicketPriceBySeatGrade.modifyAmount29.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                            <el-form-item prop="updateTicketPriceBySeatGrade.modifyAmount29.value">
+                                                                <el-input v-model="basicDataForm.updateTicketPriceBySeatGrade.modifyAmount29.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                            </el-form-item>
                                                         </el-col>
                                                     </el-row>
                                                 </el-form-item>
@@ -1383,10 +1866,12 @@
                                     <el-form-item label="座位等级:">
                                         <el-row>
                                             <el-col :span="8">
-                                                <el-select v-model="basicDataForm.action_seatLevel" multiple collapse-tags @change="handleChangeAction_SeatLevel" :title="basicDataForm.action_seatLevelName.join(',')" clearable>
-                                                    <el-option label="全选" value></el-option>
-                                                    <el-option v-for="(item,index) in 10" :key="index" :label="index" :value="index"></el-option>
-                                                </el-select>
+                                                <el-form-item prop="action_seatLevel">
+                                                    <el-select v-model="basicDataForm.action_seatLevel" multiple collapse-tags @change="handleChangeAction_SeatLevel" :title="basicDataForm.action_seatLevelName.join(',')" clearable>
+                                                        <el-option label="全选" value></el-option>
+                                                        <el-option v-for="(item,index) in 10" :key="index" :label="index" :value="index"></el-option>
+                                                    </el-select>
+                                                </el-form-item>
                                             </el-col>
                                         </el-row>
                                     </el-form-item>
@@ -1397,19 +1882,23 @@
                                     <el-form-item label="调价方式:">
                                         <el-row>
                                             <el-col :span="8">
-                                                <el-select v-model="basicDataForm.updateTicketPrice.modifyWay15.value" :disabled="disabled">
-                                                    <el-option label="固定金额 ( 元 )" value="fixPrice"></el-option>
-                                                    <el-option label="零售价打折 ( % )" value="discountPrice"></el-option>
-                                                    <el-option label="零售价-N ( 元 )" value="subPrice"></el-option>
-                                                    <el-option label="最低发行价±N元" value="addToLowestPrice"></el-option>
-                                                </el-select>
+                                                <el-form-item prop="updateTicketPrice.modifyWay15.value">
+                                                    <el-select v-model="basicDataForm.updateTicketPrice.modifyWay15.value" :disabled="disabled">
+                                                        <el-option label="固定金额 ( 元 )" value="fixPrice"></el-option>
+                                                        <el-option label="零售价打折 ( % )" value="discountPrice"></el-option>
+                                                        <el-option label="零售价-N ( 元 )" value="subPrice"></el-option>
+                                                        <el-option label="最低发行价±N元" value="addToLowestPrice"></el-option>
+                                                    </el-select>
+                                                </el-form-item>
                                             </el-col>
 
                                             <el-col :span="10" v-if="basicDataForm.updateTicketPrice.modifyWay15.value!='' ">
                                                 <el-form-item label="调整额:">
                                                     <el-row>
                                                         <el-col :span="10">
-                                                            <el-input v-model="basicDataForm.updateTicketPrice.modifyValue15.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                            <el-form-item prop="updateTicketPrice.modifyValue15.value">
+                                                                <el-input v-model="basicDataForm.updateTicketPrice.modifyValue15.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                            </el-form-item>
                                                         </el-col>
                                                     </el-row>
                                                 </el-form-item>
@@ -1419,7 +1908,9 @@
                                     <el-form-item label="折扣后加减N元:" v-if="basicDataForm.updateTicketPrice.modifyWay15.value=='discountPrice' ">
                                         <el-row>
                                             <el-col :span="8">
-                                                <el-input v-model="basicDataForm.updateTicketPrice.addAmountAfterDiscount15.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                <el-form-item>
+                                                    <el-input v-model="basicDataForm.updateTicketPrice.addAmountAfterDiscount15.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                </el-form-item>
                                             </el-col>
                                         </el-row>
                                     </el-form-item>
@@ -1429,7 +1920,9 @@
                                             <el-form-item label="积分定价（分）:">
                                                 <el-row>
                                                     <el-col :span="12">
-                                                        <el-input v-model="basicDataForm.updateTicketPrice.integralAmount15.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                        <el-form-item>
+                                                            <el-input v-model="basicDataForm.updateTicketPrice.integralAmount15.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                        </el-form-item>
                                                     </el-col>
                                                 </el-row>
                                             </el-form-item>
@@ -1439,7 +1932,9 @@
                                             <el-form-item label="加金额（元）:">
                                                 <el-row>
                                                     <el-col :span="12">
-                                                        <el-input v-model="basicDataForm.updateTicketPrice.integralMoney15.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                        <el-form-item>
+                                                            <el-input v-model="basicDataForm.updateTicketPrice.integralMoney15.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                        </el-form-item>
                                                     </el-col>
                                                 </el-row>
                                             </el-form-item>
@@ -1468,34 +1963,59 @@
                                                     <el-option label="用户补贴" value="clientPay"></el-option>
                                                 </el-select>
                                             </el-col>
-                                            <el-col :span="10" v-if="basicDataForm.updateTicketPrice.lessProcessMethod15.value=='cinemaPay'">
-                                                <el-form-item label="影院补贴N元:">
+                                            <el-col :span="10" v-if="basicDataForm.updateTicketPrice.lessProcessMethod15.value!='notAllowSale'">
+                                                <el-form-item label="最多补贴N元:">
                                                     <el-row>
                                                         <el-col :span="10">
-                                                            <el-input v-model="basicDataForm.updateTicketPrice.cinemaPayAmount15.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                            <el-form-item prop="updateTicketPrice.cinemaPayAmount15.value">
+                                                                <el-input v-model="basicDataForm.updateTicketPrice.cinemaPayAmount15.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                            </el-form-item>
                                                         </el-col>
                                                     </el-row>
                                                 </el-form-item>
                                             </el-col>
                                         </el-row>
                                     </el-form-item>
+                                    <!-- <el-form-item v-if="basicDataForm.updateTicketPriceBySeatGrade.lessProcessMethod29.value=='cinemaPay'" label="补贴金额不足部分，由用户补齐/第三方最多补贴M元:">
+                                        <el-row>
+                                            <el-col :span="10">
+                                                <el-form-item>
+                                                    <el-input class="input-type-94" :disabled="disabled" placeholder="请输入"></el-input>
+                                                </el-form-item>
+                                            </el-col>
+                                        </el-row>
+                                    </el-form-item>
+                                    <el-form-item v-if="basicDataForm.updateTicketPriceBySeatGrade.lessProcessMethod29.value=='clientPay'" label="补贴金额不足部分，由用户补齐/影院最多补贴M元:">
+                                        <el-row>
+                                            <el-col :span="10">
+                                                <el-form-item>
+                                                    <el-input class="input-type-94" :disabled="disabled" placeholder="请输入"></el-input>
+                                                </el-form-item>
+                                            </el-col>
+                                        </el-row>
+                                    </el-form-item> -->
 
                                     <el-form-item label="调价商品数量:">
                                         <el-row>
                                             <el-col :span="8">
-                                                <el-select v-model="basicDataForm.updateTicketPrice.modifyAmountMethod15.value" :disabled="disabled">
-                                                    <el-option label="指定数量" value="appointAmount"></el-option>
-                                                    <el-option label="全部影票" value="all"></el-option>
-                                                    <el-option label="每会员每日数量" value="perMemberDay"></el-option>
-                                                    <el-option label="每会员每周数量" value="perMemberWeek"></el-option>
-                                                    <el-option label="每会员每月数量" value="perMemberMonth"></el-option>
-                                                </el-select>
+                                                <el-form-item prop="updateTicketPrice.modifyAmountMethod15.value">
+                                                    <el-select v-model="basicDataForm.updateTicketPrice.modifyAmountMethod15.value" :disabled="disabled">
+                                                        <el-option label="指定数量" value="appointAmount"></el-option>
+                                                        <el-option label="全部影票" value="all"></el-option>
+                                                        <!-- <el-option label="每订单数量" value="orderAmount"></el-option> -->
+                                                        <el-option label="每会员每日数量" value="perMemberDay"></el-option>
+                                                        <el-option label="每会员每周数量" value="perMemberWeek"></el-option>
+                                                        <el-option label="每会员每月数量" value="perMemberMonth"></el-option>
+                                                    </el-select>
+                                                </el-form-item>
                                             </el-col>
                                             <el-col :span="10" v-if="basicDataForm.updateTicketPrice.modifyAmountMethod15.value!='all'">
                                                 <el-form-item label="数量:">
                                                     <el-row>
                                                         <el-col :span="10">
-                                                            <el-input v-model="basicDataForm.updateTicketPrice.modifyAmount15.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                            <el-form-item prop="updateTicketPrice.modifyAmount15.value">
+                                                                <el-input v-model="basicDataForm.updateTicketPrice.modifyAmount15.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                            </el-form-item>
                                                         </el-col>
                                                     </el-row>
                                                 </el-form-item>
@@ -1510,7 +2030,9 @@
                                     <el-form-item label="商品:">
                                         <el-row>
                                             <el-col :span="8">
-                                                <el-input v-model="basicDataForm.judgeDiscountPrice.merKey9.text" ></el-input>
+                                                <el-form-item prop="judgeDiscountPrice.merKey9.text">
+                                                    <el-input v-model="basicDataForm.judgeDiscountPrice.merKey9.text" readonly></el-input>
+                                                </el-form-item>
                                             </el-col>
                                             <el-col :span="4">
                                                 <el-button type="primary" @click="selectGoodsClick('singleGoods',basicDataForm.judgeDiscountPrice.merKey9.value)" plain>选择</el-button>
@@ -1520,19 +2042,23 @@
                                     <el-form-item label="调价方式:">
                                         <el-row>
                                             <el-col :span="8">
-                                                <el-select v-model="basicDataForm.judgeDiscountPrice.modifyWay9.value" :disabled="disabled">
-                                                    <el-option label="固定金额 ( 元 )" value="fixPrice"></el-option>
-                                                    <el-option label="零售价打折 ( % )" value="discountPrice"></el-option>
-                                                    <el-option label="零售价-N ( 元 )" value="subPrice"></el-option>
-                                                    <el-option label="最低发行价±N元" value="addToLowestPrice"></el-option>
-                                                </el-select>
+                                                <el-form-item prop="judgeDiscountPrice.modifyWay9.value">
+                                                    <el-select v-model="basicDataForm.judgeDiscountPrice.modifyWay9.value" :disabled="disabled">
+                                                        <el-option label="固定金额 ( 元 )" value="fixPrice"></el-option>
+                                                        <el-option label="零售价打折 ( % )" value="discountPrice"></el-option>
+                                                        <el-option label="零售价-N ( 元 )" value="subPrice"></el-option>
+                                                        <el-option label="最低发行价±N元" value="addToLowestPrice"></el-option>
+                                                    </el-select>
+                                                </el-form-item>
                                             </el-col>
 
                                             <el-col :span="10" v-if="basicDataForm.judgeDiscountPrice.modifyWay9.value!='' ">
                                                 <el-form-item label="调整额:">
                                                     <el-row>
                                                         <el-col :span="10">
-                                                            <el-input v-model="basicDataForm.judgeDiscountPrice.modifyValue9.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                            <el-form-item prop="judgeDiscountPrice.modifyValue9.value">
+                                                                <el-input v-model="basicDataForm.judgeDiscountPrice.modifyValue9.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                            </el-form-item>
                                                         </el-col>
                                                     </el-row>
                                                 </el-form-item>
@@ -1542,7 +2068,9 @@
                                     <el-form-item label="折扣后加减N元:" v-if="basicDataForm.judgeDiscountPrice.modifyWay9.value=='discountPrice' ">
                                         <el-row>
                                             <el-col :span="8">
-                                                <el-input v-model="basicDataForm.judgeDiscountPrice.addAmountAfterDiscount9.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                <el-form-item>
+                                                    <el-input v-model="basicDataForm.judgeDiscountPrice.addAmountAfterDiscount9.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                </el-form-item>
                                             </el-col>
                                         </el-row>
                                     </el-form-item>
@@ -1552,7 +2080,9 @@
                                             <el-form-item label="积分定价（分）:">
                                                 <el-row>
                                                     <el-col :span="12">
-                                                        <el-input v-model="basicDataForm.judgeDiscountPrice.integralAmount9.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                        <el-form-item>
+                                                            <el-input v-model="basicDataForm.judgeDiscountPrice.integralAmount9.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                        </el-form-item>
                                                     </el-col>
                                                 </el-row>
                                             </el-form-item>
@@ -1562,7 +2092,9 @@
                                             <el-form-item label="加金额（元）">
                                                 <el-row>
                                                     <el-col :span="12">
-                                                        <el-input v-model="basicDataForm.judgeDiscountPrice.integralMoney9.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                        <el-form-item>
+                                                            <el-input v-model="basicDataForm.judgeDiscountPrice.integralMoney9.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                        </el-form-item>
                                                     </el-col>
                                                 </el-row>
                                             </el-form-item>
@@ -1572,16 +2104,24 @@
                                     <el-form-item label="调价商品数量">
                                         <el-row>
                                             <el-col :span="8">
-                                                <el-select v-model="basicDataForm.judgeDiscountPrice.modifyAmountMethod9.value" :disabled="disabled">
-                                                    <el-option label="指定数量" value="appointAmount"></el-option>
-                                                    <el-option label="该商品全部数量" value="all"></el-option>
-                                                </el-select>
+                                                <el-form-item prop="judgeDiscountPrice.modifyAmountMethod9.value">
+                                                    <el-select v-model="basicDataForm.judgeDiscountPrice.modifyAmountMethod9.value" :disabled="disabled">
+                                                        <el-option label="指定数量" value="appointAmount"></el-option>
+                                                        <el-option label="该商品全部数量" value="all"></el-option>
+                                                        <!-- <el-option label="每订单数量" value="orderAmount"></el-option> -->
+                                                        <el-option label="每会员每日数量" value="perMemberDay"></el-option>
+                                                        <el-option label="每会员每周数量" value="perMemberWeek"></el-option>
+                                                        <el-option label="每会员每月数量" value="perMemberMonth"></el-option>
+                                                    </el-select>
+                                                </el-form-item>
                                             </el-col>
-                                            <el-col :span="10" v-if="basicDataForm.judgeDiscountPrice.modifyAmountMethod9.value=='appointAmount'">
+                                            <el-col :span="10" v-if="basicDataForm.judgeDiscountPrice.modifyAmountMethod9.value != 'all'">
                                                 <el-form-item label="数量">
                                                     <el-row>
                                                         <el-col :span="10">
-                                                            <el-input v-model="basicDataForm.judgeDiscountPrice.modifyAmount9.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                            <el-form-item prop="judgeDiscountPrice.modifyAmount9.value">
+                                                                <el-input v-model="basicDataForm.judgeDiscountPrice.modifyAmount9.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                            </el-form-item>
                                                         </el-col>
                                                     </el-row>
                                                 </el-form-item>
@@ -1608,7 +2148,9 @@
                                     <el-form-item label="商品">
                                         <el-row>
                                             <el-col :span="8">
-                                                <el-input v-model="basicDataForm.addGoodsWithDiscountPrice.merKey10.text" ></el-input>
+                                                <el-form-item prop="addGoodsWithDiscountPrice.merKey10.text">
+                                                    <el-input v-model="basicDataForm.addGoodsWithDiscountPrice.merKey10.text" readonly></el-input>
+                                                </el-form-item>
                                             </el-col>
                                             <el-col :span="4">
                                                 <el-button type="primary" @click="selectGoodsClick('favorablePrice',basicDataForm.addGoodsWithDiscountPrice.merKey10.value)" plain>选择</el-button>
@@ -1618,7 +2160,9 @@
                                     <el-form-item label="商品单价">
                                         <el-row>
                                             <el-col :span="8">
-                                                <el-input v-model="basicDataForm.addGoodsWithDiscountPrice.price10.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                <el-form-item prop="addGoodsWithDiscountPrice.price10.value">
+                                                    <el-input v-model="basicDataForm.addGoodsWithDiscountPrice.price10.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                </el-form-item>
                                             </el-col>
                                         </el-row>
                                     </el-form-item>
@@ -1626,7 +2170,9 @@
                                     <el-form-item label="增加数量">
                                         <el-row>
                                             <el-col :span="8">
-                                                <el-input v-model="basicDataForm.addGoodsWithDiscountPrice.amount10.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                <el-form-item prop="addGoodsWithDiscountPrice.amount10.value">
+                                                    <el-input v-model="basicDataForm.addGoodsWithDiscountPrice.amount10.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                </el-form-item>
                                             </el-col>
                                         </el-row>
                                     </el-form-item>
@@ -1637,7 +2183,9 @@
                                     <el-form-item label="商品">
                                         <el-row>
                                             <el-col :span="8">
-                                                <el-input v-model="basicDataForm.giftGoods.merKey11.text" ></el-input>
+                                                <el-form-item prop="giftGoods.merKey11.text">
+                                                    <el-input v-model="basicDataForm.giftGoods.merKey11.text" readonly></el-input>
+                                                </el-form-item>
                                             </el-col>
                                             <el-col :span="4">
                                                 <el-button type="primary" @click="selectGoodsClick('zengSongGoods',basicDataForm.giftGoods.merKey11.value)" plain>选择</el-button>
@@ -1647,7 +2195,9 @@
                                     <el-form-item label="商品单价">
                                         <el-row>
                                             <el-col :span="8">
-                                                <el-input v-model="basicDataForm.giftGoods.price11.value"  placeholder="请输入"></el-input>
+                                                <el-form-item prop="giftGoods.price11.value">
+                                                    <el-input v-model="basicDataForm.giftGoods.price11.value"  placeholder="请输入"></el-input>
+                                                </el-form-item>
                                             </el-col>
                                         </el-row>
                                     </el-form-item>
@@ -1655,7 +2205,9 @@
                                     <el-form-item label="赠送数量">
                                         <el-row>
                                             <el-col :span="8">
-                                                <el-input v-model="basicDataForm.giftGoods.amount11.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                <el-form-item prop="giftGoods.amount11.value">
+                                                    <el-input v-model="basicDataForm.giftGoods.amount11.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                </el-form-item>
                                             </el-col>
                                         </el-row>
                                     </el-form-item>
@@ -1666,17 +2218,21 @@
                                     <el-form-item label="商品分类">
                                         <el-row>
                                             <el-col :span="8">
-                                                <el-select v-model="basicDataForm.judgeDiscountPriceByType.merCategoryMethod27.text" :disabled="disabled">
-                                                    <el-option label="全部卖品分类" value="allMerCategory"></el-option>
-                                                    <el-option label="指定分类" value="appointCategory"></el-option>
-                                                </el-select>
+                                                <el-form-item>
+                                                    <el-select v-model="basicDataForm.judgeDiscountPriceByType.merCategoryMethod27.value" :disabled="disabled">
+                                                        <el-option label="全部卖品分类" value="allMerCategory"></el-option>
+                                                        <el-option label="指定分类" value="appointCategory"></el-option>
+                                                    </el-select>
+                                                </el-form-item>
                                             </el-col>
                                         </el-row>
                                     </el-form-item>
                                     <el-form-item label="分类" v-if="basicDataForm.judgeDiscountPriceByType.merCategoryMethod27.value=='appointCategory'">
                                         <el-row>
                                             <el-col :span="8">
-                                                <el-input v-model="basicDataForm.judgeDiscountPriceByType.classCode27.text" ></el-input>
+                                                <el-form-item prop="judgeDiscountPriceByType.classCode27.text">
+                                                    <el-input v-model="basicDataForm.judgeDiscountPriceByType.classCode27.text" readonly></el-input>
+                                                </el-form-item>
                                             </el-col>
                                             <el-col :span="4">
                                                 <el-button type="primary" @click="selectType('maiPingMerClass',basicDataForm.judgeDiscountPriceByType.classCode27.value)" plain>选择</el-button>
@@ -1686,17 +2242,21 @@
                                     <el-form-item label="调价方式">
                                         <el-row>
                                             <el-col :span="8">
-                                                <el-select v-model="basicDataForm.judgeDiscountPriceByType.modifyWay27.value" :disabled="disabled">
-                                                    <el-option label="零售价打折 ( % )" value="discountPrice"></el-option>
-                                                    <el-option label="零售价-N ( 元 )" value="subPrice"></el-option>
-                                                </el-select>
+                                                <el-form-item prop="judgeDiscountPriceByType.modifyWay27.value">
+                                                    <el-select v-model="basicDataForm.judgeDiscountPriceByType.modifyWay27.value" :disabled="disabled">
+                                                        <el-option label="零售价打折 ( % )" value="discountPrice"></el-option>
+                                                        <el-option label="零售价-N ( 元 )" value="subPrice"></el-option>
+                                                    </el-select>
+                                                </el-form-item>
                                             </el-col>
 
                                             <el-col :span="10" v-if="basicDataForm.judgeDiscountPriceByType.modifyWay27.value!='' ">
                                                 <el-form-item label="调价值">
                                                     <el-row>
                                                         <el-col :span="10">
-                                                            <el-input v-model="basicDataForm.judgeDiscountPriceByType.modifyValue27.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                            <el-form-item prop="judgeDiscountPriceByType.modifyValue27.value">
+                                                                <el-input v-model="basicDataForm.judgeDiscountPriceByType.modifyValue27.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                            </el-form-item>
                                                         </el-col>
                                                     </el-row>
                                                 </el-form-item>
@@ -1706,7 +2266,9 @@
                                     <el-form-item label="折扣后加减N元" v-if="basicDataForm.judgeDiscountPriceByType.modifyWay27.value=='discountPrice' ">
                                         <el-row>
                                             <el-col :span="8">
-                                                <el-input v-model="basicDataForm.judgeDiscountPriceByType.addAmountAfterDiscount27.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                <el-form-item>
+                                                    <el-input v-model="basicDataForm.judgeDiscountPriceByType.addAmountAfterDiscount27.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                </el-form-item>
                                             </el-col>
                                         </el-row>
                                     </el-form-item>
@@ -1714,16 +2276,24 @@
                                     <el-form-item label="调价商品数量">
                                         <el-row>
                                             <el-col :span="8">
-                                                <el-select v-model="basicDataForm.judgeDiscountPriceByType.modifyAmountMethod27.value" :disabled="disabled">
-                                                    <el-option label="指定数量" value="appointAmount"></el-option>
-                                                    <el-option label="该分类全部数量" value="all"></el-option>
-                                                </el-select>
+                                                <el-form-item prop="judgeDiscountPriceByType.modifyAmountMethod27.value">
+                                                    <el-select v-model="basicDataForm.judgeDiscountPriceByType.modifyAmountMethod27.value" :disabled="disabled">
+                                                        <el-option label="指定数量" value="appointAmount"></el-option>
+                                                        <el-option label="该分类全部数量" value="all"></el-option>
+                                                        <!-- <el-option label="每订单数量" value="orderAmount"></el-option> -->
+                                                        <el-option label="每会员每日数量" value="perMemberDay"></el-option>
+                                                        <el-option label="每会员每周数量" value="perMemberWeek"></el-option>
+                                                        <el-option label="每会员每月数量" value="perMemberMonth"></el-option>
+                                                    </el-select>
+                                                </el-form-item>
                                             </el-col>
-                                            <el-col :span="10" v-if="basicDataForm.judgeDiscountPriceByType.modifyAmountMethod27.value=='appointAmount'">
+                                            <el-col :span="10" v-if="basicDataForm.judgeDiscountPriceByType.modifyAmountMethod27.value!='all'">
                                                 <el-form-item label="数量">
                                                     <el-row>
                                                         <el-col :span="10">
-                                                            <el-input v-model="basicDataForm.judgeDiscountPriceByType.modifyAmount27.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                            <el-form-item prop="judgeDiscountPriceByType.modifyAmount27.value">
+                                                                <el-input v-model="basicDataForm.judgeDiscountPriceByType.modifyAmount27.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                            </el-form-item>
                                                         </el-col>
                                                     </el-row>
                                                 </el-form-item>
@@ -1750,17 +2320,21 @@
                                     <el-form-item label="商品品牌">
                                         <el-row>
                                             <el-col :span="8">
-                                                <el-select v-model="basicDataForm.judgeDiscountPriceByBrand.merBrandMethod28.value" :disabled="disabled">
-                                                    <el-option label="全部品牌" value="allMerBrand"></el-option>
-                                                    <el-option label="指定品牌" value="appointBrand"></el-option>
-                                                </el-select>
+                                                <el-form-item prop="judgeDiscountPriceByBrand.merBrandMethod28.value">
+                                                    <el-select v-model="basicDataForm.judgeDiscountPriceByBrand.merBrandMethod28.value" :disabled="disabled">
+                                                        <el-option label="全部品牌" value="allMerBrand"></el-option>
+                                                        <el-option label="指定品牌" value="appointBrand"></el-option>
+                                                    </el-select>
+                                                </el-form-item>
                                             </el-col>
                                         </el-row>
                                     </el-form-item>
                                     <el-form-item label="品牌" v-if="basicDataForm.judgeDiscountPriceByBrand.merBrandMethod28.value=='appointBrand'">
                                         <el-row>
                                             <el-col :span="8">
-                                                <el-input v-model="basicDataForm.judgeDiscountPriceByBrand.brandId28.text" ></el-input>
+                                                <el-form-item prop="judgeDiscountPriceByBrand.brandId28.text">
+                                                    <el-input v-model="basicDataForm.judgeDiscountPriceByBrand.brandId28.text" readonly></el-input>
+                                                </el-form-item>
                                             </el-col>
                                             <el-col :span="4">
                                                 <el-button type="primary" @click="brandNameClick('youhuiselBrand',basicDataForm.judgeDiscountPriceByBrand.brandId28.value)" plain>选择</el-button>
@@ -1770,17 +2344,21 @@
                                     <el-form-item label="调价方式">
                                         <el-row>
                                             <el-col :span="8">
-                                                <el-select v-model="basicDataForm.judgeDiscountPriceByBrand.modifyWay28.value" :disabled="disabled">
-                                                    <el-option label="零售价打折 ( % )" value="discountPrice"></el-option>
-                                                    <el-option label="零售价-N ( 元 )" value="subPrice"></el-option>
-                                                </el-select>
+                                                <el-form-item prop="judgeDiscountPriceByBrand.modifyWay28.value">
+                                                    <el-select v-model="basicDataForm.judgeDiscountPriceByBrand.modifyWay28.value" :disabled="disabled">
+                                                        <el-option label="零售价打折 ( % )" value="discountPrice"></el-option>
+                                                        <el-option label="零售价-N ( 元 )" value="subPrice"></el-option>
+                                                    </el-select>
+                                                </el-form-item>
                                             </el-col>
 
                                             <el-col :span="10" v-if="basicDataForm.judgeDiscountPriceByBrand.modifyWay28.value!='' ">
                                                 <el-form-item label="调价值">
                                                     <el-row>
                                                         <el-col :span="10">
-                                                            <el-input v-model="basicDataForm.judgeDiscountPriceByBrand.modifyValue28.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                            <el-form-item prop="judgeDiscountPriceByBrand.modifyValue28.value">
+                                                                <el-input v-model="basicDataForm.judgeDiscountPriceByBrand.modifyValue28.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                            </el-form-item>
                                                         </el-col>
                                                     </el-row>
                                                 </el-form-item>
@@ -1790,7 +2368,9 @@
                                     <el-form-item label="折扣后加减N元" v-if="basicDataForm.judgeDiscountPriceByBrand.modifyWay28.value=='discountPrice' ">
                                         <el-row>
                                             <el-col :span="8">
-                                                <el-input v-model="basicDataForm.judgeDiscountPriceByBrand.addAmountAfterDiscount28.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                <el-form-item>
+                                                    <el-input v-model="basicDataForm.judgeDiscountPriceByBrand.addAmountAfterDiscount28.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                </el-form-item>
                                             </el-col>
                                         </el-row>
                                     </el-form-item>
@@ -1798,16 +2378,24 @@
                                     <el-form-item label="调价商品数量">
                                         <el-row>
                                             <el-col :span="8">
-                                                <el-select v-model="basicDataForm.judgeDiscountPriceByBrand.modifyAmountMethod28.value" :disabled="disabled">
-                                                    <el-option label="指定数量" value="appointAmount"></el-option>
-                                                    <el-option label="该分类全部数量" value="all"></el-option>
-                                                </el-select>
+                                                <el-form-item prop="judgeDiscountPriceByBrand.modifyAmountMethod28.value">
+                                                    <el-select v-model="basicDataForm.judgeDiscountPriceByBrand.modifyAmountMethod28.value" :disabled="disabled">
+                                                        <el-option label="指定数量" value="appointAmount"></el-option>
+                                                        <el-option label="该分类全部数量" value="all"></el-option>
+                                                        <!-- <el-option label="每订单数量" value="orderAmount"></el-option> -->
+                                                        <el-option label="每会员每日数量" value="perMemberDay"></el-option>
+                                                        <el-option label="每会员每周数量" value="perMemberWeek"></el-option>
+                                                        <el-option label="每会员每月数量" value="perMemberMonth"></el-option>
+                                                    </el-select>
+                                                </el-form-item>
                                             </el-col>
-                                            <el-col :span="10" v-if="basicDataForm.judgeDiscountPriceByBrand.modifyAmountMethod28.value=='appointAmount'">
+                                            <el-col :span="10" v-if="basicDataForm.judgeDiscountPriceByBrand.modifyAmountMethod28.value!='all'">
                                                 <el-form-item label="数量">
                                                     <el-row>
                                                         <el-col :span="10">
-                                                            <el-input v-model="basicDataForm.judgeDiscountPriceByBrand.modifyAmount28.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                            <el-form-item prop="judgeDiscountPriceByBrand.modifyAmount28.value">
+                                                                <el-input v-model="basicDataForm.judgeDiscountPriceByBrand.modifyAmount28.value" :disabled="disabled" placeholder="请输入"></el-input>
+                                                            </el-form-item>
                                                         </el-col>
                                                     </el-row>
                                                 </el-form-item>
@@ -1828,26 +2416,38 @@
                                         </el-row>
                                     </el-form-item>
                                 </div>
-                            </el-form>
+
+                                <div v-if="item.value=='修改订单结算价'">
+                                    <div class="actionLabel">【修改订单结算价】</div>
+                                </div>
+                            </div>
                         </el-scrollbar>
                     </div>
                 </div>
             </el-card>
-        </el-collapse-item>  
+        </el-collapse-item>
+        </el-form>
     </el-collapse>
-    <fixStepTool :stepData="stepData.stepList" style="margin-right:100px;"></fixStepTool>
+    <!-- <fixStepTool :stepData="stepData.stepList" style="margin-right:100px;"></fixStepTool> -->
 
     <el-row class="flex-base flex-center bottom-control-group">
         <el-button type="primary" @click="dataFormSubmit()">确定</el-button>
         <el-button @click="returnList()">返回</el-button>
     </el-row>
 
-    <!-- 选择商品弹窗 -->
-    <selected-goods ref="tradeGoods" @tradeGoodsCallBack="tradeGoodsCallBack"></selected-goods>
-    <selected-goods ref="appointGoods" @appointGoodsBack="appointGoodsBack"></selected-goods>
-    <selected-goods ref="zengSongGoods" @zengSongGoodsCallBack="zengSongGoodsCallBack"></selected-goods>
-    <selected-goods ref="singleGoods" @singleGoodsCallBack="singleGoodsCallBack"></selected-goods>
-    <selected-goods ref="favorablePrice" @favorablePriceCallBack="favorablePriceCallBack"></selected-goods>
+    <!-- 选择商品弹窗 :dialogFeedbackData="basicDataForm.merKey46.value.split(',')" -->
+    <selected-goods
+    :dialogVisible.sync="selectedGoodsDialogVisible"
+    :dialogFeedbackData="selectedFeedbackData"
+    @cimSelectedGoodsDialogCallBack="cimSelectedGoodsDialogCallBack"
+    ></selected-goods>
+
+    <!-- <selected-goods ref="tradeGoods" @tradeGoodsCallBack="tradeGoodsCallBack" ></selected-goods>
+    <selected-goods ref="appointGoods" @appointGoodsBack="appointGoodsBack"></selected-goods> -->
+    
+    <!-- <selected-goods-single ref="zengSongGoods" @zengSongGoodsCallBack="zengSongGoodsCallBack"></selected-goods-single>
+    <selected-goods-single ref="singleGoods" @singleGoodsCallBack="singleGoodsCallBack"></selected-goods-single>
+    <selected-goods-single ref="favorablePrice" @favorablePriceCallBack="favorablePriceCallBack"></selected-goods-single> -->
     <!-- 品牌弹窗 -->
     <selBrandDialog :title="selBrandDialog.title"  ref="selBrand" @SelBrandCallBack="SelBrandCallBack" />
     <selBrandDialog :title="selBrandDialog.title"  ref="youhuiselBrand" @youhuiBrandcallBack="youhuiBrandcallBack" />
@@ -1857,29 +2457,36 @@
     <MerClass ref="maiPingMerClass" @maiPingMerClassCallBack="maiPingMerClassCallBack"></MerClass>
 
     <!-- 交易渠道弹窗 -->
-    <TradeChannel ref="TradeChannel" @TrandeChannelcallbackData="TrandeChannelcallbackData"></TradeChannel>
-    <!-- 行政区域 -->
-    <salePlace ref="salePlace" @salePlaceCallBack="salePlaceCallBack"></salePlace>
+    <!-- <TradeChannel ref="TradeChannel" @TrandeChannelcallbackData="TrandeChannelcallbackData"></TradeChannel> -->
     <!-- 支付方式 -->
     <payTypeDialog :title="payTypeDialog.title" :dialogTableVisible.sync="payTypeDialog.payTypeDialogVisible"  ref="payTypeDialog" @callBack="handlePayTypeCounterUseCallBack" ></payTypeDialog>
-    <!-- 交易商户弹窗 -->
-    <tradeMerchantDialog :title="tradeMerchantDialog.title" :dialogTableVisible.sync="tradeMerchantDialog.tradeMerchantDialogVisible" ref="tradeMerchantDialog" @callBack="handleTradeMerchantCallBack"></tradeMerchantDialog>
+    <!-- 交易客商弹窗 -->
+    <tradeMerchantDialog :title="tradeMerchantDialog.title" :dialogTableVisible.sync="tradeMerchantDialog.tradeMerchantDialogVisible" ref="tradeMerchantDialog" @callBack="handleTradeMerchantCallBack" :channelNature="'2'"></tradeMerchantDialog>
     <!-- 交易影院弹窗 -->
-    <cinemaDialog :title="cinemaDialog.title" :dialogTableVisible.sync="cinemaDialog.cinemaDialogVisible" ref="cinemaTradeDialog" @callBack="handleTradeCinemaCallBack"></cinemaDialog>
+    <!-- <cinemaDialog :title="cinemaDialog.title" :dialogTableVisible.sync="cinemaDialog.cinemaDialogVisible" ref="cinemaTradeDialog" @callBack="handleTradeCinemaCallBack"></cinemaDialog> -->
+    <!-- 影院行政区域弹窗 -->
+    <orgStructureDialog :title="orgStructureDialog.title" :dialogTableVisible.sync="orgStructureDialog.orgStructureDialogVisible" ref="orgStructureDialog"  @callBack="handleOrgStructureBack"></orgStructureDialog>
+    <!-- <cinemaAdminRegionDialog :title="cinemaAdminRegionDialog.title" :dialogTableVisible.sync="cinemaAdminRegionDialog.cinemaAdminRegionDialogVisible" ref="cinemaAdminRegionDialog" @callBack="handleCinemaAdminRegionCallBack"></cinemaAdminRegionDialog> -->
+    <!-- 放映效果弹窗 -->
+    <projectionEffectDialog :title="projectionEffectDialog.title" :dialogTableVisible.sync="projectionEffectDialog.projectionEffectDialogVisible" ref="projectionEffectDialog" @callBack="handleProjectionEffectCallBack"></projectionEffectDialog>
     <!-- 注册影院弹窗 -->
     <cinemaDialog :title="cinemaDialog.title" :dialogTableVisible.sync="cinemaDialog.cinemaDialogVisible" ref="cinemaRegisterDialog" @callBack="handleRegisterCinemaCallBack"></cinemaDialog>
     <!-- 影片弹窗 -->
     <filmDialog :title="filmDialog.title" :dialogTableVisible.sync="filmDialog.filmDialogVisible" ref="filmDialog" @callBack="handleFilmCallBack"></filmDialog>
     <!-- 影片类型弹窗 -->
     <filmTypeDialog :title="filmTypeDialog.title" :dialogTableVisible.sync="filmTypeDialog.filmTypeDialogVisible" ref="filmTypeDialog" @callBack="handleFilmTypeCallBack"></filmTypeDialog>
-    <!-- 影院类型弹窗 -->
+    <!-- 影厅类型弹窗 -->
     <cinemaTypeDialog :title="cinemaTypeDialog.title" :dialogTableVisible.sync="cinemaTypeDialog.cinemaTypeDialogVisible" ref="cinemaTypeDialog" @callBack="handleCinemaTypeCallBack"></cinemaTypeDialog>
     <!-- 票券批次弹窗 -->
     <couponBatchDialog :title="couponBatchDialog.title" :dialogTableVisible.sync="couponBatchDialog.couponBatchDialogVisible" ref="couponBatchDialog" @callBack="handleCouponBatchCallBack"></couponBatchDialog>
+    <!-- 票券批次单选弹窗 -->
+    <couponBatchSingleDialog :title="couponBatchSingleDialog.title" :dialogTableVisible.sync="couponBatchSingleDialog.couponBatchSingleDialogVisible" ref="couponBatchSingleDialog" @callBack="handleCouponBatchSingleCallBack"></couponBatchSingleDialog>
+    <!-- 会员卡政策弹窗 -->
+    <crmCardPolicyDialog @crmCardPolicyDialogCallBack="handleCardPolicy" :whereUse="crmCardPolicyDialogWhereUse" :reviewData="reviewCrmCardPolicyTypeData" :dialogVisible.sync="crmCardPolicyDialogVisible" />
     <!-- 会员等级弹窗 -->
     <crmMemberLevelDialog @crmMemberLevelDialogCallBack="handleMembershipLevel" :whereUse="crmMemberLevelDialogWhereUse" :reviewData="reviewCrmMemberLevelData" :dialogVisible.sync="crmMemberLevelDialogVisible" />
-    
-    
+    <!-- 会员卡类型弹窗 -->
+    <crmCardTypeDialog @crmCardTypeDialogCallBack="handleCardshipType" :whereUse="crmCardTypeDialogWhereUse" :reviewData="reviewCrmCardTypeData" :dialogVisible.sync="crmCardTypeDialogVisible" />
 </div>
 </template>
 
@@ -1890,6 +2497,7 @@ import alertHandle from 'cmm/mixins/marketing/alertHandle.js'
 import qs from "qs";
 import Actions from "./actions.json";
 import RuleConditions from "./ruleConditions.json";
+import commonTableVue from '../../../components/Table/commonTable.vue';
 
 // 活动条件
 const memberOptions = [{
@@ -1915,11 +2523,7 @@ const memberOptions = [{
     {
         key: "openDate12",
         value: "开卡日期"
-    },
-    {
-        key: "cardTypeKey10",
-        value: "会员等级"
-    },
+    },    
     {
         key: "registerBusinessCode13",
         value: "注册影院"
@@ -1937,38 +2541,102 @@ const memberOptions = [{
         value: "累计积分"
     },
     {
-        key: "sumPrice",
+        key: "sumPrice2",
         value: "单次消费金额"
     },
     {
         key: "consumeSum6",
         value: "累计消费金额"
-    }
-];
-const tradeOptions = [{
-        key: "cinemaCode19",
-        value: "交易影院"
     },
+    {
+        key: "cardTypeKey10",
+        value: "会员卡类型"
+    },
+    {
+        key: "cardRightCode100",
+        value: "会员卡政策"
+    },
+    {
+        key: "customerLevelCode101",
+        value: "会员等级"
+    },
+    {
+        key: "firstRecharge98",
+        value: "首充金额"
+    },
+    {
+        key: "sumPrice1",
+        value: "单次充值金额"
+    },
+    // {
+    //     key: "consumeNum",
+    //     value: "动态周期消费次数",
+    //     hasSon: true,
+    //     sonData: [{
+    //         key: "dynamicPeriod15",
+    //         value: "动态周期",
+    //     },{
+    //         key: "appointPeriod15",
+    //         value: "指定周期",
+    //     },{
+    //         key: "consumeWayCode15",
+    //         value: "交易渠道",
+    //     },{
+    //         key: "dynamicConsumeCount15",
+    //         value: "消费次数",
+    //     }]
+    // },
+    // {
+    //     key: "cycleConsumeNum",
+    //     value: "动态周期消费额",
+    //     hasSon: true,
+    //     sonData: [{
+    //         key: "dynamicPeriod17",
+    //         value: "动态周期",
+    //     },{
+    //         key: "appointPeriod17",
+    //         value: "指定周期",
+    //     },{
+    //         key: "consumeWayCode17",
+    //         value: "交易渠道",
+    //     },{
+    //         key: "saleItemType17",
+    //         value: "商品类型",
+    //     },{
+    //         key: "dynamicConsumeSum17",
+    //         value: "动态周期消费额",
+    //     }]
+    // }
+];
+const tradeOptions = [
+    // {
+    //     key: "cinemaCode19",
+    //     value: "交易影院"
+    // },
     {
         key: "cinemaAreaId25",
         value: "交易影院行政区域"
     },
-    {
-        key: "businessCode14",
-        value: "交易商户"
-    },
-    {
-        key: "consumerTypeKey27",
-        value: "消费者身份"
-    },
+    // {
+    //     key: "businessCode14",
+    //     value: "交易客商"
+    // },
+    // {
+    //     key: "consumerTypeKey27",
+    //     value: "消费者身份"
+    // },
     {
         key: "tradeType33",
         value: "交易类型"
     },
     {
-        key: "consumeWayCode32",
-        value: "交易渠道"
+        key: "saleItemType100",
+        value: "商品类型"
     },
+    // {
+    //     key: "consumeWayCode32",
+    //     value: "交易渠道"
+    // },
     {
         key: "price31",
         value: "商品单价"
@@ -2039,7 +2707,7 @@ const tradeOptions = [{
     },
     {
         key: "firstBuyTicket96",
-        value: "MOVIE365首次购票"
+        value: "首次购票"
     }
 ];
 const movieTicketsOptions = [{
@@ -2465,8 +3133,12 @@ export default {
 
     data() {
         return {            
-           
-
+            //限制过去时间不可选
+            pickerOptions: {
+                disabledDate(time) {
+                    return time.getTime() < Date.now() - 8.64e7;
+                }
+            },
             framedialogVisible:false,//选择影院弹窗状态
             filmTypeInnerData:{
                 reviewFilmDataMulti:[],
@@ -2503,7 +3175,602 @@ export default {
                     required: true,
                     message: "分组活动名称不能为空",
                     trigger: "blur"
-                }]
+                }],
+                "presentPoint1.value":[{
+                    required: true,
+                    message: "赠送积分不能为空",
+                    trigger: "blur"
+                }],
+                "pointPersent18.value":[{
+                    required: true,
+                    message: "赠送积分倍率不能为空",
+                    trigger: "blur"
+                }],
+                "presentMoney2.value":[{
+                    required: true,
+                    message: "赠送会员卡储值额不能为空",
+                    trigger: "blur"
+                }],
+                "giftTicket.couponApplyCode3.text":[{
+                    required: true,
+                    message: "票券名称不能为空",
+                    trigger: "change"
+                }],
+                "giftTicket.amount3.value":[{
+                    required: true,
+                    message: "数量不能为空",
+                    trigger: "blur",
+                   
+                },
+                { 
+                    validator(rule, value, callback) {
+                        if (/(^[1-9]\d*$)/.test(value)) {
+                            callback()
+                        } else {
+                            callback(new Error('请输入正整数'))
+                        }
+                    },
+                    trigger: 'blur'
+                }],
+                "giftTicket.isSendSms3.value":[{
+                    required: true,
+                    message: "请选择是否发送短信",
+                    trigger: "change"
+                }],
+                "updateTicketPrice.modifyWay15.value":[{
+                    required: true,
+                    message: "请选择调价方式",
+                    trigger: "change"
+                }],
+                "updateTicketPrice.modifyValue15.value":[{
+                    required: true,
+                    message: "调整额不能为空",
+                    trigger: "blur"
+                }],
+                "updateTicketPrice.cinemaPayAmount15.value":[{
+                    required: true,
+                    message: "最多补贴N元不能为空",
+                    trigger: "blur"
+                }],
+                "updateTicketPrice.modifyAmountMethod15.value":[{
+                    required: true,
+                    message: "调价商品数量不能为空",
+                    trigger: "change"
+                }],
+                "updateTicketPrice.modifyAmount15.value":[{
+                    required: true,
+                    message: "数量不能为空",
+                    trigger: "blur"
+                },
+                { 
+                    validator(rule, value, callback) {
+                        if (/(^[1-9]\d*$)/.test(value)) {
+                            callback()
+                        } else {
+                            callback(new Error('请输入正整数'))
+                        }
+                    },
+                    trigger: 'blur'
+                }],
+                "updateTicketPriceBySeatGrade.modifyWay29.value":[{
+                    required: true,
+                    message: "调价方式不能为空",
+                    trigger: "change"
+                }],
+                "updateTicketPriceBySeatGrade.modifyValue29.value":[{
+                    required: true,
+                    message: "调整额不能为空",
+                    trigger: "blur"
+                }],
+                "updateTicketPriceBySeatGrade.cinemaPayAmount29.value":[{
+                    required: true,
+                    message: "最多补贴N元不能为空",
+                    trigger: "blur"
+                }], 
+                "updateTicketPriceBySeatGrade.modifyAmountMethod29.value":[{
+                    required: true,
+                    message: "调价商品数量不能为空",
+                    trigger: "change"
+                }], 
+                "updateTicketPriceBySeatGrade.modifyAmount29.value":[{
+                    required: true,
+                    message: "数量不能为空",
+                    trigger: "blur"
+                },
+                { 
+                    validator(rule, value, callback) {
+                        if (/(^[1-9]\d*$)/.test(value)) {
+                            callback()
+                        } else {
+                            callback(new Error('请输入正整数'))
+                        }
+                    },
+                    trigger: 'blur'
+                }], 
+                action_seatLevel:[{
+                    required: true,
+                    message: "座位等级不能为空",
+                    trigger: "change"
+                }],
+                "giftGoods.merKey11.text":[{
+                    required: true,
+                    message: "商品不能为空",
+                    trigger: "change"
+                }],
+                "giftGoods.price11.value":[{
+                    required: true,
+                    message: "商品单价不能为空",
+                    trigger: "blur"
+                }],
+                "giftGoods.amount11.value":[{
+                    required: true,
+                    message: "赠送数量不能为空",
+                    trigger: "blur"
+                },
+                { 
+                    validator(rule, value, callback) {
+                        if (/(^[1-9]\d*$)/.test(value)) {
+                            callback()
+                        } else {
+                            callback(new Error('请输入正整数'))
+                        }
+                    },
+                    trigger: 'blur'
+                }],
+                "judgeDiscountPrice.merKey9.text":[{
+                    required: true,
+                    message: "商品不能为空",
+                    trigger: "change"
+                }],
+                "judgeDiscountPrice.modifyWay9.value":[{
+                    required: true,
+                    message: "调价方式不能为空",
+                    trigger: "change"
+                }],
+                "judgeDiscountPrice.modifyValue9.value":[{
+                    required: true,
+                    message: "调整额不能为空",
+                    trigger: "blur"
+                }],
+                "judgeDiscountPrice.modifyAmountMethod9.value":[{
+                    required: true,
+                    message: "调价商品数量不能为空",
+                    trigger: "change"
+                }],
+                "judgeDiscountPrice.modifyAmount9.value":[{
+                    required: true,
+                    validator: (rules, value, callback) => {
+                        if (!value) {
+                            return callback(new Error('数量不能为空'));
+                        }
+                        let regExp = /^[1-9][0-9]{0,2}$/;
+                        if (!regExp.test(value)) {
+                            return callback(new TypeError('请输入1~999的正数'));
+                        }
+
+                        return callback();
+                    },
+                    trigger: "blur"
+                }],
+                "addGoodsWithDiscountPrice.merKey10.text":[{
+                    required: true,
+                    message: "商品不能为空",
+                    trigger: "change"
+                }],
+                "addGoodsWithDiscountPrice.price10.value":[{
+                    required: true,
+                    message: "商品单价不能为空",
+                    trigger: "blur"
+                }],
+                "addGoodsWithDiscountPrice.amount10.value":[{
+                    required: true,
+                    message: "增加数量不能为空",
+                    trigger: "blur"
+                },
+                { 
+                    validator(rule, value, callback) {
+                        if (/(^[1-9]\d*$)/.test(value)) {
+                            callback()
+                        } else {
+                            callback(new Error('请输入正整数'))
+                        }
+                    },
+                    trigger: 'blur'
+                }],
+                "judgeDiscountPriceByType.classCode27.text":[{
+                    required: true,
+                    message: "分类不能为空",
+                    trigger: "change"
+                }],
+                "judgeDiscountPriceByType.modifyWay27.value":[{
+                    required: true,
+                    message: "调价方式不能为空",
+                    trigger: "change"
+                }],
+                "judgeDiscountPriceByType.modifyValue27.value":[{
+                    required: true,
+                    message: "调价值不能为空",
+                    trigger: "blur"
+                }],
+                "judgeDiscountPriceByType.modifyAmountMethod27.value":[{
+                    required: true,
+                    message: "调价商品数量不能为空",
+                    trigger: "change"
+                }],
+                "judgeDiscountPriceByType.modifyAmount27.value":[{
+                    required: true,
+                    validator: (rules, value, callback) => {
+                        if (!value) {
+                            return callback(new Error('数量不能为空'));
+                        }
+                        let regExp = /^[1-9][0-9]{0,2}$/;
+                        if (!regExp.test(value)) {
+                            return callback(new TypeError('请输入1~999的正数'));
+                        }
+
+                        return callback();
+                    },
+                    trigger: "blur"
+                }],
+                "judgeDiscountPriceByBrand.merBrandMethod28.value":[{
+                    required: true,
+                    message: "商品品牌不能为空",
+                    trigger: "change"
+                }],
+                "judgeDiscountPriceByBrand.brandId28.text":[{
+                    required: true,
+                    message: "品牌不能为空",
+                    trigger: "change"
+                }],
+                "judgeDiscountPriceByBrand.modifyWay28.value":[{
+                    required: true,
+                    message: "调价方式不能为空",
+                    trigger: "change"
+                }],
+                "judgeDiscountPriceByBrand.modifyValue28.value":[{
+                    required: true,
+                    message: "调价值不能为空",
+                    trigger: "blur"
+                }],
+                "judgeDiscountPriceByBrand.modifyAmountMethod28.value":[{
+                    required: true,
+                    message: "调价商品数量不能为空",
+                    trigger: "change"
+                }],
+                "judgeDiscountPriceByBrand.modifyAmount28.value":[{
+                    required: true,
+                    validator: (rules, value, callback) => {
+                        if (!value) {
+                            return callback(new Error('数量不能为空'));
+                        }
+                        let regExp = /^[1-9][0-9]{0,2}$/;
+                        if (!regExp.test(value)) {
+                            return callback(new TypeError('请输入1~999的正数'));
+                        }
+
+                        return callback();
+                    },
+                    trigger: "blur"
+                }],
+                "birthday7.value":[{
+                    required: true,
+                    message: "交易当月前后N月不能为空",
+                    trigger: "blur"
+                }],
+                sexState:[{
+                    required: true,
+                    message: "性别不能为空",
+                    trigger: "change"
+                }],
+                "age9.value":[{
+                    required: true,
+                    message: "年龄不能为空",
+                    trigger: "blur"
+                }],
+                "openMonths87.value":[{
+                    required: true,
+                    message: "开卡月限不能为空",
+                    trigger: "blur"
+                }],
+                "openYears11.value":[{
+                    required: true,
+                    message: "开卡年限不能为空",
+                    trigger: "blur"
+                }],
+                "openDate12.value":[{
+                    required: true,
+                    message: "开卡日期不能为空",
+                    trigger: "change"
+                }],
+                "customerLevelCode101.text":[{
+                    required: true,
+                    message: "会员等级不能为空",
+                    trigger: "change"
+                }],
+                "cardRightCode100.text":[{
+                    required: true,
+                    message: "会员卡政策不能为空",
+                    trigger: "change"
+                }],
+                "registerBusinessCode13.text":[{
+                    required: true,
+                    message: "注册影院不能为空",
+                    trigger: "change"
+                }],
+                "balance3.value":[{
+                    required: true,
+                    message: "账户余额不能为空",
+                    trigger: "blur"
+                }],
+                "integral4.value":[{
+                    required: true,
+                    message: "积分余额不能为空",
+                    trigger: "blur"
+                }],
+                "integralTotall52.value":[{
+                    required: true,
+                    message: "累计积分不能为空",
+                    trigger: "blur"
+                }],
+                "sumPrice2.value":[{
+                    required: true,
+                    message: "单次消费金额不能为空",
+                    trigger: "blur"
+                }],
+                "consumeSum6.value":[{
+                    required: true,
+                    message: "累计消费金额不能为空",
+                    trigger: "blur"
+                }],
+                "cardTypeKey10.text":[{
+                    required: true,
+                    message: "会员卡类型不能为空",
+                    trigger: "blur"
+                }],
+                "firstRecharge98.value":[{
+                    required: true,
+                    message: "首充金额不能为空",
+                    trigger: "blur"
+                }],
+                "sumPrice1.value":[{
+                    required: true,
+                    message: "单次充值金额不能为空",
+                    trigger: "blur"
+                }],
+                "uniformCode79.text":[{
+                    required: true,
+                    message: "影片不能为空",
+                    trigger: "change"
+                }],
+                "filmTypeKey34.text":[{
+                    required: true,
+                    message: "影片类型不能为空",
+                    trigger: "change"
+                }],
+                "hallTypeKey36.text":[{
+                    required: true,
+                    message: "影厅类型不能为空",
+                    trigger: "change"
+                }],
+                "showEffect35.text":[{
+                    required: true,
+                    message: "放映效果不能为空",
+                    trigger: "change"
+                }],
+                seatLevelState:[{
+                    required: true,
+                    message: "座位等级不能为空",
+                    trigger: "change"
+                }],
+                "hallSeatAmout37.value":[{
+                    required: true,
+                    message: "放映厅座位数不能为空",
+                    trigger: "blur"
+                }],
+                "lowestPrice38.value":[{
+                    required: true,
+                    message: "最低发行价不能为空",
+                    trigger: "blur"
+                }],
+                "planStartTime81.value":[{
+                    required: true,
+                    validator: (rules, value, callback) => {
+                        if (!value) {
+                            return callback(new Error('指定日不能为空'));
+                        }
+                        // 把中文逗号替换成英文逗号
+                        value = value.replace(/，/ig,',');
+                        value = value.split(",")
+                        if((new Set(value)).size != value.length){
+                            return callback(new Error('指定日不能重复'));
+                        }
+                        let regExp = /^\+?[1-9][0-9]*$/;
+                        for(let item of value){
+                            if(!regExp.test(item)){
+                                return callback(new Error('日期用逗号分隔，如"1,10,22",某个值只能1到31'));
+                            }else if(item>31){
+                                return callback(new Error('日期用逗号分隔，如"1,10,22",某个值只能1到31'));
+                            }
+                        }
+                        return callback();
+                    },
+                    trigger: "blur"
+                }],
+                screeningValidityOption:[{
+                    required: true,
+                    message: "放映有效期不能为空",
+                    trigger: "change"
+                }],
+                weekRangeState:[{
+                    required: true,
+                    message: "放映星期范围不能为空",
+                    trigger: "change"
+                }],
+                "brandId40.text":[{
+                    required: true,
+                    message: "品牌不能为空",
+                    trigger: "change"
+                }],
+                "classCode41.text":[{
+                    required: true,
+                    message: "类别不能为空",
+                    trigger: "change"
+                }],
+                "merKey46.text":[{
+                    required: true,
+                    message: "商品名称不能为空",
+                    trigger: "change"
+                }],
+                "cinemaAreaId25.text":[{
+                    required: true,
+                    message: "交易影院行政区域不能为空",
+                    trigger: "change"
+                }],
+                "businessCode14.text":[{
+                    required: true,
+                    message: "交易客商不能为空",
+                    trigger: "change"
+                }],
+                "consumerTypeKey27.text":[{
+                    required: true,
+                    message: "消费者身份不能为空",
+                    trigger: "change"
+                }],
+                tradeTypeState:[{
+                    required: true,
+                    message: "交易类型不能为空",
+                    trigger: "change"
+                }],
+                SaleItemTypeState:[{
+                    required: true,
+                    message: "商品类型不能为空",
+                    trigger: "change"
+                }],
+                goodsItemTypeState:[{
+                    required: true,
+                    message: "商品类型不能为空",
+                    trigger: "change"
+                }],
+                consumeWayState:[{
+                    required:true,
+                    message:"交易渠道不能为空",
+                    trigger:"change"
+                }],
+                cycleConsumeWayState:[{
+                    required:true,
+                    message:"交易渠道不能为空",
+                    trigger:"change"
+                }],
+                "consumeNum.dynamicPeriod15.value":[{
+                    required:true,
+                    message:"动态周期不能为空",
+                    trigger:"change"
+                }],
+                "cycleConsumeNum.dynamicPeriod17.value":[{
+                    required:true,
+                    message:"动态周期不能为空",
+                    trigger:"change"
+                }],
+                "consumeNum.dynamicConsumeCount15.value":[{
+                    required:true,
+                    message:"消费次数不能为空",
+                    trigger:"change"
+                }],
+                "cycleConsumeNum.dynamicConsumeSum17.value":[{
+                    required:true,
+                    message:"消费次数不能为空",
+                    trigger:"change"
+                }],
+                "price31.value":[{
+                    required: true,
+                    message: "商品单价不能为空",
+                    trigger: "blur"
+                }],
+                "filmPrice92.value":[{
+                    required: true,
+                    message: "影票单价不能为空",
+                    trigger: "blur"
+                }],
+                "merPrice93.value":[{
+                    required: true,
+                    message: "卖品单价不能为空",
+                    trigger: "blur"
+                }],
+                "filmTicketAmount80.value":[{
+                    required: true,
+                    message: "影票商品数量不能为空",
+                    trigger: "blur"
+                }],
+                "filmSumPrice90.value":[{
+                    required: true,
+                    message: "影票总金额不能为空",
+                    trigger: "blur"
+                }],
+                "merSumPrice91.value":[{
+                    required: true,
+                    message: "卖品总金额不能为空",
+                    trigger: "blur"
+                }],
+                "sumPrice26.value":[{
+                    required: true,
+                    message: "整单交易金额不能为空",
+                    trigger: "blur"
+                }],
+                "buyNum.merKey21.text":[{
+                    required: true,
+                    message: "商品名称不能为空",
+                    trigger: "change"
+                }],
+                "buyNum.amount21.value":[{
+                    required: true,
+                    message: "数量不能为空",
+                    trigger: "blur"
+                },
+                { 
+                    validator(rule, value, callback) {
+                        if (/(^[1-9]\d*$)/.test(value)) {
+                            callback()
+                        } else {
+                            callback(new Error('请输入正整数'))
+                        }
+                    },
+                    trigger: 'blur'
+                }],
+                "buyNumByType.classCode28.text":[{
+                    required: true,
+                    message: "商品类别不能为空",
+                    trigger: "change"
+                }],
+                "buyNumByType.sumAmount28.value":[{
+                    required: true,
+                    message: "累计购买数量不能为空",
+                    trigger: "blur"
+                }],
+                "payTypeCode86.text":[{
+                    required: true,
+                    message: "支付方式不能为空",
+                    trigger: "change"
+                }],
+                "filmStartDayBefore94.value":[{
+                    required: true,
+                    message: "放映前N天不能为空",
+                    trigger: "blur"
+                }],
+                "filmStartHourBefore95.value":[{
+                    required: true,
+                    message: "放映前N小时不能为空",
+                    trigger: "blur"
+                }],
+                "filmPlanWeekRange83.opUniqueName":[{
+                    required: true,
+                    message: "放映星期范围不能为空",
+                    trigger: "change"
+                }],
+                "consumerTypeKey27.opUniqueName":[{
+                    required: true,
+                    message: "消费者身份不能为空",
+                    trigger: "change"
+                }],
             },
             // 子活动适用条件
             memberOptions: memberOptions,
@@ -2568,9 +3835,21 @@ export default {
                 sexState: [],
                 sexStateName: [],
 
+                //会员卡政策
+                cardRightCode100: {
+                    opUniqueName: "",
+                    value: "",
+                    text: ""
+                },
                 //会员等级
+                customerLevelCode101: {
+                    opUniqueName: "",
+                    value: "",
+                    text: ""
+                },
+                //会员卡类型
                 cardTypeKey10: {
-                    opUniqueName: "AllMember",
+                    opUniqueName: "",
                     value: "",
                     text: ""
                 },
@@ -2629,7 +3908,7 @@ export default {
                     text: ""
                 },
                 // 单次消费金额
-                sumPrice: {
+                sumPrice2: {
                     opUniqueName: "",
                     value: ""
                 },
@@ -2638,6 +3917,78 @@ export default {
                     opUniqueName: "",
                     value: ""
                 },
+
+                // 首充金额
+                firstRecharge98: {
+                    opUniqueName: "",
+                    value: ""
+                },
+
+                // 单次充值金额
+                sumPrice1: {
+                    opUniqueName: "",
+                    value: ""
+                },
+
+                // 动态周期消费次数
+                consumeNum: {
+                    dynamicPeriod15: {
+                        opUniqueName: "normalEqual",
+                        text: "",
+                        value: ""
+                    },
+                    appointPeriod15: {
+                        opUniqueName: "",
+                        value: "",
+                        text: ""
+                    },
+                    consumeWayCode15: {
+                        opUniqueName: "",
+                        value: "",
+                        text: ""
+                    },
+                    dynamicConsumeCount15: {
+                        opUniqueName: "",
+                        value: "",
+                        text: ""
+                    }
+                },
+                appointPeriodOptions: [{
+                    appointPeriodOption: ""
+                }],
+                // 动态周期消费额
+                cycleConsumeNum: {
+                    dynamicPeriod17: {
+                        opUniqueName: "normalEqual",
+                        text: "",
+                        value: ""
+                    },
+                    appointPeriod17: {
+                        opUniqueName: "",
+                        value: "",
+                        text: ""
+                    },
+                    consumeWayCode17: {
+                        opUniqueName: "",
+                        value: "",
+                        text: ""
+                    },
+                    saleItemType17: {
+                        opUniqueName: "",
+                        value: "",
+                        text: ""
+                    },
+                    dynamicConsumeSum17: {
+                        opUniqueName: "",
+                        value: "",
+                        text: ""
+                    }
+                },
+                goodsItemTypeState:[],
+                goodsItemTypeStateName: [],
+                appointPeriodOptions17: [{
+                    appointPeriodOption17: ""
+                }],
 
                 //影票类 - 放映效果
                 showEffect35: {
@@ -2755,29 +4106,29 @@ export default {
                 /*交易类*/
 
                 // 交易影院
-                cinemaCode19: {
-                    opUniqueName: "",
-                    value: "",
-                    text: ""
-                },
+                // cinemaCode19: {
+                //     opUniqueName: "",
+                //     value: "",
+                //     text: ""
+                // },
                 // 交易影院行政区域
                 cinemaAreaId25: {
                     opUniqueName: "",
                     value: "",
                     text: ""
                 },
-                // 交易商户
-                businessCode14: {
-                    opUniqueName: "",
-                    value: "",
-                    text: ""
-                },
+                // 交易客商
+                // businessCode14: {
+                //     opUniqueName: "",
+                //     value: "",
+                //     text: ""
+                // },
                 // 交易渠道
-                consumeWayCode32: {
-                    opUniqueName: "",
-                    value: "",
-                    text:'',
-                },
+                // consumeWayCode32: {
+                //     opUniqueName: "",
+                //     value: "",
+                //     text:'',
+                // },
                 tradeChannelState: [],
                 tradeChannelStateName: [],
 
@@ -2789,16 +4140,29 @@ export default {
                 },
                 tradeTypeState: [],
                 tradeTypeStateName: [],
+                //商品类型
+                SaleItemTypeState:[],
+                SaleItemTypeStateName: [],
+                //交易渠道
+                consumeWayState:[],
+                consumeWayStateName:[],
+                cycleConsumeWayState:[],
+                cycleConsumeWayStateName:[],
                 // 消费者身份
-                consumerTypeKey27: {
-                    opUniqueName: "",
-                    value: "",
-                    text: ""
-                },
+                // consumerTypeKey27: {
+                //     opUniqueName: "AllMember",
+                //     value: "",
+                //     text: ""
+                // },
                 // 商品单价
                 price31: {
                     opUniqueName: "",
                     value: ""
+                },
+                saleItemType100: {
+                    opUniqueName: "",
+                    value: "",
+                    text:''
                 },
                 // 影票单价
                 filmPrice92: {
@@ -2835,7 +4199,7 @@ export default {
                 // 指定商品购买数量
                 buyNum: {
                     merKey21: {
-                        opUniqueName: "",
+                        opUniqueName: "normalIn",
                         value: "",
                         text: ""
                     },
@@ -2848,7 +4212,7 @@ export default {
                 // 同类商品累计购买数量
                 buyNumByType: {
                     classCode28: {
-                        opUniqueName: "",
+                        opUniqueName: "normalIn",
                         value: "",
                         text: ""
                     },
@@ -2891,7 +4255,7 @@ export default {
                 // 首次购票
                 firstBuyTicket96: {
                     opUniqueName: "normalEqual",
-                    value: ""
+                    value: "true"
                 },
 
                 /***执行方法 */
@@ -2940,7 +4304,7 @@ export default {
                         value: ""
                     },
                     decimalRoundMode29: {
-                        value: "ROUND_UNNECESSARY"
+                        value: "ROUND_HALF_UP"
                     },
                     lessProcessMethod29: {
                         value: "notAllowSale"
@@ -2979,7 +4343,7 @@ export default {
                         value: ""
                     },
                     decimalRoundMode15: {
-                        value: "ROUND_UNNECESSARY"
+                        value: "ROUND_HALF_UP"
                     },
                     lessProcessMethod15: {
                         value: "notAllowSale"
@@ -3017,7 +4381,7 @@ export default {
                         value: ""
                     },
                     decimalRoundMode9: {
-                        value: "ROUND_UNNECESSARY"
+                        value: "ROUND_HALF_UP"
                     },
                     modifyAmountMethod9: {
                         value: ""
@@ -3072,7 +4436,7 @@ export default {
                         value: ""
                     },
                     decimalRoundMode27: {
-                        value: "ROUND_UNNECESSARY"
+                        value: "ROUND_HALF_UP"
                     },
                     modifyAmountMethod27: {
                         value: ""
@@ -3100,7 +4464,7 @@ export default {
                         value: ""
                     },
                     decimalRoundMode28: {
-                        value: "ROUND_UNNECESSARY"
+                        value: "ROUND_HALF_UP"
                     },
                     modifyAmountMethod28: {
                         value: ""
@@ -3118,32 +4482,222 @@ export default {
     },
     created() {},
     methods: {
-
         init(rule, index) {
+            console.log("rule",rule)
+            console.log("index",index)
             this.index = index;
             if (rule) {
                 this.isEdit = "update";
             }
+            console.log("isEdit",this.isEdit)
+
             if (this.isEdit == "update") {
                 this.basicDataForm = rule.formData;
                 this.selectedOptions = rule.conditions;
+                console.log("rule.conditions",rule.conditions)
                 this.selectedActions = rule.actions;
-                if (rule.formData["seatGrade89"]) {
-                    //座位等级
-                    this.basicDataForm.seatLevelState = rule.formData[
-                        "seatGrade89"
-                    ].value.split(",");
+                //性别
+                if(rule.formData["sex8"] && rule.formData["sex8"].value){
+                    this.basicDataForm.sexState =rule.formData["sex8"].value.split(",");
                 }
-                if (rule.formData["planStartTime81"]) {
-                    //放映有效期
-                    this.basicDataForm.screeningValidityOption =
-                        rule.formData["planStartTime81"].valueRange;
+                //年龄
+                if(rule.formData["age9"] 
+                    && rule.formData["age9"].value
+                    && (rule.formData["age9"].opUniqueName=="BetweenOperator"
+                    || rule.formData["age9"].opUniqueName=="not_BetweenOperator")
+                ){
+                    this.basicDataForm.ageRange=[]
+                    let arr=JSON.parse(rule.formData["age9"].value)
+                    arr.forEach(item=>{
+                        this.basicDataForm.ageRange.push({
+                            minAge: item[0],
+                            maxAge:item[1]
+                        });
+                    })
+                }
+                //开卡月限
+                if(rule.formData["openMonths87"] 
+                    && rule.formData["openMonths87"].value
+                    && (rule.formData["openMonths87"].opUniqueName=="BetweenOperator"
+                    || rule.formData["openMonths87"].opUniqueName=="not_BetweenOperator")
+                ){
+                    this.basicDataForm.openMonthsRange=[]
+                    let arr=JSON.parse(rule.formData["openMonths87"].value)
+                    arr.forEach(item=>{
+                        this.basicDataForm.openMonthsRange.push({
+                            minMonth:item[0],
+                            maxMonth:item[1]
+                        });
+                    })
+                }
+                //开卡年限
+                if(rule.formData["openYears11"] 
+                    && rule.formData["openYears11"].value
+                    && (rule.formData["openYears11"].opUniqueName=="BetweenOperator"
+                    || rule.formData["openYears11"].opUniqueName=="not_BetweenOperator")
+                ){
+                    this.basicDataForm.openCardYearsRange=[]
+                    let arr=JSON.parse(rule.formData["openYears11"].value)
+                    arr.forEach(item=>{
+                        this.basicDataForm.openCardYearsRange.push({
+                            minYear:item[0],
+                            maxYear:item[1]
+                        });
+                    })
+                }
+                //开卡日期
+                if(rule.formData["openDate12"] 
+                    && rule.formData["openDate12"].value
+                    && (rule.formData["openDate12"].opUniqueName=="DateRangeContainOperator"
+                    || rule.formData["openDate12"].opUniqueName=="not_DateRangeContainOperator")
+                ){
+                    let values12 = JSON.parse(rule.formData["openDate12"].value.split(","))
+                    this.basicDataForm.openCardDateOptions=[]
+                    for (let value12 of values12) {
+                        let openCardDateOption = {
+                            openCardDateOption: value12
+                        };
+                        this.basicDataForm.openCardDateOptions.push(openCardDateOption);
+                    }
+                }
+                //动态周期
+                if(rule.formData["consumeNum"] 
+                    && rule.formData["consumeNum"].appointPeriod15.value
+                    && (rule.formData["consumeNum"].appointPeriod15.opUniqueName=="AppointDateEqual")
+                ){
+                    let values15 = JSON.parse(rule.formData["consumeNum"].appointPeriod15.value.split(","))
+                    this.basicDataForm.appointPeriodOptions=[]
+                    for (let value15 of values15) {
+                        let appointPeriodOption = {
+                            appointPeriodOption: value15
+                        };
+                        this.basicDataForm.appointPeriodOptions.push(appointPeriodOption);
+                    }
                 }
 
+                if(rule.formData["cycleConsumeNum"] 
+                    && rule.formData["cycleConsumeNum"].appointPeriod17.value
+                    && (rule.formData["cycleConsumeNum"].appointPeriod17.opUniqueName=="AppointDateEqual")
+                ){
+                    let values17 = JSON.parse(rule.formData["cycleConsumeNum"].appointPeriod17.value.split(","))
+                    this.basicDataForm.appointPeriodOptions17=[]
+                    for (let value17 of values17) {
+                        let appointPeriodOption17 = {
+                            appointPeriodOption17: value17
+                        };
+                        this.basicDataForm.appointPeriodOptions17.push(appointPeriodOption17);
+                    }
+                }
+
+                //交易类型
+                if(rule.formData["tradeType33"] 
+                    && rule.formData["tradeType33"].value
+                ){
+                    this.basicDataForm.tradeTypeState=rule.formData["tradeType33"].value.split(",");
+                }
+                //商品类型
+                if(rule.formData["saleItemType100"] 
+                    && rule.formData["saleItemType100"].value
+                ){
+                    this.basicDataForm.SaleItemTypeState = rule.formData["saleItemType100"].value.split(",");
+                }
+                if(rule.formData["cycleConsumeNum"] 
+                    && rule.formData["cycleConsumeNum"].saleItemType17.value
+                ){
+                    this.basicDataForm.goodsItemTypeState = rule.formData["cycleConsumeNum"].saleItemType17.value.split(",");
+                }
+                //交易渠道
+                if(rule.formData["consumeNum"] 
+                    && rule.formData["consumeNum"].consumeWayCode15.value
+                ){
+                    this.basicDataForm.consumeWayState = rule.formData["consumeNum"].consumeWayCode15.value.split(",");
+                }
+                if(rule.formData["cycleConsumeNum"] 
+                    && rule.formData["cycleConsumeNum"].consumeWayCode17.value
+                ){
+                    this.basicDataForm.cycleConsumeWayState = rule.formData["cycleConsumeNum"].consumeWayCode17.value.split(",");
+                }
+                
+                //座位等级
+                if (rule.formData["seatGrade89"] 
+                    && rule.formData["seatGrade89"].value 
+                ) {
+                    this.basicDataForm.seatLevelState = rule.formData["seatGrade89"].value.split(",");
+                }
+                //执行条件-座位等级（action_seatLevel）
+                if (rule.formData["updateTicketPriceBySeatGrade"].seatGrade29 
+                    && rule.formData["updateTicketPriceBySeatGrade"].seatGrade29.value
+                ) {
+                    this.basicDataForm.action_seatLevel = rule.formData["updateTicketPriceBySeatGrade"].seatGrade29.value.split(",")
+                    this.basicDataForm.action_seatLevel=this.basicDataForm.action_seatLevel.map(Number)//字符传转数字
+                    this.basicDataForm.updateTicketPriceBySeatGrade.seatGrade29.value = this.basicDataForm.action_seatLevel.join(",");
+                }
+                //放映有效期
+                if (rule.formData["planStartTime81"] && rule.formData["planStartTime81"].value) {
+                    if(rule.formData["planStartTime81"].opUniqueName=='TimeBetweenOperator'){
+                        this.basicDataForm.screeningValidityOption = JSON.parse(rule.formData["planStartTime81"].value.split(","));
+                    }else if(rule.formData["planStartTime81"].opUniqueName=='DayContainOperator'||rule.formData["planStartTime81"].opUniqueName=='not_DayContainOperator'){
+                        this.basicDataForm.screeningValidityOption = rule.formData["planStartTime81"].value;
+                    }
+                }
+                //放映星期范围
+                if (rule.formData["filmPlanWeekRange83"] 
+                    && rule.formData["filmPlanWeekRange83"].value 
+                ) {
+                    this.basicDataForm.weekRangeState = rule.formData["filmPlanWeekRange83"].value.split(",");
+                }
+                //放映排除日期（节假日除外）
+                if (rule.formData["filmPlanInvalidTime82"]
+                    &&rule.formData["filmPlanInvalidTime82"].value
+                    &&rule.formData["filmPlanInvalidTime82"].opUniqueName=="not_RelateDateHolidayOperator"
+                ) {
+                    if(this.basicDataForm.excludeDate.indexOf("节假日除外")==-1){
+                        this.basicDataForm.excludeDate.push("节假日除外")
+                    }
+                }
+                //放映排除日期（指定排除日期范围）
+                if (rule.formData["filmPlanInvalidTime82"]
+                    &&rule.formData["filmPlanInvalidTime82"].value
+                    &&rule.formData["filmPlanInvalidTime82"].opUniqueName=="not_DateRangeContainOperator"
+                ) {
+
+                    if(this.basicDataForm.excludeDate.indexOf("指定排除日期范围")==-1){
+                        this.basicDataForm.excludeDate.push("指定排除日期范围")
+                    }
+
+                    let values82 = JSON.parse(rule.formData["filmPlanInvalidTime82"].value.split(","))
+                    this.basicDataForm.excludeDateOptions=[]
+                    for (let value82 of values82) {
+                        let excludeDateOption = {
+                            excludeDateOption: value82
+                        };
+                        this.basicDataForm.excludeDateOptions.push(excludeDateOption);
+                    }
+                }
+                //放映时段范围
+                if (rule.formData["filmPlanTimeRange84"]
+                    &&rule.formData["filmPlanTimeRange84"].value
+                    &&rule.formData["filmPlanTimeRange84"].opUniqueName=="TimeRangeContainOperator"
+                ) {
+
+                    let values84 = JSON.parse(rule.formData["filmPlanTimeRange84"].value.split(","))
+                    this.basicDataForm.screeningPeriodOptions=[]
+                    for (let value84 of values84) {
+                        let screeningPeriodOption = {
+                            screeningPeriodOption: value84
+                        };
+                        this.basicDataForm.screeningPeriodOptions.push(screeningPeriodOption);
+                    }
+                }
+               
+
+
+              
                 for (let option of this.selectedOptions) {
                     for (let item of this.memberOptions) {
                         if (option.key == item.key) {
                             this.checkedMemberOption.push(item); //此处必须push(item)，不能是option,因为option===item 是false
+                            console.log("checkedMemberOption",this.checkedMemberOption)
                         }
                     }
                 }
@@ -3168,6 +4722,7 @@ export default {
                         }
                     }
                 }
+            
                 for (let option of this.selectedActions) {
                     for (let item of this.memberActions) {
                         if (option.key == item.key) {
@@ -3178,7 +4733,7 @@ export default {
                 for (let option of this.selectedActions) {
                     for (let item of this.movieTicketsActions) {
                         if (option.key == item.key) {
-                            this.checkedMemberAction.push(item);
+                            this.checkedTicketsAction.push(item);
                         }
                     }
                 }
@@ -3194,6 +4749,7 @@ export default {
 
         /* 选中某活动条件 */
         handleCheckedOption() {
+            console.log("checkedMemberOption",this.checkedMemberOption)
             this.selectedOptions = this.checkedMemberOption
                 .concat(this.checkedTicketsOption)
                 .concat(this.checkedGoodsOption)
@@ -3210,6 +4766,8 @@ export default {
         /* 改变生日 */
         handleChangeBirthday(val) {
             if (val != "EqualCurrentMonthOffset") {
+                this.basicDataForm.birthday7.value = "true";
+            }else{
                 this.basicDataForm.birthday7.value = "";
             }
         },
@@ -3229,31 +4787,34 @@ export default {
                 minAge: "",
                 maxAge: ""
             });
+            this.buildAgeRange()
+
+        },
+        //组合年龄范围
+        buildAgeRange(){
             if (this.basicDataForm.ageRange.length > 0) {
                 let arr = [];
                 this.basicDataForm.ageRange.forEach(item => {
                     if (item.minAge && item.maxAge) {
                         arr.push([item.minAge, item.maxAge]);
+                        this.basicDataForm.age9.value = JSON.stringify(arr);
                     }
                 });
-                this.basicDataForm.age9.valueRange = JSON.stringify(arr);
             }
-            console.log(
-                "valueRange" + JSON.stringify(this.basicDataForm.age9.valueRange)
-            );
         },
-
         /* 移除年龄范围 */
         delAgeRange(index) {
-            this.basicDataForm.ageRange.splice(index, 1);
-            if (this.basicDataForm.ageRange.length > 0) {
-                let arr = [];
-                this.basicDataForm.ageRange.forEach(item => {
-                    if (item.minAge && item.maxAge) {
-                        arr.push([item.minAge, item.maxAge]);
-                    }
-                });
-                this.basicDataForm.age9.valueRange = JSON.stringify(arr);
+            if(this.basicDataForm.ageRange.length != 1){
+                this.basicDataForm.ageRange.splice(index, 1);
+                if (this.basicDataForm.ageRange.length > 0) {
+                    let arr = [];
+                    this.basicDataForm.ageRange.forEach(item => {
+                        if (item.minAge && item.maxAge) {
+                            arr.push([item.minAge, item.maxAge]);
+                            this.basicDataForm.age9.value= JSON.stringify(arr);
+                        }
+                    });
+                }
             }
         },
 
@@ -3271,23 +4832,77 @@ export default {
             this.basicDataForm.openCardDateOptions.push({
                 openCardDateOption: ""
             });
+            this.buildOpenCardDate()
+        },
 
+        /*添加指定周期 */
+        addAppointPeriod() {
+            this.basicDataForm.appointPeriodOptions.push({
+                appointPeriodOption: ""
+            });
+            this.buildAppointPeriod();
+        },
+
+        addAppointPeriod17() {
+            this.basicDataForm.appointPeriodOptions17.push({
+                appointPeriodOption17: ""
+            });
+            this.buildAppointPeriod17();
+        },
+
+        /* 组合开卡日期 */
+        buildOpenCardDate(){
             if (this.basicDataForm.openCardDateOptions.length > 0) {
                 let arr = [];
                 this.basicDataForm.openCardDateOptions.forEach(item => {
                     if (item.openCardDateOption) {
                         arr.push(item.openCardDateOption);
+                        this.basicDataForm.openDate12.value = JSON.stringify(arr);
                     }
                 });
-                this.basicDataForm.openDate12.valueRange = JSON.stringify(arr);
             }
-            console.log(
-                "valueRange" + JSON.stringify(this.basicDataForm.openDate12.valueRange)
-            );
         },
+        /*组合指定周期*/
+        buildAppointPeriod(){
+            if (this.basicDataForm.appointPeriodOptions.length > 0) {
+                let arr = [];
+                this.basicDataForm.appointPeriodOptions.forEach(item => {
+                    if (item.appointPeriodOption) {
+                        arr.push(item.appointPeriodOption);
+                        this.basicDataForm.consumeNum.appointPeriod15.value = JSON.stringify(arr);
+                    }
+                });
+            }
+        },
+
+        buildAppointPeriod17(){
+            if (this.basicDataForm.appointPeriodOptions17.length > 0) {
+                let arr = [];
+                this.basicDataForm.appointPeriodOptions17.forEach(item => {
+                    if (item.appointPeriodOption17) {
+                        arr.push(item.appointPeriodOption17);
+                        this.basicDataForm.cycleConsumeNum.appointPeriod17.value = JSON.stringify(arr);
+                    }
+                });
+            }
+        },
+
         /* 删除开卡日期 */
         delOpenCardDate(index) {
-            this.basicDataForm.openCardDateOptions.splice(index, 1);
+            if(this.basicDataForm.openCardDateOptions.length != 1){
+                this.basicDataForm.openCardDateOptions.splice(index, 1);
+            }
+        },
+
+        /* 删除开卡日期 */
+        delAppointPeriod(index) {
+            if(this.basicDataForm.appointPeriodOptions.length != 1){
+                this.basicDataForm.appointPeriodOptions.splice(index, 1);
+            }
+        },
+
+        delAppointPeriod17(index) {
+            this.basicDataForm.appointPeriodOptions17.splice(index, 1);
         },
 
         /* 设置放映有效期 */
@@ -3296,11 +4911,12 @@ export default {
         },
         /* 修改放映有效期 */
         handleScreeningValidityChange(value) {
+        
             if (value == "TimeBetweenOperator") {
                 this.basicDataForm.planStartTime81.value = "";
             } else if (
-                this.basicDataForm.planStartTime81 == "DayContainOperator" ||
-                this.basicDataForm.planStartTime81 == "not_DayContainOperator"
+                this.basicDataForm.planStartTime81.opUniqueName == "DayContainOperator" ||
+                this.basicDataForm.planStartTime81.opUniqueName == "not_DayContainOperator"
             ) {
                 this.basicDataForm.screeningValidityOption = [];
             } else {
@@ -3312,21 +4928,82 @@ export default {
         /* 修改放映排除日期 */
         handleChangeExcludeDate(val) {
             if (val.indexOf("节假日除外") != -1) {
-                this.basicDataForm.filmPlanInvalidTime82.opUniqueName =
-                    "not_RelateDateHolidayOperator";
-            } else {
-                this.basicDataForm.filmPlanInvalidTime82.opUniqueName = "";
-            }
+                console.log("节假日除外cunzai")
+                this.basicDataForm.filmPlanInvalidTime82.opUniqueName = "not_RelateDateHolidayOperator";
+                this.basicDataForm.filmPlanInvalidTime82.value="true"
+            } 
             if (val.indexOf("指定排除日期范围") != -1) {
-                this.basicDataForm.filmPlanInvalidTime82.opUniqueName2 =
-                    "not_DateRangeContainOperator";
-            } else {
-                this.basicDataForm.filmPlanInvalidTime82.opUniqueName2 = "";
+                this.basicDataForm.filmPlanInvalidTime82.value=JSON.stringify(this.basicDataForm.excludeDateOption)
+                this.basicDataForm.filmPlanInvalidTime82.opUniqueName = "not_DateRangeContainOperator";
+                // this.basicDataForm.filmPlanInvalidTime82.opUniqueName2 = "not_DateRangeContainOperator";
             }
+        },
+        /* 设置时段范围 */
+        handleFilmPlanTime(val) {
+            if(this.basicDataForm.filmPlanTimeRange84.opUniqueName=="MorningOperator"){
+                this.basicDataForm.filmPlanTimeRange84.value="true"
+            }
+            if(this.basicDataForm.filmPlanTimeRange84.opUniqueName=="AfternoonOperator"){
+                this.basicDataForm.filmPlanTimeRange84.value="true"
+            }
+            if(this.basicDataForm.filmPlanTimeRange84.opUniqueName=="NightOperator"){
+                this.basicDataForm.filmPlanTimeRange84.value="true"
+            }
+            if(this.basicDataForm.filmPlanTimeRange84.opUniqueName=="TimeRangeContainOperator"){
+                this.basicDataForm.filmPlanTimeRange84.value=JSON.stringify(this.basicDataForm.screeningPeriodOption)
+            }
+           
         },
         /* 设置放映排除日期 */
         setExcludeDate() {
             this.setFilmPlanInvalidTimeRange();
+            this.testExcludeDate();
+        },
+        /* 验证放映排除日期 */
+        validExcludeDate(){
+            let excludeDateArr = [];
+            if(this.basicDataForm.excludeDateOptions){
+                for(let item of this.basicDataForm.excludeDateOptions){
+                    if(item.excludeDateOption){
+                        console.log(item.excludeDateOption)
+                        excludeDateArr.push(item.excludeDateOption.join(","))
+                    }
+                }
+                if((new Set(excludeDateArr)).size != excludeDateArr.length){
+                    return true;
+                }
+            } 
+        },
+        testExcludeDate(){
+            if(this.validExcludeDate()){
+                this.$message.error("放映排除日期不能相同");
+            }
+        },
+
+        /* 设置放映时段范围 */
+        setScreeningPeriod() {
+            this.setTimeRangeContainOperator()
+            this.testScreeningPeriod();
+        },
+
+        /* 验证放映时段范围 */
+        validScreeningPeriod(){
+            let screeningPeriodArr = [];
+            if(this.basicDataForm.screeningPeriodOptions){
+                for(let item of this.basicDataForm.screeningPeriodOptions){
+                    if(item.screeningPeriodOption){
+                        screeningPeriodArr.push(item.screeningPeriodOption.join(","))
+                    }
+                }
+                if((new Set(screeningPeriodArr)).size != screeningPeriodArr.length){
+                    return true;
+                }
+            } 
+        },
+        testScreeningPeriod(){
+            if(this.validScreeningPeriod()){
+                this.$message.error("放映时段范围不能相同");
+            }
         },
 
         /* 添加放映排除日期 */
@@ -3339,8 +5016,10 @@ export default {
 
         /* 删除放映排除日期 */
         delExcludeDate(index) {
-            this.basicDataForm.excludeDateOptions.splice(index, 1);
-            this.setFilmPlanInvalidTimeRange();
+            if(this.basicDataForm.excludeDateOptions.length != 1){
+                this.basicDataForm.excludeDateOptions.splice(index, 1);
+                this.setFilmPlanInvalidTimeRange();
+            }
         },
 
         setFilmPlanInvalidTimeRange() {
@@ -3351,7 +5030,7 @@ export default {
                         arr.push(item.excludeDateOption);
                     }
                 });
-                this.basicDataForm.filmPlanInvalidTime82.valueRange = JSON.stringify(
+                this.basicDataForm.filmPlanInvalidTime82.value = JSON.stringify(
                     arr
                 );
             }
@@ -3362,6 +5041,10 @@ export default {
             this.basicDataForm.screeningPeriodOptions.push({
                 screeningPeriodOption: ""
             });
+            this.setTimeRangeContainOperator()
+
+        },
+        setTimeRangeContainOperator(){
 
             if (this.basicDataForm.screeningPeriodOptions.length > 0) {
                 let arr = [];
@@ -3370,31 +5053,24 @@ export default {
                         arr.push(item.screeningPeriodOption);
                     }
                 });
-                this.basicDataForm.filmPlanTimeRange84.valueRange = JSON.stringify(arr);
+                this.basicDataForm.filmPlanTimeRange84.value = JSON.stringify(arr);
             }
-            console.log(
-                "valueRange" +
-                JSON.stringify(this.basicDataForm.filmPlanTimeRange84.valueRange)
-            );
         },
 
         /*删除放映时段范围 */
         delScreeningPeriod(index) {
-            this.basicDataForm.screeningPeriodOptions.splice(index, 1);
-
-            if (this.basicDataForm.screeningPeriodOptions.length > 0) {
-                let arr = [];
-                this.basicDataForm.screeningPeriodOptions.forEach(item => {
-                    if (item.screeningPeriodOption) {
-                        arr.push(item.screeningPeriodOption);
-                    }
-                });
-                this.basicDataForm.filmPlanTimeRange84.valueRange = JSON.stringify(arr);
+            if(this.basicDataForm.screeningPeriodOptions.length != 1){
+                this.basicDataForm.screeningPeriodOptions.splice(index, 1);
+                if (this.basicDataForm.screeningPeriodOptions.length > 0) {
+                    let arr = [];
+                    this.basicDataForm.screeningPeriodOptions.forEach(item => {
+                        if (item.screeningPeriodOption) {
+                            arr.push(item.screeningPeriodOption);
+                        }
+                    });
+                    this.basicDataForm.filmPlanTimeRange84.value = JSON.stringify(arr);
+                }
             }
-            console.log(
-                "valueRange" +
-                JSON.stringify(this.basicDataForm.filmPlanTimeRange84.valueRange)
-            );
         },
 
         /* 选择座位级别 */
@@ -3425,32 +5101,36 @@ export default {
                 minYear: "",
                 maxYear: ""
             });
-            if (this.basicDataForm.openCardYearsRange.length > 0) {
+            this.buildOpenCardYearsRange()
+        },
+         /* 组合开卡年限范围 */
+        buildOpenCardYearsRange(){
+             if (this.basicDataForm.openCardYearsRange.length > 0) {
                 let arr = [];
                 this.basicDataForm.openCardYearsRange.forEach(item => {
                     if (item.minYear && item.maxYear) {
+                        console.log("item.minYear",item.minYear)
+                        console.log("item.maxYear",item.minYear)
                         arr.push([item.minYear, item.maxYear]);
+                        console.log("jinlaile")
+                        this.basicDataForm.openYears11.value = JSON.stringify(arr);
                     }
                 });
-                this.basicDataForm.openYears11.valueRange = JSON.stringify(arr);
             }
-            console.log(
-                "valueRange " +
-                JSON.stringify(this.basicDataForm.openYears11.valueRange)
-            );
         },
-
         /* 删除开卡年限范围 */
         delOpenCardYearsRange(index) {
-            this.basicDataForm.openCardYearsRange.splice(index, 1);
-            if (this.basicDataForm.openCardYearsRange.length > 0) {
-                let arr = [];
-                this.basicDataForm.openCardYearsRange.forEach(item => {
-                    if (item.minYear && item.maxYear) {
-                        arr.push([item.minYear, item.maxYear]);
-                    }
-                });
-                this.basicDataForm.openYears11.valueRange = JSON.stringify(arr);
+            if(this.basicDataForm.openCardYearsRange.length != 1){
+                this.basicDataForm.openCardYearsRange.splice(index, 1);
+                if (this.basicDataForm.openCardYearsRange.length > 0) {
+                    let arr = [];
+                    this.basicDataForm.openCardYearsRange.forEach(item => {
+                        if (item.minYear && item.maxYear) {
+                            arr.push([item.minYear, item.maxYear]);
+                            this.basicDataForm.openYears11.value = JSON.stringify(arr);
+                        }
+                    });
+                }
             }
         },
 
@@ -3460,38 +5140,34 @@ export default {
                 minMonth: "",
                 maxMonth: ""
             });
-
-            if (this.basicDataForm.openMonthsRange.length > 0) {
+            this.buildOpenMonthsRange()
+        },
+        /* 组合开卡月限范围 */
+        buildOpenMonthsRange(){
+             if (this.basicDataForm.openMonthsRange.length > 0) {
                 let arr = [];
                 this.basicDataForm.openMonthsRange.forEach(item => {
                     if (item.minMonth && item.maxMonth) {
                         arr.push([item.minMonth, item.maxMonth]);
+                        this.basicDataForm.openMonths87.value = JSON.stringify(arr);
                     }
                 });
-                this.basicDataForm.openMonths87.valueRange = JSON.stringify(arr);
             }
-            console.log(
-                "valueRange " +
-                JSON.stringify(this.basicDataForm.openMonths87.valueRange)
-            );
         },
         /* 删除开卡月限范围 */
         delOpenMonthsRange(index) {
-            this.basicDataForm.openMonthsRange.splice(index, 1);
-
-            if (this.basicDataForm.openMonthsRange.length > 0) {
-                let arr = [];
-                this.basicDataForm.openMonthsRange.forEach(item => {
-                    if (item.minMonth && item.maxMonth) {
-                        arr.push([item.minMonth, item.maxMonth]);
-                    }
-                });
-                this.basicDataForm.openMonths87.valueRange = JSON.stringify(arr);
+            if(this.basicDataForm.openMonthsRange.length != 1){
+                this.basicDataForm.openMonthsRange.splice(index, 1);
+                if (this.basicDataForm.openMonthsRange.length > 0) {
+                    let arr = [];
+                    this.basicDataForm.openMonthsRange.forEach(item => {
+                        if (item.minMonth && item.maxMonth) {
+                            arr.push([item.minMonth, item.maxMonth]);
+                            this.basicDataForm.openMonths87.value = JSON.stringify(arr);
+                        }
+                    });
+                }
             }
-            console.log(
-                "valueRange " +
-                JSON.stringify(this.basicDataForm.openMonths87.valueRange)
-            );
         },
 
 
@@ -3501,11 +5177,40 @@ export default {
                 data = ["BUY", "MEMBER_ADD_AMOUNT", "REJECT"];
             }
             this.basicDataForm.tradeTypeState = data;
-            this.basicDataForm.tradeType33.value = this.basicDataForm.tradeTypeState.join(
-                ","
-            );
+            this.basicDataForm.tradeType33.value = this.basicDataForm.tradeTypeState.join(",");
         },
 
+        /* 选择商品类型 */
+        handleChangeSaleItemType(data) {
+            if (data.indexOf("") != -1) {
+                data = ["0", "1"];
+            }
+            this.basicDataForm.SaleItemTypeState = data;
+            this.basicDataForm.saleItemType100.value = this.basicDataForm.SaleItemTypeState.join(",");
+        },
+        handleChangeGoodsItemType(data) {
+            if (data.indexOf("") != -1) {
+                data = ["0", "1"];
+            }
+            this.basicDataForm.goodsItemTypeState = data;
+            this.basicDataForm.cycleConsumeNum.saleItemType17.value = this.basicDataForm.goodsItemTypeState.join(",");
+        },
+        /* 选择交易渠道 */
+        handleChangeConsumeWayState(data) {
+            if (data.indexOf("") != -1) {
+                data = ["0", "1", "2", "3", "4", "5", "T"];
+            }
+            this.basicDataForm.consumeWayState = data;
+            this.basicDataForm.consumeNum.consumeWayCode15.value = this.basicDataForm.consumeWayState.join(",");
+        },
+
+        handleChangeCycleConsumeWayState(data) {
+            if (data.indexOf("") != -1) {
+                data = ["0", "1", "2", "3", "4", "5", "T"];
+            }
+            this.basicDataForm.cycleConsumeWayState = data;
+            this.basicDataForm.cycleConsumeNum.consumeWayCode17.value = this.basicDataForm.cycleConsumeWayState.join(",");
+        },
         /* 执行方法- 选择座位级别 */
         handleChangeAction_SeatLevel(data) {
             if (data.indexOf("") != -1) {
@@ -3517,26 +5222,9 @@ export default {
             );
         },
 
-        /* 选择会员等级 */
-        selectMembershipLevel(data) {
-            this.crmMemberLevelDialogVisible=true
-            // this.basicDataForm.cardTypeKey10.text = data.text;
-        },
-        //选择会员等级组件回调函数
-        crmMemberLevelHandleCallback(data){
-            console.log(data)
-            let nameArr = []
-            data.data.map(item => { nameArr.push(item.levelName) })
-            let uidArr = []
-            data.data.map(item => { uidArr.push(item.id) })
 
-            this.basicDataForm.cardTypeKey10.value = uidArr.join(',')
-            this.basicDataForm.cardTypeKey10.text = nameArr.join(',')
-        },  
-       
         /* 选择注册影院 */
         selectRegMerchant(data) {
-            console.log(data)
             let nameArr = []
             data.map(item => { nameArr.push(item.name) })
             let uidArr = []
@@ -3584,7 +5272,7 @@ export default {
             this.basicDataForm.cinemaCode19.text = data.text;
         },
         
-        /* 选择交易商户 */
+        /* 选择交易客商 */
         selectTradeMerchant(data) {
             this.basicDataForm.businessCode14.text = data.text;
         },
@@ -3627,26 +5315,55 @@ export default {
             this.$emit("close");
         },
 
+        //放映有效期
+        setFormData(){
+            if(this.basicDataForm.planStartTime81.value){  
+                this.basicDataForm.planStartTime81.value = this.basicDataForm.planStartTime81.value.replace(/，/ig,',')
+            }
+        },
         // 表单提交
         dataFormSubmit() {
-            console.log(this.basicDataForm.registerBusinessCode13)
+            
+            //验证
             this.$refs["basicDataForm"].validate(valid => {
-               
-                if (valid) {
-                    this.$emit("transferData", {
-                        index: this.index,
-                        name: this.basicDataForm.activityName,
-                        formData: this.basicDataForm,
-                        conditions: this.selectedOptions,
-                        actions: this.selectedActions
-                    });
-                    console.log({
-                        index: this.index,
-                        name: this.basicDataForm.activityName,
-                        formData: this.basicDataForm,
-                        conditions: this.selectedOptions,
-                        actions: this.selectedActions
-                    })
+
+                if(this.selectedActions.length == 0){
+                    this.$message.error("请选择子活动执行方式");
+                }else if(this.validExcludeDate()){
+                    this.$message.error("放映排除日期不能相同");
+                }else if(this.validScreeningPeriod()){
+                    this.$message.error("放映时段范围不能相同");
+                }else{
+                    if (valid) {
+                        //----------组合数据--------
+                        // //年龄
+                        this.buildAgeRange()
+                        // //开卡日期
+                        this.buildOpenCardDate()
+                        // //开卡月限
+                        this.buildOpenMonthsRange()
+                        // //开卡年限
+                        this.buildOpenCardYearsRange()
+                        // 指定周期
+                        this.buildAppointPeriod()
+                        this.buildAppointPeriod17()
+                        this.setFormData()
+                        this.$emit("transferData", {
+                            index: this.index,
+                            name: this.basicDataForm.activityName,
+                            formData: this.basicDataForm,
+                            conditions: this.selectedOptions,
+                            actions: this.selectedActions
+                        });
+                        console.log({
+                            index: this.index,
+                            name: this.basicDataForm.activityName,
+                            formData: this.basicDataForm,
+                            conditions: this.selectedOptions,
+                            actions: this.selectedActions
+                        });
+                        
+                    }
                 }
             });
         }

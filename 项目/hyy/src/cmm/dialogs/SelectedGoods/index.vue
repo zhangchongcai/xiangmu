@@ -1,469 +1,408 @@
 <template>
-  <div>
-    <div class="my_dialog">
-      <el-dialog title="商品" :visible.sync="dialigVisible" @close="closeDialog">
-        <el-form label-width :inline="true">
-          <div style="position:relative">
-            <el-form-item label="商品名称">
-              <el-input v-model="goodsName" style="width:184px"></el-input>
-            </el-form-item>
-            <el-form-item label="店内码">
-              <el-input v-model="goodsNumber" style="width:184px"></el-input>
-            </el-form-item>
-            <el-button
-              type="primary"
-              style="position:absolute;right:0;top:5px;"
-              @click="searchClick"
-            >查询</el-button>
+  <el-dialog class="good-select-dialog" :close-on-click-modal="false" width="1016px" :title="title" :visible="dialogVisible" @close="closeCallBack"
+             @open="openCallBack">
+    <div>
+      <el-row>
+        <el-col :span="5">
+          <div class="good-trees-box">
+            <el-tree :data="categoryTrees"  icon-class="iconfont icon-neiye-zhankaijiantou" :props="defaultProps" highlight-current node-key="uid" :default-expanded-keys="defaultExpanded"
+                     @node-click="handleaCtegoryTrees">
+            </el-tree>
           </div>
-        </el-form>
-        <!-- highlight-current-row  -->
-        <div class="choose_table">
+        </el-col>
+        <el-col :span="19">
+          <div class="query-box">
+            <el-form :inline="true" :model="queryData" label-position="right" label-suffix=":">
+              <div>
+                <el-form-item label="商品名称">
+                  <el-input placeholder class="change-dialog-inp" v-model="queryData.merName"></el-input>
+                </el-form-item>
+                <el-form-item label="商品编码">
+                  <el-input placeholder class="change-dialog-inp" v-model="queryData.merCode"></el-input>
+                </el-form-item>
+              </div>
+              <div>
+                <el-form-item label="SKU编码">
+                  <el-input placeholder class="change-dialog-inp" v-model="queryData.skuCode"></el-input>
+                </el-form-item>
+                <el-form-item label="速记代码">
+                  <el-input placeholder class="change-dialog-inp" v-model="queryData.shorthandCode"></el-input>
+                </el-form-item>
+                <el-button class="search" icon="el-icon-search" type="primary" @click="onQuery">查询</el-button>
+              </div>
+            </el-form>
+          </div>
           <div>
-            <el-table
-              :data="tableData"
-              :cell-style="{padding:0}"
-              :row-style="{height:30}"
-              :header-cell-style="{padding:0}"
-              :height="354"
-              ref="multipleTable"
-              @select="selectRow"
-              @select-all="selectAll"
-              :row-key="getRowKeys"
-            >
-              <el-table-column type="selection" width="40"  :reserve-selection="true"></el-table-column>
-              <el-table-column property="merName" label="商品名称" ></el-table-column>
-              <el-table-column property="merCode" label="商品编码" ></el-table-column>
-              <el-table-column property="merCode" label="店内码" ></el-table-column>
-              <el-table-column property="price" label="标准价(元)"></el-table-column>
-            </el-table>
-            <!-- 分页 -->
-            <div class="block">
-              <el-pagination
-                @current-change="currentChange"
-                background
-                :current-page.sync="pageNationData.pageNum"
-                :page-size="pageNationData.size"
-                layout="prev, pager, next, jumper"
-                :total="pageNationData.total"
-              ></el-pagination>
-            </div>
+            <el-row>
+              <el-col :span="19">
+                <div class="table-box">
+                  <el-table ref="materialTable" :data="tableData" height="450" v-loading="tableLoding" row-key="merCode" @selection-change="handleSelectionMaterial">
+                    <el-table-column type="selection" width="40" reserve-selection :selectable="isDisabled" disabled="true"></el-table-column>
+                    <el-table-column v-for="item in tableColumn" :key="item.key" :prop="item.key" :label="item.label"
+                                     :formatter="item.formatter"></el-table-column>
+                  </el-table>
+                  <div class="page-wrap">
+                    <el-pagination @current-change="handleCurrentChange" :current-page="queryData.currentPage"
+                                   :page-size="queryData.pageSize" layout="total, prev, pager, next,jumper"
+                                   :total="this.total"></el-pagination>
+                  </div>
+                </div>
+              </el-col>
+              <el-col :span="5">
+                <div class="empty-box">
+                  <div class="clearfix">
+                    <span class="selected-content left">已选内容</span>
+                    <el-button type="text" class="right" @click="handleEmptyMaterials">清 空</el-button>
+                  </div>
+                  <ul class="empty-content">
+                    <li :key="item.merCode" v-for="(item) in selectedgoods" class="clearfix">
+                        <span class="left title">{{item.merName || item.name}}</span>
+                        <i class="el-icon-close right" @click="deleteSelected(item,false)"></i>
+                    </li>
+                  </ul>
+                </div>
+              </el-col>
+            </el-row>
           </div>
-          <div class="choose_ul">
-            <p class="ul_header">
-              <span>已选内容：</span>
-              <span style="color: #3B74FF;cursor: pointer;" @click="clearClick">清空</span>
-            </p>
-            <ul class="ul_body">
-              <li v-for="(item,index) in selectedData" :key="index">
-                <span>{{item.merName}}</span>
-                <span class="delate_span" @click="deleteClick(item)">
-                  <i class="el-icon-close"></i>
-                </span>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div style="height:12px;background:transparent;"></div>
-        <div class="btn-area">
-          <el-button type="primary" @click="comfirmClick" style="margin-right:22px;">确定</el-button>
-          <el-button @click="cancelClick">取消</el-button>
-        </div>
-      </el-dialog>
+        </el-col>
+      </el-row>
     </div>
-  </div>
+    <span slot="footer">
+      <el-button type="primary" @click="handleSubmit">确 定</el-button>
+      <el-button @click="handleCancel">取 消</el-button>
+    </span>
+  </el-dialog>
 </template>
 
-
 <script>
-export default {
-  props: {
-    merTypeUid: {
-      type: String,
-      default: ""
-    },
-    merClassUid: {
-      type: String,
-      default: ""
-    }
-  },
-  data() {
-    return {
-      dialigVisible: false,
-      goodsName: "",
-      goodsNumber: "",
-      tableData: [],
-      pageNationData: {
-        pageNum: 1,
-        size: 10,
-        total: 0
+  export default {
+    props: {
+      title: {
+        type: String,
+        default: "选择商品"
       },
-      selectedData: [],
-      selectObj: {},
-      usefulData: [],
-      usefulObj: {},
-      GoodsListQueryData: {
-        pageSize: 10,
-        page: 1,
-        merName: "",
-        merCode: "",
-        classUid: "",
-        canSale: "",
-        merType: "",
-        shorthandCode: "",
-        skuCode: ""
+      dialogVisible: {
+        type: Boolean,
+        default: false
       },
-      whereUse:'',
-      isClickComfirmButton: false,
-      isClosed: false
-    };
-  },
-  methods: {
-    //获取row的key值
-    getRowKeys(row){
-        return row.uid
-    },
-    //控件显示
-    openDialog(whereUse) {
-      this.dialigVisible = true;
-      this.whereUse = whereUse
-      this.getData();
-    },
-    setData() {
-      this.selectObj = {};
-      this.selectedData = [];
-      this.usefulData.forEach(element => {
-        this.selectObj[element.uid] = element.uid;
-        this.selectedData.push(element);
-      });
-      this.isClosed = true;
-    },
-    //关闭弹框的回调
-    closeDialog() {
-      this.dialigVisible = false;
-      this.isClickComfirmButton === true || this.usefulData.length === 0
-        ? this.setData()
-        : null;
-    },
-    //条件查询
-    searchClick() {
-      this.GoodsListQueryData.merName = this.goodsName;
-      this.GoodsListQueryData.merCode = this.goodsNumber;
-      this.GoodsListQueryData.classUid = this.merClassUid;
-      this.GoodsListQueryData.merType = this.merTypeUid;
-      this.getData();
-    },
-    // //表格单次单选行数据
-    selectRow(selection, row) {
-      //获取回显数据
-      if (this.selectObj[row.uid]) {
-        delete this.selectObj[row.uid];
-      } else {
-        this.selectObj[row.uid] = row.uid;
+      //商品类型 1单品， 2合成品,3服务商品，4套餐，5原材料
+      merType: {
+        type: [String, Number],
+        default: ""
+      },
+      //门店id
+      cinemaUid: {
+        type: [String, Number],
+        default: ""
+      },
+      // 回选数据
+      dialogFeedbackData: {
+        type: [Array],
+        default: () => []
+      },
+      // 自动关闭
+      autoClose: {
+        type: Boolean,
+        default: true
+      },
+      // 表头
+      tableColumn: {
+        type: [Array],
+        default: () => [
+          {
+            label: "商品名称",
+            key: "merName"
+          },
+          {
+            label: "商品编码",
+            key: "merCode"
+          },
+          {
+            label: "SKU编码",
+            key: "skuCode"
+          },
+          {
+            label: "速记代码",
+            key: "shorthandCode"
+          },
+          {
+            label: "商品规格",
+            key: "merSpec"
+          },
+          {
+            label: "基本单位",
+            key: "unitName"
+          }
+        ]
       }
-      console.log(selection)
-      this.selectedData = selection
     },
-    
-    // //表格同时多选行
-    selectAll(selection) {
-      //获取回显数据
-        console.log(selection)
-      this.tableData.forEach((row, index) => {
-        if (this.selectObj.hasOwnProperty(row.uid)) {
-          selection.length ? null : delete this.selectObj[row.uid];
+    data() {
+      return {
+        //查询数据
+        queryData: {
+          canSale: 1, //可销售商品
+          merType: "", //商品类型
+          classUid: "",
+          name: "",
+          code: "",
+          shorthandCode: "",
+          skuCode: "",
+          page: 1,
+          pageSize: 10
+        },
+        categoryTrees: [], //商品分类树
+        defaultProps: {
+          children: "children",
+          label: "name"
+        },
+        tableData: [],
+        tableLoding:false,
+        selectedgoods: [],
+        total: 0,
+        isOpen :true,
+      };
+    },
+    mounted() {
+    },
+    updated() {
+    },
+    methods: {
+      //弹窗打开回调
+      openCallBack() {
+        this.queryData.classUid = "";
+        this.init();
+        this.onQuery("open");
+      },
+      init() {
+        this.selectProductClass({uid: ""});
+      },
+      // 查询
+      onQuery(type) {
+        this.queryData.merType = this.merType;
+        if (this.cinemaUid) {
+          this.queryData.cinemaUid = this.cinemaUid;
+          this.goodsDataQueryCinemaGoodsList(this.queryData, type);
         } else {
-          this.selectObj[row.uid] = row.uid;
+          this.goodsDataQueryGoodsList(this.queryData, type);
         }
-        });
-        this.selectedData = selection
-    },
+      },
+      // 查询树
+      handleaCtegoryTrees(data) {
+        if (data.uid == "0") {
+          this.queryData.classUid = "";
+        } else {
+          this.queryData.classUid = data.uid;
+        }
+        if (this.cinemaUid) {
+          this.queryData.cinemaUid = this.cinemaUid;
+          this.goodsDataQueryCinemaGoodsList(this.queryData);
+        } else {
+          this.goodsDataQueryGoodsList(this.queryData);
+        }
 
-   
-    //切换分页请求数据
-    currentChange(val) {
-      this.GoodsListQueryData.page = Number(val);
-      this.getData();
-    },
-    //清空所选数据
-    clearClick() {
-      this.$refs.multipleTable.clearSelection();
-      this.selectedData = [];
-      this.selectObj = {};
-    },
-    //单次删除单条数据
-    deleteClick(item) {
-      if (item) {
-        this.$refs.multipleTable.toggleRowSelection(item);
-        delete this.selectObj[item.uid];
-        console.log(this.selectedData);
-        this.selectedData.forEach((row, index) => {
-          if (item.uid === row.uid) {
-            this.selectedData.splice(index, 1);
+      },
+      // 请求商品分类树接口
+      selectProductClass(param) {
+        this.$cimList
+                .getCategoryTrees(param)
+                .then(res => {
+                  if (res.code === 200) {
+                    this.categoryTrees = [res.data];
+                  } else {
+                    this.error(res.msg);
+                  }
+                })
+                .catch(err => {
+                });
+      },
+      // 根据商品分类查询总部商品信息
+      goodsDataQueryGoodsList(param, type) {
+        this.tableLoding =true;
+        this.$cmmList
+                .goodsDataQueryGoodsList(param)
+                .then(res => {
+                  this.reqCallBack(res, type)
+                })
+                .catch(err => {
+                  this.tableLoding =false;
+                });
+      },
+      // 根据商品分类查询门店商品信息
+      goodsDataQueryCinemaGoodsList(param, type) {
+        this.tableLoding =true;
+        this.$cimList.storequartersGoods
+                .goodsDataQueryCinemaGoodsList(param)
+                .then(res => {
+                  this.reqCallBack(res, type)
+                })
+                .catch(err => {
+                  this.tableLoding =false;
+                });
+      },
+      reqCallBack(res, type) {
+        console.log(this.dialogFeedbackData, "this.dialogFeedbackData")
+        if (res.code === 200) {
+          if (type == "open") {
+              // this.selectedgoods = this.dialogFeedbackData;
+              // this.$refs.materialTable.clearSelection();
+              if (this.dialogFeedbackData.length > 0) {
+                this.dialogFeedbackData.forEach(row => {
+                  this.$refs.materialTable.toggleRowSelection(row);
+                });
+              }
           }
-        });
-        console.log(this.selectedData);
-      }
-    },
-    //点击确认
-    comfirmClick() {
-      this.usefulData = JSON.parse(JSON.stringify(this.selectedData));
-      this.usefulObj = JSON.parse(JSON.stringify(this.selectObj));
-      this.dialigVisible = false;
-      let textArr = []
-      let valueArr = []
-      this.selectedData.map(item => {
-          textArr.push(item.merName) 
-          valueArr.push(item.merCode)
-      })
-      let data = {
-        whereUse:'',
-        textArr,
-        valueArr
-      }
-      this.$emit("tradeGoodsCallBack", data);
-      this.$emit("appointGoodsBack", data);
-      this.$emit("zengSongGoodsCallBack", data);
-      this.$emit("singleGoodsCallBack", data);
-      this.$emit("favorablePriceCallBack", data);
-      this.$emit("salesSelectedGoodsCallBack", data);
-      this.$emit("selectedGoodsCallBack", data);
-      this.isClickComfirmButton = true;
-    },
-    //点击取消
-    cancelClick() {
-      this.dialigVisible = false;
-    },
-    //发请求获取数据的方法
-    getData() {
-      let GoodsListQueryData = this.GoodsListQueryData;
-      this.$rptList
-        .goodsDataQueryGoodsList(GoodsListQueryData)
-        .then(res => {
-          if (res.code === 200) {
-            console.log(res.data.list);
-            this.tableData = JSON.parse(JSON.stringify(res.data.list));
-            this.pageNationData.total = Number(res.data.total);
-          } else {
-            this.error(res.msg);
-          }
-        })
-        .catch(err => {});
-    },
-    //控件显示及分页切换时数据保持
-    dataRedisplay(data) {
-      this.tableData.forEach((row, index) => {
-        if (data.hasOwnProperty(row.uid)) {
-          this.$refs.multipleTable.toggleRowSelection(row, true);
+          this.tableData = res.data.list.map(item=>{
+             if(item.merType==2){
+               if(item.skuName){
+                 item.merName =  item.merName + '--' +   item.skuName
+               }
+             }
+            return item
+          })
+          this.tableLoding =false;
+          this.total = res.data.total;
         } else {
-          this.$refs.multipleTable.toggleRowSelection(row, false);
+          this.error(res.msg);
         }
-      });
+      },
+      // 选择添加商品
+      handleSelectionMaterial(value) {
+        console.log("选择的商品", value)
+        this.selectedgoods = value;
+      },
+      //删除选择
+      deleteSelected(row, flag) {
+        this.$refs.materialTable.toggleRowSelection(row,false);
+      },
+
+      //去重(根据uid相同，避免数据问题)
+      unRepeat(arr) {
+        let hash = {};
+        return arr.reduce((item, next) => {
+          if (!hash[next.merCode]) {
+            hash[next.merCode] = true;
+            item.push(next);
+          }
+          return item;
+        }, []);
+      },
+      // 清空选择
+      handleEmptyMaterials() {
+        this.$refs.materialTable.clearSelection();
+      },
+      handleCurrentChange(val) {
+        this.queryData.page = val;
+        this.onQuery();
+      },
+      isDisabled(row) {
+        return !row.isDisabled;
+      },
+      //取消弹窗
+      closeCallBack() {
+        this.$emit("update:dialogVisible", false);
+      },
+      //取消弹窗
+      handleCancel() {
+        this.closeCallBack();
+        this.$emit("cimSelectedGoodsDialogCallBack", {
+          btnType: 0,
+          data: this.selectedgoods
+        });
+      },
+      //确定
+      handleSubmit() {
+        this.$emit("dialogFeedbackData", this.selectedgoods);
+        this.$emit("cimSelectedGoodsDialogCallBack", {
+          btnType: 1,
+          data: this.selectedgoods
+        });
+        if(this.autoClose){
+          this.$emit("update:dialogVisible", false);
+        }
+      }
+    },
+    computed: {
+      defaultExpanded() {
+        return this.categoryTrees.map(item => {
+          return item.uid;
+        });
+      }
+    },
+    watch: {
+      dialogVisible(val) {
+        this.$nextTick(() => {
+          this.$refs.materialTable.clearSelection();
+        })
+      },
     }
-  },
-  updated() {
-    if (this.dialigVisible === true && this.isClosed === false) {
-      this.dataRedisplay(this.selectObj);
-    }
-    if (this.isClosed === true) {
-      this.dataRedisplay(this.usefulObj);
-      this.isClosed = false;
-    }
-  }
-};
+  };
 </script>
 
-<style lang="scss" scoped>
-.my_dialog {
-  /deep/ .el-dialog {
-    // width: calc(576px + 224px);
-    width: 892px;
-    height: 576px;
-    border-radius: 4px;
-    .el-dialog__header {
-      padding: 14px 20px 10px;
-    }
-    .el-dialog__title {
-      font-family: MicrosoftYaHei;
-      font-size: 14px;
-      color: #333333;
-      letter-spacing: 0;
-      line-height: 28px;
-    }
-    .el-dialog__headerbtn .el-dialog__close {
-      color: #979797;
-      font-size: 16px;
-    }
-    .el-form-item__label {
-      font-size: 12px;
-    }
 
-    .el-form-item {
+<style lang="scss">
+  .good-select-dialog {
+    .el-dialog__body{
+      padding-top: 0;
+      padding-bottom: 0;
+      .query-box{
+        .el-input{
+          width: 184px;
+        }
+      }
+    }
+    .table-box{
+      margin-top: 10px;
+    }
+    .good-trees-box {
+      overflow: scroll;
+      .el-tree{
+        height: 520px;
+      }
+    }
+    .el-form-item__content{
+      width: 184px;
+    }
+    .el-form-item{
       margin-bottom: 0;
     }
-
-    .el-dialog__header::after {
-      content: "";
-      display: block;
-      // width: calc(536px + 224px);
-      width: 852px;
-      height: 1px;
-      background: #e5e5e5;
+    .page-wrap{
+      padding: 10px;
+    }
+    .search {
+      margin-top: 5px;
+      float:right;
     }
 
-    .choose_table {
-      display: flex;
-      margin-top: 11px;
-      border-left: 1px solid #e5e5e5;
-      border-bottom: 1px solid #e5e5e5;
+    .empty-box {
+      padding: 0 10px 10px 10px;
+      margin-top: 10px;
+      border: 1px solid #E5E5E5;
+      .selected-content {
+        padding: 10px 0;
+      }
+      .el-icon-close{
+        cursor:pointer;
+      }
+      .title{
+        width: 85%;
+        overflow: hidden; /*超出部分隐藏*/
+        white-space: nowrap; /*不换行*/
+        text-overflow: ellipsis; /*超出部分文字以...显示*/
+      }
+      .el-button {
+        padding-left: 0;
+        padding-right: 0;
+      }
 
-      .choose_ul {
-        background: #ffffff;
-        border: 1px solid #e5e5e5;
-        border-bottom: none;
-        width: 224px;
-
-        .ul_header {
-          display: flex;
-          padding: 10px 16px;
-          justify-content: space-between;
-          position: relative;
-
-          // border-bottom: 1px solid #F5F5F5;
-          &::after {
-            display: block;
-            position: absolute;
-            top: 37px;
-            content: "";
-            width: 192px;
-            height: 1px;
-            background-color: #f5f5f5;
-          }
-
-          span {
-            font-family: MicrosoftYaHei;
-            font-size: 12px;
-            color: #666666;
-            line-height: 15px;
-            letter-spacing: 0;
-          }
-        }
-
-        .ul_body {
-          margin-top: 10px;
-          overflow-y: scroll;
-          height: 350px;
-          li {
-            padding: 5px 16px;
-            display: flex;
-            justify-content: space-between;
-            margin-top: 0;
-            width: 184px;
-            height: 15px;
-            line-height: 15px;
-            span {
-              font-family: MicrosoftYaHei;
-              font-size: 12px;
-              color: #666666;
-              letter-spacing: 0;
-            }
-
-            .delate_span {
-              cursor: pointer;
-            }
-          }
+      .empty-content {
+        height: 394px;
+        overflow-y: auto;
+        border-top: 1px solid #F5F5F5;
+        padding: 5px 0;
+        li {
+          padding: 6px 0;
         }
       }
-    }
-
-    .el-dialog__body {
-      padding: 0 20px;
-
-      tr th,
-      tr td {
-        height: 30px;
-        line-height: 30px;
-      }
-
-      .two_search {
-        width: 214px;
-        font-size: 12px;
-      }
-
-      .one_search {
-        width: 268px;
-      }
-
-      .el-table__header-wrapper,
-      .el-table__body-wrapper,
-      .el-table__footer-wrapper {
-        // width: 536px;
-        width: calc(536px + 92px);
-      }
-
-      .el-table {
-        height: 353px;
-        // width: 536px;
-        width: calc(536px + 92px);
-        flex: 0 1 auto;
-        box-sizing: border-box;
-
-        .has-gutter tr th {
-          padding: 0;
-        }
-
-        .cell {
-          font-size: 12px;
-          line-height: 30px;
-          // float: left;
-          // text-align: center;
-        }
-
-        .el-radio__label {
-          padding: 0;
-          display: none;
-        }
-      }
-
-      .block {
-        padding: 10px;
-
-        .el-pagination {
-          text-align: center;
-          .btn-prev,
-          .btn-next,
-          .active,
-          .number {
-            min-width: 24px;
-            height: 24px;
-            line-height: 24px;
-          }
-          /deep/ .more {
-            height: 24px;
-            line-height: 24px;
-            margin: 0 !important;
-          }
-          .el-input__inner {
-            width: 48px;
-            height: 24px;
-          }
-          button,
-          ul {
-            margin-top: 2px;
-          }
-        }
-      }
-    }
-
-    .btn-area {
-      display: flex;
-      justify-content: center;
-    }
-
-    /deep/ .content .el-input {
-      width: 50px;
     }
   }
-}
 </style>

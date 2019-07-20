@@ -9,8 +9,8 @@
           <el-input v-model="formData.levelNo" placeholder="等级编号" clearable maxlength="30"></el-input>
         </el-form-item>
         <el-form-item class="btn-wrap">
-          <el-button type="primary" @click="handleSearch" class="el-btn-custom">搜索</el-button>
-          <el-button @click="resetForm('formData')" class="el-btn-custom">重置</el-button>
+          <el-button type="primary" @click="handleSearch" class="_el-btn-custom">搜索</el-button>
+          <el-button @click="resetForm('formData')" class="_el-btn-custom">重置</el-button>
         </el-form-item>
       </el-form>
       <div class="_crm-member-level-dialog-wrap">
@@ -45,7 +45,9 @@ import dialogWarp from "../views/member/components/dialogWarp/dialogWarp";
 export default {
   data() {
     return {
-      oldData: [],
+      oldData: [
+        { levelNo: "1", levelName: "普通会员", saveGrowth: 0, levelupGrowth: 0 }
+      ],
       tipMessage: "",
       // 查询卡政策的数据
       formData: {
@@ -54,7 +56,9 @@ export default {
       },
       multipleSelectionItem: [], //临时选择的自有权益
       callBackData: [], //暴露出去的已选数据
-      tableData: []
+      tableData: [
+        { levelNo: "1", levelName: "普通会员", saveGrowth: 0, levelupGrowth: 0 }
+      ]
     };
   },
   components: {
@@ -143,13 +147,35 @@ export default {
           if (!data.memberLevelRuleVOList) {
             this.tipMessage = "暂无数据";
           }
-          this.tableData = data.memberLevelRuleVOList?data.memberLevelRuleVOList:[];
-          this.oldData = data.memberLevelRuleVOList?data.memberLevelRuleVOList:[];
+          this.tableData = data.memberLevelRuleVOList
+            ? data.memberLevelRuleVOList
+            : [
+                {
+                  levelNo: "1",
+                  levelName: "普通会员",
+                  saveGrowth: 0,
+                  levelupGrowth: 0
+                }
+              ];
+          this.oldData = data.memberLevelRuleVOList
+            ? data.memberLevelRuleVOList
+            : [
+                {
+                  levelNo: "1",
+                  levelName: "普通会员",
+                  saveGrowth: 0,
+                  levelupGrowth: 0
+                }
+              ];
           this.$refs.multipleTable.clearSelection();
           this.rowMultipleChecked(this.multipleSelectionItem);
         })
         .catch(err => {
-          this.tipMessage = err.message;
+          if (err && err.msg) {
+            this.tipMessage = err.msg;
+          } else {
+            this.tipMessage = "系统繁忙，请稍后重试！";
+          }
         });
     },
     //数据为空格式化
@@ -233,7 +259,6 @@ export default {
         whereUse: this.whereUse,
         data: this.callBackData
       };
-      console.log("selectedData", selectedData);
       this.$emit("crmMemberLevelDialogCallBack", selectedData);
     }
   }

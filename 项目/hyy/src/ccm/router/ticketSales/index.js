@@ -74,7 +74,7 @@ const couponSalesRoutes = [{
         title: '票券原票库存管理'
     },
     name: 'inventoryManagement',
-    component: (resolve) => require(['../../views/coupon/inventoryManagement/index.vue'], resolve)
+    component: (resolve) => require(['../../views/coupon/inventoryManagement/index.vue'], resolve),
 }, {
     path: 'searchNumber',
     meta: {
@@ -85,7 +85,7 @@ const couponSalesRoutes = [{
 }, {
     path: 'checkSearchNumber',
     meta: {
-        title: '查看票券编号查询'
+        title: '查看票券信息'
     },
     name: 'checkSearchNumber',
     component: (resolve) => require(['../../views/coupon/searchNumber/check.vue'], resolve)
@@ -111,12 +111,12 @@ const couponSalesRoutes = [{
     name: 'templateManagement',
     component: (resolve) => require(['../../views/coupon/templateManagement/index.vue'], resolve)
 }, {
-    path: 'createTemplate',
+    path: 'couponTemplate',
     meta: {
         title: '新建票券模板管理'
     },
-    name: 'createTemplate',
-    component: (resolve) => require(['../../views/coupon/templateManagement/create.vue'], resolve)
+    name: 'couponTemplate',
+    component: (resolve) => require(['ccm/views/coupon/templateManagement/couponTemplate.vue'], resolve)
 }];
 
 export default couponSalesRoutes;

@@ -8,7 +8,15 @@
                     <el-row class="flex-base">
                         <el-input class="input-type-166" v-if="!item.alertButton" :clearable="item.clearable" @clear="clearInputVal(item.keyName,item.alertButton)" :readonly="item.readonly" v-model="baseConfig.form[`${item.keyName}`]" :placeholder="item.placeholider"></el-input>
                         <template v-if="item.alertButton">
-                            <el-input class="input-type-166" :clearable="item.clearable" @clear="clearInputVal(item.keyName,item.alertButton)" :readonly="item.readonly" v-model="baseConfig.form[`${item.keyName}`].text" :placeholder="item.placeholider"></el-input>
+                            <el-input class="input-type-166" 
+                            :clearable="item.clearable" 
+                            @clear="clearInputVal(item.keyName,item.alertButton)" 
+                            :readonly=true  
+                            v-model="baseConfig.form[`${item.keyName}`].text" 
+                            :placeholder="item.placeholider"
+                            >
+                            <i slot="suffix" class="el-icon-circle-close" @click="clearInputVal(item.keyName,item.alertButton)" v-show="baseConfig.form[`${item.keyName}`].text"></i>
+                            </el-input>
                             <el-button type="primary callWindowBtn" plain @click="callWindow(item.alertCompontsName,item.keyName,item.isNeedReturn)">{{item.alertButtonText ? item.alertButtonText : '选择'}}</el-button>
                         </template>
                     </el-row>
@@ -17,7 +25,7 @@
                 <template v-if="item.type == 'input-more'">
                     <el-row class="flex-base input-more">
                         <template v-for="(jtem,index) in item.options">
-                            <el-form-item :key="index" :prop="jtem.prop" :label="jtem.name" :rules="jtem.rules">
+                            <el-form-item :key="index" :prop="jtem.prop" :label="jtem.name" :rules="jtem.rules" >
                                 <el-row class="flex-base input-row">
                                     <el-input class="input-type-166" v-model="baseConfig.form[`${jtem.keyName}`]"></el-input>
                                     <span class="line">-</span>
@@ -48,16 +56,22 @@
     <!-- 弹窗 -->
     <section class="alert-group">
         <!-- 选择支付 -->
-        <payType @getData="handlePayTypeBack" ref="payType"></payType>
+        <!-- <payType @getData="handlePayTypeBack" ref="payType"></payType> -->
+        <!-- 选择组织节点 -->
+        <cinemaTreeDialog  ref="cinemaSingle"  @cinemaCallBack="cinemaSingleCallBack"></cinemaTreeDialog>
+        <!-- 交易客商单选 -->
+        <tradeMerchantSingle ref="tradeMerchantSingle" @tradeMerchantSingleCallBack="tradeMerchantSingleCallBack"></tradeMerchantSingle>
+
     </section>
 </div>
 </template>
 <script>
 // 弹窗混入回调方法，注册弹窗和设置回调都在此处
 import searchAlertHandle from 'ccm/mixins/marketing/searchAlertHandle.js';
+import minxins from 'frame_cpm/mixins/cacheMixin.js'
 export default {
     components: {},
-    mixins: [searchAlertHandle],
+    mixins: [searchAlertHandle,minxins.cacheMixin],
     props: {
         config: {
             required: true,
@@ -86,6 +100,9 @@ export default {
                     rules: []
                 }]
             },
+            /* 缓存数据 */
+            cacheField: ["baseConfig"],
+            subComName:['searBar'],
             /* 唤起弹窗后,需填入输入框的名 */
             currentInputName: '',
             /* 是否显示高级检索内容 */
@@ -103,13 +120,15 @@ export default {
         }
     },
     created() {
-       this.init()
+        this.init()
     },
     methods: {
         init(){
             /* 根据输入config 构建form */
             let form = {};
-            let system = JSON.parse(JSON.stringify(this.config));
+            let system = {}
+               system = JSON.parse(JSON.stringify(this.config));
+            
             try {
                 for (let i = 0; i < system.length; i++) {
                     let item = system[i];
@@ -142,7 +161,29 @@ export default {
             }, {
                 deep: true
             })
-
+            // console.log(this.baseConfig)
+            /*------star--------*/
+            let _form = this.baseConfig.form
+            let cacheForm = false
+            for(var item of Object.keys(_form)){
+                // console.log(item)
+                if(typeof(_form[item])=='object'){
+                    if(_form[item].text !=''){
+                        // console.log(_form[item])
+                        // console.log(`有值的项${item}:`,_form[item].text)
+                        cacheForm = true
+                    }
+                }else if(typeof(_form[item])=='string'){
+                    if(_form[item] !=''){
+                        // console.log(`有值的项${item}:`,_form[item])
+                        cacheForm = true
+                    }
+                }
+            }
+            if(cacheForm) {
+                form = _form
+            }
+            /*-----end---------*/
             this.baseConfig = {
                 form,
                 system
@@ -170,7 +211,7 @@ export default {
                 if (fnName) {
                     let fn = this[`${fnName}`];
                     if (typeof fn == 'function') {
-                        fn();
+                        fn(alertCompontsName);
                     } else {
                         throw new TypeError(`mixin:searchAlertHandle方法中不存在${alertCompontsName}所对应的方法，无法执行`);
                     }
@@ -296,7 +337,13 @@ export default {
         margin-left: 5px;
         margin-top: 1px;
     }
-
+    .el-button{
+        width: 80px;
+        height: 32px;
+        &>span{
+            font-size: 12px;
+        }
+    }
 }
 
 /* 范围输入框 */

@@ -22,8 +22,9 @@
                         <div v-if="item.prop == 'stockStatus'">
                             {{!scope.row.stockStatus ? '原票' : scope.row.stockStatus == 2  ? '报损' : '配发'}}
                         </div>
-                        <div v-else-if="item.prop == 'createTime' ">
-                            {{scope.row.createTime|formatDate('yyyy-MM-dd')}}
+                        <div v-else-if="item.prop == 'allocateTime' ">
+                            <span v-if="scope.row.allocateTime">{{scope.row.allocateTime|formatDate('yyyy-MM-dd')}}</span>
+                            <span v-else></span>
                         </div>
                     </template>
                 </el-table-column>
@@ -33,30 +34,31 @@
 
     <!-- 分页 -->
     <section v-if="table.data.length != 0" class="pagination-section flex-base flex-center">
-        <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="pageConfig.currentPgae" :page-sizes="pageConfig.pageSizes" :page-size="pageConfig.pageSize" layout="total, sizes, prev, pager, next, jumper" :total="pageConfig.total">
+        <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page.sync="pageConfig.currentPage" :page-sizes="pageConfig.pageSizes" :page-size="pageConfig.pageSize" layout="total, sizes, prev, pager, next, jumper" :total="pageConfig.total">
         </el-pagination>
     </section>
     <!-- 弹窗 -->
-    <cinemaDialog 
-        ref="cinemaDialog" 
-        :innerData="cinemaData"
-        @callBack="cinemaCallBack">
-    </cinemaDialog>
+    <cinemaTreeDialog  ref="cinemaTreeDialog"  :innerData="cinemaData" @cinemaCallBack="scinemaCallBack"></cinemaTreeDialog>
 
 </div>
 </template>
 
 <script>
 import searchLan from '../../../components/search/index.vue';
-import cinemaDialog from 'ccm/dialogs/cinema'
+import cinemaTreeDialog from 'ccm/dialogs/treeCinema'
+import minxins from 'frame_cpm/mixins/cacheMixin.js'
+
 
 export default {
     components: {
         searchLan,
-        cinemaDialog
+        cinemaTreeDialog
     },
+    mixins: [minxins.cacheMixin],
     data() {
         return {
+            /* 缓存数据 */
+            cacheField: ["searchConfig","table","pageConfig"],
             modelName: 'inventoryManagement',
             cinemaData:{
                 type:2,
@@ -71,7 +73,7 @@ export default {
                 value: ''
             }, {
                 keyName: 'couponColor',
-                name: '票券颜色',
+                name: '票纸颜色',
                 type: 'select',
                 value: '',
                 options: [{
@@ -106,7 +108,7 @@ export default {
                 inputNum: 2,
                 options: [{
                     keyName: 'startId',
-                    value: ''
+                    value: '',
                 }, {
                     keyName: 'endId',
                     value: ''
@@ -148,28 +150,28 @@ export default {
                 }, {
                     prop: 'id',
                     label: '票券流水号',
-                    width: '200'
+                    width: ''
                 }, {
                     prop: 'couponCode',
                     label: '票券编号',
-                    width: '200'
+                    width: ''
                 }, {
                     prop: 'couponColor',
                     label: '票纸颜色',
-                    width: '150',
+                    width: '100',
                 }, {
-                    prop: 'tenantId',
-                    label: '配发商户',
-                    width: '250'
+                    prop: 'allocateBusinessName',
+                    label: '配发影院',
+                    width: ''
                 }, {
                     prop: 'stockStatus',
                     label: '库存状态',
                     width: '120',
                     hasTemeplate: true,
                 }, {
-                    prop: 'createTime',
+                    prop: 'allocateTime',
                     label: '操作日期',
-                    width: '250',
+                    width: '',
                     hasTemeplate: true,
                 }, {
                     prop: 'createUserName',
@@ -201,13 +203,33 @@ export default {
          * @param {Object} param - 搜索栏回传参数
          * @param {Object} pointer - 当前执行对象指针
          */
-        search(param, pointer) {
-            let _this = pointer ? pointer : this;
-            let _param = _this.setParam(param);
-            if (param) {
-                _this.searchParam = param;
+        search(param, pointer,backFirstpage) {
+            if(param){
+                let reg = /[^\-?\d.]/g
+                if(reg.test(param.endId)){
+                    this.$message({
+                        type: 'warning',
+                        message:"票券流水号范围只能输入数字"
+                    });
+                    return
+                }else if(reg.test(param.startId)){
+                    this.$message({
+                        type: 'warning',
+                        message:"票券流水号范围只能输入数字"
+                    });
+                    return
+                }
             }
+            let _this = pointer ? pointer : this;
+            if (!backFirstpage) {
+                //带条件查询则页数返回第一页
+                _this.searchParam = param;
+                this.pageConfig.currentPage=1
+            }
+            let _param = _this.setParam(param);
             _this.getData(_param);
+            
+
         },
         /**
          * @function setParam - 设置请求参数
@@ -234,7 +256,7 @@ export default {
                 couponCode: exitsParam ? param.couponCode : exitsSearhParam ? pointer.searchParam.couponCode : '',
                 stockStatus: exitsParam ? param.stockStatus : exitsSearhParam ? pointer.searchParam.stockStatus : '',
                 queryCreateUserName: exitsParam ? param.queryCreateUserName : exitsSearhParam ? pointer.searchParam.queryCreateUserName : '',
-                pageNo: pointer.pageConfig.currentPage,
+                pageNo:pointer.pageConfig.currentPage,
                 pageSize: pointer.pageConfig.pageSize
             }
             return _param;
@@ -246,7 +268,6 @@ export default {
         getData(param) {
             let pointer = this;
             this.$ccmList.findCouponCodeList(param).then(data => {
-                console.log(data);
                 let flag = data.flag;
                 let message = data.msg;
                 let type = '';
@@ -302,10 +323,11 @@ export default {
                         // 配发
                         flag = false;
                         message = '报损的票券不能配发,请重新选择!';
-                    } else if (type == 'debad' && (stockStatus == 1 || stockStatus == 2)) {
+                    } else if ( (type == 'debad' || type == 'issue') && (stockStatus == 1 || stockStatus == 2)) {
                         // 报损
                         flag = false;
-                        message = '只能报损原票, 请重新选择';
+                        let way = type=='issue'? '配发': '报损'
+                        message = `只能${way}原票, 请重新选择`;
                     }
 
                     if (!flag) {
@@ -361,14 +383,14 @@ export default {
 
         },
         /**
-         * @function sendIssue - 1=配发/2=报损
+         * @function sendIssue - 1=配发/2=报损/0原票
          */
     
         sendIssue(pointer,param) {
             if (param.stockStatus == 1) {
                 // 此处应该唤起弹窗
                 // 唤起弹窗
-                this.$refs.cinemaDialog.openDialog(true)
+                this.$refs.cinemaTreeDialog.openDialog(true)
                 this.sendIssueData = param
                 
             } else {
@@ -395,11 +417,12 @@ export default {
         /**
          *  cinemaCallBack - 影院参数回传 +  配发请求
          */
-        cinemaCallBack(data) {
+        scinemaCallBack(data) {
             let pointer = this
             let param = this.sendIssueData
-            param['allocate_business_id'] = data.data.id
-            param['allocate_business_name'] = data.data.name
+            console.log(data)
+            param['allocateBusinessId'] = data.id
+            param['allocateBusinessName'] = data.text
             pointer.$ccmList.issueCoupon(param).then(data => {
                 let type = 'warning';
                 if (data.flag == 5) {
@@ -409,7 +432,6 @@ export default {
                     type,
                     message: data.msg
                 });
-
                 if (type == 'success') {
                     let _param = pointer.setParam();
                     pointer.getData(_param);
@@ -429,18 +451,18 @@ export default {
          */
         handleSizeChange(pageSize) {
             this.pageConfig.pageSize = pageSize;
-            this.search(null, this);
+            this.search(null, this,'backFirstpage');
         },
         /**
          * @function handleCurrentChange - 分页改变页码
          */
         handleCurrentChange(currentPage) {
             this.pageConfig.currentPage = currentPage;
-            this.search(null, this);
+            this.search(null, this,'backFirstpage');
         }
     },
     created() {
-        this.search();
+        // this.search();
     }
 }
 </script>

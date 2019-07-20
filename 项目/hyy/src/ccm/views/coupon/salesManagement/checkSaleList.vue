@@ -5,7 +5,7 @@
             <el-collapse-item :key="item.itemName" :title="item.title" :name="item.itemName">
                 <ul>
                     <template v-for="(item,index) in item.content">
-                        <li class="baseItem flex-base" :key="index">
+                        <li class="baseItem flex-base" :key="index" v-if="item.isShow">
                             <span class="item-title" :style="{'width': itemTitle.width +'px'}">
                             {{item.title}}:
                         </span>
@@ -92,9 +92,11 @@
 </template>
 
 <script>
+import config from 'frame_cpm/http/config.js';
 export default {
     data() {
         return {
+            baseUrl : config.baseURL,
             activeNames: ['baseInfo', 'commonInfo', 'ruleInfo'],
             itemTitle: {
                 width: '120'
@@ -106,7 +108,8 @@ export default {
                             title: '票券名称',
                             prop: 'name',
                             value: '',
-                            type: 'text'
+                            type: 'text',
+                            isShow:true
                         },
                         {
                             title: '票券类型',
@@ -117,44 +120,57 @@ export default {
                                 1: '代金券',
                                 2: '优惠券'
                             },
-                            type: 'text'
+                            type: 'text',
+                            isShow:true
                         },
                         {
                             title: '票券分类',
-                            prop: 'couponTypeId',
+                            prop: 'couponTypeName',
                             value: '',
-                            type: 'text'
+                            type: 'text',
+                            isShow:true
                         },
                         {
-                            title: '销售数量',
+                            title: '票券数量',
                             prop: 'couponCount',
                             value: '',
-                            type: 'text'
+                            type: 'text',
+                            isShow:true
                         },
                         {
                             title: '销售单价',
                             prop: 'couponPrice',
                             value: '',
                             univalent: '元',
-                            type: 'text'
+                            type: 'text',
+                            isShow:true
                         },
                         {
                             title: '起售数量',
                             prop: 'startSaleNum',
                             value: '',
-                            type: 'text'
+                            type: 'text',
+                            isShow:true
                         },
                         {
                             title: '销售方式',
                             prop: 'salesMode',
                             value: '',
                             options: {
-                                1: '影院临售',
+                                1: '影院零售',
                                 2: '营销活动',
                                 3: '大客户',
                                 4: '第三方合作'
                             },
-                            type: 'text'
+                            type: 'text',
+                            isShow:true
+                        },
+                        {
+                            title: '客商名称',
+                            prop: 'custName',
+                            value: '',
+                            type: 'text',
+                            isShow:true
                         },
                         {
                             title: '票券编号',
@@ -166,21 +182,55 @@ export default {
                             clickFnParam: {
                                 src: '/coupon/couponSales/searchNumber',
                                 param: {
-
                                 }
-                            }
+                            },
+                            isShow:true
+                        },
+                        {
+                            title: '票券验证结果',
+                            prop: 'exlFilePath',
+                            value: '查看验证结果',
+                            type: 'button',
+                            buttonType: 'text',
+                            clickFn: 'searchAttachFileName',
+                            clickFnParam: {
+                                src: ''
+                            },
+                            isShow:false
+                        },
+                        {
+                            title: '合同协议号',
+                            prop: 'contractCode',
+                            value: '',
+                            type: 'text',
+                            isShow:false
+                        },
+                        {
+                            title: '合同附件',
+                            prop: 'attachFileName',
+                            value: '查看附件',
+                            type: 'button',
+                            buttonType: 'text',
+                            clickFn: 'searchAttachFileName',
+                            isShow:false,
+                            clickFnParam: {
+                                src: '',
+                            },
+                            isShow:false
                         },
                         {
                             title: '入账影院',
-                            prop: 'incomeCinemaId',
+                            prop: 'incomeCinemaName',
                             value: '',
-                            type: 'text'
+                            type: 'text',
+                            isShow:true
                         },
                         {
                             title: '备注',
                             prop: 'remark',
                             value: '',
-                            type: 'text'
+                            type: 'text',
+                            isShow:true
                         }
                     ]
                 },
@@ -191,49 +241,57 @@ export default {
                             title: '有效期',
                             value: '',
                             type: 'text',
-                            prop: 'holiday'
+                            prop: 'holiday',
+                            isShow:true
                         },
                         {
                             title: '排除日期',
                             value: '',
                             type: 'text',
-                            prop: 'appointInvalidDate'
+                            prop: 'appointInvalidDate',
+                            isShow:true
                         },
                         {
                             title: '星期范围',
                             value: '',
                             type: 'text',
-                            prop: 'validWeek'
+                            prop: 'validWeek',
+                            isShow:true
                         },
                         {
                             title: '时段范围',
                             value: '',
                             type: 'text',
-                            prop: 'validTime'
+                            prop: 'validTime',
+                            isShow:true
                         },
                         {
                             title: '影院范围',
                             value: '',
                             type: 'text',
-                            prop: 'cinemaCode'
+                            prop: 'cinemaCode',
+                            isShow:true
                         },
                         {
                             title: '消费渠道',
                             value: '',
                             type: 'text',
-                            prop: 'consumeWayCode'
+                            prop: 'consumeWayCode',
+                            isShow:true
                         },
                         {
                             title: '消费者身份',
                             value: '',
                             type: 'text',
-                            prop: 'consumerTypeKey'
+                            prop: 'consumerTypeKey',
+                            isShow:true
                         },
                         {
                             title: '会员生日',
                             value: '',
                             type: 'text',
-                            prop: 'birthday'
+                            prop: 'birthday',
+                            isShow:true
                         }
                     ]
                 }
@@ -375,8 +433,48 @@ export default {
          * @param {Object} config.param - 弹窗参数
          */
         alertWindow(config) {
-            console.log(config)
-            this.$router.push(config.src)
+            let applyCode = this.enterQuery.applyCode
+            // console.log(applyCode)
+            this.$router.push({path:config.src,query:{applyCode}})
+        },
+        /**
+         * @function searchAttachFileName - 查看合同附件  -下载
+         */
+        searchAttachFileName(file) {
+            let url = this.baseUrl + file.src;
+            console.log(url)
+            let headers = {
+                 "Cpm-User-Token": localStorage.getItem("token")
+            }
+            axios(url, {
+                headers,
+                method: "post",
+                responseType: "blob"
+            }).then(data => {
+                let flag = data.headers.flag;
+                let message = '下载模板错误，请稍后再试！';
+                let type = 'warning';
+
+                if (flag == '1') {
+                    type = 'success';
+                    message = "下载成功"
+                }
+
+                    this.$message({
+                        type,
+                        message
+                    });
+                const blob = new Blob([data.data]);
+                const fileName = data.headers.filename;
+                const elink = document.createElement('a');
+                elink.download = fileName;
+                elink.style.display = 'none';
+                elink.href = URL.createObjectURL(blob);
+                document.body.appendChild(elink);
+                elink.click();
+                URL.revokeObjectURL(elink.href); // 释放URL 对象
+                document.body.removeChild(elink);
+            });
         },
         /**
          * @function emiteFn - 事件分发
@@ -457,10 +555,30 @@ export default {
                     }
                     item.value = val;
                 }
+                //合同号
+                if(key == 'contractCode'&& val ){
+                    item.isShow = true
+                }
+                //合同文件
+                if(key == 'attachFileName'&& val ){
+                    item.isShow = true
+                    item.clickFnParam.src = val 
+                    item.value = '查看附件'
+                }
+                //查看验证结果
+                if (key == 'exlFilePath' && val){
+                    console.log('数据：-------',param)
+                    item.clickFnParam.src = val 
+                    item.value = '查看验证结果'
+                    if(param.state == 8){
+                        item.isShow = true
+                    }
+                }
+                
             });
 
             // commonInfo
-            this.unpackCommonInfo(ruleGroup);
+            this.unpackCommonInfo(ruleGroup,param);
 
             // 子规则
             let modelType = this.model.type;
@@ -473,7 +591,8 @@ export default {
         /**
          * @function unpackCommonInfo - 拆解commonInfo
          */
-        unpackCommonInfo(ruleGroup) {
+        unpackCommonInfo(ruleGroup,param) {
+            console.log('拆解数据-------',ruleGroup,param)
             let commonInfo = ruleGroup.commonInfo;
             let commonInfoObj = {};
             commonInfo.forEach((item, index) => {
@@ -484,8 +603,19 @@ export default {
             })
 
             let commonInfoArr = this.config[1].content;
+            console.log('票券消费规则组',commonInfoArr)
             // 有效期
-            commonInfoArr[0].value = `${ruleGroup.validDateStart} 至 ${ruleGroup.validDateEnd}`;
+            if(param.validType == 0){
+                commonInfoArr[0].value = `${ruleGroup.validDateStart} 至 ${ruleGroup.validDateEnd}`;
+            }else if (param.validType == 1) {
+                if(param.validGenType==1) {
+                    commonInfoArr[0].value = `${param.validGenValue}日`
+                } else if(param.validGenType==2) {
+                    commonInfoArr[0].value = `${param.validGenValue}个月`
+                } else if (param.validGenType==3){
+                    commonInfoArr[0].value = `${param.validGenValue}年`
+                }
+            }
 
             // 节假日排除与否 指定排除日期
             let holidayArr = [];
@@ -548,9 +678,9 @@ export default {
             if (validTimeVal) {
                 let opUniqueName = validTimeVal.opUniqueName;
                 let keysObj = {
-                    MorningOperator: '上午',
-                    AfternoonOperator: '下午',
-                    NightOperator: '晚上',
+                    MorningOperator: '上午（09:00—12:59）',
+                    AfternoonOperator: '下午（13:00—16:59）',
+                    NightOperator: '晚上（17:00—02:00）',
                     TimeRangeContainOperator: '指定时段范围：'
                 }
                 validTimeValue = keysObj[`${opUniqueName}`];
@@ -613,7 +743,7 @@ export default {
                 }
                 consumerTypeKeyValue = keysObj[`${opUniqueName}`];
                 if (opUniqueName == 'normalIn') {
-                    consumerTypeKeyValue += consumerTypeKeyVal.value;
+                    consumerTypeKeyValue += consumerTypeKeyVal.text;
                 }
             }
             commonInfoArr[6].value = consumerTypeKeyValue;
@@ -907,6 +1037,12 @@ export default {
          * @function returnPath - 返回上一级页面
          */
         returnPath() {
+            this.$store.commit("tagNav/removeTagNav", {
+                name: this.$route.name,
+                path: this.$route.path,
+                title: this.$route.meta.title,
+                query: this.$route.query
+            })
             this.$router.push({
                 path: 'salesManagement'
             })

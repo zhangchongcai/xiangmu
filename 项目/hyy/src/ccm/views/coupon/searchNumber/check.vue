@@ -48,6 +48,12 @@ export default {
                     routerObj[`params`] = param;
                 }
             }
+            this.$store.commit("tagNav/removeTagNav", {
+                name: this.$route.name,
+                path: this.$route.path,
+                title: this.$route.meta.title,
+                query: this.$route.query
+            })
             this.$router.push(routerObj)
         },
         /**
@@ -78,7 +84,7 @@ export default {
                 }
 
                 if(item == 'applyCode') {
-                   obj[`isCheck`] = true;
+                   obj[`isCheck`] = false;
                 }
 
                 if(keysText[`${item}`]) {

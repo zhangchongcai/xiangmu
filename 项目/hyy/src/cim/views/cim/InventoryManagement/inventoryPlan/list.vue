@@ -1,5 +1,6 @@
 <template>
   <div>
+    <!-- {{ this.queryData}} -->
     <div class="common-header">
       <el-form
         :inline="true"
@@ -8,12 +9,18 @@
         label-width="100px"
         label-suffix=":"
       >
-        <el-form-item label="登记门店" class="select-input">
-          <el-input v-model="queryData.cinemaUid" placeholder="请选择门店"></el-input>
-          <el-button @click="selectCinemalDialog">选择</el-button>
+        <el-form-item label="门店名称" class="select-input">
+            <el-input
+                    v-model="queryData.cinemaName"
+                    clearable
+                    @clear="onCinemalSumit"
+                    @focus="selectCinemalDialog"
+                    placeholder="请选择门店"
+            ></el-input>
+            <el-button @click="selectCinemalDialog" type="primary cinemaSel-btn" plain>选择</el-button>
         </el-form-item>
         <el-form-item class="query-btn-box">
-          <el-button type="primary" @click="onQuery()">查询</el-button>
+          <el-button type="primary query-btn" @click="onQuery()">查询</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -22,7 +29,7 @@
         <el-button type="primary" size="small" plain @click="addinvent()">新建</el-button>
       </div>
       <div>
-        <el-table :data="tableData" stripe>
+        <el-table :data="tableData" stripe :height="this.defaultTableHeight">
           <el-table-column
             v-for="item in tableColumn"
             :key="item.key"
@@ -33,7 +40,7 @@
           <el-table-column label="操作" style="width:180px;">
             <template slot-scope="{row}">
               <el-button type="text" size="small" @click.stop="handleOperateEvent('1', row)">查看</el-button>
-              <el-button type="text" size="small" @click.stop="handleOperateEvent('2', row)">修改</el-button>
+              <el-button type="text" size="small" @click.stop="handleOperateEvent('2', row)">编辑</el-button>
               <el-button type="text" size="small" @click.stop="handleOperateEvent('4', row)">删除</el-button>
             </template>
           </el-table-column>
@@ -44,7 +51,7 @@
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
             :current-page="queryData.page"
-            :page-sizes="[10,20,30]"
+            :page-sizes="this.pageSizes"
             :page-size="queryData.pageSize"
             layout="total, sizes, prev, pager, next, jumper"
             :total="this.total"
@@ -53,7 +60,7 @@
       </div>
     </div>
     <!-- 选择影院弹窗 -->
-    <cinemal-dialog ref="myCinemalDialog"></cinemal-dialog>
+    <cinemal-dialog ref="myCinemalDialog" @onSumit="onCinemalSumit" :dialogFeedbackData="[{cinemaUid:queryData.cinemaUid,cinemaName:queryData.cinemaName}]"></cinemal-dialog>
     <!-- 选择供应商弹窗 -->
     <suppliers-dialog ref="mySuppliersDialog"></suppliers-dialog>
 
@@ -65,23 +72,27 @@ import qs from "qs";
 import mixin from "cim/mixins/cim/paginationConfig.js";
 import cinemalDialog from "cim/components/cinemalDialog/cinemaDialog.vue";
 import suppliersDialog from "cim/dialogs/cimSelectedGoods/index.vue";
+import mixins from "frame_cpm/mixins/cacheMixin";
 export default {
-  mixins: [mixin],
+  mixins: [mixin,mixins.cacheMixin],
   data() {
     return {
+      cacheField:["queryData"],
+      returnType:false,
       list:{},
       //查询数据
       queryData: {
-        cinemaUid:"111111",
-        pageSize: 10,
+        cinemaName:"",
+        cinemaUid:"",
+        pageSize: 15,
         page: 1
       },
       total: 0,
       // 表格表头
       tableColumn: [
         {
-          label: "门店",
-          key: "cinemaUid"
+          label: "门店名称",
+          key: "cinemaName"
         },
         {
           label: "方案名称",
@@ -93,13 +104,7 @@ export default {
         }
       ],
       // 表格数据
-      tableData: [
-        {
-          supplierCode: "CG201904010001",
-          supplierName: "中影德金影城客村丽影店",
-          areaName: "美联经营部"
-        }
-      ],
+      tableData: [],
     };
   },
   mounted() {
@@ -108,11 +113,27 @@ export default {
   methods: {
     // 初始化
     init() {
-      this.goodsDataQueryGoodsList()
+      this.queryData.pageSize = this.pageSize
+      this.$nextTick(() => {
+        this.returnType = this.$route.query.returnType
+        if(this.returnType === true){
+          this.queryData.cinemaUid = JSON.parse(this.$route.query.cinema).cinemaUid
+          this.queryData.cinemaName = JSON.parse(this.$route.query.cinema).cinemaName
+        }
+        if(this.queryData.cinemaUid == "" || this.queryData.cinemaUid == null){
+        }else{
+          this.goodsDataQueryGoodsList()
+        }
+      })
+      
     },
     // 查询
     onQuery() {
-      this.goodsDataQueryGoodsList()
+      if(this.queryData.cinemaUid == "" || this.queryData.cinemaUid == null){
+        this.$message("请选择门店");
+      }else{
+        this.goodsDataQueryGoodsList()
+      }
       console.log(this.queryData);
     },
     // 新建按钮
@@ -152,7 +173,16 @@ export default {
     },
     // 删除操作
     handleeDlete(row) {
-      this.resCheckSolutionDelete(row)
+      this.$confirm("确认删除吗, 是否继续?", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+      })
+      .then(() => {
+        this.resCheckSolutionDelete(row)
+      })
+      .catch(() => {});
+      
     },
     // 新增操作
     addinvent(row){
@@ -163,11 +193,22 @@ export default {
     },
     // 查看操作
     seetable(row){
-      this.resCheckSolutionToPage(row.uid,"3")
+      this.resCheckSolutionToPage(row,"3")
     },
     // 修改操作
     eaittable(row){
-      this.resCheckSolutionToPage(row.uid,"2")
+      this.resCheckSolutionToPage(row,"2")
+    },
+    // 选泽门店回调
+    onCinemalSumit(val = []) {
+      if (val.length > 0) {
+        this.queryData.cinemaName = val[0].name;
+        this.queryData.cinemaUid = val[0].uid;
+      } else {
+        this.queryData.cinemaName = null;
+        this.queryData.cinemaUid = null;
+      }
+      console.log(val);
     },
     selectCinemalDialog() {
       this.$refs.myCinemalDialog.handleDialog(true);
@@ -188,7 +229,7 @@ export default {
     // 盘点方案查询请求
     goodsDataQueryGoodsList(){
       let val = {
-        cinemaUid:"111111",
+        cinemaUid:this.queryData.cinemaUid,
         page:"1",
         pageSize:"10"
       }
@@ -199,7 +240,6 @@ export default {
             this.tableData = res.data.list
             this.total = res.data.total
           } else {
-            this.error(res.msg);
             this.$message(res.msg);
           }
         })
@@ -226,7 +266,7 @@ export default {
     // // 跳转修改页面/取消修改/查询盘点方案商品清单
     resCheckSolutionToPage(row,type){
       let val = {
-        uid:row
+        uid:row.uid
       }
       this.$cimList.inventoryPlan
         .checkSolutionToPage(val)

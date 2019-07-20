@@ -1,36 +1,39 @@
 <template>
-  <div>
+  <div class="purchase-note-list">
     <div class="common-header">
       <el-form
         :inline="true"
         :model="queryData"
         label-position="right"
-        label-width="100px"
-        label-suffix=":"
+        label-width="80px"
+        label-suffix="："
       >
         <el-form-item label="采购单号">
-          <el-input v-model="queryData.billCode" placeholder="请输内容" prefix-icon="el-icon-search"></el-input>
+          <el-input v-model="queryData.billCode" placeholder="请输内容"></el-input>
         </el-form-item>
         <el-form-item label="采购门店" class="select-input">
-          <el-input
-            v-model="queryData.cinemaName"
-            clearable
-            @clear="onCinemalSumit()"
-            placeholder="请选择门店"
-          ></el-input>
-          <el-button @click="selectCinemalDialog">选择</el-button>
+            <el-input
+                    v-model="queryData.cinemaName"
+                    clearable
+                    @clear="onCinemalSumit"
+                    @focus="selectCinemalDialog"
+                    placeholder="请选择门店"
+            ></el-input>
+            <el-button @click="selectCinemalDialog" type="primary" plain>{{queryData.cinemaName?"编辑":"选择"}}</el-button>
         </el-form-item>
-        <el-form-item label="供应商名称" class="select-input">
-          <el-input v-model="queryData.supName" clearable placeholder="请选择供应商"></el-input>
-          <el-button @click="selectSuppliersDialog">选择</el-button>
+        <el-form-item label="供应商名称" class="select-input" label-width="90px">
+            <el-input v-model="queryData.supName" clearable placeholder="请选择供应商"
+                      @clear="onSupplierSumit"
+                      @focus="selectSuppliersDialog"></el-input>
+            <el-button @click="selectSuppliersDialog" type="primary" plain>{{queryData.supName?"编辑":"选择"}}</el-button>
         </el-form-item>
         <el-form-item label="制单日期">
           <el-date-picker
             class="basic-input"
             v-model="queryData.billTimeTotal"
-            type="daterange"
-            format="yyyy-MM-dd"
-            value-format="yyyy-MM-dd"
+            type="datetimerange"
+            format="yyyy-MM-dd HH:mm"
+            value-format="yyyy-MM-dd HH:mm"
             placeholder="选择日期"
           ></el-date-picker>
         </el-form-item>
@@ -53,18 +56,16 @@
             <!-- <el-option label="无需审核" value="4"></el-option> -->
           </el-select>
         </el-form-item>
-        <el-form-item class="query-btn-box">
-          <el-button type="primary" @click="onQuery()">查询</el-button>
-        </el-form-item>
+        <el-button  class="query-btn" type="primary" @click="onQuery()">查询</el-button>
       </el-form>
     </div>
     <div>
       <div class="common-new-built">
-        <el-button type="primary" size="small" plain @click="handleNewPurchaseNote">新建</el-button>
+        <el-button type="primary" size="small" plain @click="handleNewBuilt">新建</el-button>
         <!-- <el-button type="primary" size="small" plain>批量导出</el-button> -->
       </div>
       <div>
-        <el-table :data="tableData" stripe>
+        <el-table :data="tableData" stripe  v-loading="tableLoding">
           <el-table-column
             v-for="item in tableColumn"
             :key="item.key"
@@ -75,13 +76,25 @@
           <el-table-column label="操作" style="width:180px;">
             <template slot-scope="{row}">
               <el-button type="text" size="small" @click.stop="handleOperateEvent('1', row)">查看</el-button>
-              <el-button type="text" size="small" @click.stop="handleOperateEvent('2', row)">修改</el-button>
+              <!--"审核状态", //,0：未审核，1：待审核，2：审核通过，3：审核不通过，4：无需审核'-->
               <el-button
                 type="text"
                 size="small"
+                v-if="row.approvalStatus==0 || row.approvalStatus==3"
+                @click.stop="handleOperateEvent('2', row)"
+              >编辑</el-button>
+              <el-button
+                type="text"
+                size="small"
+                v-if="row.approvalStatus==0 || row.approvalStatus==3"
                 @click.stop="handleOperateEvent('3', row)"
-              >{{row.canSaleType == 1 ? "启用":"停用"}}</el-button>
-              <el-button type="text" size="small" @click.stop="handleOperateEvent('4', row)">删除</el-button>
+              >提交</el-button>
+              <el-button
+                type="text"
+                size="small"
+                v-if="row.approvalStatus==0 || row.approvalStatus==3"
+                @click.stop="handleOperateEvent('4', row)"
+              >删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -90,9 +103,9 @@
             background
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
-            :current-page="queryData.page"
+            :current-page.sync="queryData.page"
             :page-sizes="[10,20,30]"
-            :page-size="queryData.pageSize"
+            :page-size.sync="queryData.pageSize"
             layout="total, sizes, prev, pager, next, jumper"
             :total="total"
           ></el-pagination>
@@ -100,21 +113,22 @@
       </div>
     </div>
     <!-- 选择影院弹窗 -->
-    <cinemal-dialog ref="myCinemalDialog" @onSumit="onCinemalSumit"></cinemal-dialog>
+    <cinemal-dialog ref="myCinemalDialog" @onSumit="onCinemalSumit" :dialogFeedbackData="[{cinemaUid:queryData.cinemaUid,cinemaName:queryData.cinemaName}]"></cinemal-dialog>
     <!-- 选择供应商弹窗 -->
     <suppliers-dialog ref="mySuppliersDialog" @onSumit="onSupplierSumit"></suppliers-dialog>
   </div>
 </template>
 
 <script>
-import qs from "qs";
 import mixin from "cim/mixins/cim/paginationConfig.js";
 import cinemalDialog from "cim/components/cinemalDialog/cinemaDialog.vue";
 import suppliersDialog from "cim/components/suppliersDialog/suppliersDialog.vue";
+import mixins from "frame_cpm/mixins/cacheMixin";
 export default {
-  mixins: [mixin],
+  mixins: [mixin,mixins.cacheMixin],
   data() {
     return {
+      cacheField:["queryData"],
       //查询数据
       queryData: {
         billCode: "", //采购单号
@@ -124,6 +138,9 @@ export default {
         billTimeTotal: [],
         beginTime: "", //制单开始时间
         endTime: "", //制单结束时间
+        status: "", //单据状态
+        conditions: [], //单据状态
+        approvalStatus: "", //审核状态
         page: 1,
         pageSize: 10
       },
@@ -199,7 +216,8 @@ export default {
         }
       ],
       // 表格数据
-      tableData: []
+      tableData: [],
+      tableLoding: false,
     };
   },
   mounted() {
@@ -209,6 +227,7 @@ export default {
     // 初始化
     init() {
       this.onQuery();
+      this.$store.commit('getLevel',this.$route.meta.title)
     },
     // 查询
     onQuery() {
@@ -220,19 +239,26 @@ export default {
         this.queryData.beginTime = "";
         this.queryData.endTime = "";
       }
+      if(this.queryData.status){
+        this.queryData.conditions = [this.queryData.status-0];
+      }
       this.getPurchaseList(this.queryData);
     },
     // 查询
     getPurchaseList(param) {
+      this.tableLoding = true;
       this.$cimList.procurement.purchaseList(param).then(resData => {
         if (resData.code == 200) {
           this.tableData = resData.data.list;
           this.total = resData.data.total;
         }
+        this.tableLoding = false;
+      }) .catch(() => {
+        this.tableLoding = false;
       });
     },
     // 新建
-    handleNewPurchaseNote() {
+    handleNewBuilt() {
       console.log("新建");
       this.jumpPage({
         type: "1"
@@ -240,8 +266,8 @@ export default {
     },
     jumpPage(param = {}) {
       this.$router.push({
-        path: "common",
-        query: param
+        path: "/retail/procurement/purchaseNote/common",
+        query: param,
       });
     },
 
@@ -256,22 +282,73 @@ export default {
           break;
         case "2":
           //编辑
-
+          this.jumpPage({
+            type: "2",
+            data: JSON.stringify(row)
+          });
           break;
         case "3":
-          //启停
+          //提交
+          this.purchaseSubmit({ billCode: row.billCode, isReview: 1 });
           break;
         case "4":
           //删除
-          this.handleeDlete(row);
+          this.$confirm("<i class='el-icon-circle-close'></i><span>确定删除吗?</span>", {
+            customClass: "retail-style",
+            dangerouslyUseHTMLString: true,
+            cancelButtonText: "取消",
+            confirmButtonText: "确定",
+            center: true,
+          })
+            .then(() => {
+              //删除
+              this.handleeDlete({ billCode: row.billCode });
+            })
+            .catch(() => {});
           break;
       }
     },
     // 删除操作
-    handleeDlete(row) {
-      this.$api
-        .delStorehouse(row.id)
-        .then(data => {})
+    handleeDlete(param) {
+      console.log(param);
+      this.$cimList.procurement
+        .purchaseDelete(param)
+        .then(resData => {
+          if (resData.code == 200) {
+            this.$message({
+              type: "success",
+              message: "删除成功!"
+            });
+            this.onQuery();
+          } else {
+            this.$message({
+              type: "error",
+              message: resData.msg
+            });
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+    // 提交操作
+    purchaseSubmit(param) {
+      this.$cimList.procurement
+        .purchaseSubmit(param)
+        .then(resData => {
+          if (resData.code == 200) {
+            this.$message({
+              type: "success",
+              message: "提交成功!"
+            });
+            this.onQuery();
+          } else {
+            this.$message({
+              type: "error",
+              message: resData.msg
+            });
+          }
+        })
         .catch(err => {
           console.log(err);
         });
@@ -284,19 +361,19 @@ export default {
     },
     handleSizeChange(val) {
       this.queryData.pageSize = val;
-      this.goodsDataQueryGoodsList();
+      this.getPurchaseList(this.queryData);
       console.log(`每页 ${val} 条`);
     },
     handleCurrentChange(val) {
       this.queryData.page = val;
-      this.goodsDataQueryGoodsList();
+      this.getPurchaseList(this.queryData);
       console.log(`当前页: ${val}`);
     },
     // 选泽门店回调
     onCinemalSumit(val = []) {
       if (val.length > 0) {
-        this.queryData.cinemaName = val[0].name;
-        this.queryData.cinemaUid = val[0].cinemaUid;
+        this.queryData.cinemaName =  val[0].cinemaName || val[0].name ;
+        this.queryData.cinemaUid =  val[0].cinemaUid || val[0].uid;
       } else {
         this.queryData.cinemaName = "";
         this.queryData.cinemaUid = "";
@@ -325,25 +402,7 @@ export default {
 <style lang="scss">
 @import "../../../../assets/css/common.scss";
 @import "../../../../assets/css/element-common.scss";
+.purchase-note-list{
 
-.select-input {
-  .el-input {
-    width: 70%;
-  }
-}
-
-.newPro-box {
-  .title {
-    margin: 10px 0;
-    font-size: 16px;
-  }
-  .selectName {
-    font-size: 16px;
-    margin: 10px 0;
-  }
-  .newProTree {
-    height: 330px;
-    overflow: auto;
-  }
 }
 </style>

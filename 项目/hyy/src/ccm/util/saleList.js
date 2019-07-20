@@ -9,13 +9,14 @@ module.exports = {
         unPackageForm: function(param, pointer) {
             // 需将string simpleRuleGroupStr转换成 json格式
             param.simpleRuleGroupStr = JSON.parse(param.simpleRuleGroupStr);
-
+            console.log(param)
             let ruleGroup = param.simpleRuleGroupStr;
+            console.log("ruleGroup",ruleGroup)
             let model = JSON.parse(JSON.stringify(pointer.model)),
                 form = JSON.parse(JSON.stringify(pointer.form)),
                 moneyInfo = form[`moneyInfo`],
                 couponType = param[`couponType`];
-
+                
             let _baseInfo = [{
                     from: 'simpleRuleGroupStr',
                     to: 'baseInfo',
@@ -93,30 +94,58 @@ module.exports = {
                             model[`${name}`] = itemVal;
                         } else {
                             form[`${to}`][`${name}`].value = itemVal;
+                            // console.log(name, form[`${to}`][`${name}`])
                         }
                     }
                 } else if (from == 'simpleRuleGroupStr') {
                     let itemVal = param.simpleRuleGroupStr[`${name}`];
                     if (itemVal) {
                         form[`${to}`][`${name}`].value = itemVal;
+                        console.log(name, form[`${to}`][`${name}`])
                     }
                 }
             });
-
+            // console.log(model)
+            //票券编号(转字符串) couponGeneration
+            form.baseInfo.couponGeneration.value = param[`couponGeneration`] + ""
             // 票券分类 couponTypeId
-
+            form.baseInfo.couponTypeName = param['couponTypeName']
             // 入账影院 incomeCinemaId
+            form.baseInfo.incomeCinemaId.value = param[`incomeCinemaId`]
+            form.baseInfo.incomeCinemaId.text = param[`incomeCinemaName`]
 
             // 客户名称 custId
+            form.baseInfo.custId.value = param[`custId`]
+            form.baseInfo.custId.text = param[`custName`]
 
-            // 外部导入票券文件 importFile
+            // 外部导入票券文件 importFileName
 
             // 合同协议附件 attatchFile
-
+            if(param.attachFileName){
+                form.baseInfo['attachFileName'] = param.attachFileName
+                pointer.form.baseInfo['attatchFile'].list = []
+                // pointer.$nextTick(_=>{
+                //     pointer.$refs[`attatchFile`].abort();
+                // })
+            }
             // commonInfo
             form.commonInfo = this.unPackageCommonInfo(ruleGroup.commonInfo, pointer);
-            // 有效日期
-            form.commonInfo.validDate.value = [new Date(ruleGroup.validDateStart), new Date(ruleGroup.validDateEnd)];
+            // 有效日期 validType  0是默认模式  1是动态模式
+            form.commonInfo.validType.value = param.validType
+            // console.log('回显模式----', param.validType)
+            if(param.validType == 0){
+                form.commonInfo.validDate.value = [new Date(ruleGroup.validDateStart), new Date(ruleGroup.validDateEnd)];
+            }else if (param.validType == 1) {
+                // console.log('回显日期模式----', param.validGenType)
+                // console.log('回显日期值----', param.validGenValue)
+                //validGenType 1日 2月 3年
+                if(param.validGenType==1) {
+                    form.commonInfo.validGenType.value = `1`
+                    form.commonInfo.validGenValue.value = param.validGenValue
+                } else {
+                    form.commonInfo.validGenType.value = `${param.validGenType}-${param.validGenValue}`
+                }
+            }
 
             // rule
             // 代金券
@@ -154,6 +183,7 @@ module.exports = {
 
                 // 抵用金额
                 let cashValueVal = actionsKey[`cashValue`];
+                console.log('抵用金额---------',cashValueVal)
                 if (cashValueVal) {
                     moneyInfo[`voucherValue`].value = cashValueVal.value;
                 }
@@ -231,9 +261,13 @@ module.exports = {
 
             // 星期范围
             let validWeekVal = keysObj[`validWeek`];
+            
             if (validWeekVal) {
                 commonInfo[`ruleValidWeek`].value = validWeekVal.opUniqueName;
-                commonInfo[`week`].value = validWeekVal.value.split(',');
+                if(validWeekVal.value){
+                    commonInfo[`week`].value = validWeekVal.value.split(',');
+                }
+                
             }
 
             // 时段范围
@@ -269,11 +303,12 @@ module.exports = {
                 commonInfo[`cinemarangev`].text = cinemaCodeVal.text;
             }
 
-            // 消费渠道
+            // 交易渠道
             let consumeWayCodeVal = keysObj[`consumeWayCode`];
             if (consumeWayCodeVal) {
                 commonInfo[`consumeWayCode`].value = consumeWayCodeVal.opUniqueName;
-                commonInfo[`consumeWayCodeOp`].value = consumeWayCodeVal.value.split(',');
+                commonInfo[`consumeWayCodeOp`].value = consumeWayCodeVal.value;
+                commonInfo[`consumeWayCodeOp`].text = consumeWayCodeVal.text;
             }
 
             // 消费者身份
@@ -282,9 +317,9 @@ module.exports = {
                 let opUniqueName = consumerTypeKey.opUniqueName;
                 commonInfo[`consumerTypeKey`].value = opUniqueName;
                 // 指定会员等级
-                if (opUniqueName == 'opUniqueName') {
+                if (opUniqueName == 'normalIn') {
                     commonInfo[`consumerType`].value = consumerTypeKey.value;
-                    // commonInfo[`consumerType`].text = consumerTypeKey.text;
+                    commonInfo[`consumerType`].text = consumerTypeKey.text;
                 }
             }
 
@@ -379,53 +414,89 @@ module.exports = {
                 }
 
                 // 放映时段范围
-                let validTime = ruleCondtionObj[`validTime`];
-                if (validTime) {
-                    let opUniqueName = validTime.opUniqueName;
+                // let validTime = ruleCondtionObj[`validTime`];
+                console.log("form", form)
+                console.log("ruleCondtionObj", ruleCondtionObj)
+                    // console.log("validTime", validTime)
+                let filmPlanTimeRange = ruleCondtionObj[`filmPlanTimeRange`];
+                if (filmPlanTimeRange) {
+
+                    let opUniqueName = filmPlanTimeRange.opUniqueName;
                     form[`filmPlanTimeRange`] = opUniqueName;
-                    // 指定时段
+                    console.log("opUniqueName", opUniqueName)
+                        // 指定时段
                     if (opUniqueName == 'TimeRangeContainOperator') {
-                        let timeArr = JSON.parse(validTime.value);
+                        let timeArr = JSON.parse(filmPlanTimeRange.value);
+                        console.log("timeArr", timeArr)
                         let _timeArr = [];
                         for (let i = 0; i < timeArr.length; i++) {
                             let item = timeArr[i];
                             _timeArr.push({
-                                value: [new Date(item[0]), new Date(item[1])]
+                                value: [item[0], item[1]]
+                                    // value: [new Date(item[0]), new Date(item[1])]
                             });
+                            console.log("_timeArr", _timeArr)
                         }
                         form[`filmPlanTimeRange_more`] = _timeArr;
                     }
                 }
 
                 // 影片效果
-                let filmsEfectArr = [{
-                    key: 'showEffect',
-                    opVal: 'showEffectOp',
-                    toVal: 'showEffectCode'
-                }, {
-                    key: 'uniformCode',
-                    opVal: 'movieNameOp',
-                    toVal: 'uniformCode'
-                }, {
-                    key: 'filmTypeKey',
-                    opVal: 'filmTypeNameOp',
-                    toVal: 'filmTypeKey'
-                }, {
-                    key: 'hallTypeKey',
-                    opVal: 'hallTypeNameOp',
-                    toVal: 'hallTypeKey'
-                }];
+                let filmsEfectArr = [
+                    //影片效果showEffectOp
+                    {
+                        key: 'showEffect',
+                        opVal: 'showEffectOp',
+                        toVal: 'showEffectCode'
+                    },
+                    //影片名称movieNameOp
+                    {
+                        key: 'uniformCode',
+                        opVal: 'movieNameOp',
+                        toVal: 'uniformCode'
+                    },
+                    //影片类型filmTypeNameOp
+                    {
+                        key: 'filmTypeKey',
+                        opVal: 'filmTypeNameOp',
+                        toVal: 'filmTypeKey'
+                    },
+                    //影厅类型hallTypeNameOp
+                    {
+                        key: 'hallTypeKey',
+                        opVal: 'hallTypeNameOp',
+                        toVal: 'hallTypeKey'
+                    }
+                ];
                 for (let i = 0; i < filmsEfectArr.length; i++) {
                     let item = filmsEfectArr[i];
                     let formItem = ruleCondtionObj[`${item.key}`];
                     if (formItem) {
-                        form[`${item.key}`] = formItem.opUniqueName;
-                        form[`${item.opVal}`] = {
-                            value: formItem.value,
-                            text: formItem.text
-                        }
+                        console.log("formItem.opUniqueName", formItem.opUniqueName)
+                        console.log("formItem", formItem)
+                        console.log("${item.key}", item.key)
+                        console.log("${item.opVal", item.opVal);
+                        // form[`${item.key}`] = formItem.opUniqueName;
+                        // form[`${item.opVal}`] = {
+                        //     value: formItem.value,
+                        //     text: formItem.text
+                        // }
+                        form[`${item.opVal}`] = formItem.opUniqueName;
+                        form[`${item.toVal}`].value = formItem.value;
+                        form[`${item.toVal}`].text = formItem.text;
+
+                        console.log("form[`${item.opVal}`]", form[`${item.opVal}`])
                     }
                 };
+
+
+                //影片效果
+
+                //影片名称
+                //影片类型
+                //影厅类型
+
+
             } else if (type == 'goods') {
                 // 商品名称
                 let merKey = ruleCondtionObj[`merKey`];
@@ -437,6 +508,7 @@ module.exports = {
                         // 商品选项
                     form[`productType`] = '0';
                 }
+                // console.log('商品名称unpacka',form)
 
                 // 商品类别
                 let classCode = ruleCondtionObj[`classCode`];
@@ -498,17 +570,26 @@ module.exports = {
                 let moneyMethodVal = moneyMethod.value
                     // 加价金额
                 if (moneyMethodVal == 'sale_price') {
+                    form[`moneyMethod`] = 'sale_price'
                     form[`addPriceValue`] = actionsObj[`addPriceValue`].value;
                 }
 
                 if (moneyMethodVal == 'fix_price') {
-                    // 抵用金额
+                    form[`moneyMethod`] = 'fix_price'
+                        // 抵用金额
                     form[`fixPriceValue`] = actionsObj[`fixPriceValue`].value;
                     // 抵用金额
                     let payerVal = actionsObj[`payer`].value
                     form[`payer`] = payerVal;
+                    // console.log('actionsObj[`payerPayAmount`]',actionsObj[`payerPayAmount`])
                     if (payerVal == 'cinema') {
                         form[`payerPayAmount`] = actionsObj[`payerPayAmount`].value;
+                    }else if (payerVal == 'client'){
+                        if(actionsObj[`payerPayAmount`]){
+                            form[`payerPayAmount`] = actionsObj[`payerPayAmount`].value;
+                        }else{
+                            form[`payer`] = 'clientAll'
+                        }
                     }
                 }
             }
@@ -528,11 +609,14 @@ module.exports = {
             }
 
             if (isTableReturn) {
+                // console.log("pointer.addConfig", pointer.addConfig)
                 return form;
             } else {
                 pointer.addConfig.form = form;
                 pointer.addConfig.type = type;
                 pointer.addConfig.isShow = true;
+                // console.log("pointer.addConfig.form", pointer.addConfig.form)
+                // console.log("pointer.addConfig", pointer.addConfig)
             }
         },
         /**
@@ -604,6 +688,7 @@ module.exports = {
             let keysArr = Object.keys(familyIdsObj);
             keysArr.forEach(item => {
                 let ruleConditionsActionsObj = familyIdsObj[`${item}`];
+                console.log("ruleConditionsActionsObj", ruleConditionsActionsObj)
 
 
                 let ruleConditions = ruleConditionsActionsObj.ruleConditions;
@@ -615,8 +700,12 @@ module.exports = {
                         type = item.value == '0' ? 'films' : 'goods';
                     }
                 });
+                console.log("pointer.addConfig", pointer.addConfig)
+                console.log("pointer.addConfig.modelType", modelType)
+                console.log("pointer.addConfig.modelTypetype.", type)
+                let form = JSON.parse(JSON.stringify(pointer.addConfig.options[`${modelType}_${type}`]))  
 
-                let form = JSON.parse(JSON.stringify(pointer.addConfig.options[`${modelType}_${type}`]));
+                // this.addConfig.options.exchange_goods.merName.text
 
                 // 拆解数据用于显示
                 let _form = this.unPackageAddForm(form, ruleConditionsActionsObj, type, true, pointer);
@@ -672,7 +761,7 @@ module.exports = {
             priceRange,
             priceModifyMethod: `${_text} ${form[`priceModifyValue`]} ${_unit}`
         };
-
+        console.log('push的数据',tableData)        
         pointer.tableConfig.data.push(tableData);
     }
 }

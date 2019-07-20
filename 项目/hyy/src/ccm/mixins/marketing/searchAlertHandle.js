@@ -1,6 +1,8 @@
 // 支付方式
 import payType from 'csm/components/payType/PayType.vue';
-
+// import cinemaSingle from 'ccm/dialogs/cinema'
+import cinemaTreeDialog from 'ccm/dialogs/treeCinema'
+import tradeMerchantSingle from 'ccm/dialogs/tradeMerchantSingle'
 
 /**
  * @mixin alertHandle - 注册弹窗，处理弹窗回调
@@ -8,12 +10,16 @@ import payType from 'csm/components/payType/PayType.vue';
  */
 let alertHandle = {
     components: {
-        payType
+        payType,
+        cinemaTreeDialog,
+        tradeMerchantSingle
     },
     data() {
         return {
             altertKeysFn: {
                 payType: 'payTypeClick',
+                cinemaSingle:'cinemaClick',
+                tradeMerchantSingle:'tradeMerchantSingleClick'
             }
         }
     },
@@ -54,111 +60,55 @@ let alertHandle = {
      */
     methods: {
         /**
-         *  @function tradingMerchantClick - 选择交易商户
-         */
-        tradingMerchantClick() {
-
-        },
-        /**
          * @function handleMerchant - 交易商户回调处理函数
          */
         handleMerchant(data) {
             console.log(data);
         },
-        /** 
-         * @function consumerIdentityClick - 选择消费者身份
+        /**
+         * @function cinemaSingleDialog - 交易商户回调处理函数
          */
-        consumerIdentityClick() {
+        cinemaSingleDialog(data) {
 
         },
         /**
-         * @function handleConsumerIdentity - 消费者身份回调处理函数
+         * @function cinemaClick - 选择影院点击函数
          */
-        handleConsumerIdentity(data) {
-            console.log(data);
+        cinemaClick(alertCompontsName) {
+            console.log(alertCompontsName)
+            this.$refs[alertCompontsName].openDialog(true)
         },
         /**
-         *  @function projectionEffectClick - 选择放映效果
+         * @function cinemaSingleDialog - 选择影院回调处理函数
          */
-        projectionEffectClick() {},
-        /**
-         * @function handleProjectionEffect - 放映效果回调处理函数
-         */
-        handleProjectionEffect(data) {
-            console.log(data);
+        cinemaSingleCallBack(data) {
+            // console.log(back.data)
+            // let {data} = back
+            let currentInputName = this.currentInputName
+            this.baseConfig.form[currentInputName].text = data.text
+            this.baseConfig.form[currentInputName].value = data.id
         },
         /**
-         * @function studioTypeClick - 选择影厅类型
+         * @function tradeMerchantSingleClick - 选择影院点击函数
          */
-        studioTypeClick() {},
-        /**
-         * @function handleStudioType - 影厅类型回调处理函数
-         */
-        handleStudioType(data) {
-            console.log(data);
+        tradeMerchantSingleClick(alertCompontsName) {
+            this.$refs[alertCompontsName].openDialog(true)
         },
         /**
-         * @function filmClick - 选择影片
+         * @function tradeMerchantSingleCallBack - 选择客商回调处理函数
          */
-        filmClick() {},
-        /**
-         * @function 
-         */
-        handleFilm(data) {
-            console.log(data);
+        tradeMerchantSingleCallBack(data) {
+            let currentInputName = this.currentInputName
+            // this.baseConfig.system.forEach(element => {
+            //     if(element[currentInputName] == currentInputName){
+            //         element.text = data.data.name
+            //         element.value = data.data.id
+            //     }
+            // });
+            this.baseConfig.form[currentInputName].text = data.name
+            this.baseConfig.form[currentInputName].value = data.id
         },
-        /**
-         * @function filmTypeClick - 选择影片类型
-         */
-        filmTypeClick() {},
-        /**
-         * @function handleFilmType - 影片类型回调处理函数
-         */
-        handleFilmType() {},
-        /**
-         * @function tradeNameClick - 选择商品名称
-         */
-        tradeNameClick() {
-
-        },
-        /**
-         * @function handleTradeName - 商品名称回调处理函数
-         */
-        handleTradeName(data) {
-            console.log(data);
-        },
-        /**
-         * @function goodsClick - 选择商品
-         */
-        goodsClick() {},
-        /**
-         * @function handleGoods - 商品回调处理函数
-         */
-        handleGoods(data) {
-            console.log(data);
-        },
-        /**
-         * @function membershipLevelClick - 选择会员等级
-         */
-        membershipLevelClick() {},
-        /**
-         * @function handleMembershipLevel - 会员等级回调处理函数
-         */
-        handleMembershipLevel() {
-
-        },
-        /**
-         * @function payTypeClick - 支付方式
-         */
-        payTypeClick() {
-            this.$refs.payType.handleDialogVisible(true);
-        },
-        /**
-         * @function handlePayTypeBack - 支付方式回调处理函数
-         */
-        handlePayTypeBack(data) {
-            console.log(data);
-        },
+       
     }
 };
 

@@ -66,7 +66,7 @@ export default {
                 isShowLevel: false,
                 elements: [
                 // {
-                //     keyName: 'applicableChannel',
+                //     keyName: 'channelCodes',
                 //     name: '适用渠道',
                 //     type: 'input',
                 //     value: {
@@ -161,7 +161,7 @@ export default {
                 data: [],
                 title: [
                     {
-                        prop: 'qq',
+                        prop: 'channelNames',
                         label: '适用渠道',
                         width: '200px'
                     },
@@ -170,7 +170,7 @@ export default {
                         label: '票券销售单号',
                         width: '200px'
                     }, {
-                        prop: 'incomeCinemaName',
+                        prop: 'cinemaNames',
                         label: '适用影院',
                         width: '200px'
                     }, {
@@ -200,8 +200,8 @@ export default {
                         label: '申请人',
                         width: '200px'
                     }, {
-                        prop: 'custId',
-                        label: '客户id',
+                        prop: 'custName',
+                        label: '客商',
                         width: '200px'
                     }, {
                         prop: 'incomeCinemaId',
@@ -242,7 +242,7 @@ export default {
             handler: function(newVal,oldVal) {
                 console.log(newVal)
                 // let param={
-                //     applicableChannel:this.incomeData.applicableChannel||"",
+                //     channelCodes:this.incomeData.channelCodes||"",
                 //     cinemaCodes:this.incomeData.cinemaCodes||"",
                 //     incomeCinemaName:this.incomeData.incomeCinemaName||"",
                 //     couponType:this.incomeData.couponType,
@@ -261,7 +261,7 @@ export default {
                 if(newVal.visible){
                     this.init()
                     this.param={
-                        applicableChannel:this.incomeData.applicableChannel||"",
+                        channelCodes:this.incomeData.channelCodes||"",
                         cinemaCodes:this.incomeData.cinemaCodes||"",
                         incomeCinemaName:this.incomeData.incomeCinemaName||"",
                         couponType:this.incomeData.couponType,
@@ -346,8 +346,8 @@ export default {
                 if (typeof itemVal == 'object' && item != 'validate') {
                     _param[`${item}`] = itemVal.value;
                 } else if (item == 'validate' && itemVal && itemVal.length != 0) {
-                    _param[`createTimeEnd`] = this.ruleTime(itemVal[1], 'ymd', '-');
-                    _param[`createTimeStart`] = this.ruleTime(itemVal[0], 'ymd', '-');
+                    _param[`validDateEnd`] = this.ruleTime(itemVal[1], 'ymd', '-');
+                    _param[`validDateStart`] = this.ruleTime(itemVal[0], 'ymd', '-');
                 } else {
                     _param[`${item}`] = itemVal;
                 }

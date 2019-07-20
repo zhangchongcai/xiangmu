@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="my_dialog">
-      <el-dialog title="商品" :visible.sync="dialigVisible" @close="closeDialog">
+      <el-dialog title="商品" :close-on-click-modal="false" :visible.sync="dialigVisible" @close="closeDialog">
         <el-form label-width :inline="true">
           <div style="position:relative">
             <el-form-item label="商品名称">

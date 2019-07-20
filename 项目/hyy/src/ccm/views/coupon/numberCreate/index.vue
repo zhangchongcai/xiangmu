@@ -28,21 +28,27 @@
 
 <script>
 import searchLan from '../../../components/search/index.vue';
-import config from '../../../http/config.js';
+import config from 'frame_cpm/http/config.js';
+import minxins from 'frame_cpm/mixins/cacheMixin.js';
+
 import {
     formatDate
 } from '../../../util/formatDate';
 import commonTable from '../../../components/Table/commonTable.vue';
+import Axios from 'axios';
 
 export default {
     components: {
         searchLan,
         commonTable
     },
+    mixins: [minxins.cacheMixin],
     data() {
         return {
+            /* 缓存数据 */
+            cacheField: ["searchConfig","tableData","pageConfig"],
+            baseURL:config.baseURL,
             modelName: 'numberCreate',
-            baseUrl: config.baseURL,
             searchConfig: [{
                 keyName: 'batchCode',
                 name: '批次号',
@@ -176,10 +182,11 @@ export default {
                     type = 'success';
                 }
 
-                pointer.$message({
-                    type,
-                    message
-                })
+                // pointer.$message({
+                //     type,
+                //     message,
+                //     duration:1000
+                // })
 
                 if (type == 'success') {
                     pointer.tableData = data.data;
@@ -236,16 +243,28 @@ export default {
          * @param {String} value
          */
         exportTicket(param) {
+            console.log('导出')
             let pointer = this;
             let type = "warning";
-            let url = this.baseUrl + "/coupon/prebuild/exportExcel?batchCode=" + param;
-            this.$http(url, {
+            let url = this.baseURL + "/coupon/prebuild/exportExcel?batchCode=" + param;
+            console.log(this.baseURL)
+            // let store = this.$stroe
+            let headers = {
+                // "Content-Type": "application/json;charset=UTF-8",
+                // Authorization: store.state.loginToken,
+                // timestamp: timestamp,
+                // sign: md5(store.state.loginToken + store.state.signKey + timestamp),
+                "Cpm-User-Token": localStorage.getItem("token")
+            };
+                // this.$ccmList.exportExcel({batchCode:param}).
+            this.axios(url, {
+                headers,
                 method: "get",
                 responseType: "blob"
             }).then(data => {
+                console.log(data)
                 let flag = data.headers.flag;
-                let message = '票券导出失败，请稍后尝试！';
-                let type = "warning";
+                let message =data.msg? data.msg : '票券导出失败，请稍后尝试！';
                 if (flag == '1') {
                     type = "success";
                     message = '票券导出成功！';
@@ -259,6 +278,10 @@ export default {
                     elink.click();
                     URL.revokeObjectURL(elink.href); // 释放URL 对象
                     document.body.removeChild(elink);
+                }else if(flag == '2'){
+                    message = '该批次导出次数超出系统限制,无法导出'
+                }else if(flag == '3'){
+                    message = '预生成批次不存在'
                 }
                 this.$message({
                     type,

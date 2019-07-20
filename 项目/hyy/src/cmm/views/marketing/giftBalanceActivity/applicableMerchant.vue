@@ -21,7 +21,7 @@
       <!-- 内容块 -->
       <el-table
         :data='dataList'
-        border
+        border   
         highlight-current-row
         v-loading="dataListLoading"
         style='width: 100%;'

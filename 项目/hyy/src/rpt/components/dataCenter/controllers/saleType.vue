@@ -1,6 +1,11 @@
 <template>
   <!-- 销售类型 -->
-  <el-select v-model="saleTypeValue" placeholder="请选择" @focus="getSaleType('POS_SALE_TYPE',4)">
+  <el-select
+    popper-class="rpt-select"
+    v-model="saleTypeValue"
+    placeholder="请选择"
+    @focus="getSaleType('POS_SALE_TYPE',4)"
+  >
     <el-option label="全部" value></el-option>
     <el-option
       v-for="(item,index) in options[4]"
@@ -12,9 +17,16 @@
 </template>
 
 <script>
+import mixins from "src/frame_cpm/mixins/cacheMixin.js";
 export default {
+  mixins: [mixins.cacheMixin],
+  props: {
+    resetStatus: Boolean
+  },
   data() {
     return {
+      cacheField: ["saleTypeValue"],
+      subComName: "saleType",
       saleTypeValue: "",
       options: [[]]
     };
@@ -34,6 +46,11 @@ export default {
     saleTypeValue(val) {
       console.log(this.options);
       this.$emit("selectSaleTypeData", this.saleTypeValue);
+    }
+  },
+  resetStatus(newVal) {
+    if (newVal) {
+      this.saleTypeValue = "";
     }
   }
 };

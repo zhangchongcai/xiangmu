@@ -1,65 +1,125 @@
 <template>
-<div>
+<div class="coupon-create">
     <el-form :model="form" label-width="150px" ref="form">
         <el-collapse v-model="activeNames">
             <el-collapse-item title="票劵基本资料" name="baseInfo">
-                <el-form-item label="票券名称:" prop="baseInfo.name.value" :rules="form.baseInfo.name.rules">
-                    <el-input v-model="form.baseInfo.name.value" class="input-type-217"></el-input>
+                <el-form-item label="票券名称:" 
+                prop="baseInfo.name.value" 
+                :rules="[{required:true,validator:checkName}]"
+                >
+                    <span v-if="model.type=='revise'" class="reviseName">{{form.baseInfo.name.value}}</span>
+                    <el-input v-else v-model="form.baseInfo.name.value" class="input-type-217"></el-input>
                 </el-form-item>
                 <el-form-item label="票券类型:" prop="baseInfo.couponType.value">
-                    <el-radio-group v-model="form.baseInfo.couponType.value" @change="resetcouponTypeId">
+                    <span v-if="model.type=='revise'&&form.baseInfo.couponType.value" class="reviseName">{{FormcouponType()}}</span>
+                    <el-radio-group v-model="form.baseInfo.couponType.value" @change="resetcouponTypeId" v-else>
                         <el-radio-button v-for="item in form.baseInfo.couponType.options" :key="item.value" :label="item.value">{{item.label}}</el-radio-button>
                     </el-radio-group>
                 </el-form-item>
                 <el-form-item label="票券分类:" prop="baseInfo.couponTypeId.value" :rules="form.baseInfo.couponTypeId.rules">
-                    <el-select v-model="form.baseInfo.couponTypeId.value" placeholder="请选择" @change="changeTicketType">
+                    <span v-if="model.type=='revise'&&form.baseInfo.couponTypeId.options.length" class="reviseName">{{form.baseInfo.couponTypeName}}</span>
+                    <el-select v-model="form.baseInfo.couponTypeId.value" placeholder="请选择" @change="changeTicketType" v-else>
                         <el-option v-for="item in form.baseInfo.couponTypeId.options" :key="item.value" :label="item.label" :value="item.value"></el-option>
                     </el-select>
+                </el-form-item> 
+                <el-form-item label="票券数量:" 
+                prop="baseInfo.couponCount.value" 
+                :rules="[{required:true,validator:checkCouponCount}]"
+                >
+                    <span v-if="model.type=='revise'" class="reviseName">{{form.baseInfo.couponCount.value}}</span>
+                    <div v-else>
+                        <el-input v-model="form.baseInfo.couponCount.value" 
+                        class="input-type-94"
+                        @change="couponCountChange"
+                        >
+                        </el-input> <span class="tips-font">(不大于100,000)</span>
+                    </div>
                 </el-form-item>
-                <el-form-item label="票券数量:" prop="baseInfo.couponCount.value" :rules="form.baseInfo.couponCount.rules">
-                    <el-input v-model="form.baseInfo.couponCount.value" class="input-type-94"></el-input> <span class="tips-font">(不大于100,000)</span>
-                </el-form-item>
-                <el-form-item label="销售单价:" prop="baseInfo.couponPrice.value" :rules="form.baseInfo.couponPrice.rules">
+                <el-form-item label="销售单价:" 
+                prop="baseInfo.couponPrice.value" 
+                :rules="[{required:true,validator:checkCouponPrice}]"
+                >
                     <el-input v-model="form.baseInfo.couponPrice.value" class="input-type-94"></el-input> 元
                 </el-form-item>
-                <el-form-item label="起售数量:" prop="baseInfo.startSaleNum.value" :rules="form.baseInfo.startSaleNum.rules">
-                    <el-input v-model="form.baseInfo.startSaleNum.value" class="input-type-94"></el-input>
+                <el-form-item label="起售数量:">
+                    <el-form-item
+                    prop="baseInfo.startSaleNum.value" 
+                    :rules="[{required:false,validator:checkStartSaleNum}]"
+                    >
+                        <el-input v-model="form.baseInfo.startSaleNum.value" class="input-type-94"></el-input>
+                    </el-form-item>
                 </el-form-item>
                 <el-form-item label="销售方式:" prop="baseInfo.salesMode.value">
-                    <el-radio-group v-model="form.baseInfo.salesMode.value">
+                    <span v-if="model.type=='revise'" class="reviseName">
+                        {{formSalesModeName(form.baseInfo.salesMode.value)}}
+                    </span>
+                    <el-radio-group v-model="form.baseInfo.salesMode.value" @change="salesModeChange" v-else>
                         <el-radio v-for="item in form.baseInfo.salesMode.options" :key="item.value" :label="item.value">{{item.label}}</el-radio>
                     </el-radio-group>
                 </el-form-item>
                 <template v-if="form.baseInfo.salesMode.value == '3' || form.baseInfo.salesMode.value == '4'">
-                    <el-form-item label="客户名称:" prop="baseInfo.custId.value" :rules="form.baseInfo.custId.rules">
-                        <el-row>
-                            <el-input v-model="form.baseInfo.custId.text" class="input-type-124"  :clearable="true" @clear="clearInputValue('custId','baseInfo','both')"></el-input>
+                    <el-form-item label="客商名称:" prop="baseInfo.custId.value" :rules="form.baseInfo.custId.rules">
+                        <span v-if="model.type=='revise'" class="reviseName">{{form.baseInfo.custId.text}}</span>
+                        <el-row v-else>
+                            <el-input v-model="form.baseInfo.custId.text" 
+                            class="input-type-124"  :readonly=true>
+                                <i slot="suffix" class="el-icon-circle-close" @click="clearInputValue('custId','baseInfo','both')" v-show="form.baseInfo.custId.text"></i>
+                            </el-input>
                             <el-button type="primary" plain @click="selectInputValue('custId')">选择</el-button>
                         </el-row>
                     </el-form-item>
                     <el-form-item label="合同协议号:" prop="baseInfo.contractCode.value">
-                        <el-row class="flex-base">
+                        <span v-if="model.type=='revise'" class="reviseName">{{form.baseInfo.contractCode.value}}</span>
+                        <el-row class="flex-base" v-else>
                             <el-input v-model="form.baseInfo.contractCode.value" class="input-type-124"></el-input>
-                            <el-upload class="upload" ref="attatchFile" :action="form.baseInfo.attatchFile.action" :on-preview="handlePreview" :on-remove="removeAttatchFile" :limit="form.baseInfo.attatchFile.limit" :file-list="form.baseInfo.attatchFile.list" :on-change="setAttatchFile" :auto-upload="false">
+                            <el-upload class="upload" 
+                            ref="attatchFile" 
+                            :action="form.baseInfo.attatchFile.action" 
+                            :on-preview="handlePreview" 
+                            :on-remove="removeAttatchFile" 
+                            :limit="form.baseInfo.attatchFile.limit" 
+                            :file-list="form.baseInfo.attatchFile.list" 
+                            :on-change="setAttatchFile" :auto-upload="false"
+                            >
                                 <el-button slot="trigger" size="small" type="primary">添加附件</el-button>
                             </el-upload>
+                            <el-button type="text" v-if="form.baseInfo['attachFileName']" @click="searchAttachFileName('attachFileName')">下载合同号</el-button>
                         </el-row>
                     </el-form-item>
                 </template>
                 <el-form-item label="入账影院:" prop="baseInfo.incomeCinemaId.value" :rules="form.baseInfo.incomeCinemaId.rules">
-                    <el-row>
-                        <el-input v-model="form.baseInfo.incomeCinemaId.value" class="input-type-124" ></el-input>
+                    <span v-if="model.type=='revise'" class="reviseName">{{form.baseInfo.incomeCinemaId.text}}</span>
+                    <el-row v-else>
+                        <el-input 
+                        v-model="form.baseInfo.incomeCinemaId.text" 
+                        class="input-type-124"  
+                        :readonly=true 
+                        >
+                        <i slot="suffix" class="el-icon-circle-close" @click="clearInputValue('incomeCinemaId','baseInfo','both')" v-show="form.baseInfo.incomeCinemaId.text"></i>
+                        </el-input>
                         <el-button type="primary" plain @click="selectInputValue('incomeCinemaId')">选择</el-button>
                     </el-row>
                 </el-form-item>
                 <el-form-item label="票券编号:" prop="baseInfo.couponGeneration.value">
-                    <el-radio-group v-model="form.baseInfo.couponGeneration.value" @change="couponGeneration">
+                    <span v-if="model.type=='revise'" class="reviseName">
+                        {{form.baseInfo.couponGeneration.value==0?'系统生成':form.baseInfo.couponGeneration.value==1? '外部导入':'使用预生成编号'}}
+                        <span v-if="form.baseInfo.couponGeneration.value==2&&form.baseInfo.batchTicketIds.value">(已添加{{form.baseInfo.batchTicketIds.value.split(',').length}}张预生成票券)</span>
+                    </span>
+                    <el-radio-group v-model="form.baseInfo.couponGeneration.value" @change="couponGeneration" v-else>
                         <el-radio v-for="item in form.baseInfo.couponGeneration.options" :key="item.value" :label="item.value">{{item.label}}</el-radio>
                     </el-radio-group>
+                        <span v-if="form.baseInfo.couponGeneration.value==2&&form.baseInfo.batchTicketIds.value">(已添加{{form.baseInfo.batchTicketIds.value.split(',').length}}张预生成票券)</span>
                 </el-form-item>
-                <el-form-item label="外部导入:" prop="baseInfo.importFile.value" v-if="form.baseInfo.couponGeneration.value == '1'">
+                <el-form-item label="外部导入:" prop="baseInfo.importFileName.value" v-if="form.baseInfo.couponGeneration.value == '1'&& model.type != 'revise'">
                     <el-row class="flex-base">
-                        <el-upload class="upload" ref="importFile" :action="form.baseInfo.importFile.action" :limit="form.baseInfo.importFile.limit" :on-preview="handlePreview" :on-remove="removeImportFile" :file-list="form.baseInfo.importFile.list" :on-change="setImportFile" :auto-upload="false">
+                        <el-upload class="upload" ref="importFileName" 
+                        :action="form.baseInfo.importFileName.action" 
+                        :limit="form.baseInfo.importFileName.limit" 
+                        :on-preview="handlePreview" 
+                        :on-remove="removeImportFile" 
+                        :file-list="form.baseInfo.importFileName.list" 
+                        :on-change="setImportFile" :auto-upload="false"
+                        >
                             <el-button slot="trigger" size="small" type="primary" plain>导入票券编号</el-button>
                         </el-upload>
                         <el-button type="primary" class="margin-left-10" plain @click="downloadTemplate">下载导入模板</el-button>
@@ -70,19 +130,52 @@
                     </el-input>
                 </el-form-item>
             </el-collapse-item>
-            <el-collapse-item title="票券消费规则" name="commonInfo">
-                <el-form-item label="有效期:" prop="commonInfo.validDate.value" :rules="form.commonInfo.validDate.rules">
-                    <el-date-picker v-model="form.commonInfo.validDate.value" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期">
-                    </el-date-picker>
+            <el-collapse-item title="票券消费规则" name="commonInfo" >
+                <el-form-item label="有效期:" prop="commonInfo.validDate.value" >
+                    <el-radio-group v-model="form.commonInfo.validType.value">
+                        <el-radio v-for="item in form.commonInfo.validType.options" :key="item.value" :label="item.value">{{item.label}}</el-radio>
+                    </el-radio-group>
+                        <div v-if="form.commonInfo.validType.value==0">
+                        <el-form-item prop="commonInfo.validDate.value" :rules="form.commonInfo.validDate.rules">
+                            <el-date-picker v-model="form.commonInfo.validDate.value" 
+                            type="daterange" 
+                            range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期"
+                            :picker-options="disabledDate"
+                            >
+                            </el-date-picker>
+                        </el-form-item>
+                        </div>
+                        <div v-if="form.commonInfo.validType.value==1">
+                        <el-form-item  prop="commonInfo.validGenType.value" :rules="form.commonInfo.validGenType.rules">
+                            <el-select v-model="form.commonInfo.validGenType.value" placeholder="请选择">
+                                <el-option v-for="item in form.commonInfo.validGenType.options" :key="item.value" :label="item.label" :value="item.value">
+                                </el-option>
+                            </el-select>
+                            <el-form-item  prop="commonInfo.validGenValue.value" 
+                            :rules="[{required:true,validator:checkVliadDate}]"
+                            v-if="form.commonInfo.validGenType.value==1"
+                            style="display:inline-block"
+                            >
+                                <el-input placeholder="请输入正整数" 
+                                v-model="form.commonInfo.validGenValue.value" 
+                                class="input-type-124" 
+                                ></el-input>
+                            </el-form-item>
+                        </el-form-item>                
+                        </div>
                 </el-form-item>
                 <el-form-item label="排除日期:" prop="commonInfo.eliminationDate.value">
                     <el-checkbox-group v-model="form.commonInfo.eliminationDate.value">
                         <el-checkbox v-for="item in form.commonInfo.eliminationDate.options" :key="item.value" :label="item.value">{{item.label}}</el-checkbox>
                     </el-checkbox-group>
                     <template v-if="form.commonInfo.eliminationDate.value.includes('not_DateRangeContainOperator')">
-                        <el-form-item v-for="(item,index) in form.commonInfo.appointInvalidDate.value" :key="index" :prop="'commonInfo.appointInvalidDate.value.' + index + '.value'" :rules="{required: true, message: '请选择日期范围', trigger: 'blur'}">
-                            <el-row class="flex-base margin-bottom-10">
-                                <el-date-picker v-model="item.value" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期">
+                        <el-form-item style="padding-bottom:15px;" v-for="(item,index) in form.commonInfo.appointInvalidDate.value" :key="index" :prop="'commonInfo.appointInvalidDate.value.' + index + '.value'" :rules="{required: true, message: '请选择日期范围', trigger: 'blur'}">
+                            <el-row class="flex-base">
+                                <el-date-picker v-model="item.value" 
+                                type="daterange" range-separator="至" 
+                                start-placeholder="开始日期" end-placeholder="结束日期"
+                                :picker-options="disabledDate"
+                                >
                                 </el-date-picker>
                                 <el-button type="text" class="margin-left-10" @click="addOrRemove(index)">{{index == 0 ? '添加' : '删除'}}</el-button>
                             </el-row>
@@ -110,8 +203,8 @@
                         <el-option v-for="item in form.commonInfo.ruleValidTime.options" :key="item.value" :label="item.label" :value="item.value"></el-option>
                     </el-select>
                     <template v-if="form.commonInfo.ruleValidTime.value == 'TimeRangeContainOperator'">
-                        <el-form-item v-for="(item, index) in form.commonInfo.TimeRangeContainOperator.value" :key="index" :prop="'commonInfo.TimeRangeContainOperator.value.' + index + '.value'" :rules="{required: true, message: '请选择时段范围', trigger: 'blur'}">
-                            <el-row class="flex-base margin-bottom-10">
+                        <el-form-item style="padding-bottom:15px;" v-for="(item, index) in form.commonInfo.TimeRangeContainOperator.value" :key="index" :prop="'commonInfo.TimeRangeContainOperator.value.' + index + '.value'" :rules="{required: true, message: '请选择时段范围', trigger: 'blur'}">
+                            <el-row class="flex-base">
                                 <el-time-picker is-range v-model="item.value" range-separator="至" start-placeholder="开始时间" end-placeholder="结束时间" placeholder="选择时段范围">
                                 </el-time-picker>
                                 <el-button type="text" class="margin-left-10" @click="addOrRemoveTimeRangeContainOperator(index)">{{index == 0 ? '添加' : '删除'}}</el-button>
@@ -121,28 +214,42 @@
                 </el-form-item>
                 <el-form-item label="影院范围:" prop="commonInfo.cinemaCode.value">
                     <el-row class="flex-base">
-                        <el-select class="margin-right-10" v-model="form.commonInfo.cinemaCode.value" placeholder="请选择">
+                        <el-select class="margin-right-10" v-model="form.commonInfo.cinemaCode.value" placeholder="请选择" @change="cinemaCodeChange">
                             <el-option v-for="item in form.commonInfo.cinemaCode.options" :key="item.value" :label="item.label" :value="item.value"></el-option>
                         </el-select>
                         <template v-if="form.commonInfo.cinemaCode.value != ''">
                             <el-form-item prop="commonInfo.cinemarangev.value" :rules="form.commonInfo.cinemarangev.rules">
                                 <el-row class="flex-base">
-                                    <el-input class="input-type-124" v-model="form.commonInfo.cinemarangev.value"></el-input>
+                                    <el-input class="input-type-124" 
+                                    v-model="form.commonInfo.cinemarangev.text"  
+                                    :readonly=true
+                                    >
+                                        <i slot="suffix" class="el-icon-circle-close" @click="clearInputValue('cinemarangev','commonInfo','both')" v-show="form.commonInfo.cinemarangev.text"></i>
+                                    </el-input>
                                     <el-button class="margin-left-10" type="primary" plain @click="selectInputValue('cinemarangev')">选择</el-button>
                                 </el-row>
                             </el-form-item>
                         </template>
                     </el-row>
                 </el-form-item>
-                <el-form-item label="消费渠道:" prop="commonInfo.consumeWayCode.value">
+                <el-form-item label="交易渠道:" prop="commonInfo.consumeWayCode.value">
                     <el-radio-group v-model="form.commonInfo.consumeWayCode.value">
                         <el-radio v-for="item in form.commonInfo.consumeWayCode.options" :key="item.value" :label="item.value">{{item.label}}</el-radio>
                     </el-radio-group>
                     <template v-if="form.commonInfo.consumeWayCode.value.includes('normalIn')">
-                        <el-form-item prop="commonInfo.consumeWayCodeOp.value" :rules="form.commonInfo.consumeWayCodeOp.rules">
-                            <el-checkbox-group v-model="form.commonInfo.consumeWayCodeOp.value">
+                        <el-form-item prop="commonInfo.consumeWayCodeOp.text" :rules="form.commonInfo.consumeWayCodeOp.rules">
+                            <!-- <el-checkbox-group v-model="form.commonInfo.consumeWayCodeOp.value">
                                 <el-checkbox v-for="item in form.commonInfo.consumeWayCodeOp.options" :label="item.value" :key="item.value">{{item.label}}</el-checkbox>
-                            </el-checkbox-group>
+                            </el-checkbox-group> -->
+                            <el-row class="flex-base">
+                                <el-input class="input-type-124" 
+                                v-model="form.commonInfo.consumeWayCodeOp.text"  
+                                :readonly=true
+                                >
+                                    <i slot="suffix" class="el-icon-circle-close" @click="clearInputValue('consumeWayCodeOp','commonInfo','both')" v-show="form.commonInfo.consumeWayCodeOp.text"></i>
+                                </el-input>
+                                <el-button class="margin-left-10" type="primary" plain @click="selectInputValue('consumeWayCodeOp')">选择</el-button>
+                            </el-row>
                         </el-form-item>
                     </template>
                 </el-form-item>
@@ -155,7 +262,12 @@
                         <template v-if="form.commonInfo.consumerTypeKey.value == 'normalIn'">
                             <el-row class="flex-base margin-left-10">
                                 <el-form-item prop="commonInfo.consumerType.value" :rules="form.commonInfo.consumerType.rules">
-                                    <el-input class="input-type-124"  v-model="form.commonInfo.consumerType.value"></el-input>
+                                    <el-input class="input-type-124"
+                                    v-model="form.commonInfo.consumerType.text"
+                                    :readonly=true
+                                    >
+                                        <i slot="suffix" class="el-icon-circle-close" @click="clearInputValue('consumerType','commonInfo','both')" v-show="form.commonInfo.consumerType.text"></i>
+                                      </el-input>
                                     <el-button class="margin-left-10" type="primary" plain @click="selectInputValue('consumerType')">选择</el-button>
                                 </el-form-item>
                             </el-row>
@@ -169,7 +281,10 @@
                             </el-option>
                         </el-select>
                         <template v-if="form.commonInfo.MemberInfo.value == 'EqualCurrentDayOffset'">
-                            <el-form-item prop="commonInfo.memberBirthdayOffset.value" :rules="form.commonInfo.memberBirthdayOffset.rules">
+                            <el-form-item 
+                            prop="commonInfo.memberBirthdayOffset.value" 
+                            :rules="[{required:true,validator:checkMemberBirthdayOffset}]"
+                            >
                                 <el-input class="input-type-124" v-model="form.commonInfo.memberBirthdayOffset.value" placeholder="请输入"></el-input>
                             </el-form-item>
                         </template>
@@ -208,18 +323,24 @@
                     </ul>
                 </template>
                 <template v-if="ruleInfo.config.showType == '1'">
-                    <el-form-item class="change-label" label="代金券面值(抵用金额):" prop="moneyInfo.voucherValue.value" :rules="form.moneyInfo.voucherValue.rules">
+                    <el-form-item class="change-label" label="代金券面值(抵用金额):" 
+                    prop="moneyInfo.voucherValue.value" 
+                    :rules="[{required:true,validator:checkVoucherValue}]"
+                    >
                         <el-input class="input-type-217" v-model="form.moneyInfo.voucherValue.value"></el-input>
                     </el-form-item>
                     <el-form-item class="change-label" label="代金券消费密码:" prop="moneyInfo.voucherIsPassword.value">
                         <el-row class="flex-base">
-                            <el-checkbox v-model="form.moneyInfo.voucherIsPassword.value"></el-checkbox>
+                            <el-checkbox v-model="form.moneyInfo.voucherIsPassword.value"><span v-if="!form.moneyInfo.voucherIsPassword.value" style="corlor:#606266">需要</span></el-checkbox>  
                             <el-form-item v-if="form.moneyInfo.voucherIsPassword.value" prop="moneyInfo.voucherPasswordType.value">
                                 <el-radio-group v-model="form.moneyInfo.voucherPasswordType.value">
                                     <el-radio v-for="item in form.moneyInfo.voucherPasswordType.options" :key="item.value" :label="item.value">{{item.label}}</el-radio>
                                 </el-radio-group>
                             </el-form-item>
-                            <el-form-item v-if="form.moneyInfo.voucherPasswordType.value == '2'" prop="moneyInfo.voucherPassword.value" :rules="form.moneyInfo.voucherPassword.rules">
+                            <el-form-item v-if="form.moneyInfo.voucherPasswordType.value == '2'&& form.moneyInfo.voucherIsPassword.value" 
+                            prop="moneyInfo.voucherPassword.value" 
+                            :rules="[{required:true,validator:checkVoucherPassword}]"
+                            >
                                 <el-input class="margin-left-15 input-type-166" v-model="form.moneyInfo.voucherPassword.value" placeholder="请输入6位密码" maxlength="6"></el-input>
                             </el-form-item>
                         </el-row>
@@ -229,33 +350,97 @@
                             <el-radio v-for="item in form.moneyInfo.saleItemType.options" :key="item.value" :label="item.value">{{item.label}}</el-radio>
                         </el-radio-group>
                     </el-form-item>
-                    <el-form-item label="每笔消费金额不小于:" prop="moneyInfo.sumPrice.value" :rules="form.moneyInfo.sumPrice.rules">
+                    <el-form-item label="每笔消费金额不小于:" 
+                    prop="moneyInfo.sumPrice.value" 
+                    :rules="[{required:true,validator:checkSunPrice}]"
+                    >
                         <el-input class="input-type-94" v-model="form.moneyInfo.sumPrice.value"></el-input> 元
                     </el-form-item>
                 </template>
             </el-collapse-item>
         </el-collapse>
-        <el-form-item class="flex-base flex-center">
-            <el-button type="primary" @click="saveOrSubmit('form',2)">提交审批</el-button>
-            <el-button type="primary" @click="saveOrSubmit('form',1)">保存</el-button>
+        <div class="flex-base flex-center" style="margin-bottom:10px;">
+            <el-button type="primary" @click="saveOrSubmit('form',2)" v-if="btnShow()">提交审批</el-button>
+            <el-button type="primary" @click="saveOrSubmit('form',1)" v-if="model.type !='revise'">保存</el-button>
             <el-button @click="cancle()">取消</el-button>
-        </el-form-item>
+        </div>
     </el-form>
-    <section v-if="alert.isShow">
-        <alertWindow :config="alert.config" @alertCallBack="alertCallBack"></alertWindow>
-    </section>
+    <!-- 弹窗 -->
+    <!-- 查看预生成编号 -->
+    <find-start-num ref="findStarNum" 
+    :couponCount="form.baseInfo.couponCount.value" 
+    :incomeCinemaId="form.baseInfo.incomeCinemaId.value"
+    @batchTicketIdsCallBack="batchTicketIdsCallBack"
+    @batchTicketIdsCancel = "batchTicketIdsCancel"
+     ></find-start-num>
+    <!-- 交易渠道 -->
+    <tradeChannelDialog 
+    :title="tradeChannelDialog.title" 
+    :dialogTableVisible.sync="tradeChannelDialog.tradeChannelDialogVisible" 
+    ref="consumeWayCodeOp" 
+    :channelNature="''" 
+    @callBack="handleOtherTradeChannelCallBack" 
+    ></tradeChannelDialog>
+    <!-- 入账包含组织节点影院 -->
+    <cinemaTreeDialog  ref="incomeCinemaId"  @cinemaCallBack="cinemaCallBack"></cinemaTreeDialog>
+    <!-- 影院范围单选 -->
+    <cinemaSingleDialog ref="cinemaSingle" @cinemaSingleCallBack="cinemaSingleCallBack"></cinemaSingleDialog>
+    <!-- 影院范围 多选 -->
+    <cinemaMultipDialog :title="cinemaMultipDialog.title" 
+    :dialogTableVisible.sync="cinemaMultipDialog.cinemaDialogVisible" 
+    ref="cinemarangev" 
+    @callBack="handleRegisterCinemaCallBack"
+    >
+    </cinemaMultipDialog>
+    <!-- 交易客商 -->
+    <tradeMerchantSingleDialog ref="custId" 
+    @tradeMerchantSingleCallBack="tradeMerchantSingleCallBack" 
+    :customerType="form.baseInfo.salesMode.value"
+    :customerId="form.baseInfo.custId.value"
+    ></tradeMerchantSingleDialog>
+    <!-- 会员等级 crmMemberLevelDialogCallBack-->
+    <crmMemberLevelDialog
+     @crmCardPolicyDialogCallBack="handleMembershipLevel" 
+     whereUse= "mainPageUnique" 
+     :reviewData="[]" 
+     :dialogVisible.sync="crmMemberLevelDialogVisible" 
+    />
 </div>
 </template>
 
 <script>
 import alertWindow from '../../../components/alertWindow/index.vue';
 const saleListUtil = require('../../../util/saleList.js');
+import alertHandle from 'ccm/mixins/marketing/alertHandle.js'
+import config from 'frame_cpm/http/config.js';
+import {getChannelList} from 'cmm/http/interface'
+import minxins from 'frame_cpm/mixins/cacheMixin.js';
+
 export default {
+    
     components: {
-        alertWindow
+        alertWindow,
     },
+    mixins:[alertHandle,minxins.cacheMixin],
     data() {
         return {
+            /* 缓存数据 */
+            // cacheField: ["activeNames","model","form","ruleInfo","ruleChild","showRule","limitName"],
+            subComName:this.$route.query.pageName,
+            baseUrl: config.baseURL,
+            //返回有效日期
+            disabledDate :{
+                disabledDate(time){
+                    let date = new Date();
+                    let y = date.getFullYear()
+                    let m = date.getMonth()+1
+                    let d = date.getDate()
+                    let dateString = `${y}-${m}-${d}`
+                    // pointer.delayWindow.validDateStart
+                    return time.getTime() < new Date(dateString);
+
+                }
+            },
             /**
              * @param model - 模式
              * @param model.type - create 新建模式，change 修改模式
@@ -278,41 +463,6 @@ export default {
                     // 票券名称
                     name: {
                         value: '',
-                        rules: {
-                            required: true,
-                            trigger: 'change',
-                            validator: (rules, value, callback) => {
-                                if (!value) {
-                                    return callback(new Error('请输入票券名称'));
-                                }else if(value.length > 25){
-                                    return callback(new Error('票券名称不能超过25位字符'));
-                                }
-
-                                let param = {
-                                    couponName: value
-                                }
-                                let pointer = this;
-                                if (pointer.model.type == 'editi') {
-                                    param[`id`] = pointer.model.id;
-                                }
-                                // 校验唯一性 debunch
-                                if (pointer.time) clearTimeout(pointer.time);
-
-                                pointer.time = setTimeout(() => {
-                                    pointer.$ccmList.saleListCheckName(param).then(data => {
-                                        if (data.flag == 1) {
-                                            callback();
-                                        } else {
-                                            callback(new Error(`查询票券名重复错误:${data.msg}`));
-                                        }
-                                        clearTimeout(pointer.time);
-                                    }).catch(msg => {
-                                        callback(`查询票券名重复错误：${msg}`);
-                                        clearTimeout(pointer.time);
-                                    })
-                                }, 1000);
-                            }
-                        }
                     },
                     // 票券类型
                     couponType: {
@@ -331,6 +481,7 @@ export default {
                     // 票券分类
                     couponTypeId: {
                         value: '',
+                        text:'',
                         options: [],
                         rules: {
                             required: true,
@@ -341,63 +492,14 @@ export default {
                     // 票券数量
                     couponCount: {
                         value: '',
-                        rules: {
-                            required: true,
-                            validator: (rule, value, callback) => {
-                                if(!value) {
-                                    return callback(new Error('请输入票券数量'));
-                                }
-                                if (value > 0 && value < 100000) {
-                                    return callback();
-                                } else {
-                                    return callback(new Error('请输入100000以内的数字'));
-                                }
-                            },
-                            trigger: 'blur'
-                        }
                     },
                     // 销售单价
                     couponPrice: {
-                        value: '',
-                        rules: {
-                            required: true,
-                            trigger: 'blur',
-                            validator: function (rules, value, callback) {
-                                if (!value) {
-                                    return callback(new Error('请输入销售单价'));
-                                }
-
-                                const reg = /^(?!0{1,4})(\d{1,4}|10{4}|0)$/;
-
-                                if (!reg.test(value)) {
-                                    return callback(new Error('请输入大于0小于10000的整数'))
-                                }
-
-                                callback();
-                            }
-                        }
+                        value: ''
                     },
                     // 起售数量
                     startSaleNum: {
-                        value: '',
-                        rules: {
-                            // required: true,
-                            trigger: 'blur',
-                            validator: (rules, value, callback) => {
-                                if(!value) {
-                                     //return callback(new Error('请输入起售数量'));
-                                     return callback();
-                                }
-                                if(typeof value != 'string') {
-                                    value = value.toString();
-                                }
-                                let couponCount = this.form.baseInfo.couponCount.value;
-                                if (value > couponCount) {
-                                    return callback(new Error('起售数量不能超过销售数量'))
-                                }
-                                callback();
-                            }
-                        }
+                        value: ''
                     },
                     // 销售方式
                     salesMode: {
@@ -422,12 +524,8 @@ export default {
                         text: '',
                         rules: {
                             required: true,
-                            validator: (rule, value, callback) => {
-                                if (!value) {
-                                    return callback(new Error('请选择客户名称'));
-                                }
-                                callback();
-                            }
+                            message : '请选择客商名称',
+                            trigger:'change'
                         }
                     },
                     // 合同协议号 此项只在销售方式为'3','4'时出现
@@ -439,7 +537,7 @@ export default {
                         value: '',
                         action: 'https://jsonplaceholder.typicode.com/posts/',
                         list: [],
-                        limit: 1
+                        limit: 2
                     },
                     // 入账影院
                     incomeCinemaId: {
@@ -448,7 +546,7 @@ export default {
                         rules: {
                             required: true,
                             message: '请选择入账影院',
-                            trigger: 'blur'
+                            trigger: 'change'
                         }
                     },
                     // 票券编号
@@ -466,11 +564,11 @@ export default {
                         }]
                     },
                     // 导入票券编号
-                    importFile: {
+                    importFileName: {
                         value: '',
                         action: 'https://jsonplaceholder.typicode.com/posts/',
                         list: [],
-                        limit: 1
+                        limit: 2
                     },
                     // 预生成编号ID
                     batchTicketIds: {
@@ -489,6 +587,78 @@ export default {
                         rules: {
                             required: true,
                             message: '请选择有效期范围'
+                        }
+                    },
+                    validType:{
+                        value: 0,
+                        options: [{
+                            label: '默认模式',
+                            value: 0
+                        }, {
+                            label: '动态模式',
+                            value: 1
+                        }]
+                    },
+                    validGenType:{
+                        value:'',
+                        options:[
+                                {
+                                label:'1个月',
+                                value:'2-1'
+                            }, {
+                                label:'2个月',
+                                value:'2-2'
+                            }, {
+                                label:'3个月',
+                                value:'2-3'
+                            }, {
+                                label:'4个月',
+                                value:'2-4'
+                            }, {
+                                label:'5个月',
+                                value:'2-5'
+                            }, {
+                                label:'6个月',
+                                value:'2-6'
+                            }, {
+                                label:'7个月',
+                                value:'2-7'
+                            }, {
+                                label:'8个月',
+                                value:'2-8'
+                            }, {
+                                label:'9个月',
+                                value:'2-9'
+                            }, {
+                                label:'10个月',
+                                value:'2-10'
+                            }, {
+                                label:'11个月',
+                                value:'2-11'
+                            }, {
+                                label:'1年',
+                                value:'3-1'
+                            }, {
+                                label:'2年',
+                                value:'3-2'
+                            }, {
+                                label:'3年',
+                                value:'3-3'
+                            },{
+                                label:'按日计算',
+                                value:'1'
+                            }
+                        ],
+                        rules: {
+                            required:true,
+                            message:'请输入日期'
+                        }
+                    },
+                    validGenValue:{
+                        value:'',
+                        rules: {
+                            required: true,
+                            message: '请输入有效值'
                         }
                     },
                     // 节假日排除 指定排除日期范围
@@ -616,42 +786,24 @@ export default {
                             message: '请选择影院范围'
                         }
                     },
-                    // 消费渠道
+                    // 交易渠道
                     consumeWayCode: {
                         value: '',
                         options: [{
                             label: '不限',
                             value: ''
                         }, {
-                            label: '指定消费渠道',
+                            label: '指定指定渠道',
                             value: 'normalIn'
                         }]
                     },
                     // 指定消费渠道
                     consumeWayCodeOp: {
-                        value: [],
-                        options: [{
-                            label: '柜台',
-                            value: '0'
-                        }, {
-                            label: '自助终端',
-                            value: '1'
-                        }, {
-                            label: '官方网站',
-                            value: '2'
-                        }, {
-                            label: '手机及微信',
-                            value: '3'
-                        }, {
-                            label: '电话',
-                            value: '4'
-                        }, {
-                            label: '第三方渠道',
-                            value: 'T'
-                        }],
+                        value: '',
+                        text:'',
                         rules: {
                             required: true,
-                            message: '请选择消费渠道'
+                            message: '请选择消费渠道',
                         }
                     },
                     // 消费者身份
@@ -697,22 +849,13 @@ export default {
                     // 生日前后N天
                     memberBirthdayOffset: {
                         value: '',
-                        rules: {
-                            required: true,
-                            message: '生日前后N天为必填字段'
-                        }
                     }
                 },
                 /* 代金规则 */
                 moneyInfo: {
                     // 代金券面值(抵用金额)
                     voucherValue: {
-                        value: '',
-                        rules: {
-                            required: true,
-
-                            message: '请输入代金券面值（抵用金额）'
-                        }
+                        value: ''
                     },
                     // 代金券消费密码
                     voucherIsPassword: {
@@ -732,10 +875,6 @@ export default {
                     // 消费密码
                     voucherPassword: {
                         value: '',
-                        rules: [{
-                            required: true,
-                            message: '请输入密码'
-                        }]
                     },
                     // 允许购买商品范围
                     saleItemType: {
@@ -753,11 +892,7 @@ export default {
                     },
                     // 每笔消费金额不小于
                     sumPrice: {
-                        value: '',
-                        rules: {
-                            required: true,
-                            message: '请输入消费金额'
-                        }
+                        value: ''
                     }
                 }
             },
@@ -770,85 +905,45 @@ export default {
                 },
                 isShow: false
             },
-            /* 弹窗属性 */
-            alert: {
-                isShow: false,
-                // 可选项
-                options: {
-                    // 客户名称
-                    custId: {
-                        src: 'http://192.168.100.148:8080/alertWindow',
-                        param: {
-                            test: '汉字自翼虎'
-                        },
-                        callFnName: 'baseInfo_custId'
-                    },
-                    // 入账影院
-                    incomeCinemaId: {
-                        src: 'http://192.168.100.148:8080/alertWindow',
-                        param: {
-                            test: '汉字自翼虎'
-                        },
-                        callFnName: 'baseInfo_incomeCinemaId'
-                    },
-                    // 使用预生成编号
-                    couponGeneration: {
-                        src: 'http://192.168.100.148:8080/alertWindow',
-                        param: {
-                            test: '汉字自翼虎'
-                        },
-                        callFnName: 'baseInfo_couponGeneration'
-                    },
-                    // 影院范围 指定 等于
-                    cinemarangev: {
-                        src: 'http://192.168.100.148:8080/alertWindow',
-                        param: {
-                            test: '汉字自翼虎'
-                        },
-                        callFnName: 'commonInfo_cinemarangev'
-                    },
-                    // 指定消费者身份
-                    consumerType: {
-                        src: 'http://192.168.100.148:8080/alertWindow',
-                        param: {
-                            test: '汉字自翼虎'
-                        },
-                        callFnName: 'commonInfo_consumerType'
-                    }
-                },
-                // 当前弹窗
-                config: {
-
-                }
-            },
+            
             ruleChild: [],
             showRule: [],
             limitName: []
         }
     },
     created() {
+        console.log(this.showRule)
         // 当前是否为修改状态
-        let isEdit = this.$route.params.isEdit ? this.$route.params.isEdit : false;
+        let isEdit = this.$route.query.isEdit ? this.$route.query.isEdit : false;
         if (isEdit) {
-            let type = 'editi';
-
-            let isCopy = this.$route.params.isCopy ? this.$route.params.isCopy : false;
+            let type = 'revise';
+            let isCopy = this.$route.query.isCopy ? this.$route.query.isCopy : false;
             if (isCopy) {
                 type = 'copy';
+            }else if (this.$route.query.ischange){
+                type = 'change';
             }
-
             this.model.type = type;
-
-            this.editiSaleList(this.$route.params.applyCode);
-            this.getcouponTypeId(this.form.baseInfo.couponType.value);
+            let  url = window.location.search;
+            // console.log('获取id',this.model)
+            // console.log(`${this.model.applyCode} != ${this.$route.query.applyCode}`)
+            // if( this.model.applyCode != this.$route.query.applyCode ){   //如果被缓存下来的 applyCode跟query的applyCode相等 则不用重新请求
+            this.editiSaleList(this.$route.query.applyCode);
+            // }
+            
             return ;
         }
 
         // 是否需要从缓存中拿取之前的操作
-        let isGetForm = this.$route.params.isGetForm ? this.$route.params.isGetForm : false;
+        let isGetForm = this.$route.query.isGetForm ? this.$route.query.isGetForm : false;
         if (isGetForm) {
-            // 从vuex上获取数据
-            let params = this.$store.getters['saleList/getForm'];
+            // 从vuex上获取数据从vuex上获取数据
+            let params = JSON.parse(JSON.stringify(this.$store.getters['saleList/getForm']));
+            console.log('是否需要从缓存中拿取之前的操作',params)
+            // if(params.model.applyCode){
+            //     this.editiSaleList(params.model.applyCode);
+            // }
+            // console.log("vuex-params",params)
             let keyArray = Object.keys(params);
             keyArray.forEach((item, index) => {
                 this[`${item}`] = JSON.parse(JSON.stringify(params[`${item}`]));
@@ -857,11 +952,11 @@ export default {
             this.$store.commit('saleList/deleteForm');
         }
         // 是否需要获取rule
-        let isGetRule = this.$route.params.isGetRule ? this.$route.params.isGetRule : false;
+        let isGetRule = this.$route.query.isGetRule ? this.$route.query.isGetRule : false;
         if (isGetRule) {
             // 从vuex上获取数据
-            let params = this.$store.getters['saleList/getChildRule'];
-            let editIndex = this.$route.params.editIndex;
+            let params = JSON.parse(JSON.stringify(this.$store.getters['saleList/getChildRule']));
+            let editIndex = this.$route.query.editIndex;
             if (editIndex != null) {
                 this.ruleChild.splice(editIndex, 1, JSON.parse(JSON.stringify(params.ruleChild)));
             } else {
@@ -871,15 +966,213 @@ export default {
             this.$store.commit('saleList/deleteChildRule');
         }
         // 展示ruleChild
+        console.log('展示ruleChild',this.ruleChild)
         this.showRuleData(this.ruleChild);
         // 查询当前票券分类类型
         this.getcouponTypeId(this.form.baseInfo.couponType.value);
+
     },
     methods: {
+        //修改、修订 数值状态转换
+        FormcouponType() {
+            if( this.model.type == 'revise' ) {
+                let item  = this.form.baseInfo.couponType.options.filter(item => {
+                    return item.value == this.form.baseInfo.couponType.value
+                })
+                return item[0].label
+            }
+        },
+        //起始数量不能超过销售数量
+        couponCountChange(va){
+            this.$refs['form'].validateField("baseInfo.startSaleNum.value")
+        },
+        
+        formSalesModeName(type) {
+            let text = ''
+            switch(type) {
+                case 1 : text = '影院零售'
+                break;
+                case 2 : text = '营销活动'
+                break;
+                case 3 : text = '大客户'
+                break;
+                case 4 : text = '第三方合作'
+                break;
+                default : text = '未知'
+            }
+            return text 
+        },
+        /**
+         *  1. couponGeneration=1 外部导入没有提交审批按钮 
+            2.外部导入&&修订可以提交审批 
+         */
+        btnShow() {
+            if(this.model.type=='revise'){
+                return (this.form.baseInfo.couponGeneration.value == 1? true:false)
+            }else{
+                return (this.form.baseInfo.couponGeneration.value == 1? false:true)
+            }
+        },
+        
+
         /**
          * @function editiSaleList - 编辑销售单
          * 
          * @param {String} applyCode - 销售申请单号
+         */
+        /**
+         * 规则匹配 方法
+         */
+        checkName(rules, value, callback) {
+            let reg =  /^[a-zA-Z\u4E00-\u9FA5]{0,}$/;
+            if (!value) {
+                return callback(new Error('请输入票券名称'));
+            }else if(value.length>25){
+                return callback(new Error('票券名称不能超过25位字符'));
+            }
+            let param = {
+                couponName: value
+            }
+            let pointer = this;
+            if (pointer.model.type !== 'copy') {
+                param[`id`] = pointer.model.id;
+            }
+            // 校验唯一性 debunch
+            if (pointer.time) clearTimeout(pointer.time);
+
+            pointer.time = setTimeout(() => {
+                pointer.$ccmList.saleListCheckName(param).then(data => {
+                    if (data.flag == 1) {
+                        callback();
+                    } else {
+                        callback(new Error(`${data.msg}`));
+                    }
+                    clearTimeout(pointer.time);
+                }).catch(msg => {
+                    callback(`查询票券名重复错误：${msg}`);
+                    clearTimeout(pointer.time);
+                })
+            }, 1000);
+        },
+        checkCouponCount(rule, value, callback) {
+            if(!value) {
+                return callback(new Error('请输入票券数量'));
+            }
+            let regExp = /^[1-9]\d*$/;
+            if (!regExp.test(value)) {
+                return callback(new TypeError('请输入正整数'));
+            }else if(value == 0){
+                return callback(new TypeError('请输入正整数'));
+            }
+            if (value > 0 && value < 100000) {
+                return callback();
+            } else {
+                return callback(new Error('请输入100000以内的数字'));
+            }
+        },               
+        checkStartSaleNum(rules, value, callback) {
+            if(!value){
+                callback();
+            }else{
+                let regExp = /^[1-9]\d*$/;
+                if (!regExp.test(value)) {
+                    return callback(new TypeError('请输入正整数'));
+                }else if(value == 0){
+                    return callback(new TypeError('请输入正整数'));
+                }
+                let couponCount = this.form.baseInfo.couponCount.value;
+                if (Number(value)> Number(couponCount) ) {
+                    return callback(new Error('起售数量不能超过票券数量'))
+                }
+                callback();
+            }  
+        },
+        checkVliadDate(rules, value, callback) {
+            if(!value) {
+                return callback(new Error('请输入有效日期'));
+            }
+            let regExp = /^[1-9]\d*$/;
+            if (!regExp.test(value)) {
+                return callback(new TypeError('请输入正整数'));
+            }else if(value == 0){
+                return callback(new TypeError('请输入正整数'));
+            }
+            if (value > 0 && value < 100000) {
+                return callback();
+            } else {
+                return callback(new Error('请输入100000以内的数字'));
+            }
+        },
+        checkCouponPrice(rules, value, callback) {
+            if (!value) {
+                return callback(new Error('请输入销售单价'));
+            }
+            const reg = /(^[1-9]([0-9]+)?(\.[0-9]{1,2})?$)|(^(0){1}$)|(^[0-9]\.[0-9]([0-9])?$)/;
+            if (!reg.test(value)) {
+                return callback(new TypeError('请输入正数,且允许两位小数'));
+            }else if(value == 0){
+                return callback(new TypeError('请输入正数,且允许两位小数'));
+            }
+
+            callback();
+        },
+        checkSunPrice(rules, value, callback) {
+            if (!value) {
+                return callback(new Error('请输入消费金额'));
+            }
+
+            const reg = /(^[1-9]([0-9]+)?(\.[0-9]{1,2})?$)|(^(0){1}$)|(^[0-9]\.[0-9]([0-9])?$)/;
+
+            if (!reg.test(value)) {
+                return callback(new TypeError('请输入正数,且只允许输入两位小数位'));
+            }else if(value == 0){
+                return callback(new TypeError('请输入正数,且只允许输入两位小数位'));
+            }
+
+            callback();
+        },
+        checkMemberBirthdayOffset(rules, value, callback){
+            if (!value) {
+                return callback(new Error('生日前后N天为必填字段'));
+            }
+            let regExp = /^[1-9]\d*$/;
+            if (!regExp.test(value)) {
+                return callback(new TypeError('请输入正整数'));
+            }else if(value == 0){
+                return callback(new TypeError('请输入正整数'));
+            }
+            return callback();
+        },
+        checkVoucherValue(rules, value, callback) {
+            if (!value) {
+                return callback(new Error('请输入代金券面值（抵用金额）'));
+            }
+
+            const reg = /(^[1-9]([0-9]+)?(\.[0-9]{1,2})?$)|(^(0){1}$)|(^[0-9]\.[0-9]([0-9])?$)/;
+
+            if (!reg.test(value)) {
+                return callback(new TypeError('请输入正数,且只允许输入两位小数位'));
+            }else if(value == 0){
+                return callback(new TypeError('请输入正数,且只允许输入两位小数位'));
+            }
+
+            callback();
+        },
+        checkVoucherPassword(rules, value, callback) {
+            if (!value) {
+                return callback(new Error('请输入消费密码'));
+            }
+
+            const reg = /^\d{6}$/;
+
+            if (!reg.test(value)) {
+                return callback(new TypeError('请输入6位数字密码'));
+            }
+
+            callback();
+        },
+        /**
+         *   编辑 
          */
         editiSaleList(applyCode) {
             let param = {
@@ -888,6 +1181,8 @@ export default {
             this.$ccmList.checkSaleList(param).then((data) => {
                 if (data.flag == 1) {
                     saleListUtil.unPackageForm(data.data, this);
+                    //查看票券分类
+                    this.getcouponTypeId(this.form.baseInfo.couponType.value);
                 }
             }).catch((msg) => {
                 console.log('编辑销售申请单错误：', msg);
@@ -902,13 +1197,37 @@ export default {
                 return TypeError('select方法只接受string类型，您输入的类型是：', typeof inputName);
             }
 
-            let options = this.alert.options;
-            if (!options[`${inputName}`]) {
-                return TypeError('alertConfigs对象中不包含：', inputName);
+
+            //消费等级弹窗
+            if(inputName == 'consumerType') {
+                this.crmMemberLevelDialogVisible = true
+                return
             }
 
-            this.alert.config = options[`${inputName}`];
-            this.alert.isShow = true;
+            //影院范围
+            if(inputName == 'cinemarangev') {
+                let addition = this.form.commonInfo.cinemaCode.value
+                if(addition == 'normalEqual'){      //等于 影院范围单选
+                    console.log('单选',addition)
+                    this.$refs.cinemaSingle.openDialog(true)
+                    return
+                }else if(addition == 'normalIn'){   //包含 影院范围多选
+                    console.log('多选',addition)
+                    this.$refs[inputName].openDialog(true)
+                    return
+                }
+            }
+            console.log(this.$refs[inputName])
+            this.$refs[inputName].openDialog(true)
+
+        },
+        cinemaCodeChange(){
+            this.form.commonInfo.cinemarangev.value = ''
+            this.form.commonInfo.cinemarangev.text = ''
+        },
+        salesModeChange() {
+            this.form.baseInfo.custId.text = ""
+            this.form.baseInfo.custId.value = ""
         },
         /**
          * @function clearInputValue - 清空输入框
@@ -920,18 +1239,8 @@ export default {
             if (type == 'both') {
                 this.form[`${formName}`][`${inputName}`].text = '';
             }
-
             this.form[`${formName}`][`${inputName}`].value = '';
-        },
-        /**
-         * @function alertCallBack - 弹窗回调
-         */
-        alertCallBack(param) {
-            if (param.callFnName) {
-                this[`changeInput`](param.callFnName, param);
-            }
-            this.alert.isShow = false;
-            this.alert.config = {};
+            console.log(this.form[`${formName}`][`${inputName}`])
         },
         /**
          * @function changeInput - 修改输入框的值
@@ -962,7 +1271,43 @@ export default {
         /**
          * @function downloadTemplate - 下载导入模板
          */
-        downloadTemplate() {},
+        downloadTemplate() {
+            let url = this.baseUrl + "/coupon/prebuild/exportTemplate";
+            let headers = {
+                 "Cpm-User-Token": localStorage.getItem("token")
+            }
+            axios(url, {
+                headers,
+                method: "get",
+                responseType: "blob"
+            }).then(data => {
+                console.log(data)
+                let flag = data.headers.flag;
+                let message = '下载模板错误，请稍后再试！';
+                let type = 'warning';
+
+                if (flag == '1') {
+                    type = 'success';
+                    message = "下载成功"
+                }
+
+                    this.$message({
+                        type,
+                        message
+                    });
+
+                const blob = new Blob([data.data]);
+                const fileName = data.headers.filename;
+                const elink = document.createElement('a');
+                elink.download = fileName;
+                elink.style.display = 'none';
+                elink.href = URL.createObjectURL(blob);
+                document.body.appendChild(elink);
+                elink.click();
+                URL.revokeObjectURL(elink.href); // 释放URL 对象
+                document.body.removeChild(elink);
+            });
+        },
         /**
          * @function addOrRemove - 添加或移除指定排除日期
          */
@@ -1050,7 +1395,7 @@ export default {
                     let couponArr = [];
                     couponDataArr.forEach(item => {
                         let label = item.couponName,
-                            value = item.id;
+                            value = item.id.toString();
                         couponArr.push({
                             label,
                             value
@@ -1073,7 +1418,32 @@ export default {
          */
         couponGeneration(val) {
             if (val == '2') {
-                this.selectInputValue('couponGeneration');
+                // this.selectInputValue('couponGeneration');
+                if(!this.form.baseInfo.incomeCinemaId.value){
+                    this.$message({
+                        type:'warning',
+                        message:'请先选择影院！'
+                    })
+                    return
+                }
+                //  else if (!this.form.baseInfo.couponCount.value){
+                //      this.$message({
+                //         type:'warning',
+                //         message:'请先输入票券数量！'
+                //     })
+                //     return
+                // }
+                this.$refs['form'].validateField("baseInfo.couponCount.value",err=>{
+                    if(err){
+                            this.$message({
+                            type:'warning',
+                            message:'请先输入票券数量！'
+                        })
+                    }else{
+                        this.$refs.findStarNum.openDialog()
+                    }
+                })
+
             }
         },
         /**
@@ -1116,7 +1486,7 @@ export default {
          */
         saveForm() {
             // 缓存填写信息
-            this.$store.commit('saleList/updateForm', {
+            this.$store.commit('saleList/updateForm', {   
                 model: this.model,
                 form: this.form,
                 ruleInfo: this.ruleInfo,
@@ -1164,24 +1534,77 @@ export default {
             this.form.baseInfo[`attatchFile`].list = [];
         },
         /**
+         * @function -查看合同文件
+         */
+        searchAttachFileName(type) {
+            let url = this.baseUrl + this.form.baseInfo[`${type}`];
+            let headers = {
+                 "Cpm-User-Token": localStorage.getItem("token")
+            }
+            axios(url, {
+                headers,
+                method: "post",
+                responseType: "blob"
+            }).then(data => {
+                console.log(data)
+                let flag = data.headers.flag;
+                let message = '下载文件错误，请稍后再试！';
+                let type = 'warning';
+
+                if (flag == '1') {
+                    type = 'success';
+                    message = "下载成功"
+                }
+
+                    this.$message({
+                        type,
+                        message
+                    });
+                const blob = new Blob([data.data]);
+                const fileName = data.headers.filename;
+                const elink = document.createElement('a');
+                elink.download = fileName;
+                elink.style.display = 'none';
+                elink.href = URL.createObjectURL(blob);
+                document.body.appendChild(elink);
+                elink.click();
+                URL.revokeObjectURL(elink.href); // 释放URL 对象
+                document.body.removeChild(elink);
+            });
+        },
+        /**
          * @function removeImportFile - 移除外部导入文件
          */
         removeImportFile(file, fileList) {
-            this.$refs[`importFile`].abort();
-            this.form.baseInfo[`importFile`].value = '';
-            this.form.baseInfo[`importFile`].list = [];
+            this.$refs[`importFileName`].abort();
+            this.form.baseInfo[`importFileName`].value = '';
+            this.form.baseInfo[`importFileName`].list = [];
         },
         /**
          * @function setAttatchFile - 设置合同协议附件
          */
         setAttatchFile(file, fileList) {
+            this.form.baseInfo.attatchFile.list = []
             this.fileReader('attatchFile', file, this);
         },
         /**
          * @function setImportFile - 设置外部导入票券文件
          */
         setImportFile(file, fileList) {
-            this.fileReader('importFile', file, this);
+            this.form.baseInfo.importFileName.list=[]
+            fileList = []
+            // console.log('form.baseInfo.importFileName.list',this.form.baseInfo.importFileName.list)
+            // console.log('fileList',fileList)
+            // console.log(file)
+            let fileName = file.name.substring(file.name.lastIndexOf('.')+1)
+            if(fileName =='xls' || fileName =='xlsx'){
+                this.fileReader('importFileName', file, this);
+            }else{
+                this.$message({
+                    type:"warning",
+                    message:'请选择xls或者xlsx文件'
+                })
+            }
         },
         /**
          * @function fileReader - 文件转化，分发
@@ -1208,7 +1631,7 @@ export default {
                 name: file.name,
                 url: file.url
             });
-
+            console.log(`pointer.form.baseInfo[${type}].list`,pointer.form.baseInfo[`${type}`].list)
             fileReader.readAsDataURL(_file);
 
             fileReader.onload = () => {
@@ -1221,20 +1644,19 @@ export default {
          * 
          * @param {Number} flag - 1：保存；2：保存并提交审批
          */
-        saveOrSubmit(formName, flag) {
+        async saveOrSubmit(formName, flag) {
             this.$refs[formName].validate((valid) => {
                 if (valid) {
-
                     if (this.form.baseInfo.couponType.value != '1' && this.ruleChild.length == 0) {
                         return this.$message({
                             message: '请添加规则项',
                             type: 'warning'
                         });
                     };
-
                     let param = this.packageParam(this.form, flag);
+                    this.model.applyCode = null
                     // console.log("param:",param)
-
+                    console.log('清除id',this.model)
                     this.$ccmList.saleListSaveOrUpdate(param).then(data => {
                         let type = '';
                         if (data.flag == 1) {
@@ -1242,13 +1664,20 @@ export default {
                         } else {
                             type = 'warning';
                         }
-
+    
                         this.$message({
                             type,
                             message: data.msg
                         });
 
                         if (type == 'success') {
+                            this.$store.commit("tagNav/removeTagNav", {
+                                name: this.$route.name,
+                                path: this.$route.path,
+                                title: this.$route.meta.title,
+                                query: this.$route.query
+                            })
+
                             this.$router.push({
                                 path: 'salesManagement'
                             });
@@ -1265,9 +1694,22 @@ export default {
          * @function cancle - 取消
          */
         cancle() {
-            this.$router.push({
-                path: 'salesManagement'
-            });
+            this.$confirm('确定不提交就退出？', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    this.model.applyCode = null
+                    this.$store.commit("tagNav/removeTagNav", {
+                        name: this.$route.name,
+                        path: this.$route.path,
+                        title: this.$route.meta.title,
+                        query: this.$route.query
+                    })
+                    this.$router.push({
+                        path: 'salesManagement'
+                    });
+                })
         },
         /**
          * @function packageParam - 组装数据
@@ -1291,7 +1733,7 @@ export default {
 
             // 修改的时候需要传
             let modelType = this.model.type;
-            if (modelType == 'editi') {
+            if (modelType == 'revise'|| modelType == 'change') {
                 param[`applyCode`] = this.model.applyCode;
                 param[`id`] = this.model.id;
             }
@@ -1300,11 +1742,15 @@ export default {
             keyArr_baseInfo.forEach((item, index) => {
                 let value = baseInfo[`${item}`].value;
                 param[`${item}`] = value;
+                if( item =='incomeCinemaId'){
+                    param[`incomeCinemaName`] = baseInfo[`${item}`].text
+                }
 
                 // 销售模式
                 if (item == 'salesMode' && (value == '3' || value == '4')) {
                     // 客户id
                     param[`custId`] = baseInfo[`custId`].value;
+                    param[`custName`] = baseInfo[`custId`].text;
                     // 合同协议号
                     let contractCodeVal = baseInfo[`contractCode`].value;
                     if (contractCodeVal) {
@@ -1313,22 +1759,22 @@ export default {
                     // 添加附件
                     let attatchFileVal = baseInfo[`attatchFile`].value;
                     if (attatchFileVal) {
-                        param[`attatchFile`] = attatchFileVal;
+                        param[`attachFileName`] = attatchFileVal;
                     }
                 }
                 // 票券编号
                 if (item == 'couponGeneration') {
-                    let importFileVal = baseInfo[`importFile`].value;
+                    let importFileVal = baseInfo[`importFileName`].value;
                     let batchTicketIdsVal = baseInfo[`batchTicketIds`].value;
                     // 合同协议附件
                     if (value == '1' && importFileVal) {
-                        param[`importFile`] = importFileVal;
+                        param[`importFileName`] = importFileVal;
                     } else if (value == '2') {
                         param[`batchTicketIds`] = batchTicketIdsVal;
                     }
                 }
             })
-
+            
             // 组装commonInfo
             let param_commonInfo = this.packageCommonInfo(commonInfo, this);
 
@@ -1336,16 +1782,35 @@ export default {
             let simpleRuleGroupStr = {
                 ruleType: 'CouponSale',
                 name: baseInfo[`name`].value,
-                remark: baseInfo[`name`].value,
-                validDateStart: this.timeRule(commonInfo[`validDate`].value[0]),
-                validDateEnd: this.timeRule(commonInfo[`validDate`].value[1]),
+                remark: baseInfo[`remark`].value,
+                // validDateStart: this.timeRule(commonInfo[`validDate`].value[0]),
+                // validDateEnd: this.timeRule(commonInfo[`validDate`].value[1]),
                 commonInfo: param_commonInfo,
                 rules: []
             }
+            console.log('-------------',commonInfo.validType.value)
+            //0是默认模式  1是动态模式
+            param.validType = commonInfo.validType.value 
+            if(commonInfo.validType.value==0){
+                simpleRuleGroupStr.validDateStart = this.timeRule(commonInfo[`validDate`].value[0])
+                simpleRuleGroupStr.validDateEnd = this.timeRule(commonInfo[`validDate`].value[1])
+            }else if (commonInfo.validType.value==1){
+                console.log('-------动态值------',commonInfo.validGenType.value)
+                let data = commonInfo.validGenType.value.split('-') 
+                //validGenType 1日 2月 3年
+                param.validGenType = data[0]
 
+                if(data[0]==1 && commonInfo.validGenValue.value){  //按日计算
+                    param.validGenValue = commonInfo.validGenValue.value
+                }else{
+                    param.validGenValue = data[1]   //按月、年
+
+                }
+            }
             // 代金券
             if (baseInfo[`couponType`].value == '1') {
                 // 代金券面值（抵用金额）
+                console.log('抵用金额---------',moneyInfo[`voucherValue`].value)
                 param[`voucherValue`] = moneyInfo[`voucherValue`].value;
 
                 // 代金券是否需要密码，1-不需要，2-需要
@@ -1392,7 +1857,7 @@ export default {
                 // 抵用金额
                 voucherRulesObj.actions.push({
                     key: 'cashValue',
-                    value: moneyInfo[`sumPrice`].value,
+                    value: moneyInfo[`voucherValue`].value,
                     familyId: '1',
                     opUniqueName: 'CashCouponMoneyFunction'
                 });
@@ -1402,6 +1867,7 @@ export default {
             } else {
                 simpleRuleGroupStr.rules = this.ruleChild;
             }
+            console.log("simpleRuleGroupStr",simpleRuleGroupStr)
             param[`simpleRuleGroupStr`] = JSON.stringify(simpleRuleGroupStr);
 
             return param;
@@ -1516,12 +1982,17 @@ export default {
                 };
                 // 指定消费渠道
                 if (consumeWayCodeVal == 'normalIn') {
-                    let typeArr = param[`consumeWayCodeOp`].value;
-                    let typeStr = '';
-                    for (let i = 0; i < typeArr.length; i++) {
-                        typeStr += i == typeArr.length - 1 ? typeArr[i] : `${typeArr[i]},`;
-                    }
-                    obj[`value`] = typeStr;
+                    // let typeArr = param[`consumeWayCodeOp`].value;
+                    // let typeNameArr = []
+                    // typeArr.forEach(item => {
+                    //     pointer.form.commonInfo.consumeWayCodeOp.options.forEach(_item => {
+                    //         if(item==_item.value){
+                    //             typeNameArr.push(_item.label)
+                    //         }
+                    //     })
+                    // })
+                    obj[`value`] = pointer.form.commonInfo.consumeWayCodeOp.value
+                    obj['text'] = pointer.form.commonInfo.consumeWayCodeOp.text
                 }
                 commonInfo.push(obj);
             }
@@ -1537,6 +2008,7 @@ export default {
                 // 指定消费者身份
                 if (consumerTypeVal == 'normalIn') {
                     obj[`value`] = param[`consumerType`].value;
+                    obj[`text`] = param[`consumerType`].text;
                 }
                 commonInfo.push(obj);
             }
@@ -1596,6 +2068,7 @@ export default {
             for (let i = 0; i < ruleChild.length; i++) {
                 let _obj = {};
                 let item = ruleChild[i];
+                console.log('item---------------',item)
                 let containSaleItemType = item.bizPropertyMap.containSaleItemType;
                 // let _actions = item.actions;
                 // let _ruleCondition = item.ruleConditions
@@ -1619,6 +2092,7 @@ export default {
                 _obj[`child`] = _arr;
                 showRule.push(_obj);
             }
+            // console.log('规则数组后：',showRule)
             this.showRule = showRule;
             this.limitName = limitName;
         },
@@ -1627,9 +2101,13 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.reviseName{
+    color:#333;
+    font-size: 12px;
+}
 @mixin font-base {
     font {
-        family: 'MicrosoftYaHei';
+        font-family: 'MicrosoftYaHei';
         size: 12px;
     }
 
@@ -1659,7 +2137,6 @@ export default {
         margin-bottom: #{$i}px;
     }
 }
-
 .tips-font {
     font-size: 12px;
     color: grey;
@@ -1764,8 +2241,14 @@ export default {
         }
     }
 }
-
 .change-label .el-form-item__label {
     line-height: 20px;
+}
+</style>
+<style lang="scss">
+.coupon-create{
+    .el-date-editor .el-range-separator{
+        width: 8%
+    }
 }
 </style>
