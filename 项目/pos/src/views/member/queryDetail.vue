@@ -17,7 +17,7 @@
       </ul>
     </div>
     <div class="foot-buttom-layer">
-      <el-button size="medium" @click="$router.push({name:'memberHome'})">返回</el-button>
+      <el-button @click="$router.push({name:'memberHome'})" class="common-btn">返回</el-button>
     </div>
   </div>
 </template>
@@ -28,7 +28,8 @@ import MemberIofo from "./components/memberInfo";
 import MemberCardIofo from "./components/memberCardInfo";
 import HoldingCardList from "./components/holdingCardList";
 import {MemberAjax} from "src/http/memberApi.js";
-import { mapState, mapGetters } from 'vuex'
+import { mapState, mapGetters } from 'vuex';
+import { routerJump } from './util/utils';
 export default {
   data() {
     return {
@@ -144,17 +145,20 @@ export default {
         MemberAjax.getCardInfoByNo(params)
           .then(data => {
             this.member.pageLoading = false;
-            this.memberCardInfo = data.data;
+            this.memberCardInfo = '';
             if(data.data && data.code === 200){
-              sessionStorage['memberId'] = data.data.memberId;
-              sessionStorage['cardProductId'] = data.data.cardProductId
+              if(routerJump.call(this,data.data.cardNo,data.data.phoneNumber)){
+                this.memberCardInfo = data.data;
+                sessionStorage['memberId'] = data.data.memberId;
+                this.member.cardProductId = data.data.cardProductId;
+              }
             }else{
               this.$message.warning(data.msg);
             }
           })
           .catch(err => {
             this.member.pageLoading = false;
-            this.memberCardInfo = data.data;
+            this.memberCardInfo = '';
             console.log(err);
           });
       }
@@ -186,7 +190,7 @@ export default {
         cursor: pointer;
         border: 1px solid #a7b8e4;
         border-radius: 2px;
-        font-size: 12px;
+        font-size: $font-size12;
         color: #333333;
         letter-spacing: 0;
         text-align: center;

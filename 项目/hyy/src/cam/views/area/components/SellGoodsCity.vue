@@ -5,7 +5,7 @@
       <div class="BoxTitle flex" height="40">
         <div class="left">
           <span class="iconfont icon-shouye-maipin"></span>
-          <span>卖品</span>
+          <span class="title">卖品</span>
         </div>
         <div class="right">
           <span class="tip cursor" @click="clickPush()">详情</span>
@@ -61,11 +61,11 @@
               <div slot="content" style="width:300px">
                 <ul id="ulMain">
                   <li>人均卖品收入当日达成 : <span>{{SellKPIDataCity.sppCurrent | capitalizeOne}}{{SellKPIDataCity.sppCurrent | foo}}</span></li>
-                  <li>环比前一日 : <span :class="[SellKPIDataCity.sppChainDay > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[SellKPIDataCity.sppChainDay > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{SellKPIDataCity.sppChainDay | woo}}%</span></li>
+                  <li>环比前一日 : <span :class="[SellKPIDataCity.sppChainDay > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[SellKPIDataCity.sppChainDay > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{SellKPIDataCity.sppChainDay | woo(true)}}%</span></li>
                   <li>月至今达成 : <span>{{SellKPIDataCity.sppMonthToNow | capitalizeOne}}{{SellKPIDataCity.sppMonthToNow | foo}}</span></li>
-                  <li>环比上月 : <span :class="[SellKPIDataCity.sppChainMonth > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[SellKPIDataCity.sppChainMonth > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{SellKPIDataCity.sppChainMonth | woo}}%</span></li>
+                  <li>环比上月 : <span :class="[SellKPIDataCity.sppChainMonth > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[SellKPIDataCity.sppChainMonth > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{SellKPIDataCity.sppChainMonth | woo(true)}}%</span></li>
                   <li>本月目标为 : <span>{{SellKPIDataCity.sppTarget | capitalizeOne}}</span>{{SellKPIDataCity.sppTarget | foo}}</li>
-                  <li>距目标额差距 : <span :class="[SellKPIDataCity.sppGap > 0? 'green':'red']">{{SellKPIDataCity.sppGap | woo}}%</span></li>
+                  <li>距目标额差距 : <span :class="[SellKPIDataCity.sppGap > 0? 'green':'red']">{{SellKPIDataCity.sppGap | woo}}</span></li>
                 </ul>
               </div>
               <i class="iconfont icon-danchuang-tishi"></i>
@@ -135,12 +135,14 @@
       <div class="reset-page">
         <el-pagination v-if="this.totalPage>10"
           background 
-          layout="prev, pager, next"
+          layout="total,prev, pager, next"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
           :page-size="this.pageSize"
           :total="this.totalPage" 
         ></el-pagination>
+        <span class="page-else" v-else-if="totalPage>0">共{{totalPage}}条</span>
+        <span class="page-else" v-else></span>
       </div>
     </div>
 
@@ -205,12 +207,14 @@
       <div class="reset-page">
         <el-pagination v-if="this.totalPage>10"
           background 
-          layout="prev, pager, next"
+          layout="total,prev, pager, next"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
           :page-size="this.pageSize"
           :total="this.totalPage" 
         ></el-pagination>
+        <span class="page-else" v-else-if="totalPage>0">共{{totalPage}}条</span>
+        <span class="page-else" v-else></span>
       </div>
     </div>
 
@@ -275,12 +279,14 @@
       <div class="reset-page">
         <el-pagination v-if="this.totalPage>10"
           background 
-          layout="prev, pager, next"
+          layout="total,prev, pager, next"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
           :page-size="this.pageSize"
           :total="this.totalPage" 
         ></el-pagination>
+        <span class="page-else" v-else-if="totalPage>0">共{{totalPage}}条</span>
+        <span class="page-else" v-else></span>
       </div>
     </div>
 
@@ -344,12 +350,14 @@
       <div class="reset-page">
        <el-pagination v-if="this.totalPage>10"
           background 
-          layout="prev, pager, next"
+          layout="total,prev, pager, next"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
           :page-size="this.pageSize"
           :total="this.totalPage" 
         ></el-pagination>
+        <span class="page-else" v-else-if="totalPage>0">共{{totalPage}}条</span>
+        <span class="page-else" v-else></span>
       </div>
     </div>
 
@@ -414,12 +422,14 @@
       <div class="reset-page">
         <el-pagination v-if="this.totalPage>10"
           background 
-          layout="prev, pager, next"
+          layout="total,prev, pager, next"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
           :page-size="this.pageSize"
           :total="this.totalPage" 
         ></el-pagination>
+        <span class="page-else" v-else-if="totalPage>0">共{{totalPage}}条</span>
+        <span class="page-else" v-else></span>
       </div>
     </div> 
   </div>
@@ -650,9 +660,9 @@ export default {
     }
   },
   filters: {
-    woo(value){
+    woo(value,isPositive){
       if (!value) return "--"
-      return value.toFixed(2)
+      return isPositive ? Math.abs(value).toFixed(2): value.toFixed(2) 
     },
     capitalizeOne(value) {
       if (!value) return "--"
@@ -660,10 +670,10 @@ export default {
       //判断逻辑
       if(newValue.indexOf('.') != -1){
         
-        if(newValue.length < 7){
+        if(newValue.length <= 7){
           return Number(newValue + '0').toFixed(2)
         }
-        else if(newValue.length >= 7 && newValue.length <= 11){
+        else if(newValue.length > 7 && newValue.length <= 11){
           return (newValue / 10000).toFixed(2)
         }
         else if(newValue.length >= 12){
@@ -1251,8 +1261,11 @@ export default {
       width: 100%;
       line-height: 40px;
       padding: 0 16px;
-      font-size: 16px;
-      font-weight: bold;
+      .title{
+        font-family: PingFangSC-Medium;
+        font-size: 14px;
+        color:#333;
+      }
       .iconfont {
         margin-right: 5px;
         color: #1296db;
@@ -1299,6 +1312,7 @@ export default {
             text-align: center;
             display: block;
             margin-top:13px;
+            font-weight:bold;
           }
           p {
             font-size: 12px;
@@ -1402,6 +1416,7 @@ export default {
 }
 .icon-shouye-maipin {
   color: #f79414 !important;
+  font-size:16px;
 }
 .page {
   text-align: center;
@@ -1433,5 +1448,9 @@ export default {
     line-height:23px;
   }
 }
-
+@media screen and (max-width: 1500px) {
+  .BoxContainer .right-col .listUl li.first-li .cont h1 {
+    transform: scale(.8)
+  }
+}
 </style>

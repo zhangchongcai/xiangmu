@@ -1,15 +1,7 @@
 <template>
   <div class="my_dialog">
-    <el-dialog
-      :title="title"
-      :visible.sync="myDialogTableVisible"
-      @close="close"
-      :show-close="true"
-    >
-      <el-form
-        label-width=""
-        :inline="true"
-      >
+    <el-dialog :title="title" :visible.sync="myDialogTableVisible" @close="close" :show-close="true">
+      <el-form label-width="" :inline="true">
         <div style="position:relative">
           <!-- <el-form-item label="渠道类型:">
               <el-select v-model="dealType" style="width:184px">
@@ -18,98 +10,44 @@
                 <el-option label="第三方渠道" value="2">第三方渠道</el-option>
               </el-select>
             </el-form-item> -->
-          <el-form-item
-            label="影院编码"
-            class="two_search"
-          >
-            <el-input
-              v-model="cinemaCode"
-              style="width:152px"
-            ></el-input>
+          <el-form-item label="影院编码" class="two_search">
+            <el-input v-model="cinemaCode" style="width:152px"></el-input>
           </el-form-item>
           <el-form-item label="影院名称">
-            <el-input
-              v-model="cinemaName"
-              style="width:184px"
-            ></el-input>
+            <el-input v-model="cinemaName" style="width:184px"></el-input>
           </el-form-item>
-          <el-button
-            type="primary"
-            style="position:absolute;right:0;top:5px;"
-            @click="searchUser"
-          >查询</el-button>
+          <el-button type="primary" style="position:absolute;right:0;top:5px;" @click="searchUser">查询</el-button>
         </div>
       </el-form>
       <!-- highlight-current-row  -->
       <div class="choose_table">
         <div>
-          <el-table
-            v-loading="loading"
-            :data="tableList"
-            :cell-style={padding:0}
-            :row-style={height:30}
-            :header-cell-style={padding:0}
-            ref="multipleTable"
-            @select-all="selectAll"
-            :row-key="getRowKeys"
-            @selection-change="select"
-          >
+          <el-table v-loading="loading" :data="tableList" :cell-style={padding:0} :row-style={height:30} :header-cell-style={padding:0} ref="multipleTable" @select-all="selectAll" :row-key="getRowKeys" @selection-change="select">
             <!-- <el-table-column width="39">
               <template slot-scope="scope">
                 <el-checkbox v-model="scope.checked"></el-checkbox>
                 <el-radio v-model="templateRadio" :label="scope.$index">&nbsp;</el-radio>
               </template>
             </el-table-column> -->
-            <el-table-column
-              type="selection"
-              width="40"
-              :reserve-selection="true"
-            ></el-table-column>
-            <el-table-column
-              property="code"
-              label="影院编码"
-              width="294"
-            ></el-table-column>
-            <el-table-column
-              property="name"
-              label="影院名称"
-              width="294"
-            ></el-table-column>
+            <el-table-column type="selection" width="40" :reserve-selection="true"></el-table-column>
+            <el-table-column property="code" label="影院编码" width="294"></el-table-column>
+            <el-table-column property="name" label="影院名称" width="294"></el-table-column>
           </el-table>
           <!-- 分页 -->
-          <div
-            v-show="pageData.total>pageData.size"
-            class="block"
-          >
-            <el-pagination
-              @current-change="handleCurrentChange"
-              background
-              :current-page.sync="pageData.pageNum"
-              :page-size="pageData.size"
-              layout="total,prev, pager, next, jumper"
-              :total="pageData.total"
-            >
+          <div v-show="pageData.total>pageData.size" class="block">
+            <el-pagination @current-change="handleCurrentChange" background :current-page.sync="pageData.pageNum" :page-size="pageData.size" layout="total,prev, pager, next, jumper" :total="pageData.total">
             </el-pagination>
           </div>
         </div>
         <div class="choose_ul">
           <p class="ul_header">
             <span>已选内容：</span>
-            <span
-              style="color: #3B74FF;cursor: pointer;"
-              @click="clearSelection"
-            >清空</span>
+            <span style="color: #3B74FF;cursor: pointer;" @click="clearSelection">清空</span>
           </p>
           <ul class="ul_body">
-            <li
-              v-for="(item,index) in chooseItem"
-              :key="index"
-            >
+            <li v-for="(item,index) in chooseItem" :key="index">
               <span>{{item.name}}</span>
-              <span
-                class="delate_span"
-                @click="delateSpan(item)"
-              > <i class="el-icon-close"></i></span>
+              <span class="delate_span" @click="delateSpan(item)"> <i class="el-icon-close"></i></span>
             </li>
           </ul>
         </div>
@@ -118,12 +56,9 @@
 
       <div style="height:12px;background:transparent;"></div>
       <div class="btn-area">
+
+        <el-button type="primary" @click="chooseUser">确定</el-button>
         <el-button @click="close">取消</el-button>
-        <el-button
-          type="primary"
-          @click="chooseUser"
-          style="margin-right:22px;"
-        >确定</el-button>
       </div>
     </el-dialog>
   </div>

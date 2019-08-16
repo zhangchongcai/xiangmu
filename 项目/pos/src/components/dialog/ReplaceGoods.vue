@@ -26,7 +26,7 @@
                 :class="replacegoods[status].index === subInd ? 'active' : ''">
                 <div >
                     <span>{{subItem.skuName}}</span>
-                    <span class="price">{{subItem.addFlag == 1 ? '加':'减'}}{{subItem.addPrice}}元</span>
+                    <span class="price" v-if="subItem.addPrice">{{subItem.addFlag == 1 ? '减':'加'}}{{subItem.addPrice}}元</span>
                 </div>
                     
                 </li>
@@ -39,7 +39,7 @@
 </template>
 <script>
 import {replaceGood,saleBillSetmealChange} from 'http/apis'
-import {SHOW_REPLACE_GOODS,CART_SET_REPLAC_GOODS,CART_FIND_CART_DATA} from 'types'
+import {SHOW_REPLACE_GOODS,CART_SET_REPLAC_GOODS,CART_FIND_CART_DATA,CART_REPLACE_GOOD_DATAS} from 'types'
 import {mapMutations,mapGetters,mapState,mapActions} from 'vuex'
 export default {
     props:{
@@ -55,6 +55,7 @@ export default {
     computed: {
         ...mapState({
             infoData : state => state.cart.replacegoodsInfo,
+            replaceGoodDatas : state => state.cart.replacegoodDatas
         }),
         ...mapGetters([
             'showReplacegoods',
@@ -78,7 +79,8 @@ export default {
     methods: {
         ...mapMutations([
             SHOW_REPLACE_GOODS,
-            CART_SET_REPLAC_GOODS
+            CART_SET_REPLAC_GOODS,
+            CART_REPLACE_GOOD_DATAS
         ]),
          ...mapActions({
             CART_FIND_CART_DATA,
@@ -101,6 +103,7 @@ export default {
         },
         async refor(){
             let reForArr = [];
+            let newArr = [];
             for(let i = 0;  i < this.replacegoods.length; i++){
                 let dataItem = this.replacegoods[i];
                 if(dataItem.index !== undefined){
@@ -111,9 +114,41 @@ export default {
                         item.merItemList = item.cinemaMakeItemEntityList;
                     }
                     reForArr.push(item)
+                    let newDataItem = JSON.parse(JSON.stringify(dataItem))
+                    delete newDataItem.index
+                    newDataItem.cinemaSetmealItemChangeVoList.splice(dataItem.index,1);
+                    let newCinemaSetmealItemChangeVoList = newDataItem.cinemaSetmealItemChangeVoList;
+                    delete newDataItem.cinemaSetmealItemChangeVoList
+                    newCinemaSetmealItemChangeVoList.push(newDataItem);
+                    let newArrData = {
+                        ...item,
+                        cinemaSetmealItemChangeVoList : newCinemaSetmealItemChangeVoList
+                    }
+                    newArr.push(newArrData);
+                    continue
                 }
+                newArr.push(dataItem)
             }
-            let data = await saleBillSetmealChange(reForArr);
+            if(!reForArr.length) return this.dialogVisible = false
+            reForArr = JSON.parse(JSON.stringify(reForArr))
+            reForArr.map((item)=>{
+                if(item.itemCount){
+                    item.merCount = item.itemCount
+                }
+                item.skuUid = item.skuSellEntity.skuUid;
+                item.skuCode = item.skuSellEntity.code;
+                item.skuName = item.skuSellEntity.name;
+            })
+            let reforObj = {
+                billCode : this.billCode,
+                goodsUid : this.infoData.uid,
+                itemList : reForArr
+            }
+            let data = await saleBillSetmealChange(reforObj);
+            if(data.code != 200) return this.$message.error(data.msg)
+            let obj = JSON.parse(JSON.stringify(this.replaceGoodDatas)) ;
+            obj[this.infoData.uid] = newArr
+            this[CART_REPLACE_GOOD_DATAS](obj)
             await this[CART_FIND_CART_DATA](this.billCode)
             this.dialogVisible = false
         }

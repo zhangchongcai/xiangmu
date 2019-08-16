@@ -16,8 +16,7 @@
             <Authority-Name :orgType="orgType" :orgName="orgName"></Authority-Name>
         </div>
         <div class="time-item">
-          <label class="label-title">
-            时间选择：
+            <span class="label-title">时间选择:</span>
             <calendar-view
               size="mini"
               v-model="time"
@@ -28,24 +27,21 @@
               @emitCalendarType="getTimeType"
               @change="changeTime"
             ></calendar-view>
-          </label>
         </div>
         <div class="time-item">
-          <label class="label-title">
-             影院品牌：
-               <el-select
-                    v-model="cinemaId"
-                    placeholder="请选择影院品牌"
-                    clearable
-                    @change="changeCinema">
-                    <el-option
-                      v-for="(item,index) in cinemaList"
-                      :key="index"
-                      :label="item.brandName"
-                      :value="item.brandCode">
-                    </el-option>
-              </el-select>
-          </label>
+          <span class="label-title">影院品牌:</span> 
+          <el-select
+            v-model="cinemaId"
+            placeholder="请选择影院品牌"
+            clearable
+            @change="changeCinema">
+            <el-option
+              v-for="(item,index) in cinemaList"
+              :key="index"
+              :label="item.brandName"
+              :value="item.brandCode">
+            </el-option>
+          </el-select>
         </div>
         <div class="time-item">
           <el-button type="primary"  @click="search">查询</el-button>
@@ -63,7 +59,7 @@
           <span class="quota-time">({{showTimeLabel}})</span>
         </div>
         <div>
-          <el-radio-group v-model="ratioType" @change="changeRadio">
+          <el-radio-group class="reset-radios-group" v-model="ratioType" @change="changeRadio">
             <el-radio :label="1" :disabled="disabledChain">环比</el-radio>
             <el-radio :label="2" :disabled="disabledSame">同比</el-radio>
           </el-radio-group>
@@ -89,7 +85,7 @@
                   class="iconfont"
                   :class="[item.valueRound > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"
                 ></i>
-                {{item.valueRound == '-9999'?'--':(item.valueRound*1 >0?item.valueRound*1:item.valueRound*(-1))}}%
+                {{item.valueRound | numberToFixed}}%
               </span>
             </div>
             <div class="ratio" v-if="ratioType == 2 && !disabledSame">
@@ -99,7 +95,7 @@
                   class="iconfont"
                   :class="[item.valueSame > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"
                 ></i>
-                {{item.valueSame == '-9999'?'--':(item.valueSame*1 >0 ?item.valueSame:item.valueSame*(-1))}}%
+                {{item.valueSame | numberToFixed}}%
               </span>
             </div>
           </div>
@@ -155,7 +151,7 @@
               <template slot-scope="scope">{{scope.row.planShowCount | formatNum | formatFixed}}</template>
             </el-table-column>
             <el-table-column prop="avgTicketPrice" label="平均票价(元)" min-width="100" key="avgTicketPrice">
-              <template slot-scope="scope">{{scope.row.avgTicketPrice | formatNull}}</template>
+              <template slot-scope="scope">{{scope.row.avgTicketPrice | formatNum}}</template>
             </el-table-column>
             <el-table-column prop="servicePrice" label="三方服务费(元)" min-width="130" key="servicePrice">
               <template slot-scope="scope">{{scope.row.servicePrice | formatNum}}</template>
@@ -170,7 +166,7 @@
               <template slot-scope="scope">{{scope.row.splitBoxOffice | formatNum}}</template>
             </el-table-column>
             <el-table-column prop="attendanceRate" label="上座率(%)" min-width="100" v-if="memberTypeVal === 0" key="attendanceRate">
-              <template slot-scope="scope">{{scope.row.attendanceRate | formatNull }}</template>
+              <template slot-scope="scope">{{scope.row.attendanceRate | formatNum }}</template>
             </el-table-column>
             <el-table-column prop="avgPlanShowCount" label="场均人次(人)" min-width="100" v-if="memberTypeVal === 0" key="avgPlanShowCount">
               <template slot-scope="scope">{{scope.row.avgPlanShowCount | formatNum | formatFixed}}</template>
@@ -179,10 +175,10 @@
               <template slot-scope="scope">{{scope.row.avgSeatPrice | formatNum}}</template>
             </el-table-column>
             <el-table-column prop="memberBoxOfficePer" label="会员消费占比(%)" min-width="140" key="memberBoxOfficePer">
-              <template slot-scope="scope">{{scope.row.memberBoxOfficePer | formatNull }}</template>
+              <template slot-scope="scope">{{scope.row.memberBoxOfficePer | formatNum }}</template>
             </el-table-column>
             <el-table-column prop="marketShare" label="市场份额(%)" min-width="100" v-if="memberTypeVal === 0" key="marketShare">
-              <template slot-scope="scope">{{scope.row.marketShare | formatNull }}</template>
+              <template slot-scope="scope">{{scope.row.marketShare | formatNum }}</template>
             </el-table-column>
           </el-table>
         </div>
@@ -204,7 +200,7 @@
             @getType="changeChannelType"
           ></target-label>
           <div style="width:100%">
-            <ve-pie
+            <!-- <ve-pie
               :title="channelTitle"
               :data="channelData"
               :extend="pieExtend"
@@ -213,11 +209,20 @@
               :data-empty="channelChartEmpty"
               v-if="showChannelPie"
             >
-            </ve-pie>
+            </ve-pie> -->
+            <ve-ring
+              :title="channelTitle"
+              :settings="{roseType: 'radius'}"
+              :data="channelData"
+              :extend="pieExtendChannel"
+              :colors="colors"
+              :data-empty="channelChartEmpty"
+              v-if="showChannelPie"
+            ></ve-ring>
             <ve-histogram
               :title="channelTitle1"
               :data="channelData"
-              :extend="barExtend"
+              :extend="barExtendChannel"
               :legend-visible="false"
               :data-empty="channelChartEmpty"
               v-else
@@ -237,7 +242,7 @@
               :title="movieTitle"
               :settings="{roseType: 'radius'}"
               :data="movieData"
-              :extend="pieExtend"
+              :extend="pieExtendMovie"
               :colors="colors"
               :data-empty="movieChartEmpty"
               v-if="showMoviePie"
@@ -245,7 +250,7 @@
             <ve-histogram
               :title="movieTitle1"
               :data="movieData"
-              :extend="barExtend"
+              :extend="barExtendMovie"
               :legend-visible="false"
               :data-empty="movieChartEmpty"
               v-else
@@ -286,7 +291,7 @@
               <template slot-scope="scope">{{scope.row.planShowCount | formatNum | formatFixed}}</template>
             </el-table-column>
             <el-table-column prop="avgTicketPrice" label="平均票价(元)" min-width="120" sortable="custom" key="avgTicketPrice">
-              <template slot-scope="scope">{{scope.row.avgTicketPrice}}</template>
+              <template slot-scope="scope">{{scope.row.avgTicketPrice | formatNum}}</template>
             </el-table-column>
             <el-table-column prop="servicePrice" label="三方服务费(元)" min-width="140" sortable="custom" key="servicePrice">
               <template slot-scope="scope">{{scope.row.servicePrice | formatNum}}</template>
@@ -300,29 +305,39 @@
             <el-table-column prop="splitBoxOffice" label="分帐票房(元)" min-width="120" sortable="custom" key="splitBoxOffice">
               <template slot-scope="scope">{{scope.row.splitBoxOffice | formatNum}}</template>
             </el-table-column>
-            <el-table-column prop="unShowCountRate" label="空场率(%)" min-width="110" sortable="custom" v-if="memberTypeVal === 0" key="unShowCountRate"></el-table-column>
-            <el-table-column prop="attendanceRate" label="上座率(%)" min-width="110" sortable="custom" v-if="memberTypeVal === 0" key="attendanceRate"></el-table-column>
+            <el-table-column prop="unShowCountRate" label="空场率(%)" min-width="110" sortable="custom" v-if="memberTypeVal === 0" key="unShowCountRate">
+               <template slot-scope="scope">{{scope.row.unShowCountRate | formatNum}}</template>
+            </el-table-column>
+            <el-table-column prop="attendanceRate" label="上座率(%)" min-width="110" sortable="custom" v-if="memberTypeVal === 0" key="attendanceRate">
+               <template slot-scope="scope">{{scope.row.attendanceRate | formatNum}}</template>
+            </el-table-column>
             <el-table-column prop="avgPlanShowCount" label="场均人次(人)" min-width="130" sortable="custom" v-if="memberTypeVal === 0" key="avgPlanShowCount">
               <template slot-scope="scope">{{scope.row.avgPlanShowCount  | formatFixed}}</template>
             </el-table-column>
-            <el-table-column prop="avgSeatPrice" label="单座产出(元)" min-width="130" sortable="custom" v-if="memberTypeVal === 0" key="avgSeatPrice"></el-table-column>
-            <el-table-column prop="memberBoxOfficePer" label="会员消费占比(%)" min-width="140" sortable="custom" key="memberBoxOfficePer"></el-table-column>
+            <el-table-column prop="avgSeatPrice" label="单座产出(元)" min-width="130" sortable="custom" v-if="memberTypeVal === 0" key="avgSeatPrice">
+                <template slot-scope="scope">{{scope.row.avgSeatPrice | formatNum}}</template>
+            </el-table-column>
+            <el-table-column prop="memberBoxOfficePer" label="会员消费占比(%)" min-width="140" sortable="custom" key="memberBoxOfficePer">
+               <template slot-scope="scope">{{scope.row.memberBoxOfficePer | formatNum}}</template>
+            </el-table-column>
             <el-table-column prop="marketShare" label="市场份额(%)" min-width="130" sortable="custom" v-if="memberTypeVal === 0" key="marketShare">
-              <template slot-scope="scope">{{scope.row.marketShare || '--'}}</template>
+              <template slot-scope="scope">{{scope.row.marketShare | formatNum}}</template>
             </el-table-column>
           </el-table>
         </div>
-        <div class="reset-page" v-if="total>0">
-          <el-pagination
+        <div class="reset-page" >
+          <el-pagination v-if="total>15"
             size="mini"
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
             :current-page="page"
             :page-sizes="sizes"
             :page-size="size"
-            layout="sizes,total,prev, pager, next, jumper"
+            layout="total,sizes,prev, pager, next, jumper"
             :total="total"
           ></el-pagination>
+          <span class="page-else" v-else-if="total>0">共{{total}}条</span>
+          <span class="page-else" v-else></span>
         </div>
       </div>
     </div>

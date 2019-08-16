@@ -5,7 +5,7 @@
       <div class="BoxTitle flex" height="40">
         <div>
           <span class="iconfont icon-shouye-piaofang"></span>
-          <span>票房</span>
+          <span class="title">票房</span>
         </div>
         <div>
           <span class="tip cursor" @click="goDetail">详情</span>
@@ -74,14 +74,14 @@
               <div slot="content" style="width:300px">
                 <ul id="ulMain">
                   <li>票房收入当日达成 : <span>{{CurrentBoxKPIDataCine.boxOfficeCurrent | capitalizeOne}}{{CurrentBoxKPIDataCine.boxOfficeCurrent | foo}}</span></li>
-                  <li>环比前一日 : <span :class="[CurrentBoxKPIDataCine.boxOfficeChainDay > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[CurrentBoxKPIDataCine.boxOfficeChainDay > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{CurrentBoxKPIDataCine.boxOfficeChainDay | woo}}%</span></li>
+                  <li>环比前一日 : <span :class="[CurrentBoxKPIDataCine.boxOfficeChainDay > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[CurrentBoxKPIDataCine.boxOfficeChainDay > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{CurrentBoxKPIDataCine.boxOfficeChainDay | woo(true)}}%</span></li>
                   <li>月至今达成 : <span>{{CurrentBoxKPIDataCine.boxOfficeMonthToNow | capitalizeOne}}{{CurrentBoxKPIDataCine.boxOfficeMonthToNow | foo}}</span></li>
-                  <li>环比上月 : <span :class="[CurrentBoxKPIDataCine.boxOfficeChainMonth > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[CurrentBoxKPIDataCine.boxOfficeChainMonth > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{CurrentBoxKPIDataCine.boxOfficeChainMonth | woo}}%</span></li>
+                  <li>环比上月 : <span :class="[CurrentBoxKPIDataCine.boxOfficeChainMonth > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[CurrentBoxKPIDataCine.boxOfficeChainMonth > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{CurrentBoxKPIDataCine.boxOfficeChainMonth | woo(true)}}%</span></li>
                   <li>本月目标为 : <span>{{CurrentBoxKPIDataCine.boxOfficeTarget | capitalizeOne}}</span>{{CurrentBoxKPIDataCine.boxOfficeTarget | foo}}</li>
                   <li>达成率 : <span>{{CurrentBoxKPIDataCine.boxOfficeRate | woo}}</span>%</li>
                   <li>与时间进度差距为 : <span :class="[CurrentBoxKPIDataCine.timeRateGap > 0? 'green':'red']">{{CurrentBoxKPIDataCine.timeRateGap | woo}}%</span></li>
                   <li>按目前进度,预计月底达成率为 : <span>{{CurrentBoxKPIDataCine.boxOfficeExpect | woo}}</span>%</li>
-                  <li>与目标额差距 : <span :class="[CurrentBoxKPIDataCine.boxOfficeGap > 0? 'green':'red']">{{CurrentBoxKPIDataCine.boxOfficeGap | woo}}</span>%</li>
+                  <li>与目标额差距 : <span :class="[CurrentBoxKPIDataCine.boxOfficeGap > 0? 'green':'red']">{{CurrentBoxKPIDataCine.boxOfficeGap | woo}}%</span></li>
                 </ul>
               </div>
               <i class="iconfont icon-danchuang-tishi"></i>
@@ -181,7 +181,7 @@
                   <li>月至今达成 : <span>{{BoxKPIDataShare.marketShareMonthToNow | capitalizeOne}}</span>%</li>
                   <li>环比上月 : <span :class="[BoxKPIDataShare.marketShareChainMonth > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[BoxKPIDataShare.marketShareChainMonth > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{BoxKPIDataShare.marketShareChainMonth | capitalizeOne}}%</span></li>
                   <li>本月目标为 : <span>{{BoxKPIDataShare.marketShareTarget | capitalizeOne}}</span>%</li>
-                  <li>距目标额差距 : <span>{{BoxKPIDataShare.marketShareGap | capitalizeOne}}</span>%</li>
+                  <li>距目标额差距 : <span :class="[BoxKPIDataShare.marketShareGap > 0? 'green':'red']">{{BoxKPIDataShare.marketShareGap | capitalizeOne}}%</span></li>
                 </ul>
               </div>
               <i class="iconfont icon-danchuang-tishi"></i>
@@ -458,7 +458,7 @@ export default {
           trigger:'item',
           formatter:(params)=>{
             let name = params.name;
-            let percent = params.percent;
+            let percent = params.value;
             let str = name + '<br>' + percent + '%';
             return str
           }
@@ -550,9 +550,9 @@ export default {
     }
   },
   filters: {
-    woo(value){
+    woo(value,isPositive){
       if (!value) return "--"
-      return value.toFixed(2)
+      return isPositive ? Math.abs(value).toFixed(2): value.toFixed(2) 
     },
     //处理万元单位
     capitalizeOne(value) {
@@ -579,31 +579,12 @@ export default {
     //处理万人计算保留两位小数
     capitalizePerson(value) {
       if (!value) return "--"
-      let newValue = value.toString();
-      
-      if(newValue.indexOf('.') != -1){
-        if(newValue.length <= 7){
-          return newValue
-        }
-        else if(newValue.length >= 8 && newValue.length <= 11){
-
-          return (newValue / 10000).toFixed(2)
-        }
-        else if(newValue.length >= 12){
-          return ((newValue / 10000) / 10000).toFixed(2)
-        }
-      }
-      else{
-        if(newValue.length < 5){
-          return newValue
-        }
-        else if(newValue.length >= 5 && newValue.length <= 8){
-
-          return (newValue / 10000).toFixed(2)
-        }
-        else if(newValue.length >= 9){
-          return ((newValue / 10000) / 10000).toFixed(2)
-        }
+      if(value < 10000){
+          return value.toFixed(2) < 10000 ? value : '1.00';
+      }else if(value < 100000000){
+          return (value/10000).toFixed(2) < 10000 ? (value/10000).toFixed(2) : '1.00';
+      }else {
+          return (value/100000000).toFixed(2);
       }
     },
     //处理万人单位计算
@@ -635,6 +616,7 @@ export default {
         query: {
           name: this.cityName,
           cinemaId: this.memberId,
+          cityId: this.$route.query.cityId,
           startTime:this.startDate,
           endTime:this.endDate,
           dateType:this.timeType,
@@ -836,12 +818,12 @@ export default {
     },
     //市场份额
     getShareChart(res){
-       console.log(res,'ff')
+    //    console.log(res,'ff')
       let ChartsDataX = res.boxOfficeMarket ?  res.boxOfficeMarket.xAxis || [] : [];
       let ChartsDataY = res.boxOfficeMarket ?  res.boxOfficeMarket.yAxis || [] : [];
       //获取饼状图数据
       if(ChartsDataX && ChartsDataY){
-        console.log(ChartsDataY,'ff')
+        // console.log(ChartsDataY,'ff')
         let foo = ChartsDataY.map(item => {
           return {
             name: item.cinemaName,
@@ -852,7 +834,7 @@ export default {
 
         this.ChartShare.columns = ["name", "市场份额"];
         this.ChartShare.rows = foo;
-         console.log(this.ChartShare,'市场份额')
+        //  console.log(this.ChartShare,'市场份额')
       }
     },
   }
@@ -882,8 +864,11 @@ export default {
       width: 100%;
       line-height: 40px;
       padding: 0 16px;
-      font-size: 16px;
-      font-weight: bold;
+      .title{
+        font-family: PingFangSC-Medium;
+        font-size: 14px;
+        color:#333;
+      }
       .iconfont {
         margin-right: 5px;
         color: #1296db;
@@ -930,6 +915,7 @@ export default {
             text-align: center;
             display: block;
             margin-top:13px;
+            font-weight:bold;
           }
           p {
             font-size: 12px;
@@ -1031,6 +1017,7 @@ export default {
 }
 .icon-shouye-piaofang {
   color: #0845f788 !important;
+  font-size:16px;
 }
 .reset-table .el-table th.is-leaf {
   padding: 0px;
@@ -1060,5 +1047,9 @@ export default {
     line-height:23px;
   }
 }
-
+@media screen and (max-width: 1500px) {
+  .BoxContainer .right-col .listUl li.first-li .cont h1 {
+    transform: scale(.8)
+  }
+}
 </style>

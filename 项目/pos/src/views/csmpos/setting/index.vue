@@ -1,7 +1,6 @@
 <template>
     <div class="setting">
         <div class="contents-container">
-          <div class="left">
               <div class="items">
                   <span>影票打印机:</span>
                   <div class="selector-box">
@@ -19,7 +18,41 @@
                     </v-select>
                   </div>
               </div>
-            <div class="items">
+              <div class="items-right paddingRight20">
+                 <span>读卡器:</span>
+                 <div class="selector-box">
+                   <!-- card_reader  -->
+                    <v-select>
+                      <el-select @change="cardReaderHandleChange" v-model="cardReaderValue" placeholder="请选择" class="el-select-width" size="medium">
+                        <el-option
+                          v-for="item in options.card_reader"
+                          :key="item.name"
+                          :label="item.name"
+                          :value="item.name"
+                        >
+                        </el-option>
+                      </el-select>
+                    </v-select>
+                 </div>
+             </div>
+             <div class="items-right ">
+                 <span>票券打印机:</span>
+                  <div class="selector-box">
+                    <!-- coupon_print  -->
+                    <v-select>
+                      <el-select @change="couponPrintHandleChange" v-model="couponPrintValue" placeholder="请选择" class="el-select-width" size="medium">
+                        <el-option
+                          v-for="item in options.coupon_print"
+                          :key="item.name"
+                          :label="item.name"
+                          :value="item.name"
+                        >
+                        </el-option>
+                      </el-select>
+                    </v-select>
+                 </div>
+             </div>
+            <div class="items paddingRight20">
               <span>小票打印机:</span>
               <div class="selector-box">
                 <!-- bill_print -->
@@ -54,7 +87,23 @@
                     </v-select>
                   </div>
              </div>
-
+            <div class="items-right paddingRight20">
+                 <span>密码键盘:</span>
+                 <div class="selector-box">
+                  <!-- keyboard  -->
+                  <v-select>
+                    <el-select @change="keyboardHandleChange" v-model="keyboardValue" placeholder="请选择" class="el-select-width" size="medium">
+                      <el-option
+                        v-for="item in options.keyboard"
+                        :key="item.name"
+                        :label="item.name"
+                        :value="item.name"
+                      >
+                      </el-option>
+                    </el-select>
+                  </v-select>
+                 </div>
+             </div>
              <div class="items">
                  <span>银行卡支付对接银联POS机类型:</span>
                  <div class="selector-box">
@@ -73,7 +122,7 @@
                  </div>
              </div>
 
-             <div class="items">
+             <div class="items paddingRight20">
                  <span>POS机客显类型:</span>
                  <div class="selector-box">
                    <!-- pos_show_type  -->
@@ -102,83 +151,43 @@
                      <span style="margin-left: 4px;">像素</span>
                  </div>
              </div>
-             <div class="items">
+             <div class="items width100Item">
                  <span>终端售卖商品范围:</span>
                  <div class="selector-box">
-                    <el-radio-group @change="counterTypeHandleChange" v-model="counterTypeValue">
+                    <el-radio-group v-model="options.counter_type_value">
                       <el-radio label="movie">影票</el-radio>
                       <el-radio label="goods">小卖</el-radio>
                       <el-radio label="both">全部</el-radio>
                     </el-radio-group>
                  </div>
              </div>
-
-             <div class="items">
+             <div class="items width100Item">
+                 <span>售卖卖品是否直接出库:</span>
+                 <div class="selector-box" :style="{flex:1}">
+                    <el-radio-group  @change="saleGoodsPrintTypeChange"
+                    v-model="saleGoodsPrintType">
+                      <el-radio :label="1">直接出库（不打印取货凭证）</el-radio>
+                      <el-radio :label="0">不出库（打印取货凭证）</el-radio>
+                    </el-radio-group>
+                 </div>
+             </div>
+             <div class="items width100Item">
                  <span>是否启用虚拟键盘输入:</span>
                  <div class="selector-box">
-                     <el-checkbox  v-model="checked">是</el-checkbox>
-                     <el-checkbox  v-model="checked">否</el-checkbox>
-                 </div>
-             </div>
-          </div>
-
-          <div class="right">
-             <div class="items-right">
-                 <span>票券打印机:</span>
-                  <div class="selector-box">
-                    <!-- coupon_print  -->
-                    <v-select>
-                      <el-select @change="couponPrintHandleChange" v-model="couponPrintValue" placeholder="请选择" class="el-select-width" size="medium">
-                        <el-option
-                          v-for="item in options.coupon_print"
-                          :key="item.name"
-                          :label="item.name"
-                          :value="item.name"
-                        >
-                        </el-option>
-                      </el-select>
-                    </v-select>
-                 </div>
-             </div>
-             <div class="items-right">
-                 <span>读卡器:</span>
-                 <div class="selector-box">
-                   <!-- card_reader  -->
-                    <v-select>
-                      <el-select @change="cardReaderHandleChange" v-model="cardReaderValue" placeholder="请选择" class="el-select-width" size="medium">
-                        <el-option
-                          v-for="item in options.card_reader"
-                          :key="item.name"
-                          :label="item.name"
-                          :value="item.name"
-                        >
-                        </el-option>
-                      </el-select>
-                    </v-select>
+                    <el-radio-group @change="keyboardValueChange" v-model="fictitiousKeyboardValue">
+                      <el-radio :label="0">否</el-radio>
+                      <el-radio :label="1">是</el-radio>
+                    </el-radio-group>
                  </div>
              </div>
 
-             <div class="items-right">
-                 <span>密码键盘:</span>
-                 <div class="selector-box">
-                  <!-- keyboard  -->
-                  <v-select>
-                    <el-select @change="keyboardHandleChange" v-model="keyboardValue" placeholder="请选择" class="el-select-width" size="medium">
-                      <el-option
-                        v-for="item in options.keyboard"
-                        :key="item.name"
-                        :label="item.name"
-                        :value="item.name"
-                      >
-                      </el-option>
-                    </el-select>
-                  </v-select>
-                 </div>
-             </div>
-          </div>
+             
+             
+
+             
         </div>
         <div class="setting-footer">
-            <button class="setting-btn" @click="$router.go(-1)">取消</button>
+            <button class="setting-btn" @click="close">取消</button>
             <button class="setting-btn setting-confirm" @click="writeTerminalParameter()">确定</button>
         </div>
     </div>
@@ -187,6 +196,7 @@
 <script>
 import vSelect from "components/select/index";
 import * as TYPES from '../../../newVuex/types'
+import { VM_LOGIN_SET_MENU } from 'types/vmOnType'
 import util from "../../../http/app";
 export default {
   data() {
@@ -203,7 +213,9 @@ export default {
       keyboardValue: "",
       posTypeValue:"",
       posShowTypeValue:"",
-      counterTypeValue:"movie"
+      counterTypeValue:"movie",
+      saleGoodsPrintType:0,
+      fictitiousKeyboardValue:0,
     };
   },
   components: {
@@ -308,6 +320,30 @@ export default {
     yNumHandleChange(newVal){
       this.options.film_print_offset.y = newVal;
     },
+    saleGoodsPrintTypeChange(newVal){
+      this.options.sale_goods_print_type = newVal
+    },
+    keyboardValueChange(newVal){
+      this.options.fictitious_keyboard = newVal
+    },
+    close(){
+      let globalAppState = JSON.parse(localStorage.getItem('globalAppState')) 
+      if(!globalAppState) {
+        if(['both','movie'].includes(this.options.counter_type_value)){
+                this.$router.push({path: '/home'})
+          }else{
+              this.$router.push({path: '/home/goods/cellgoods'})
+          }
+          return
+      }
+      if( this.$store.getters.configData.isSetting) {
+        if(['both','movie'].includes(this.options.counter_type_value)){
+                this.$router.push({path: '/home'})
+          }else{
+              this.$router.push({path: '/home/goods/cellgoods'})
+          }
+      }
+    },
     //读取终端参数配置的回调
     readTerminalParameterFunc() {
       //电影打印机默认选中
@@ -373,6 +409,24 @@ export default {
             this.posTypeValue = element.name;
           }
         });
+      }else {
+        this.options.pos_type = [
+                                    {
+                                      code : '2',
+                                      name : '不对接',
+                                      selected : false
+                                    },
+                                        {
+                                          code : '0',
+                                      name : '快钱POS机',
+                                      selected : false
+                                      },
+                                      {
+                                          code : '1',
+                                      name : '杉德POS机',
+                                      selected : false
+                                      }
+                                ];
       }
       //POS机客显类型选中
       if(this.options.pos_show_type){
@@ -381,15 +435,48 @@ export default {
             this.posShowTypeValue = element.name;
           }
         });
+      }else {
+        this.options.pos_show_type = [
+                                        {
+                                          code : ' ',
+                                        name : '无客显',
+                                        selected : false
+                                        },
+                                        {
+                                          code : 'ZHONGQI',
+                                        name : '中崎',
+                                        selected : false
+                                        },
+                                        {
+                                          code : 'XINGQIAO',
+                                        name : '星乔',
+                                        selected : false
+                                        }
+                                      ];
       }
       //打印偏移量
       if(this.options.film_print_offset) {
         this.xNum = this.options.film_print_offset.x;
         this.yNum = this.options.film_print_offset.y;
       }
+      console.log(this.options);
+      // 售卖卖品是否直接出库:
+      this.saleGoodsPrintType = this.options.sale_goods_print_type;
+      this.fictitiousKeyboardValue = this.options.fictitious_keyboard;
     },
     //写入终端参数配置
     writeTerminalParameter() {
+      if(!this.filmPrintValue) return this.$message.error('请选择影票打印机！')
+      if(!this.cardReaderValue) return this.$message.error('请选择读卡器！')
+      if(!this.couponPrintValue) return this.$message.error('请选择票券打印机！')
+      if(!this.billPrintValue) return this.$message.error('请选择小票打印机！')
+      if(!this.cashBoxValue) return this.$message.error('请选择钱箱接口！')
+      if(!this.keyboardValue) return this.$message.error('请选择密码键盘！')
+      // if(!this.posTypeValue) return this.$message.error('请选择银联POS机类型！')
+      // if(!this.posShowTypeValue) return this.$message.error('请选择POS机客显类型！')
+      if(this.xNum === '') return this.$message.error('请输入影票打印机偏移x坐标！')
+      if(this.yNum === '') return this.$message.error('请输入影票打印机偏移y坐标！')
+      this.options.isSetting = true
       util.writeTerminalParameter(
         this.options,
         (args)=>{
@@ -401,7 +488,13 @@ export default {
             return
           }else{
             this.$store.commit(TYPES.SET_CONFIG_DATA, JSON.parse(JSON.stringify(this.options)));
-            alert("保存成功")
+            this.$message.success('保存成功');
+            this.$vm.$emit(VM_LOGIN_SET_MENU)
+            if(['both','movie'].includes(this.options.counter_type_value)){
+                  this.$router.push({path: '/home'})
+              }else{
+                  this.$router.push({path: '/home/goods/cellgoods'})
+              }
           }
         }
       );
@@ -425,6 +518,8 @@ export default {
   color: $font-color6;
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 
   .setting-header {
     position: position;
@@ -443,9 +538,13 @@ export default {
 
   .contents-container {
     width: 100vw;
-    height: calc(100vh - 6.3vh - 6.3vh);
     display: flex;
-
+    flex-wrap: wrap;
+    padding: 30px 0px;
+    box-sizing: border-box;
+    flex: 1;
+    align-content: start;
+    
     .left {
       flex: 0 0 50%;
       box-sizing: border-box;
@@ -464,20 +563,35 @@ export default {
 
     .items-right {
       display: flex;
-      width: 100%;
+      width: 50%;
       align-items: center;
       justify-content: flex-end;
       margin-bottom: 20px;
+      & > span{
+        width: calc(50vw - 29.3vw - 6px);
+        text-align: right;
+      }
     }
 
     .items {
       display: flex;
-      width: 100%;
+      width: 50%;
       align-items: center;
       justify-content: flex-end;
       margin-bottom: 20px;
+      & > span{
+        width: calc(50vw - 29.3vw - 6px);
+        text-align: right;
+      }
     }
-
+    .paddingRight20{
+      box-sizing: border-box;
+      padding-right: 20px;
+    }
+    .width100Item{
+      width: 100%;
+      justify-content: flex-start;
+    }
     .selector-box {
       width: 29.3vw;
       min-width: 29.3vw;
@@ -496,6 +610,7 @@ export default {
         height: 5.2vh;
       }
     }
+    
   }
 
   .setting-footer {

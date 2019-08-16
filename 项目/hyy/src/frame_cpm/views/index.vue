@@ -1,8 +1,7 @@
 <template>
-        <transition name="fade" mode="out-in">
-            <Main/>
-        </transition>
-
+    <transition name="fade" mode="out-in">
+        <Main/>
+    </transition>
 </template>
 <script>
 import mainCon from './Main'

@@ -21,27 +21,27 @@
                             <div class="text-blue cursor" @click="goDetail({cinemaId:scope.row.cinemaId,name:scope.row.cinemaName,type:'cinema'})">{{scope.row.cinemaName}}</div>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="newMember" label="新增会员数" min-width="110" sortable :formatter="formatNum"></el-table-column>
-                    <el-table-column prop="effectiveMember" label="有效会员数" min-width="110" sortable :formatter="formatNum" v-if="timeType == 'day'"> </el-table-column>
-                    <el-table-column prop="cumulativeMember" label="累计会员数" min-width="110" sortable :formatter="formatNum" v-if="timeType == 'day'"></el-table-column>
-                    <el-table-column prop="coverMember" label="可转化用户数" min-width="120" sortable :formatter="formatNum"></el-table-column>
-                    <el-table-column prop="newCardMember" label="新卡会员数" min-width="110" sortable :formatter="formatNum"></el-table-column>
-                    <el-table-column prop="renewMember" label="续卡会员数" min-width="110" sortable :formatter="formatNum"></el-table-column>
-                    <el-table-column prop="patchCardMember" label="补卡会员数" min-width="110" sortable :formatter="formatNum"></el-table-column>
-                    <el-table-column prop="storeMember" label="储值会员数" min-width="110" sortable :formatter="formatNum"></el-table-column>
-                    <el-table-column prop="expireMember30" label="已到期30天会员" min-width="140" sortable :formatter="formatNum" v-if="timeType == 'day'"></el-table-column>
-                    <el-table-column prop="expireMember7" label="已到期7天会员" min-width="140" sortable :formatter="formatNum" v-if="timeType == 'day'"></el-table-column>
-                    <el-table-column prop="memberCardProfit" label="会员卡费收益" min-width="120" sortable :formatter="formatNum"></el-table-column>
-                    <el-table-column prop="memberStoreAmount" label="会员储值金额" min-width="130" sortable :formatter="formatNum"></el-table-column>
-                    <el-table-column prop="memberConsumeAmount" label="会员消费金额"  min-width="130" sortable :formatter="formatNum"></el-table-column>
-                    <el-table-column prop="totalStoreAmount" label="累计储值余额" min-width="130" sortable :formatter="formatNum" v-if="type == 'group' && timeType == 'day'"></el-table-column>
-                    <el-table-column prop="memberNewCardProfit" label="会员开新卡收益" min-width="130" sortable :formatter="formatNum"></el-table-column>
-                    <el-table-column prop="memberRenewCardProfit" label="会员续卡收益" min-width="130" sortable :formatter="formatNum"></el-table-column>
-                    <el-table-column prop="memberPatchCardProfit" label="会员补卡收益" min-width="130" sortable :formatter="formatNum"></el-table-column>
-                    <el-table-column prop="memberUnitPrice" label="会员客单价" min-width="110" sortable :formatter="formatNum"></el-table-column>
-                    <el-table-column prop="memberPersonProfit" label="会员人均贡献" min-width="120" sortable :formatter="formatNum"></el-table-column>
-                    <el-table-column prop="memberConsumePercent" label="会员消费占比" min-width="130" sortable :formatter="formatNum"></el-table-column>
-                    <el-table-column prop="effectiveMemberRate" label="有效会员占比" min-width="130" sortable :formatter="formatNum" v-if="timeType == 'day'"></el-table-column>
+                    <el-table-column prop="newMember" label="新增会员数(人)" min-width="130" sortable :formatter="formatNum"></el-table-column>
+                    <el-table-column prop="effectiveMember" label="有效会员数(人)" min-width="130" sortable :formatter="formatNum" v-if="timeType == 'day'"> </el-table-column>
+                    <el-table-column prop="cumulativeMember" label="累计会员数(人)" min-width="130" sortable :formatter="formatNum" v-if="timeType == 'day'"></el-table-column>
+                    <el-table-column prop="coverMember" label="可转化用户数(人)" min-width="140" sortable :formatter="formatNum"></el-table-column>
+                    <el-table-column prop="newCardMember" label="新卡会员数(人)" min-width="140" sortable :formatter="formatNum"></el-table-column>
+                    <el-table-column prop="renewMember" label="续卡会员数(人)" min-width="140" sortable :formatter="formatNum"></el-table-column>
+                    <el-table-column prop="patchCardMember" label="补卡会员数(人)" min-width="140" sortable :formatter="formatNum"></el-table-column>
+                    <el-table-column prop="storeMember" label="储值会员数(人)" min-width="130" sortable :formatter="formatNum"></el-table-column>
+                    <el-table-column prop="expireMember30" label="已到期30天会员(人)" min-width="160" sortable :formatter="formatNum" v-if="timeType == 'day'"></el-table-column>
+                    <el-table-column prop="expireMember7" label="已到期7天会员(人)" min-width="150" sortable :formatter="formatNum" v-if="timeType == 'day'"></el-table-column>
+                    <el-table-column prop="memberCardProfit" label="会员卡费收益(元)" min-width="140" sortable :formatter="formatNum"></el-table-column>
+                    <el-table-column prop="memberStoreAmount" label="会员储值金额(元)" min-width="140" sortable :formatter="formatNum"></el-table-column>
+                    <el-table-column prop="memberConsumeAmount" label="会员消费金额(元)"  min-width="140" sortable :formatter="formatNum"></el-table-column>
+                    <el-table-column prop="totalStoreAmount" label="累计储值余额(元)" min-width="140" sortable :formatter="formatNum" v-if="type == 'group' && timeType == 'day'"></el-table-column>
+                    <el-table-column prop="memberNewCardProfit" label="会员开新卡收益(元)" min-width="160" sortable :formatter="formatNum"></el-table-column>
+                    <el-table-column prop="memberRenewCardProfit" label="会员续卡收益(元)" min-width="140" sortable :formatter="formatNum"></el-table-column>
+                    <el-table-column prop="memberPatchCardProfit" label="会员补卡收益(元)" min-width="140" sortable :formatter="formatNum"></el-table-column>
+                    <el-table-column prop="memberUnitPrice" label="会员客单价(元)" min-width="130" sortable :formatter="formatNum"></el-table-column>
+                    <el-table-column prop="memberPersonProfit" label="会员人均贡献(元)" min-width="140" sortable :formatter="formatNum"></el-table-column>
+                    <el-table-column prop="memberConsumePercent" label="会员消费占比(%)" min-width="140" sortable :formatter="formatNum"></el-table-column>
+                    <el-table-column prop="effectiveMemberRate" label="有效会员占比(%)" min-width="140" sortable :formatter="formatNum" v-if="timeType == 'day'"></el-table-column>
                 </el-table>
             </div>
             <slot></slot>
@@ -85,9 +85,9 @@ export default {
         },
         formatNum(row,column,cellValue){
             let item = column.label;
-            let arr = ['新增会员数','有效会员数','累计会员数',
-            '可转化用户数','新卡会员数','续卡会员数','补卡会员数',
-            '储值会员数','已到期30天会员','已到期7天会员'];
+            let arr = ['新增会员数(人)','有效会员数(人)','累计会员数(人)',
+            '可转化用户数(人)','新卡会员数(人)','续卡会员数(人)','补卡会员数(人)',
+            '储值会员数(人)','已到期30天会员(人)','已到期7天会员(人)'];
             if(arr.includes(item)){
                 return Global.formatNum(cellValue,0)
             }else{

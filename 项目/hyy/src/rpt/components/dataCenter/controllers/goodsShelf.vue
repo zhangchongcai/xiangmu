@@ -1,7 +1,7 @@
 <template>
   <el-select
     popper-class="rpt-select"
-    v-model="goodsShelfValue"
+    v-model="goodsShelfObj.goodsShelfValue"
     placeholder="请选择"
     @focus="getGoodsShelfData"
   >
@@ -15,18 +15,14 @@
 </template>
 
 <script>
-import mixins from "src/frame_cpm/mixins/cacheMixin.js";
 export default {
-  mixins: [mixins.cacheMixin],
   props: {
     cenimaUid: String,
-    resetStatus: Boolean
+    resetStatus: Boolean,
+    goodsShelfObj: Object
   },
   data() {
     return {
-      cacheField: ["goodsShelfValue"],
-      subComName: "goodsSelf",
-      goodsShelfValue: "",
       goodsShelfData: []
     };
   },
@@ -51,7 +47,7 @@ export default {
     },
     resetStatus(newVal) {
       if (newVal) {
-        this.goodsShelfValue = "";
+        this.goodsShelfObj.goodsShelfValue = "";
       }
     }
   }

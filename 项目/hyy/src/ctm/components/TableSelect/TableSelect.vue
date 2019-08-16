@@ -7,97 +7,35 @@ import { log } from 'util';
 <template>
   <div class="ctm TableSelectWrapper">
     <!-- <edit-model @submit="saveForm" v-bind="$attrs" v-on="$listeners" :title="title" :modelVisible="modelVisible" @close="closeModel"> -->
-    <el-dialog
-      :close-on-click-modal="false"
-      v-bind="$attrs"
-      v-on="$listeners"
-      :title="title"
-      :visible.sync="dialogVisible"
-      @before-close="closeModel"
-    >
+    <el-dialog :close-on-click-modal="false" v-bind="$attrs" v-on="$listeners" :title="title" :visible.sync="dialogVisible" @before-close="closeModel">
       <div class="table-select p-10">
-        <el-form
-          class="base-form"
-          :inline="true"
-          :model="queryForm"
-        >
+        <el-form class="base-form" :inline="true" :model="queryForm">
           <!-- <el-form-item label="项目名称：">
           <el-input size="small" v-model="queryForm.name" placeholder="项目名称" clearable></el-input>
         </el-form-item>-->
-          <dy-form-item
-            v-for="item in formItems"
-            :key="item.prop"
-            :model="queryForm"
-            :item="item"
-          ></dy-form-item>
+          <dy-form-item v-for="item in formItems" :key="item.prop" :model="queryForm" :item="item"></dy-form-item>
 
           <el-form-item>
-            <el-button
-              class="w-80"
-              type="primary"
-              size="small"
-              @click="query()"
-            >搜索</el-button>
+            <el-button class="w-80" type="primary" size="small" @click="query()">搜索</el-button>
           </el-form-item>
         </el-form>
         <div class="flex-wrapper">
           <div class="table-left">
-            <div
-              v-loading="loading"
-              class="table-content"
-              v-if="isActive"
-            >
-              <dy-table
-                :cell-style={padding:0}
-                :row-style={height:30}
-                :header-cell-style={padding:0}
-                :rowKey="rowKey"
-                :multiSelect="multiSelect"
-                :singleCheck="!multiSelect"
-                :stripe="false"
-                :selectedRows="selectedRows"
-                :currentRow="currentRow"
-                @checkItem="selectCheck"
-                @select-all="selectedAll"
-                @selection-change="select"
-                @updateSelectedRows="updateSelectedRows"
-                @updateCurrentRow="updateCurrentRow"
-                @row-click="rowClick"
-                :columns="columns"
-                :rows="rows"
-                ref="selectDyTable"
-              ></dy-table>
+            <div v-loading="loading" class="table-content" v-if="isActive">
+              <dy-table :cell-style={padding:0} :row-style={height:30} :header-cell-style={padding:0} :rowKey="rowKey" :multiSelect="multiSelect" :singleCheck="!multiSelect" :stripe="false" :selectedRows="selectedRows" :currentRow="currentRow" @checkItem="selectCheck" @select-all="selectedAll" @selection-change="select" @updateSelectedRows="updateSelectedRows" @updateCurrentRow="updateCurrentRow" @row-click="rowClick" :columns="columns" :rows="rows" ref="selectDyTable"></dy-table>
             </div>
             <div class="p-t-10 b-t">
-              <el-pagination
-                class="a-c p-b-10"
-                background
-                @current-change="pageNumChange"
-                @size-change="pageSizeChange"
-                :page-size="pageSize"
-                layout="total,prev, pager, next, jumper"
-                :total="total"
-              ></el-pagination>
+              <el-pagination class="a-c p-b-10" background @current-change="pageNumChange" @size-change="pageSizeChange" :current-page="pageNum" :page-size="pageSize" layout="total,prev, pager, next, jumper" :total="total"></el-pagination>
             </div>
           </div>
-          <div
-            v-if="multiSelect"
-            class="select-wrapper"
-          >
+          <div v-if="multiSelect" class="select-wrapper">
             <div class="select-header">
               已选{{selectedRows.length}}项
               <span @click="clearSelect">清空</span>
             </div>
-            <div
-              :key="index"
-              v-for="(item,index) in selectedRows"
-              class="select-item"
-            >
+            <div :key="index" v-for="(item,index) in selectedRows" class="select-item">
               <span class="span-left">{{item[nameKey]}}</span>
-              <span
-                @click="deleteItem(index)"
-                class="span-right"
-              >
+              <span @click="deleteItem(index,item)" class="span-right">
                 <i class="el-icon-close btn-color"></i>
               </span>
             </div>
@@ -105,19 +43,9 @@ import { log } from 'util';
         </div>
 
       </div>
-      <span
-        slot="footer"
-        class="dialog-footer"
-      >
-        <el-button
-          class="w-80"
-          type="primary"
-          @click="saveForm"
-        >确 定</el-button>
-        <el-button
-          class="w-80"
-          @click="closeModel"
-        >取 消</el-button>
+      <span slot="footer" class="dialog-footer">
+        <el-button class="w-80" type="primary" @click="saveForm">确 定</el-button>
+        <el-button class="w-80" @click="closeModel">取 消</el-button>
       </span>
     </el-dialog>
     <!-- </edit-model> -->
@@ -181,6 +109,11 @@ export default {
       type: Object,
       required: false,
       default: () => { return {} }
+    },
+    cacheAble: {
+      type: Boolean,
+      required: false,
+      default: false
     }
   },
   data () {
@@ -216,8 +149,13 @@ export default {
   watch: {
     modelVisible (cur, old) {
       if (cur === true) {
+        if (!this.cacheAble) {
+          this.pageNum = 1;
+          this.queryForm = JSON.parse(JSON.stringify(this.defaultQuery)) || {}
+        } else {
+          this.queryForm = this.defaultQuery || {}
+        }
         // console.log(this.defaultQuery)
-        this.queryForm = this.defaultQuery || {}
         if (this.multiSelect) {
           if (this.defaultSelectRows) {
             // console.log(this.defaultSelectRows)
@@ -253,8 +191,9 @@ export default {
 
   deactivated () { },
   methods: {
-    rowClick (row) {
-      // console.log(row);
+    rowClick (row, event, column) {
+      // console.log(event)
+      console.log(row);
       let dyRow = this.rows.find((el) => {
         return el[this.rowKey] == row[this.rowKey]
       })
@@ -339,14 +278,14 @@ export default {
       // this.$forceUpdate();
     },
     selectCheck (row) {
-      // console.log(row);
-      let index = this.isExist(row);
-      if (index != -1) {
-        this.selectedRows.splice(index, 1);
-      } else {
-        this.selectedRows.push(row);
-      }
-      this.$forceUpdate();
+      console.log(row);
+      // let index = this.isExist(row);
+      // if (index != -1) {
+      //   this.selectedRows.splice(index, 1);
+      // } else {
+      //   this.selectedRows.push(row);
+      // }
+      // this.$forceUpdate();
     },
     isExist (row) {
       let index = -1;
@@ -359,12 +298,21 @@ export default {
     },
     clearSelect () {
       this.selectedRows = [];
+      this.$refs.selectDyTable.clearSelection();
     },
-    deleteItem (index) {
-      this.selectedRows.splice(index, 1);
-      this.$nextTick(() => {
-        this.$forceUpdate();
+    deleteItem (index, row) {
+      let dyRow = this.rows.find((el) => {
+        return el[this.rowKey] == row[this.rowKey]
       })
+      if (dyRow) {
+        this.rowClick(row);
+      } else {
+        this.selectedRows.splice(index, 1);
+        this.$nextTick(() => {
+          this.$forceUpdate();
+        })
+      }
+
     },
     async getData () {
       if (this.queryForm.areas && this.queryForm.areas.length > 0) {
@@ -382,7 +330,9 @@ export default {
         pageNum: this.pageNum,
         pageSize: this.pageSize,
         limit: this.pageSize,
-        current: this.pageNum
+        current: this.pageNum,
+        pageNo: this.pageNum,
+        page: this.pageNum
       }
       this.rows = [];
       if (this.$refs.selectDyTable) {
@@ -430,6 +380,7 @@ export default {
     },
     query () {
       console.log(this.queryForm)
+      this.pageNum = 1;
       this.getData()
     },
     saveForm () {
@@ -455,16 +406,11 @@ export default {
 </script>
 
 <style lang='scss' scoped>
-// .table-select {
-//   /deep/ .el-form.el-form--inline .el-input {
-//     width: 180px;
-//   }
-// }
 .TableSelectWrapper {
   /deep/ .el-dialog {
     // width: calc(576px + 224px);
     width: 892px;
-    min-height: 576px;
+    min-height: 556px;
   }
   /deep/ .el-dialog .el-dialog__body {
     padding: 0px 10px !important;
@@ -487,11 +433,14 @@ export default {
       border: none;
     }
     .el-dialog__footer {
-      padding-top: 16px;
-      padding-bottom: 16px;
+      padding-top: 2px;
+      padding-bottom: 10px;
     }
   }
-  // positi1on: relative;
+
+  /deep/ .el-form.el-form--inline .el-form-item {
+    margin-right: 16px;
+  }
   .flex-wrapper {
     // width: 100%;
     // display: table;
@@ -513,14 +462,14 @@ export default {
       flex: 1;
       border-right: 1px solid #efefef;
       .table-content {
-        height: 330px;
-        overflow-y: scroll;
+        height: 342px;
+        overflow-y: auto;
       }
     }
     .select-wrapper {
-      width: 150px;
+      width: 224px;
       // display: table-cell;
-      overflow: scroll;
+      overflow: auto;
       max-height: 380px;
       .select-header {
         padding: 12px 12px;
@@ -549,8 +498,6 @@ export default {
           display: inline-block;
           flex: 0 0 20px;
           cursor: pointer;
-          i {
-          }
         }
       }
     }

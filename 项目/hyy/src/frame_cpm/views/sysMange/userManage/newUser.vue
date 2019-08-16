@@ -1,7 +1,7 @@
 <template>
     <div class="content-wrapper">
         <div class="list-wrapper">
-            <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+            <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="90px" style="margin-top: 1px">
                 <el-form-item label="用户账号：" prop="loginName">
                     <el-input v-model="ruleForm.loginName"></el-input>
                 </el-form-item>
@@ -30,7 +30,7 @@
                 <el-form-item label="所属角色：" prop="rolesName" >
                     <div class="box">
                         <ul class="tool" v-if="multipleSelection.length">
-                            <i class="el-icon-close" style="top: -27px;right: -14%;position: absolute;font-weight: bolder;color:#3b74ff;font-size: large" @click="clear(1)"></i>
+                            <i class="el-icon-close" style="top: -27px;left:300px;position: absolute;font-weight: bolder;color:#3b74ff;font-size: medium" @click="clear(1)"></i>
                             <li v-for="(item,id) in multipleSelection" :key="id">{{item.name}}</li>
                         </ul>
                         <el-input
@@ -40,14 +40,14 @@
                                 v-model="ruleForm.rolesName">
                         </el-input>
                     </div>
-                    <el-button type="primary" @click='getTree(1)' plain style="top: 6px;left: 41%;position: absolute;">
+                    <el-button type="primary" @click='getTree(1)' plain style="top: 6px;left: 365px;position: absolute;">
                         选择
                     </el-button>
                 </el-form-item>
                 <el-form-item label="所属组织：" prop="orgName">
                     <div class="box">
                         <ul class="tool" v-if="ruleForm.orgName">
-                            <i class="el-icon-close" style="top: -27px;right: -14%;position: absolute;font-weight: bolder;color:#3b74ff;font-size: large" @click="clear(2)"></i>
+                            <i class="el-icon-close" style="top: -27px;left:300px;position: absolute;font-weight: bolder;color:#3b74ff;font-size: medium" @click="clear(2)"></i>
                         </ul>
                         <el-input
                                 style="width:100%"
@@ -56,14 +56,14 @@
                                 v-model="ruleForm.orgName">
                         </el-input>
                     </div>
-                    <el-button type="primary" @click='getTree(2)' plain style="top: 6px;left: 41%;position: absolute;">
+                    <el-button type="primary" @click='getTree(2)' plain style="top: 6px;left: 365px;position: absolute;">
                         选择
                     </el-button>
                 </el-form-item>
                 <el-form-item label="数据权限：" prop="deptName">
                     <div class="box">
                         <ul class="tool" v-if="deptNameArr.length">
-                            <i class="el-icon-close" style="top: -27px;right: -14%;position: absolute;font-weight: bolder;color:#3b74ff;font-size: large" @click="clear(3)"></i>
+                            <i class="el-icon-close" style="top: -29px;left:300px;position: absolute;font-weight: bolder;color:#3b74ff;font-size: large" @click="clear(3)"></i>
                             <li v-for="(item,id) in deptNameArr" :key="id">{{item.text}}</li>
                         </ul>
                         <el-input
@@ -73,12 +73,12 @@
                                 v-model="ruleForm.deptName">
                         </el-input>
                     </div>
-                    <el-button type="primary" @click='getTree(3)' plain style="top: 6px;left: 41%;position: absolute;">
+                    <el-button type="primary" @click='getTree(3)' plain style="top: 6px;left: 365px;position: absolute;">
                         选择
                     </el-button>
                 </el-form-item>
                 <el-form-item label="手机号码：" prop="phone">
-                    <el-input v-model="ruleForm.phone"></el-input>
+                    <el-input v-model="ruleForm.phone" placeholder="此手机号作为验证码登录方式使用"></el-input>
                 </el-form-item>
                 <el-form-item label="邮箱：" prop="email" >
                     <el-input v-model="ruleForm.email"></el-input>
@@ -89,101 +89,118 @@
                 </el-form-item>
             </el-form>
         </div>
-        <el-dialog :title="title" :visible.sync="dialogVisible" width="60%">
-            <el-table
-                    v-if="treeFlag"
-                    :data="roleArr"
-                    ref="multipleTable"
-                    :row-key="getrowkey"
-                    @selection-change="handleSelectionChange"
-            >
-                <el-table-column
-                        width="50"
-                        :reserve-selection="true"
-                        type="selection">
-                </el-table-column>
-                <el-table-column
-                        prop="name"
-                        label="角色名称"
+        <div class="diaWindow">
+            <el-dialog :title="title" :visible.sync="dialogVisible"  width="448px" lock-scroll>
+                <div class="divider"></div>
+                <el-table
+                        height="350"
+                        v-if="treeFlag"
+                        :data="roleArr"
+                        ref="multipleTable"
+                        :row-key="getrowkey"
+                        @selection-change="handleSelectionChange"
                 >
-                    <template slot-scope="scope">{{scope.row.name}}</template>
-                </el-table-column>
-            </el-table>
-            <el-tree
-                    v-else
-                    :data='orgArr'
-                    ref="tree1"
-                    @node-click="handleNodeClick"
-                    node-key="id"
-                    default-expand-all
-                    :expand-on-click-node="false"
-                    :highlight-current="true"
-                    :props="defaultProps"
-            >
-                 <span class="custom-tree-node" slot-scope="{ node, data }">
-                  <span class="org-button">
-                    <i class="el-icon-menu" v-if="data.isCinema==0||data.isCinema==null">{{data.text}}</i>
-                    <i class="el-icon-document" v-else>{{data.text}}</i>
-                  </span>
-                </span>
-            </el-tree>
-            <!-- footer 分页条 -->
-            <div class="page-wrap" v-if="treeFlag">
-                <el-pagination
-                        background
-                        :pager-count="5"
-                        @size-change="handleSizeChange"
-                        @current-change="handleCurrentChange"
-                        :current-page.sync="currentPage"
-                        :page-sizes="[20, 50, 100, 200]"
-                        :page-size="pageSize"
-                        layout="total, sizes, prev, pager, next, jumper"
-                        :total="total">
-                </el-pagination>
-            </div>
-            <div slot="footer" class="dialog-footer">
-                <el-button @click="cancel">取 消</el-button>
-                <el-button type="primary" @click="ok">确 定</el-button>
-            </div>
-        </el-dialog>
-        <el-dialog title='数据权限' :visible.sync="dialogVisible2">
-            <div class="demo-input-suffix">
-                选择影院：
-                <el-radio v-model="radioType" label="1" @change="chooseOrg">指定影院</el-radio>
-                <el-radio v-model="radioType" label="0" @change="chooseOrg">指定组织节点</el-radio>
-            </div>
-            <el-tree
-                    :data='deptArr'
-                    ref="tree2"
-                    node-key="id"
-                    default-expand-all
-                    show-checkbox
-                    :expand-on-click-node="false"
-                    :highlight-current="true"
-                    :props="defaultProps"
-            >
-                <span class="custom-tree-node" slot-scope="{ node, data }">
-                  <span class="org-button">
-                    <i class="el-icon-menu" v-if="data.isCinema==0||data.isCinema==null">{{data.text}}</i>
-                    <i class="el-icon-document" v-else>{{data.text}}</i>
-                  </span>
-                </span>
-            </el-tree>
-            <div slot="footer" class="dialog-footer">
-                <el-button @click="cancel">取 消</el-button>
-                <el-button type="primary" @click="ok2">确 定</el-button>
-            </div>
-        </el-dialog>
+                    <el-table-column
+                            width="50"
+                            :reserve-selection="true"
+                            type="selection">
+                    </el-table-column>
+                    <el-table-column
+                            prop="name"
+                            label="角色名称"
+                    >
+                        <template slot-scope="scope">{{scope.row.name}}</template>
+                    </el-table-column>
+                </el-table>
+                <el-tree
+                        v-else
+                        :data='orgArr'
+                        ref="tree1"
+                        @node-click="handleNodeClick"
+                        node-key="id"
+                        default-expand-all
+                        :expand-on-click-node="false"
+                        :highlight-current="true"
+                        :props="defaultProps"
+                >
+                     <span class="custom-tree-node" slot-scope="{ node, data }">
+                      <span class="org-button">
+                          <i
+                               class="iconfont"
+                               :class="{'icon-neiye-zongbu':data.text == '总部','icon-neiye-zuzhi':data.isCinema == 0,'icon-neiye-quyu':data.isCinema == 1}"
+                          >
+                              {{data.text}}
+                          </i>
+                      </span>
+                    </span>
+                </el-tree>
+                <!-- footer 分页条 -->
+                <div class="page-wrap" v-if="treeFlag">
+                    <el-pagination
+                            background
+                            :pager-count="5"
+                            @size-change="handleSizeChange"
+                            @current-change="handleCurrentChange"
+                            :current-page.sync="currentPage"
+                            :page-size="pageSize"
+                            layout="total, prev, pager, next, jumper"
+                            :total="total">
+                    </el-pagination>
+                </div>
+                <div class="divider"></div>
+                <div slot="footer" class="dialog-footer">
+                    <el-button type="primary" @click="ok">确 定</el-button>
+                    <el-button @click="cancel">取 消</el-button>
+                </div>
+            </el-dialog>
+            <el-dialog title='数据权限' :visible.sync="dialogVisible2" width="448px" lock-scroll>
+                <div class="divider"></div>
+                <div class="demo-input-suffix">
+                    选择影院：
+                    <el-radio v-model="radioType" label="1" @change="chooseOrg">指定影院</el-radio>
+                    <el-radio v-model="radioType" label="0" @change="chooseOrg">指定组织节点</el-radio>
+                </div>
+                <el-tree
+                        style="height:408px"
+                        :data='deptArr'
+                        ref="tree2"
+                        node-key="id"
+                        default-expand-all
+                        show-checkbox
+                        :expand-on-click-node="false"
+                        :highlight-current="true"
+                        :props="defaultProps"
+                >
+                    <span class="custom-tree-node" slot-scope="{ node, data }">
+                      <span class="org-button">
+                          <i
+                              class="iconfont"
+                              :class="{'icon-neiye-zongbu':data.text == '总部','icon-neiye-zuzhi':data.isCinema == 0,'icon-neiye-quyu':data.isCinema == 1}"
+                          >
+                              {{data.text}}
+                          </i>
+                      </span>
+                    </span>
+                </el-tree>
+                <div class="divider"></div>
+                <div slot="footer" class="dialog-footer">
+                    <el-button type="primary" @click="ok2">确 定</el-button>
+                    <el-button @click="cancel">取 消</el-button>
+                </div>
+            </el-dialog>
+        </div>
     </div>
 </template>
 
 <script>
+    import mixins from '../../../mixins/cacheMixin.js'
     import {addUser,orgList,roleTree,deptTree,attributeType} from 'frame_cpm/http/interface.js'
     export default {
         name: "newUser",
+        mixins: [mixins.cacheMixin],
         data() {
           let empCode = (rule, value, callback) => {
-            let nameReg = /^[A-Za-z0-9]{1,20}$/
+            let nameReg = /^[A-Za-z0-9_\-]{1,20}$/
             if(!value) {
               return callback(new Error('用户编码不能为空'));
             }else{
@@ -195,7 +212,7 @@
             }
           }
           let fullName = (rule, value, callback) => {
-            let nameReg = /^[\u4E00-\u9FA5A-Za-z0-9]{1,20}$/
+            let nameReg = /^[\u4E00-\u9FA5A-Za-z0-9`~!@#$%^&*()_+<>?:"{},.【】\\/;\-'[\]\s\u3002|\uff1f|\uff01|\uff0c|\u3001|\uff1b|\uff1a|\u201c|\u201d|\u2018|\u2019|\uff08|\uff09|\u300a|\u300b|\u3008|\u3009|\u3010|\u3011|\u300e|\u300f|\u300c|\u300d|\ufe43|\ufe44|\u3014|\u3015|\u2026|\u2014|\uff5e|\ufe4f|\uffe5]{1,20}$/
             if(!value) {
               return callback(new Error('请输入用户名称'));
             }else{
@@ -207,7 +224,7 @@
             }
           }
           let loginName = (rule, value, callback) => {
-            let nameReg = /^[A-Za-z0-9]{1,20}$/
+            let nameReg = /^[A-Za-z0-9`~!@#$%^&*()_+<>?:"{},.【】\\/;\-'[\]\s\u3002|\uff1f|\uff01|\uff0c|\u3001|\uff1b|\uff1a|\u201c|\u201d|\u2018|\u2019|\uff08|\uff09|\u300a|\u300b|\u3008|\u3009|\u3010|\u3011|\u300e|\u300f|\u300c|\u300d|\ufe43|\ufe44|\u3014|\u3015|\u2026|\u2014|\uff5e|\ufe4f|\uffe5]{1,20}$/
             if(!value) {
               return callback(new Error('用户账号不能为空'));
             }else{
@@ -218,11 +235,11 @@
               }
             }
           }
-          let mobile = (rule, value, callback) => {
-            let phoneReg = /^1[34578]\d{9}$/
+          let phone = (rule, value, callback) => {
+            let phoneReg = /^(0|86|17951)?(13[0-9]|15[012356789]|17[01678]|18[0-9]|14[57])[0-9]{8}$/
             if(value) {
               if (!phoneReg.test(value)) {
-                callback(new Error('手机号格式有误'))
+                callback(new Error('手机号格式不正确，请输入正确的手机号'))
               } else {
                 callback()
               }
@@ -243,6 +260,7 @@
             }
           }
             return {
+                cacheField: ["ruleForm",'deptIds','roleIds','orgType','orgUid'],
                 getrowkey(row) {
                     return row.id
                 },
@@ -311,7 +329,7 @@
                         { required: true, message: '请选择数据权限', trigger: 'blur' }
                     ],
                     phone: [
-                        { validator: mobile, trigger: 'blur' }
+                        { validator: phone, trigger: 'blur' }
                     ],
                     email: [
                         { validator: email, trigger: 'blur' }
@@ -410,22 +428,23 @@
                         }
                         addUser(data)
                             .then(ret => {
-                                if(ret && ret.code === 200){
+                                if(ret && ret.code == 200){
                                     _this.$message({
                                         message: '用户新建成功',
                                         type: 'success'
                                     });
+                                    this.$store.commit("tagNav/removeTagNav", this.$route)
                                     this.$router.push('index')
+                                    this.ruleForm ={}
                                 }else{
                                   _this.$message({
                                     message: ret.msg,
                                     type: 'info'
                                   });
                                 }
-                            }).catch( () => {
-                              this.error('网络繁忙，请稍后再试')
-
-                        })
+                            }).catch( err => {
+                                console.log(err)
+                            })
                     } else {
                         return false;
                     }
@@ -460,17 +479,13 @@
                 let newArr = []
                 if(this.radioType==1) {
                     arr.forEach(item=>{
-                        // if(item.isCinema==1) {
-                            resultArr.push(item.id)
-                            newArr.push(item.text)
-                        // }
+                        resultArr.push(item.id)
+                        newArr.push(item.text)
                     })
                 } else if(this.radioType==0){
                     arr.forEach(item=>{
-                        // if(item.isCinema==0) {
-                            resultArr.push(item.id)
-                            newArr.push(item.text)
-                        // }
+                        resultArr.push(item.id)
+                        newArr.push(item.text)
                     })
                 }
                 if(resultArr.length==0){
@@ -487,6 +502,7 @@
             },
             resetForm(formName) {
                 this.$refs[formName].resetFields();
+                this.$store.commit("tagNav/removeTagNav", this.$route)
                 this.$router.push('index')
             },
             handleNodeClick(val) {
@@ -603,7 +619,7 @@
     .content-wrapper {
 
         .el-input {
-            width: 40%;
+            width: 360px;
         }
         .el-input__inner{
             overflow: hidden;
@@ -611,20 +627,20 @@
 
         }
         .el-select{
-            width:40%;
+            width: 360px;
         }
         .box{
-            width:40%;
+            width: 360px;
             &:hover .tool{
                 display: block;
             }
         }
         .tool{
             display: none;
-            width:30%;
+            width: 290px;
             position:absolute;
             top:100%;
-            left:5%;
+            left:38px;
             z-index: 100;
             background: rgba(0,0,0,0.8);
             color:#fff;
@@ -636,10 +652,6 @@
             }
         }
 
-    }
-    .el-tree{
-        height:350px;
-        overflow: scroll;
     }
 
 </style>

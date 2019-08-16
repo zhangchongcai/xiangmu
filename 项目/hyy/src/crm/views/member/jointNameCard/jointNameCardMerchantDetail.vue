@@ -34,6 +34,7 @@ export default {
   methods: {
     // 关闭
     handleBack() {
+      this.$store.commit("tagNav/removeTagNav", this.$route);
       this.$router.push({ path: "/member/jointNameCard/list" });
     },
     search() {

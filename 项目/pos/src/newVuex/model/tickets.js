@@ -39,16 +39,36 @@ export default {
             cantNotSell: 0,
             noTaken: 0,
             isBroken: 0
-        }
+        },
+        currentTicketMinPrice: 0
     },
     mutations: {
-        //wqbSocket返回
+        //过滤全部和可售影片
+        // [TYPES.FILTER_FILMS] : (state, val) => {
+        //     console.log(state.allfilmData)
+        //     state.allfilmData = state.allfilmData.map((item) => {
+        //           return item.arr_plan_list.filter((film) => {
+        //             if(val == 'salabletrue') {
+        //                 return film.salable == 1
+        //             }else if(val == 'history'){
+        //                 return film.salable == 0
+        //             }else {
+        //                return film.salable == 1 || film.salable == 0
+        //             }
+        //         })
+        //     })
+
+        //     console.log(state.allfilmData)
+        // },
+
+        //wbSocket返回
         [TYPES.CHECK_CURRENT_SEAT_STATUS] : (state, obj) => {
 
            obj.timeSeatStatusList.forEach(item => {
                state.allSeat.forEach(seat => {
                    if(item.seatCode == seat.seatCode) {
                        seat.status = item.status
+                       seat.netSaleFlag = item.netSaleFlag
                    }
                })
            })
@@ -81,6 +101,10 @@ export default {
             state.ticketsStatus.isHeld = obj.reserveNum
             state.ticketsStatus.netSell = obj.netSaleNum
             state.ticketsStatus.isSell = state.ticketsStatus.totalSeat - state.ticketsStatus.isBroken - obj.saleNum - obj.reserveNum - obj.lockNum
+        },
+
+        [TYPES.SET_CURRENT_TICKET_MINPRICE] : (state, minPrice) => {
+            state.currentTicketMinPrice = minPrice
         },
 
         [TYPES.SAVE_ALL_FILM_DATA] : (state, filmArr) => {
@@ -136,6 +160,7 @@ export default {
             state.allTickets = filmArr[0].arr_plan_list[0].arr_basic_ticket_type
             state.currentTicketId = state.allTickets[0].id
             state.currentMovieId = filmArr[0].movieUid
+            state.currentTicketMinPrice = filmArr[0].arr_plan_list[0].min_price
 
             let currentFilm = {}
             filmArr.forEach(item => {
@@ -144,10 +169,11 @@ export default {
                         currentFilm = inner
                         Object.assign(currentFilm,  {
                             name: item.name,
-                            display_name: item.display_name,
+                            display_name: inner.display_name,
                             language: item.language,
                             play_effect: item.play_effect,
-                            join_flag: item.join_flag
+                            join_flag: inner.join_flag,
+                            end_time: inner.end_time
                         })
                     }
                 })
@@ -155,7 +181,7 @@ export default {
 
             // console.log(currentFilm)
 
-            state.currentFilmTitle = currentFilm.join_flag ?  `${currentFilm.display_name} | ${currentFilm.show_time} | ${currentFilm.hall_name} | ${currentFilm.time_long}分钟` : `${currentFilm.name}(${currentFilm.play_effect}/${currentFilm.language}) | ${currentFilm.show_time} | ${currentFilm.hall_name} | ${currentFilm.time_long}分钟`
+            state.currentFilmTitle = currentFilm.join_flag ?  `${currentFilm.display_name} | ${currentFilm.show_time}至${currentFilm.end_time.substring(11)} | ${currentFilm.hall_name} | ${currentFilm.time_long}分钟` : `${currentFilm.name}(${currentFilm.play_effect}/${currentFilm.language}) | ${currentFilm.show_time}至${currentFilm.end_time.substring(11)} | ${currentFilm.hall_name} | ${currentFilm.time_long}分钟`
         },
         [TYPES.SET_CURRENT_TICKET_ID] : (state, id) => {
             state.currentTicketId = id
@@ -168,20 +194,18 @@ export default {
                         currentFilm = inner
                         Object.assign(currentFilm,  {
                             name: item.name,
-                            display_name: item.display_name,
+                            display_name: inner.display_name,
                             language: item.language,
                             play_effect: item.play_effect,
-                            join_flag: item.join_flag
+                            join_flag: inner.join_flag,
+                            end_time: inner.end_time
                         })
                     }
                 })
             })
+            // console.log("电影名称===》", currentFilm)
+            state.currentFilmTitle = currentFilm.join_flag ?  `${currentFilm.display_name} | ${currentFilm.show_time}至${currentFilm.end_time.substring(11)} | ${currentFilm.hall_name} | ${currentFilm.time_long}分钟` : `${currentFilm.name}(${currentFilm.play_effect}/${currentFilm.language}) | ${currentFilm.show_time}至${currentFilm.end_time.substring(11)} | ${currentFilm.hall_name} | ${currentFilm.time_long}分钟`
 
-            console.log(currentFilm)
-
-            state.currentFilmTitle = currentFilm.join_flag ?  `${currentFilm.display_name} | ${currentFilm.show_time} | ${currentFilm.hall_name} | ${currentFilm.time_long}分钟` : `${currentFilm.name}(${currentFilm.play_effect}/${currentFilm.language}) | ${currentFilm.show_time} | ${currentFilm.hall_name} | ${currentFilm.time_long}分钟`
-
-            console.log('film-name:' + state.currentFilmTitle)
         },
         [TYPES.CLEAR_FILM_TITLE]: (state) => {
            state.currentFilmTitle = ''
@@ -241,13 +265,26 @@ export default {
         [TYPES.CHECK_OUT_COUPON_RESULT] : (state) => {
             state.checkResult = !state.checkResult
         },
+        [TYPES.COVER_TICKET_PRICE] : (state, newSeatArr) => {
+            state.allSeat.forEach(item => {
+                newSeatArr.forEach(seat => {
+                    if(seat.seatCode == item.seatCode) {
+                        item.ticketPrice = seat.basePrice
+                        item.originalTicketPrice = seat.basePrice
+                        item.addPrice = seat.addFee
+                    }
+                })
+            })
+        },
         [TYPES.SAVE_CURRENT_PLAN_SEAT] : (state, seatsArr) => {
             state.allSeat = seatsArr.map((item) => {
                 let obj = {
                   cinemaCode: item.cinemaCode,
                   cinemaUid: item.cinemaUid,
                   planCode: item.planCode,
+                  planUid: item.planUid,
                   seatCode: item.seatCode,
+                  netSaleFlag: item.netSaleFlag,
                   col: item.seatCol,
                   colAlias: item.colAlias,
                   rowAlias: item.rowAlias,
@@ -260,7 +297,13 @@ export default {
                   y: parseInt(item.ulY) * 2.7,
                   status: item.status,
                   imageType: item.imageType,
-                  seat_name: `${item.seatRow}排${item.seatCol}座`
+                  seatLevel: item.seatLevel,
+                  seat_name: `${item.seatRow}排${item.seatCol}座`,
+                  color: item.color + '4D',
+                  ticketTypeUid: item.ticketTypeUid,
+                  ticketPrice: item.basePrice,
+                  addPrice: 0,
+                  originalTicketPricef: item.basePrice
                 }
 
                 return obj
@@ -276,6 +319,7 @@ export default {
                     item.colorStyle = 'broken-seat';
                     break;
                     case 2:
+                    case 5:
                     item.colorStyle = 'sold-seat';
                     break;
                     case 3:
@@ -325,6 +369,7 @@ export default {
         [TYPES.SET_CURRENT_PLANCODE] : (state, codeAndSingle) => {
             state.currentPlanCode = codeAndSingle.code
             state.allowSingleSold = codeAndSingle.allowSingleSold
+            state.allSeat = []
         },
         //添加购物车后渲染选中的座位
         [TYPES.RENDER_SELECTION] : (state, obj) => {
@@ -348,7 +393,7 @@ export default {
         },
         //释放后渲染选中的座位
         [TYPES.RENDER_SELECTION_AFTER_RELEASE] : (state, obj) => {
-            console.log(obj)
+            // console.log(obj)
             if(state.allowSingleSold) {
                 obj.timeSeatList.forEach(item => {
                     state.allSeat.forEach((seat, index, seats) => {
@@ -514,6 +559,9 @@ export default {
         },
         ticketsStatus(state) {
             return state.ticketsStatus
+        },
+        currentTicketMinPrice(state) {
+            return state.currentTicketMinPrice
         }
     }
 }

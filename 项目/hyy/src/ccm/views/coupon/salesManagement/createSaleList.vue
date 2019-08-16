@@ -1,32 +1,32 @@
 <template>
 <div class="coupon-create">
-    <el-form :model="form" label-width="150px" ref="form">
+    <el-form :model="form" :label-width="'100px'" ref="form">
         <el-collapse v-model="activeNames">
             <el-collapse-item title="票劵基本资料" name="baseInfo">
-                <el-form-item label="票券名称:" 
+                <el-form-item label="票券名称：" 
                 prop="baseInfo.name.value" 
                 :rules="[{required:true,validator:checkName}]"
                 >
-                    <span v-if="model.type=='revise'" class="reviseName">{{form.baseInfo.name.value}}</span>
+                    <span v-if="model.type=='revise'" class="font-666">{{form.baseInfo.name.value}}</span>
                     <el-input v-else v-model="form.baseInfo.name.value" class="input-type-217"></el-input>
                 </el-form-item>
-                <el-form-item label="票券类型:" prop="baseInfo.couponType.value">
-                    <span v-if="model.type=='revise'&&form.baseInfo.couponType.value" class="reviseName">{{FormcouponType()}}</span>
-                    <el-radio-group v-model="form.baseInfo.couponType.value" @change="resetcouponTypeId" v-else>
-                        <el-radio-button v-for="item in form.baseInfo.couponType.options" :key="item.value" :label="item.value">{{item.label}}</el-radio-button>
-                    </el-radio-group>
+                <el-form-item label="票券类型：" prop="baseInfo.couponType.value" >
+                    <span v-if="model.type=='revise'&&form.baseInfo.couponType.value" class="font-666">{{FormcouponType()}}</span>
+                    <ul class="tab-tilte" v-else>
+                        <li v-for="(item,index) in form.baseInfo.couponType.options" @click="resetcouponTypeId(item.value)" :class="form.baseInfo.couponType.value==item.value?'active':''" :key="index">{{item.label}}</li>
+                    </ul>
                 </el-form-item>
-                <el-form-item label="票券分类:" prop="baseInfo.couponTypeId.value" :rules="form.baseInfo.couponTypeId.rules">
-                    <span v-if="model.type=='revise'&&form.baseInfo.couponTypeId.options.length" class="reviseName">{{form.baseInfo.couponTypeName}}</span>
+                <el-form-item label="票券分类：" prop="baseInfo.couponTypeId.value" :rules="form.baseInfo.couponTypeId.rules">
+                    <span v-if="model.type=='revise'&&form.baseInfo.couponTypeId.options.length" class="font-666">{{form.baseInfo.couponTypeName}}</span>
                     <el-select v-model="form.baseInfo.couponTypeId.value" placeholder="请选择" @change="changeTicketType" v-else>
                         <el-option v-for="item in form.baseInfo.couponTypeId.options" :key="item.value" :label="item.label" :value="item.value"></el-option>
                     </el-select>
                 </el-form-item> 
-                <el-form-item label="票券数量:" 
+                <el-form-item label="票券数量：" 
                 prop="baseInfo.couponCount.value" 
                 :rules="[{required:true,validator:checkCouponCount}]"
                 >
-                    <span v-if="model.type=='revise'" class="reviseName">{{form.baseInfo.couponCount.value}}</span>
+                    <span v-if="model.type=='revise'" class="font-666">{{form.baseInfo.couponCount.value}}</span>
                     <div v-else>
                         <el-input v-model="form.baseInfo.couponCount.value" 
                         class="input-type-94"
@@ -35,13 +35,13 @@
                         </el-input> <span class="tips-font">(不大于100,000)</span>
                     </div>
                 </el-form-item>
-                <el-form-item label="销售单价:" 
+                <el-form-item label="销售单价：" 
                 prop="baseInfo.couponPrice.value" 
                 :rules="[{required:true,validator:checkCouponPrice}]"
                 >
-                    <el-input v-model="form.baseInfo.couponPrice.value" class="input-type-94"></el-input> 元
+                    <el-input v-model="form.baseInfo.couponPrice.value" class="input-type-94"></el-input> <span class="font-666">元</span> 
                 </el-form-item>
-                <el-form-item label="起售数量:">
+                <el-form-item label="起售数量：">
                     <el-form-item
                     prop="baseInfo.startSaleNum.value" 
                     :rules="[{required:false,validator:checkStartSaleNum}]"
@@ -49,8 +49,8 @@
                         <el-input v-model="form.baseInfo.startSaleNum.value" class="input-type-94"></el-input>
                     </el-form-item>
                 </el-form-item>
-                <el-form-item label="销售方式:" prop="baseInfo.salesMode.value">
-                    <span v-if="model.type=='revise'" class="reviseName">
+                <el-form-item label="销售方式：" prop="baseInfo.salesMode.value">
+                    <span v-if="model.type=='revise'" class="font-666">
                         {{formSalesModeName(form.baseInfo.salesMode.value)}}
                     </span>
                     <el-radio-group v-model="form.baseInfo.salesMode.value" @change="salesModeChange" v-else>
@@ -58,18 +58,18 @@
                     </el-radio-group>
                 </el-form-item>
                 <template v-if="form.baseInfo.salesMode.value == '3' || form.baseInfo.salesMode.value == '4'">
-                    <el-form-item label="客商名称:" prop="baseInfo.custId.value" :rules="form.baseInfo.custId.rules">
-                        <span v-if="model.type=='revise'" class="reviseName">{{form.baseInfo.custId.text}}</span>
+                    <el-form-item label="客商名称：" prop="baseInfo.custId.value" :rules="form.baseInfo.custId.rules">
+                        <span v-if="model.type=='revise'" class="font-666">{{form.baseInfo.custId.text}}</span>
                         <el-row v-else>
                             <el-input v-model="form.baseInfo.custId.text" 
-                            class="input-type-124"  :readonly=true>
-                                <i slot="suffix" class="el-icon-circle-close" @click="clearInputValue('custId','baseInfo','both')" v-show="form.baseInfo.custId.text"></i>
+                            class="input-type-124 popup-input"  :readonly=true>
+                                <i slot="suffix" class="el-icon-close popup-close" @click="clearInputValue('custId','baseInfo','both')" v-show="form.baseInfo.custId.text"></i>
                             </el-input>
-                            <el-button type="primary" plain @click="selectInputValue('custId')">选择</el-button>
+                            <el-button type="primary" plain @click="selectInputValue('custId','baseInfo')">选择</el-button>
                         </el-row>
                     </el-form-item>
-                    <el-form-item label="合同协议号:" prop="baseInfo.contractCode.value">
-                        <span v-if="model.type=='revise'" class="reviseName">{{form.baseInfo.contractCode.value}}</span>
+                    <el-form-item label="合同协议号：" prop="baseInfo.contractCode.value">
+                        <span v-if="model.type=='revise'" class="font-666">{{form.baseInfo.contractCode.value}}</span>
                         <el-row class="flex-base" v-else>
                             <el-input v-model="form.baseInfo.contractCode.value" class="input-type-124"></el-input>
                             <el-upload class="upload" 
@@ -83,34 +83,34 @@
                             >
                                 <el-button slot="trigger" size="small" type="primary">添加附件</el-button>
                             </el-upload>
-                            <el-button type="text" v-if="form.baseInfo['attachFileName']" @click="searchAttachFileName('attachFileName')">下载合同号</el-button>
+                            <el-button type="text" v-if="form.baseInfo['attachFileName'] " @click="searchAttachFileName('attachFileName')">下载合同号</el-button>
                         </el-row>
                     </el-form-item>
                 </template>
-                <el-form-item label="入账影院:" prop="baseInfo.incomeCinemaId.value" :rules="form.baseInfo.incomeCinemaId.rules">
-                    <span v-if="model.type=='revise'" class="reviseName">{{form.baseInfo.incomeCinemaId.text}}</span>
+                <el-form-item label="入账影院：" prop="baseInfo.incomeCinemaId.value" :rules="form.baseInfo.incomeCinemaId.rules">
+                    <span v-if="model.type=='revise'&& !model.isTransfer" class="font-666">{{form.baseInfo.incomeCinemaId.text}}</span>
                     <el-row v-else>
                         <el-input 
                         v-model="form.baseInfo.incomeCinemaId.text" 
-                        class="input-type-124"  
+                        class="input-type-124 popup-input"  
                         :readonly=true 
                         >
-                        <i slot="suffix" class="el-icon-circle-close" @click="clearInputValue('incomeCinemaId','baseInfo','both')" v-show="form.baseInfo.incomeCinemaId.text"></i>
+                        <i slot="suffix" class="el-icon-close popup-close" @click="clearInputValue('incomeCinemaId','baseInfo','both')" v-show="form.baseInfo.incomeCinemaId.text"></i>
                         </el-input>
-                        <el-button type="primary" plain @click="selectInputValue('incomeCinemaId')">选择</el-button>
+                        <el-button type="primary" plain @click="selectInputValue('incomeCinemaId','baseInfo')">选择</el-button>
                     </el-row>
                 </el-form-item>
-                <el-form-item label="票券编号:" prop="baseInfo.couponGeneration.value">
-                    <span v-if="model.type=='revise'" class="reviseName">
+                <el-form-item label="票券编号：" prop="baseInfo.couponGeneration.value">
+                    <span v-if="model.type=='revise'" class="font-666">
                         {{form.baseInfo.couponGeneration.value==0?'系统生成':form.baseInfo.couponGeneration.value==1? '外部导入':'使用预生成编号'}}
                         <span v-if="form.baseInfo.couponGeneration.value==2&&form.baseInfo.batchTicketIds.value">(已添加{{form.baseInfo.batchTicketIds.value.split(',').length}}张预生成票券)</span>
                     </span>
                     <el-radio-group v-model="form.baseInfo.couponGeneration.value" @change="couponGeneration" v-else>
                         <el-radio v-for="item in form.baseInfo.couponGeneration.options" :key="item.value" :label="item.value">{{item.label}}</el-radio>
                     </el-radio-group>
-                        <span v-if="form.baseInfo.couponGeneration.value==2&&form.baseInfo.batchTicketIds.value">(已添加{{form.baseInfo.batchTicketIds.value.split(',').length}}张预生成票券)</span>
+                        <span v-if="form.baseInfo.couponGeneration.value==2&&form.baseInfo.batchTicketIds.value"  class="font-666">(已添加{{form.baseInfo.batchTicketIds.value.split(',').length}}张预生成票券)</span>
                 </el-form-item>
-                <el-form-item label="外部导入:" prop="baseInfo.importFileName.value" v-if="form.baseInfo.couponGeneration.value == '1'&& model.type != 'revise'">
+                <el-form-item label="外部导入：" prop="baseInfo.importFileName.value" v-if="form.baseInfo.couponGeneration.value == '1'&& model.type != 'revise'">
                     <el-row class="flex-base">
                         <el-upload class="upload" ref="importFileName" 
                         :action="form.baseInfo.importFileName.action" 
@@ -125,15 +125,15 @@
                         <el-button type="primary" class="margin-left-10" plain @click="downloadTemplate">下载导入模板</el-button>
                     </el-row>
                 </el-form-item>
-                <el-form-item label="备注:" prop="baseInfo.remark.value">
+                <el-form-item label="备注：" prop="baseInfo.remark.value">
                     <el-input type="textarea" class="input-type-360" :rows="2" placeholder="请输入内容" v-model="form.baseInfo.remark.value">
                     </el-input>
                 </el-form-item>
             </el-collapse-item>
             <el-collapse-item title="票券消费规则" name="commonInfo" >
-                <el-form-item label="有效期:" prop="commonInfo.validDate.value" >
-                    <el-radio-group v-model="form.commonInfo.validType.value">
-                        <el-radio v-for="item in form.commonInfo.validType.options" :key="item.value" :label="item.value">{{item.label}}</el-radio>
+                <el-form-item label="有效期：" prop="commonInfo.validType.value" :rules="{required: true, message: '请选择日期范围', trigger: 'change'}">
+                    <el-radio-group v-model="form.commonInfo.validType.value" >
+                        <el-radio v-for="item in form.commonInfo.validType.options" :key="item.value" :label="item.value" @change="validDateChange">{{item.label}}</el-radio>
                     </el-radio-group>
                         <div v-if="form.commonInfo.validType.value==0">
                         <el-form-item prop="commonInfo.validDate.value" :rules="form.commonInfo.validDate.rules">
@@ -164,7 +164,7 @@
                         </el-form-item>                
                         </div>
                 </el-form-item>
-                <el-form-item label="排除日期:" prop="commonInfo.eliminationDate.value">
+                <el-form-item label="排除日期：" prop="commonInfo.eliminationDate.value">
                     <el-checkbox-group v-model="form.commonInfo.eliminationDate.value">
                         <el-checkbox v-for="item in form.commonInfo.eliminationDate.options" :key="item.value" :label="item.value">{{item.label}}</el-checkbox>
                     </el-checkbox-group>
@@ -182,7 +182,7 @@
                         </el-form-item>
                     </template>
                 </el-form-item>
-                <el-form-item label="星期范围:" prop="commonInfo.ruleValidWeek.value">
+                <el-form-item label="星期范围：" prop="commonInfo.ruleValidWeek.value">
                     <el-select v-model="form.commonInfo.ruleValidWeek.value" placeholder="请选择">
                         <el-option v-for="item in form.commonInfo.ruleValidWeek.options" :key="item.value" :label="item.label" :value="item.value">
                         </el-option>
@@ -198,7 +198,7 @@
                         </el-form-item>
                     </template>
                 </el-form-item>
-                <el-form-item label="时段范围:" prop="commonInfo.ruleValidTime.value">
+                <el-form-item label="时段范围：" prop="commonInfo.ruleValidTime.value">
                     <el-select class="margin-bottom-10" v-model="form.commonInfo.ruleValidTime.value" placeholder="请选择">
                         <el-option v-for="item in form.commonInfo.ruleValidTime.options" :key="item.value" :label="item.label" :value="item.value"></el-option>
                     </el-select>
@@ -212,7 +212,7 @@
                         </el-form-item>
                     </template>
                 </el-form-item>
-                <el-form-item label="影院范围:" prop="commonInfo.cinemaCode.value">
+                <el-form-item label="影院范围：" prop="commonInfo.cinemaCode.value">
                     <el-row class="flex-base">
                         <el-select class="margin-right-10" v-model="form.commonInfo.cinemaCode.value" placeholder="请选择" @change="cinemaCodeChange">
                             <el-option v-for="item in form.commonInfo.cinemaCode.options" :key="item.value" :label="item.label" :value="item.value"></el-option>
@@ -220,61 +220,79 @@
                         <template v-if="form.commonInfo.cinemaCode.value != ''">
                             <el-form-item prop="commonInfo.cinemarangev.value" :rules="form.commonInfo.cinemarangev.rules">
                                 <el-row class="flex-base">
-                                    <el-input class="input-type-124" 
+                                    <el-input class="input-type-124 popup-input" 
                                     v-model="form.commonInfo.cinemarangev.text"  
                                     :readonly=true
                                     >
-                                        <i slot="suffix" class="el-icon-circle-close" @click="clearInputValue('cinemarangev','commonInfo','both')" v-show="form.commonInfo.cinemarangev.text"></i>
+                                        <i slot="suffix" class="el-icon-close popup-close" @click="clearInputValue('cinemarangev','commonInfo','both')" v-show="form.commonInfo.cinemarangev.text"></i>
                                     </el-input>
-                                    <el-button class="margin-left-10" type="primary" plain @click="selectInputValue('cinemarangev')">选择</el-button>
+                                    <el-button class="margin-left-10" type="primary" plain @click="selectInputValue('cinemarangev','commonInfo')">选择</el-button>
                                 </el-row>
                             </el-form-item>
                         </template>
                     </el-row>
                 </el-form-item>
-                <el-form-item label="交易渠道:" prop="commonInfo.consumeWayCode.value">
+                <el-form-item label="交易渠道：" prop="commonInfo.consumeWayCode.value">
                     <el-radio-group v-model="form.commonInfo.consumeWayCode.value">
                         <el-radio v-for="item in form.commonInfo.consumeWayCode.options" :key="item.value" :label="item.value">{{item.label}}</el-radio>
                     </el-radio-group>
                     <template v-if="form.commonInfo.consumeWayCode.value.includes('normalIn')">
-                        <el-form-item prop="commonInfo.consumeWayCodeOp.text" :rules="form.commonInfo.consumeWayCodeOp.rules">
-                            <!-- <el-checkbox-group v-model="form.commonInfo.consumeWayCodeOp.value">
-                                <el-checkbox v-for="item in form.commonInfo.consumeWayCodeOp.options" :label="item.value" :key="item.value">{{item.label}}</el-checkbox>
-                            </el-checkbox-group> -->
+                        <el-form-item prop="commonInfo.consumeWayCodeOp.text" :rules="form.commonInfo.consumeWayCodeOp.rules" style="display:inline-block;margin-left:10px;">
                             <el-row class="flex-base">
-                                <el-input class="input-type-124" 
+                                <el-input class="input-type-124 popup-input" 
                                 v-model="form.commonInfo.consumeWayCodeOp.text"  
                                 :readonly=true
                                 >
-                                    <i slot="suffix" class="el-icon-circle-close" @click="clearInputValue('consumeWayCodeOp','commonInfo','both')" v-show="form.commonInfo.consumeWayCodeOp.text"></i>
+                                    <i slot="suffix" class="el-icon-close popup-close" @click="clearInputValue('consumeWayCodeOp','commonInfo','both')" v-show="form.commonInfo.consumeWayCodeOp.text"></i>
                                 </el-input>
-                                <el-button class="margin-left-10" type="primary" plain @click="selectInputValue('consumeWayCodeOp')">选择</el-button>
+                                <el-button class="margin-left-10" type="primary" plain @click="selectInputValue('consumeWayCodeOp','commonInfo')">选择</el-button>
                             </el-row>
                         </el-form-item>
                     </template>
                 </el-form-item>
-                <el-form-item label="消费者身份:" prop="commonInfo.consumerTypeKey.value">
+                <el-form-item label="会员等级：" prop="commonInfo.customerLevelType.value">
                     <el-row class="flex-base">
-                        <el-select v-model="form.commonInfo.consumerTypeKey.value" placeholder="请选择">
-                            <el-option v-for="item in form.commonInfo.consumerTypeKey.options" :key="item.value" :label="item.label" :value="item.value">
+                        <el-select v-model="form.commonInfo.customerLevelType.value" placeholder="请选择">
+                            <el-option v-for="item in form.commonInfo.customerLevelType.options" :key="item.value" :label="item.label" :value="item.value">
                             </el-option>
                         </el-select>
-                        <template v-if="form.commonInfo.consumerTypeKey.value == 'normalIn'">
+                        <template v-if="form.commonInfo.customerLevelType.value == 'normalIn' || form.commonInfo.customerLevelType.value == 'normalNotIn'">
                             <el-row class="flex-base margin-left-10">
-                                <el-form-item prop="commonInfo.consumerType.value" :rules="form.commonInfo.consumerType.rules">
-                                    <el-input class="input-type-124"
-                                    v-model="form.commonInfo.consumerType.text"
+                                <el-form-item prop="commonInfo.customerLevelCode.value" :rules="form.commonInfo.customerLevelCode.rules">
+                                    <el-input class="input-type-124 popup-input"
+                                    v-model="form.commonInfo.customerLevelCode.text"
                                     :readonly=true
                                     >
-                                        <i slot="suffix" class="el-icon-circle-close" @click="clearInputValue('consumerType','commonInfo','both')" v-show="form.commonInfo.consumerType.text"></i>
+                                        <i slot="suffix" class="el-icon-close popup-close" @click="clearInputValue('customerLevelCode','commonInfo','both')" v-if="form.commonInfo.customerLevelCode.text"></i>
                                       </el-input>
-                                    <el-button class="margin-left-10" type="primary" plain @click="selectInputValue('consumerType')">选择</el-button>
+                                    <el-button class="margin-left-10" type="primary" plain @click="selectInputValue('customerLevelCode','commonInfo')">选择</el-button>
                                 </el-form-item>
                             </el-row>
                         </template>
                     </el-row>
                 </el-form-item>
-                <el-form-item label="会员生日:" prop="commonInfo.MemberInfo.value">
+                <el-form-item label="会员卡政策：" prop="commonInfo.cardPolicyType.value">
+                    <el-row class="flex-base">
+                        <el-select v-model="form.commonInfo.cardPolicyType.value" placeholder="请选择">
+                            <el-option v-for="item in form.commonInfo.cardPolicyType.options" :key="item.value" :label="item.label" :value="item.value">
+                            </el-option>
+                        </el-select>
+                        <template v-if="form.commonInfo.cardPolicyType.value == 'normalIn' || form.commonInfo.cardPolicyType.value == 'normalNotIn'">
+                            <el-row class="flex-base margin-left-10">
+                                <el-form-item prop="commonInfo.cardPolicyCode.value" :rules="form.commonInfo.cardPolicyCode.rules">
+                                    <el-input class="input-type-124 popup-input"
+                                    v-model="form.commonInfo.cardPolicyCode.text"
+                                    :readonly=true
+                                    >
+                                        <i slot="suffix" class="el-icon-close popup-close" @click="clearInputValue('cardPolicyCode','commonInfo','both')" v-if="form.commonInfo.cardPolicyCode.text"></i>
+                                      </el-input>
+                                    <el-button class="margin-left-10" type="primary" plain @click="selectInputValue('cardPolicyCode','commonInfo')">选择</el-button>
+                                </el-form-item>
+                            </el-row>
+                        </template>
+                    </el-row>
+                </el-form-item>
+                <el-form-item label="会员生日：" prop="commonInfo.MemberInfo.value">
                     <el-row class="flex-base">
                         <el-select class="margin-right-10" v-model="form.commonInfo.MemberInfo.value" placeholder="请选择">
                             <el-option v-for="item in form.commonInfo.MemberInfo.options" :key="item.value" :label="item.label" :value="item.value">
@@ -310,7 +328,7 @@
                                     </div>
                                 </div>
                                 <div class="delete-btn" @click="deleteRule(index)">
-                                    <i class="el-icon-close"></i>
+                                    <i class="el-icon-close" style="font-size:16px;margin-rigth:5px"></i>
                                 </div>
                                 <div class="change-text" @click="editionRule('edit',index)">
                                     修改
@@ -323,13 +341,13 @@
                     </ul>
                 </template>
                 <template v-if="ruleInfo.config.showType == '1'">
-                    <el-form-item class="change-label" label="代金券面值(抵用金额):" 
+                    <el-form-item class="change-label inline-reset" label="代金券面值(抵用金额)：" 
                     prop="moneyInfo.voucherValue.value" 
                     :rules="[{required:true,validator:checkVoucherValue}]"
                     >
-                        <el-input class="input-type-217" v-model="form.moneyInfo.voucherValue.value"></el-input>
+                        <el-input class="input-type-217" v-model="form.moneyInfo.voucherValue.value" ></el-input>
                     </el-form-item>
-                    <el-form-item class="change-label" label="代金券消费密码:" prop="moneyInfo.voucherIsPassword.value">
+                    <el-form-item class="change-label inline-reset" label="代金券消费密码：" prop="moneyInfo.voucherIsPassword.value">
                         <el-row class="flex-base">
                             <el-checkbox v-model="form.moneyInfo.voucherIsPassword.value"><span v-if="!form.moneyInfo.voucherIsPassword.value" style="corlor:#606266">需要</span></el-checkbox>  
                             <el-form-item v-if="form.moneyInfo.voucherIsPassword.value" prop="moneyInfo.voucherPasswordType.value">
@@ -345,21 +363,22 @@
                             </el-form-item>
                         </el-row>
                     </el-form-item>
-                    <el-form-item label="允许购买商品范围:" prop="moneyInfo.saleItemType.value">
+                    <el-form-item label="允许购买商品范围：" prop="moneyInfo.saleItemType.value" class="inline-reset">
                         <el-radio-group v-model="form.moneyInfo.saleItemType.value">
                             <el-radio v-for="item in form.moneyInfo.saleItemType.options" :key="item.value" :label="item.value">{{item.label}}</el-radio>
                         </el-radio-group>
                     </el-form-item>
-                    <el-form-item label="每笔消费金额不小于:" 
+                    <el-form-item label="每笔消费金额不小于：" 
                     prop="moneyInfo.sumPrice.value" 
                     :rules="[{required:true,validator:checkSunPrice}]"
+                    class="inline-reset"
                     >
-                        <el-input class="input-type-94" v-model="form.moneyInfo.sumPrice.value"></el-input> 元
+                        <el-input class="input-type-94" v-model="form.moneyInfo.sumPrice.value"></el-input> <span class="font-666">元</span> 
                     </el-form-item>
                 </template>
             </el-collapse-item>
         </el-collapse>
-        <div class="flex-base flex-center" style="margin-bottom:10px;">
+        <div class="fixed-bottom">
             <el-button type="primary" @click="saveOrSubmit('form',2)" v-if="btnShow()">提交审批</el-button>
             <el-button type="primary" @click="saveOrSubmit('form',1)" v-if="model.type !='revise'">保存</el-button>
             <el-button @click="cancle()">取消</el-button>
@@ -398,12 +417,19 @@
     :customerType="form.baseInfo.salesMode.value"
     :customerId="form.baseInfo.custId.value"
     ></tradeMerchantSingleDialog>
-    <!-- 会员等级 crmMemberLevelDialogCallBack-->
-    <crmMemberLevelDialog
-     @crmCardPolicyDialogCallBack="handleMembershipLevel" 
-     whereUse= "mainPageUnique" 
-     :reviewData="[]" 
-     :dialogVisible.sync="crmMemberLevelDialogVisible" 
+    <!-- 会员卡政策 -->
+    <crmCardPolicyDialog
+        @crmCardPolicyDialogCallBack="cardPolicyDialogCallBack" 
+        whereUse= "mainPageUnique" 
+        :reviewData="reviewData" 
+        :dialogVisible.sync="cardPolicyDialogVisible" 
+        :unique="'id'" 
+    />
+    <!-- 会员等级 -->
+    <crmMemberLevelDialog 
+        @crmMemberLevelDialogCallBack="MemberLevelDialogCallBack" 
+        :reviewData="reviewData" 
+        :dialogVisible.sync="memberLevelDatadialogVisible" 
     />
 </div>
 </template>
@@ -425,7 +451,7 @@ export default {
     data() {
         return {
             /* 缓存数据 */
-            // cacheField: ["activeNames","model","form","ruleInfo","ruleChild","showRule","limitName"],
+            cacheField: ["activeNames","model","form","ruleInfo","ruleChild","showRule","limitName"],
             subComName:this.$route.query.pageName,
             baseUrl: config.baseURL,
             //返回有效日期
@@ -436,21 +462,21 @@ export default {
                     let m = date.getMonth()+1
                     let d = date.getDate()
                     let dateString = `${y}-${m}-${d}`
-                    // pointer.delayWindow.validDateStart
                     return time.getTime() < new Date(dateString);
-
                 }
             },
             /**
              * @param model - 模式
-             * @param model.type - create 新建模式，change 修改模式
+             * @param model.type - create 新建模式，change 修改模式 copy复制
              * @param model.applyCode - 销售申请单号，修改时使用
              * @param model.id - 销售单ID，修改时使用
+             * @param model.isTransfer -当前是否为数据迁移
              */
             model: {
                 type: 'create',
                 applyCode: null,
-                id: null
+                id: null,
+                isTransfer:false,
             },
             /* 用于计时器缓存 */
             time: null,
@@ -586,7 +612,8 @@ export default {
                         value: [],
                         rules: {
                             required: true,
-                            message: '请选择有效期范围'
+                            message: '请选择有效期范围',
+                            trigger:'change'
                         }
                     },
                     validType:{
@@ -797,7 +824,7 @@ export default {
                             value: 'normalIn'
                         }]
                     },
-                    // 指定消费渠道
+                    // 指定消费渠道 value
                     consumeWayCodeOp: {
                         value: '',
                         text:'',
@@ -806,27 +833,58 @@ export default {
                             message: '请选择消费渠道',
                         }
                     },
-                    // 消费者身份
-                    consumerTypeKey: {
+                    // 会员等级 type
+                    customerLevelType: {
                         value: '',
                         options: [{
                             label: '不限',
                             value: ''
                         }, {
-                            label: '全部会员',
-                            value: 'AllMember'
-                        }, {
-                            label: '指定会员等级',
+                            label: '包含',
                             value: 'normalIn'
+                        }, {
+                            label: '不包含',
+                            value: 'normalNotIn'
+                        }, {
+                            label: '非会员',
+                            value: 'not_memberOperator'
                         }]
                     },
-                    // 指定会员等级
-                    consumerType: {
+                    // 会员等级 value
+                    customerLevelCode: {
                         text: '',
                         value: '',
                         rules: {
                             required: true,
-                            message: '请选择消费者身份'
+                            message: '请选择会员卡等级',
+                            trigger:'change'
+                        }
+                    },
+                    // 会员卡政策 op
+                    cardPolicyType: {
+                        value: '',
+                        options: [{
+                            label: '不限',
+                            value: ''
+                        }, {
+                            label: '包含',
+                            value: 'normalIn'
+                        }, {
+                            label: '不包含',
+                            value: 'normalNotIn'
+                        }, {
+                            label: '全部卡政策',
+                            value: 'AllMember'
+                        }]
+                    },
+                    // 会员卡政策
+                    cardPolicyCode: {
+                        text: '',
+                        value: '',
+                        rules: {
+                            required: true,
+                            message: '请选择会员卡政策',
+                            trigger:'change'
                         }
                     },
                     // 会员生日
@@ -912,11 +970,13 @@ export default {
         }
     },
     created() {
-        console.log(this.showRule)
-        // 当前是否为修改状态
+        /**
+         * @params isEdit 修订、修改、复制都有此属性
+         * @params type -reviese修定 -copy复制 -change修改
+         */
         let isEdit = this.$route.query.isEdit ? this.$route.query.isEdit : false;
         if (isEdit) {
-            let type = 'revise';
+            let type = 'revise'; 
             let isCopy = this.$route.query.isCopy ? this.$route.query.isCopy : false;
             if (isCopy) {
                 type = 'copy';
@@ -925,25 +985,19 @@ export default {
             }
             this.model.type = type;
             let  url = window.location.search;
-            // console.log('获取id',this.model)
-            // console.log(`${this.model.applyCode} != ${this.$route.query.applyCode}`)
-            // if( this.model.applyCode != this.$route.query.applyCode ){   //如果被缓存下来的 applyCode跟query的applyCode相等 则不用重新请求
-            this.editiSaleList(this.$route.query.applyCode);
-            // }
-            
+            console.log('获取id',this.model)
+            console.log(`${this.model.applyCode} != ${this.$route.query.applyCode}`)
+            if( this.model.applyCode != this.$route.query.applyCode ){   //如果被缓存下来的 applyCode跟query的applyCode相等 则不用重新请求
+                this.editiSaleList(this.$route.query.applyCode);
+            }
             return ;
         }
-
         // 是否需要从缓存中拿取之前的操作
         let isGetForm = this.$route.query.isGetForm ? this.$route.query.isGetForm : false;
         if (isGetForm) {
             // 从vuex上获取数据从vuex上获取数据
             let params = JSON.parse(JSON.stringify(this.$store.getters['saleList/getForm']));
             console.log('是否需要从缓存中拿取之前的操作',params)
-            // if(params.model.applyCode){
-            //     this.editiSaleList(params.model.applyCode);
-            // }
-            // console.log("vuex-params",params)
             let keyArray = Object.keys(params);
             keyArray.forEach((item, index) => {
                 this[`${item}`] = JSON.parse(JSON.stringify(params[`${item}`]));
@@ -966,7 +1020,6 @@ export default {
             this.$store.commit('saleList/deleteChildRule');
         }
         // 展示ruleChild
-        console.log('展示ruleChild',this.ruleChild)
         this.showRuleData(this.ruleChild);
         // 查询当前票券分类类型
         this.getcouponTypeId(this.form.baseInfo.couponType.value);
@@ -983,10 +1036,15 @@ export default {
             }
         },
         //起始数量不能超过销售数量
-        couponCountChange(va){
+        couponCountChange(){
             this.$refs['form'].validateField("baseInfo.startSaleNum.value")
         },
-        
+        //有效日期单独校验
+        validDateChange() {
+            this.$refs['form'].validateField("commonInfo.validDate.value")
+            this.$refs['form'].validateField("commonInfo.validGenType.value")
+            this.$refs['form'].validateField("commonInfo.validGenValue.value")
+        },
         formSalesModeName(type) {
             let text = ''
             switch(type) {
@@ -1008,7 +1066,7 @@ export default {
          */
         btnShow() {
             if(this.model.type=='revise'){
-                return (this.form.baseInfo.couponGeneration.value == 1? true:false)
+                return true
             }else{
                 return (this.form.baseInfo.couponGeneration.value == 1? false:true)
             }
@@ -1110,8 +1168,6 @@ export default {
             const reg = /(^[1-9]([0-9]+)?(\.[0-9]{1,2})?$)|(^(0){1}$)|(^[0-9]\.[0-9]([0-9])?$)/;
             if (!reg.test(value)) {
                 return callback(new TypeError('请输入正数,且允许两位小数'));
-            }else if(value == 0){
-                return callback(new TypeError('请输入正数,且允许两位小数'));
             }
 
             callback();
@@ -1125,8 +1181,8 @@ export default {
 
             if (!reg.test(value)) {
                 return callback(new TypeError('请输入正数,且只允许输入两位小数位'));
-            }else if(value == 0){
-                return callback(new TypeError('请输入正数,且只允许输入两位小数位'));
+            }else if(value>9999.99){
+                return callback(new TypeError('金额不大于9999.99'));
             }
 
             callback();
@@ -1154,6 +1210,8 @@ export default {
                 return callback(new TypeError('请输入正数,且只允许输入两位小数位'));
             }else if(value == 0){
                 return callback(new TypeError('请输入正数,且只允许输入两位小数位'));
+            }else if(value>9999.99){
+                return callback(new TypeError('金额不大于9999.99'));
             }
 
             callback();
@@ -1192,35 +1250,60 @@ export default {
          * @function selectInputValue - 选择，调起弹窗
          * @param {String} formName -  表单名
          */
-        selectInputValue(inputName) {
-            if (typeof inputName != 'string') {
-                return TypeError('select方法只接受string类型，您输入的类型是：', typeof inputName);
+        selectInputValue(inputName,formName) {
+            //会员卡政策
+            let value = this.form[`${formName}`][`${inputName}`].value 
+            let text = this.form[`${formName}`][`${inputName}`].text 
+            console.log(`弹窗名：${inputName},弹窗的value:${value}，弹窗的text:${text}`)
+            let reviewList = []
+
+            switch (inputName) {
+                case 'cardPolicyCode': //会员卡政策
+                    if(value && text){
+                        value.split(',').map((item) => { reviewList.push({ id: item, cardName: ""}) });
+                        text.split(',').map((item, index) => { reviewList[index].cardName = item });
+                    }
+                    this.reviewData = reviewList
+                    this.cardPolicyDialogVisible = true
+                    break;
+                case 'customerLevelCode': //会员等级
+                    if ( value && text) {
+                        value.split(',').map((item) => { reviewList.push({ levelNo: item, levelName: "", reviewFlag: "review" }) });
+                        text.split(',').map((item, index) => { reviewList[index].levelName = item });
+                    }
+                    this.reviewData = reviewList
+                    this.memberLevelDatadialogVisible = true
+                    break;
+                case 'consumeWayCodeOp':  //交易渠道
+                    if (value && text) {
+                        value.split(',').map((item) => { reviewList.push({ code: item, name: "", reviewFlag: "review" }) });
+                        text.split(',').map((item, index) => { reviewList[index].name = item });
+                    }
+                    this.$refs[inputName].openDialog(true,reviewList)
+                    break;
+                case 'cinemarangev':  //影院范围
+                    let addition = this.form.commonInfo.cinemaCode.value
+                    if(addition == 'normalEqual'){      //等于 影院范围单选
+                        console.log('单选',addition)
+                        this.$refs.cinemaSingle.openDialog(true,value)
+                        return
+                    }else if(addition == 'normalIn'){   //包含 影院范围多选
+                        console.log('多选',addition)
+                        if (value && text) {
+                            value.split(',').map((item) => { reviewList.push({ code: item, name: "", reviewFlag: "review" }) });
+                            text.split(',').map((item, index) => { reviewList[index].name = item });
+                        }
+                        this.$refs[inputName].openDialog(true,reviewList)
+                        return
+                    }
+                default:
+                    this.$refs[inputName].openDialog(true,value) //单选的弹窗
+                    break;
             }
-
-
-            //消费等级弹窗
-            if(inputName == 'consumerType') {
-                this.crmMemberLevelDialogVisible = true
-                return
-            }
-
-            //影院范围
-            if(inputName == 'cinemarangev') {
-                let addition = this.form.commonInfo.cinemaCode.value
-                if(addition == 'normalEqual'){      //等于 影院范围单选
-                    console.log('单选',addition)
-                    this.$refs.cinemaSingle.openDialog(true)
-                    return
-                }else if(addition == 'normalIn'){   //包含 影院范围多选
-                    console.log('多选',addition)
-                    this.$refs[inputName].openDialog(true)
-                    return
-                }
-            }
-            console.log(this.$refs[inputName])
-            this.$refs[inputName].openDialog(true)
-
         },
+        /**
+         *  @cinemaCodeChange -影院范围change事件
+         */
         cinemaCodeChange(){
             this.form.commonInfo.cinemarangev.value = ''
             this.form.commonInfo.cinemarangev.text = ''
@@ -1273,8 +1356,12 @@ export default {
          */
         downloadTemplate() {
             let url = this.baseUrl + "/coupon/prebuild/exportTemplate";
-            let headers = {
-                 "Cpm-User-Token": localStorage.getItem("token")
+            let headers={}
+            if(this.$store.state.CpmUserKey){
+                headers['Cpm-User-Token'] = this.$store.state.CpmUserKey;
+            }
+            if (sessionStorage.getItem('token')) {
+                headers['Cpm-User-Token'] = sessionStorage.getItem('token');
             }
             axios(url, {
                 headers,
@@ -1371,15 +1458,68 @@ export default {
         /**
          * @function resetcouponTypeId - 重置票券分类选择
          * @param  {String} couponType - '0':兑换券;'1':代金券;'2':优惠券;
+         * @param  1.只有当兑换、优惠规则、代金券有值的时候才弹窗提示框切换类型
          */
         resetcouponTypeId(couponType) {
-            this.form.baseInfo.couponTypeId.value = '';
-            this.ruleInfo.isShow = false;
-
-            this.getcouponTypeId(couponType);
+            if(this.showRule.length || this.moneyInfoHaveValue()){
+                this.$confirm('更换票券类型将重置规则', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    this.form.baseInfo.couponType.value = couponType;
+                    this.form.baseInfo.couponTypeId.value = '';
+                    this.ruleInfo.isShow = false;
+                    //票券分类查询接口
+                    this.getcouponTypeId(couponType);
+                    //清空规则数据
+                    this.resetRules() 
+                })
+            }else{
+                this.form.baseInfo.couponType.value = couponType;
+                this.form.baseInfo.couponTypeId.value = '';
+                this.ruleInfo.isShow = false;
+                //票券分类查询接口
+                this.getcouponTypeId(couponType);
+            }
         },
         /**
-         * @function getcouponTypeId - 
+         * resetRules  - 重置规则
+         */
+        resetRules() {
+            this.ruleChild =  []
+            this.showRule =  []
+            this.limitName =  []
+
+            let moneyInfo = this.form.moneyInfo
+            /**
+             * @params voucherValue -代金券面值(抵用金额)
+             * @params voucherIsPassword -代金券消费密码
+             * @params voucherPasswordType -是否需要代金券消费密码
+             * @params voucherPassword -消费密码
+             * @params saleItemType -允许购买商品范围
+             * @params sumPrice -每笔消费金额不小于
+             * 
+             */
+            moneyInfo.voucherValue.value = ''
+            moneyInfo.voucherIsPassword.value = ''
+            moneyInfo.voucherPasswordType.value = ''
+            moneyInfo.voucherPassword.value = ''
+            moneyInfo.saleItemType.value = ''
+            moneyInfo.sumPrice.value = ''
+ 
+        },
+        /**
+         * @pfunction money -
+         */
+        moneyInfoHaveValue() {
+            let moneyInfo = this.form.moneyInfo
+            let moneyArr = ['voucherValue','voucherIsPassword','voucherPassword','saleItemType','sumPrice']
+            let bool = moneyArr.some(key => moneyInfo[key].value )
+            return bool
+        },
+        /**
+         * @function getcouponTypeId - 票券分类查询接口
          */
         getcouponTypeId(couponType) {
             let params = {
@@ -1418,7 +1558,6 @@ export default {
          */
         couponGeneration(val) {
             if (val == '2') {
-                // this.selectInputValue('couponGeneration');
                 if(!this.form.baseInfo.incomeCinemaId.value){
                     this.$message({
                         type:'warning',
@@ -1478,6 +1617,7 @@ export default {
                 showType,
                 router,
             }
+            console.log(this.ruleInfo)
             this.ruleInfo.config = config;
             this.ruleInfo.isShow = true;
         },
@@ -1514,7 +1654,9 @@ export default {
                     familyIdBaseNum: (new Date()).getTime(),
                     isEdition: type == 'edit' ? true : false,
                     editIndex: type == 'edit' ? index : null,
-                    limitName: this.limitName
+                    limitName: this.limitName,
+                    pageName:this.$route.query.pageName,
+                    applyCode:this.model.applyCode
                 }
             })
         },
@@ -1654,9 +1796,6 @@ export default {
                         });
                     };
                     let param = this.packageParam(this.form, flag);
-                    this.model.applyCode = null
-                    // console.log("param:",param)
-                    console.log('清除id',this.model)
                     this.$ccmList.saleListSaveOrUpdate(param).then(data => {
                         let type = '';
                         if (data.flag == 1) {
@@ -1671,6 +1810,13 @@ export default {
                         });
 
                         if (type == 'success') {
+                            this.activeNames = null
+                            this.model = null
+                            this.form = null
+                            this.ruleInfo = null
+                            this.ruleChild = null
+                            this.showRule = null
+                            this.limitName = null
                             this.$store.commit("tagNav/removeTagNav", {
                                 name: this.$route.name,
                                 path: this.$route.path,
@@ -1699,7 +1845,14 @@ export default {
                     cancelButtonText: '取消',
                     type: 'warning'
                 }).then(() => {
-                    this.model.applyCode = null
+                    this.activeNames = null
+                    this.model = null
+                    this.form = null
+                    this.ruleInfo = null
+                    this.ruleChild = null
+                    this.showRule = null
+                    this.limitName = null
+
                     this.$store.commit("tagNav/removeTagNav", {
                         name: this.$route.name,
                         path: this.$route.path,
@@ -1734,7 +1887,7 @@ export default {
             // 修改的时候需要传
             let modelType = this.model.type;
             if (modelType == 'revise'|| modelType == 'change') {
-                param[`applyCode`] = this.model.applyCode;
+                param[`applyCode`] = JSON.parse(JSON.stringify(this.model.applyCode));
                 param[`id`] = this.model.id;
             }
 
@@ -1982,33 +2135,38 @@ export default {
                 };
                 // 指定消费渠道
                 if (consumeWayCodeVal == 'normalIn') {
-                    // let typeArr = param[`consumeWayCodeOp`].value;
-                    // let typeNameArr = []
-                    // typeArr.forEach(item => {
-                    //     pointer.form.commonInfo.consumeWayCodeOp.options.forEach(_item => {
-                    //         if(item==_item.value){
-                    //             typeNameArr.push(_item.label)
-                    //         }
-                    //     })
-                    // })
                     obj[`value`] = pointer.form.commonInfo.consumeWayCodeOp.value
                     obj['text'] = pointer.form.commonInfo.consumeWayCodeOp.text
                 }
                 commonInfo.push(obj);
             }
-
-            // 消费者身份
-            let consumerTypeVal = param[`consumerTypeKey`].value;
+             // 会员等级
+            let customerLevelVal= param[`customerLevelType`].value;
+            if (customerLevelVal) {
+                let obj = {
+                    key: 'customerLevelCode',
+                    category: 'SaleInfo',
+                    opUniqueName: customerLevelVal
+                }
+                // 指定会员等级
+                if (customerLevelVal == 'normalIn' || customerLevelVal == 'normalNotIn') {
+                    obj[`value`] = param[`customerLevelCode`].value;
+                    obj[`text`] = param[`customerLevelCode`].text;
+                }
+                commonInfo.push(obj);
+            }
+            // 会员卡政策
+            let consumerTypeVal = param[`cardPolicyType`].value;
             if (consumerTypeVal) {
                 let obj = {
-                    key: 'consumerTypeKey',
+                    key: 'cardRightCode',
                     category: 'SaleInfo',
                     opUniqueName: consumerTypeVal
                 }
-                // 指定消费者身份
-                if (consumerTypeVal == 'normalIn') {
-                    obj[`value`] = param[`consumerType`].value;
-                    obj[`text`] = param[`consumerType`].text;
+                // 指定会员卡政策
+                if (consumerTypeVal == 'normalIn' || consumerTypeVal == 'normalNotIn') {
+                    obj[`value`] = param[`cardPolicyCode`].value;
+                    obj[`text`] = param[`cardPolicyCode`].text;
                 }
                 commonInfo.push(obj);
             }
@@ -2065,6 +2223,7 @@ export default {
             let showRule = [];
             // 用于限制同一规则组里面出现命名重复
             let limitName = [];
+            console.log('规则-------',ruleChild)
             for (let i = 0; i < ruleChild.length; i++) {
                 let _obj = {};
                 let item = ruleChild[i];
@@ -2101,10 +2260,12 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.reviseName{
-    color:#333;
+@import '../../../assets/css/element-reset.scss' ;
+.font-666{
+    color:#666;
     font-size: 12px;
 }
+
 @mixin font-base {
     font {
         font-family: 'MicrosoftYaHei';
@@ -2244,11 +2405,105 @@ export default {
 .change-label .el-form-item__label {
     line-height: 20px;
 }
+.fixed-bottom{
+    position: fixed;
+    bottom: 10px;
+    left: 146px;
+    right: 10px;
+    background: #FFF;
+    text-align: center;
+    /deep/ .el-button{
+        width:80px;
+        height:32px;
+        padding: 8px 0;
+    }
+}
+/deep/ span{
+    font-size: 12px;
+}
+//日期
+/deep/ .el-date-editor{
+  width: 230px;
+  .el-input__icon,.el-range-separator,.el-input__icon .el-range__close-icon{
+    vertical-align: top;
+    line-height: 25px;
+  }
+  .el-range-input{
+      font-size: 12px;
+  }
+  .el-range-separator{
+    width: 22px;
+    font-size:12px;
+  }
+}
+/deep/ .inline-reset .el-form-item__label{
+    line-height: 20px
+}
+//自定义票券分类css
+.tab-tilte{
+    width: 217px;
+    height:32px;
+    display: flex;
+    border-radius: 4px;
+    border-right: none;
+
+}
+.tab-tilte li:nth-child(1){
+    border-radius:  4px 0  0 4px ;
+    border-right: none
+}
+.tab-tilte li:nth-child(3){
+    border-radius: 0 4px 4px 0 ;
+    border-left: none
+}
+.tab-tilte li{
+    flex:1;
+    line-height: 32px;
+    text-align: center;
+    background-color:#fff;
+    border: #DCDFE6 1px solid;
+    color:#666;
+    cursor: pointer;
+    animation: all 10s;
+    &:hover{
+        color:#3B74FF
+    }
+}
+/* 点击对应的标题添加对应的背景颜色 */
+.tab-tilte .active{
+    background-color: #3B74FF;
+    color: #fff;
+    border:#3B74FF 1px solid;
+    &:hover{
+        color: #fff
+    }
+}
+.tab-content div{
+    float: left;
+    width: 25%;
+    line-height: 100px;
+    text-align: center;
+}
 </style>
 <style lang="scss">
 .coupon-create{
-    .el-date-editor .el-range-separator{
-        width: 8%
+    .el-collapse-item__header::after{
+        display: none
     }
+    .el-collapse-item__header{
+        display: flex;
+        justify-content:flex-end;
+        flex-direction: row-reverse;
+    }
+    .el-radio-group{
+        .el-radio-button__inner{
+            padding:9px 17.5px;
+            font-size: 12px;
+        }
+    }
+    span{
+        font-size: 12px;
+    }
+
 }
 </style>

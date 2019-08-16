@@ -300,12 +300,9 @@ export default {
             });
           }
         }
-        this.tableData = res.data.list.map(item => {
-          if (item.merType == 2) {
-            if (item.skuName) {
-              item.merName = item.merName + "--" + item.skuName;
-            }
-          }
+        let newlist = res.data.list == null ? []:res.data.list
+        this.tableData = newlist.map(item => {
+          item.merName = item.skuName;
           return item;
         });
         this.tableLoding = false;

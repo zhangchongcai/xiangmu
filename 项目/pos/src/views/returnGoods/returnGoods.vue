@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="pageLayer">
     <div class="pageTitle">退货</div>
     <div class="contentLayer">
       <div class="queryDateForm">
@@ -15,12 +15,12 @@
       <div class="orderLayer">
         <h1>订单信息</h1>
         <ul>
-          <li><span>订单编号：</span>{{data.billCode}}</li>
+          <li><span>订单编号：</span>{{data.billCode}} <span v-if="data.netSaleFlag" class="tag">网售</span>  </li>
           <li><span>终端编号：</span>{{data.terminalCode}}</li>
           <li><span>收银员：</span>{{data.userName}}</li>
           <li><span>交易影院：</span>{{data.cinemaName}}</li>
           <li><span>交易时间：</span>{{data.createTime}}</li>
-          <li><span>总金额：</span>{{data.payAmount}}元</li>
+          <li><span>总金额：</span>{{data.payAmount || 0}}元</li>
           <li><span>放映信息：</span>{{data.showInfo}}</li>
         </ul>
       </div>
@@ -53,7 +53,7 @@
             width="55">
             <template slot-scope="scope">
               <div>
-               <el-checkbox @change="checkboxChange(...arguments,scope.row)" v-if="scope.row.TableId" :disabled="scope.row.getStatus ==30 ? true : false" v-model="multipleSelection" :label="scope.row" >{{ }}</el-checkbox>
+               <el-checkbox @change="checkboxChange(...arguments,scope.row)" v-if="scope.row.TableId" :disabled="scope.row.getStatus == 30 || data.netSaleFlag ? true : false" v-model="multipleSelection" :label="scope.row" >{{ }}</el-checkbox>
               </div>
             </template>
           </el-table-column>
@@ -68,9 +68,33 @@
           </div> -->
         </el-table>
       </div>
-      <div class="retunGoodsInfo">
-        <div><span>应退金额：</span>现金<b> {{cash}}元</b> </div> 
-        <!-- <div><span>应退票券：</span>电子兑换券1张，纸质优惠券1张</div>银联<b>180.00元</b> -->
+      <div class="queryDateForm" style="padding-bottom:0;">
+        <v-select :disabled="data.netSaleFlag ? true : false">
+          <el-select 
+          v-model="returnTypesVal" 
+          placeholder="请选择退款方式" 
+          :disabled="data.netSaleFlag ? true : false"
+          class="retunTypeSelect" size="small">
+              <el-option
+              v-for="item in returnTypes"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+              </el-option>
+          </el-select>
+        </v-select>
+        <div class="returnMoneys">
+          合计退款金额：&nbsp; {{cash}} <span>元&nbsp;
+            <template v-if="moneys.length">
+              （
+              <span 
+              v-for="(item,index) in moneys" 
+              :key="index">
+              {{item.name}}<b>{{item.money}}</b>元{{index == moneys.length-1?'':'+'}}</span>
+              ）
+            </template>
+          </span>
+        </div>
       </div>
       <div class="queryDateForm">
         <div class="fromInput"><el-input  v-model="phone" type="text" placeholder="请登记手机号" size="small"></el-input>  </div>
@@ -85,10 +109,11 @@
           </el-select>
         </v-select>
       </div>
-      <div class="footButtomLayer">
-        <el-button size="medium" @click="$router.go(-1)">取消</el-button>
-        <el-button size="medium" type="primary" @click="beforeRefor"  :loading="loading">退款</el-button>
-      </div>
+      
+    </div>
+    <div class="footButtomLayer">
+      <el-button size="medium" @click="$router.go(-1)">取消</el-button>
+      <el-button size="medium" type="primary" @click="beforeRefor"  :loading="loading">退款</el-button>
     </div>
     <!-- <el-dialog title="操作提示" :visible.sync="visible" width="50%">
       <div class="dialogContent">
@@ -160,6 +185,8 @@ export default {
       goodsStr:['未取货','已取货'],
       loading:false,
       returnType:true,
+      returnTypes:[{label:'原路退款',value:1},{label:'现金退款',value:2}],
+      returnTypesVal : 1,
     }
   },
   mounted(){
@@ -170,14 +197,34 @@ export default {
       let num = 0;
       this.multipleSelection.map((item) => {
         item.saleGoodsPays.map( subItem => {
-          if(subItem.payTypeCode == 'XRMB'){
             num += subItem.payAmount;
-          }
         })
       })
-      return num;
-    }
+      return num.toFixed(2);
+    },
+    moneys(){
+      let obj = {};
+      let arr = [];
+      this.multipleSelection.map((item) => {
+        item.saleGoodsPays.map( subItem => {
+          if(!obj[subItem.payTypeName]){
+              obj[subItem.payTypeName] = {
+                name : subItem.payTypeName,
+                money : 0
+              }
+          }
+          obj[subItem.payTypeName].money += subItem.payAmount
+        })
+      })
+      for(let key in obj){
+        obj[key].money = obj[key].money.toFixed(2)
+        arr.push(obj[key])
+      }
+      return arr
+    },
   },
+  
+
   methods: {
       rowClassName({row, rowIndex}){
         let className = rowIndex%2 ? 'posRowOdd' : 'posRowEven';
@@ -213,7 +260,8 @@ export default {
           billCode:this.data.billCode,
           refundGoods: this.multipleSelection.map( item => { return { uid : item.uid} }),
           refundReason: this.value,
-          refundPhone : this.phone
+          refundPhone : this.phone,
+          refundMoneyType : this.returnTypesVal,
         })
         console.log(data);
         this.loading = false
@@ -226,13 +274,14 @@ export default {
         this.getDate()
       },
       async getDate(){
+        if(!this.key) return this.$message.warning('请扫描或输入影票编号/订单编号/取货码/票券编号！')
         this.multipleSelection = [];
         let data  = await refundFindSaleBillForRefund({code:this.key})
         
         if(data.code == 200){
           this.data = data.data;
           let arr = [];
-          for(let i = 0; i < 8; i++){
+          for(let i = 0; i < data.data.refundGoods.length; i++){
             let item = data.data.refundGoods[i];
             let priceArr = [];
             if(item){
@@ -261,6 +310,9 @@ export default {
             }
           }
           this.tableData = arr;
+          if(data.data.netSaleFlag){
+            this.multipleSelection = this.tableData 
+          }
         }else{
           this.$message.error(data.msg);
         }
@@ -305,12 +357,18 @@ export default {
         this.key = '';
         this.data = {};
         this.tableData = [];
+        this.multipleSelection = [];
       },
     },
 }
 </script>
 
 <style lang="scss" scoped>
+.pageLayer{
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
 .pageTitle{
   font-size: $font-size16;
   @include bg_color($background-color-theme);
@@ -319,6 +377,7 @@ export default {
 }
 .contentLayer{
   padding: 0 2vw;
+  flex: 1;
 }
 .queryDateForm{
   padding: 2vh 0;
@@ -333,13 +392,33 @@ export default {
       font-size: 1.3vw;
     }
     b{
-      color:#FF8618;
+      
       font-size: 1.3vw;
+    }
+  }
+  .returnMoneys{
+    display: inline-block;
+    font-size: 13px;
+    color:#666;
+    &>span{
+      font-size: 12px;
+      letter-spacing:2px;
+      span{
+        font-size: inherit;
+        b{
+          color:#FF8618;
+          font-weight: 100;
+        }
+      }
+      
     }
   }
 }
 .select{
   width: 30vw;
+}
+.retunTypeSelect{
+  width: 15.6vw;
 }
 .fromInput{
   width: 32.3vw;
@@ -397,7 +476,7 @@ export default {
   }
 }
 .footButtomLayer{
-  margin-top: 1vh;
+  padding: 1vh 2vw;
   text-align: right;
 }
 .orderCell{
@@ -448,6 +527,10 @@ export default {
       }
       span{
         color:$font-color6;
+      }
+      .tag{
+        color:#3B74FF;
+        border-color:#3B74FF;
       }
     }
   }

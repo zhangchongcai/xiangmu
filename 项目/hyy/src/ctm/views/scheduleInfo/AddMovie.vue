@@ -14,7 +14,8 @@
                         type="daterange"
                         range-separator="至"
                         start-placeholder="开始日期"
-                        end-placeholder="结束日期">
+                        end-placeholder="结束日期"
+                        :picker-options="pickerOptions">
                 </el-date-picker>
             </div>
             <span slot="footer" class="dialog-footer">
@@ -71,12 +72,12 @@
             </el-form-item>
             <el-form-item class="movie-info">
                 <div>
-                    <span>放映制式&nbsp; {{currentMovie.disVersion ? currentMovie.disVersion : ''}}</span>
-                    <span>影片分类&nbsp; {{currentMovie.movieClass ? currentMovie.movieClass: ''}}</span>
-                    <span>片长&nbsp; {{currentMovie.timeLong ? currentMovie.timeLong + '分' : ''}}</span>
-                    <span>首映日期&nbsp; {{currentMovie.dateShowFirst ? currentMovie.dateShowFirst.split(' ')[0] : ''}}</span>
-                    <span>公映日期&nbsp; {{currentMovie.datePublicShow ? currentMovie.datePublicShow.split(' ')[0] : ''}}</span>
-                    <span>下映日期&nbsp; {{currentMovie.dateShowOff ? currentMovie.dateShowOff.split(' ')[0] : ''}}</span>
+                    <span>放映制式： {{currentMovie.disVersion ? currentMovie.disVersion : ''}}</span>
+                    <span>影片分类： {{currentMovie.movieClass ? currentMovie.movieClass: ''}}</span>
+                    <span>片长： {{currentMovie.timeLong ? currentMovie.timeLong + '分' : ''}}</span>
+                    <span>公映日期： {{currentMovie.datePublicShow ? currentMovie.datePublicShow.split(' ')[0] : ''}}</span>
+                    <span>首映日期： {{currentMovie.dateShowFirst ? currentMovie.dateShowFirst.split(' ')[0] : ''}}</span>
+                    <span>下映日期： {{currentMovie.dateShowOff ? currentMovie.dateShowOff.split(' ')[0] : ''}}</span>
                 </div>
             </el-form-item>
             <el-form-item label="说明：">
@@ -212,7 +213,8 @@
                                 type="daterange"
                                 range-separator="至"
                                 start-placeholder="开始日期"
-                                end-placeholder="结束日期">
+                                end-placeholder="结束日期"
+                                :picker-options="pickerOptions">
                         </el-date-picker>
                     </template>
                 </el-table-column>
@@ -304,6 +306,14 @@
 
                 },
                 tableData: [],
+                pickerOptions: {
+                    disabledDate: time => {
+                        if(this.currentMovie.dateShowFirst && this.currentMovie.dateShowOff) {
+                            return time.getTime() < new Date(this.currentMovie.dateShowFirst).getTime() || time.getTime() > new Date(this.currentMovie.dateShowOff).getTime();
+
+                        }
+                    }
+                },
 
             }
 
@@ -385,7 +395,6 @@
 
                 // this.expandRowKeys = expandRowKeys
                 this.tableData = dataArr
-
 
                 this.$nextTick( () => {
                     setTimeout(_ => {
@@ -510,6 +519,10 @@
 
             // 批量设置日期
             batchSettingDate(index) {
+                if(!this.checkAll && !this.isIndeterminate) {
+                    this.error('请选择影院')
+                    return
+                }
                 this.currentIndex = index
                 this.dateDialogVisible = true
 
@@ -517,12 +530,18 @@
 
             // 批量设置时间
             batchSettingTime(index) {
+                if(!this.checkAll && !this.isIndeterminate) {
+                    this.error('请选择影院')
+                    return
+                }
                 this.currentIndex = index
                 this.timeDialogVisible = true
 
             },
 
             movieChange(val) {
+                this.clearAllTime()
+
                 if(!val) {
                     this.currentMovie = {}
                     return
@@ -557,15 +576,35 @@
 
             },
 
+            clearAllTime() {
+
+                this.tableData.forEach( item => {
+                    item.checked = false
+                    item.isIndeterminate = false
+                    item.children.forEach( innerItem => {
+                        innerItem.checked = false
+                        innerItem.timeList.forEach( time => {
+                            time.date = ''
+                            time.time = ''
+                        })
+
+                    })
+                })
+
+                this.checkAll = false
+                this.isIndeterminate = false
+
+            },
+
             remoteMethod(query) {
                 console.log(this.basicFormData.showMonth, 'showMonth')
                 let month = this.basicFormData.showMonth.getMonth() + 1
                 let data = {
                     dateShowFirst: `${this.basicFormData.showMonth.getFullYear()}-${month > 9 ? month : '0' + month}-01`,
-                    dateShowOff: `${this.basicFormData.showMonth.getFullYear()}-${month > 9 ? month : '0' + month}-${this.getCountDays(this.basicFormData.showMonth)}`,
+                    dateShowOff: `${this.basicFormData.showMonth.getFullYear()}-${month > 9 ? month : '0' + month}-${this.getCountDays(new Date(this.basicFormData.showMonth))}`,
                     movieName: query,
                     current: 1,
-                    size: 10,
+                    size: 20,
                 }
                 console.log(data, 'data')
                 this.downloadMovieList(data)
@@ -615,6 +654,35 @@
                 this.$emit('updateComponent', '')
 
             },
+
+
+            // 校验两个日期时间段是否有交集
+            validateMixed(date1, date2) {
+                let mixedFlag = false
+                console.log(date1, date2)
+                let startDate1 = Date.parse(date1.date[0])
+                let endDate1 = Date.parse(date1.date[1])
+                let startDate2 = Date.parse(date2.date[0])
+                let endDate2 = Date.parse(date2.date[1])
+                // console.log(date1.date[0], date1.date[1], date2.date[0], date2.date[1])
+                // console.log(startDate1, endDate1, startDate2, endDate2)
+                if(!(endDate1 < startDate2 || startDate1 > endDate2)) {
+                    // 日期有交集  需要判断时间
+                    let startTime1 = Date.parse(`1970-01-01 ${date1.time[0]}`)
+                    let endTime1 = Date.parse(`1970-01-01 ${date1.time[1]}`)
+                    let startTime2 = Date.parse(`1970-01-01 ${date2.time[0]}`)
+                    let endTime2 = Date.parse(`1970-01-01 ${date2.time[1]}`)
+                    // console.log(date1.time[0], date1.time[1], date2.time[0], date2.time[1])
+                    // console.log(startTime1, endTime1, startTime2, endTime2)
+                    if(!(endTime1 < startTime2 || startTime1 > endTime2)) {
+                        // 时间有交集
+                        mixedFlag = true
+                    }
+
+                }
+                return mixedFlag
+            },
+
             confirmAddMovie() {
                 if(!this.formData.movieCode) {
                     this.warning('请选择影片！')
@@ -632,6 +700,11 @@
                 data.movieCinemaVoList = []
                 data.remark = this.formData.remark
 
+                // 时间日期同步校验信息
+                let syncValidate = ''
+                // 时间日期是否有交集校验信息
+                let isMixedValidate = ''
+
                 this.tableData.forEach( item => {
                     item.children.forEach( innerItem => {
                         data.movieCinemaVoList.push({
@@ -645,19 +718,51 @@
                         })
 
                         innerItem.timeList.forEach( (time, index) => {
-                            data.infoMovieTimeList.push({
-                                cinemaUid: innerItem.cinemaUid,
-                                startDate: time.date ? time.date[0] : '',
-                                endDate: time.date ? time.date[1] : '',
-                                startTime: time.time ? time.time[0] : '',
-                                endTime: time.time ? time.time[1] : '',
-                                groupCode: index + 1,
-                            })
+                            if((time.date && time.time) || (!time.date && !time.time)) {
+                                if(time.date && time.time) {
+                                    innerItem.timeList.forEach( (innerTime, innerIndex) => {
+                                        if(innerIndex > index && (innerTime.date && innerTime.time)) {
+                                            let flag = this.validateMixed(time, innerTime)
+                                            if(flag) {
+                                                isMixedValidate += `<p><span style="color: #F33430">${innerItem.cinemaName} 时段${index + 1} 时段${innerIndex + 1}</span> 存在重复的日期或时间，请重新选择</p>`
+                                            }
+
+                                        }
+                                    })
+                                }
+
+                                data.infoMovieTimeList.push({
+                                    cinemaUid: innerItem.cinemaUid,
+                                    startDate: time.date ? time.date[0] : '',
+                                    endDate: time.date ? time.date[1] : '',
+                                    startTime: time.time ? time.time[0] : '',
+                                    endTime: time.time ? time.time[1] : '',
+                                    groupCode: index + 1,
+                                })
+
+                            }else {
+                                syncValidate += `<p><span style="color: #F33430">${innerItem.cinemaName} 时段${index + 1}</span> 日期和时间未同步设置</p>`
+                            }
 
                         })
 
                     })
                 })
+                if(syncValidate.length) {
+                    this.$alert(syncValidate, '提示', {
+                        dangerouslyUseHTMLString: true
+                    })
+                    return
+
+                }
+
+                if(isMixedValidate.length) {
+                    this.$alert(isMixedValidate, '提示', {
+                        dangerouslyUseHTMLString: true
+                    })
+                    return
+
+                }
 
                 // 有索引就是编辑
                 if(this.editIndex > -1) {
@@ -678,6 +783,14 @@
                 for (let i = 0; i < els.length; i++) {
                     els[i].click()
                 }
+                // 避免首次渲染滚动条不出现
+                // let data = JSON.parse(JSON.stringify(this.timeIntervalHeader))
+                // this.timeIntervalHeader = []
+                // this.$nextTick( () => {
+                //     setTimeout( _ => {
+                //         this.timeIntervalHeader = data
+                //     }, 500)
+                // })
             },
 
             getCinemaAreaList() {
@@ -785,6 +898,7 @@
         },
         mounted() {
             this.remoteMethod('')
+            this.editIndex === -1 && this.getCinemaAreaList()
 
         }
     }
@@ -860,6 +974,9 @@
 
         }
         .el-table {
+            .el-table__body-wrapper {
+                overflow-y: auto;
+            }
             .time-interval-handler {
                 float: right;
                 font-size: 0;

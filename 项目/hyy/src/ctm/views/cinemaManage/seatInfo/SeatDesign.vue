@@ -23,7 +23,7 @@
               </td>
             </template>
             <td v-for="(cell, index) in seatColNumArray" :key="'colName' + index">
-              <el-input class="seatcolheader" v-model="cell.col" :disabled="eaitDisabled" @focus="getColVal(cell.col, index)" @change="colChange(cell.col)"/>
+              <input class="seatcolheader" v-model="cell.col" :disabled="eaitDisabled" @focus="getColVal(cell.col, index)" @change="colChange(cell.col)"/>
             </td>
             <td v-model="messagecolArr" v-for="(col,index) in messagecolArr">
                 <div class="fanzhuagn-box" v-if="index == 1" @click="colIndexBtnEvent">
@@ -73,7 +73,7 @@
             </tr>
             <tr v-for="(cell, index) in seatRowNumArray">
               <td>
-                <el-input class="seatrowheader" v-model="cell.row" :disabled="eaitDisabled" @focus="getRowVal(cell.row)" @change="rowChange(cell.row)"/>
+                <input class="seatrowheader" v-model="cell.row" :disabled="eaitDisabled" @focus="getRowVal(cell.row)" @change="rowChange(cell.row)"/>
               </td>
               <td v-for="row in messagecolArr"></td>
               <td v-for="(cell, index) in seatColNumArray">
@@ -99,7 +99,7 @@
                v-bind:style="{top: seatarea.top-this.messageRow*41 + 'px', left: seatarea.left+this.messageCol*41 + 'px', width: seatarea.width + 'px', height: seatarea.height + 'px'}">
             <table class="tdseatarea">
               <tr v-for="seatarearow in seatAreaGrid">
-                <td v-for="seatareacol in seatarearow" v-bind:style="{backgroundColor: seatareacol.color}">
+                <td v-for="seatareacol in seatarearow" v-bind:style="{backgroundColor: seatareacol.color, opacity: 0.3}">
                   <div></div>
                 </td>
               </tr>
@@ -132,9 +132,9 @@
       <el-aside width="300px" style="background-color: #FFF; margin-left: 20px;position: relative;overflow: hidden;">
         <div class="h">
           <div class="seat-area" style="margin-bottom:8px;color: #333;font-size: 14px;"><span>座位区域</span>
-            <el-input class="area-row-col seat-inputBtn" v-model="maxrowsize" @focus="focusMaxrowsize()" @change="maxrowsizeChangeHandler()"/>
+            <el-input class="area-row-col seat-inputBtn" type="number" v-model="maxrowsize" @focus="focusMaxrowsize()" @change="maxrowsizeChangeHandler()"/>
             <span style="color:#666666;">行　X</span>
-            <el-input class="area-row-col seat-inputBtn" v-model="maxcolsize" @focus="focusMaxcolsize()" @change="maxcolsizeChangeHandler()"/>
+            <el-input class="area-row-col seat-inputBtn" type="number" v-model="maxcolsize" @focus="focusMaxcolsize()" @change="maxcolsizeChangeHandler()"/>
             <span style="color:#666666;">列</span>
           </div>
           <!-- <div class="seat-area" style="margin-bottom:35px;color: #333;font-size: 14px;"><span>留白区域</span>
@@ -190,6 +190,12 @@
           <div style="margin-bottom:17px; color: #333">设定分区方案</div>
           <setRegionPlan
                   ref="setRegionPlan"
+                  :seatAreaGrid="seatAreaGrid"
+                  :seatCellGrid="seatCellGrid"
+                  @updateDrawBgData="updateDrawBgData"
+                  @updateCommonBgData="updateCommonBgData"
+                  @updateActiveType="updateActiveType"
+                  @updateSeatRegionData="updateSeatRegionData"
           ></setRegionPlan>
 <!--          <div class="sales-territory-box">-->
 <!--            <ul class="sales-territory-boxUlnone" v-model="drawSaleArea" v-if="drawSaleArea.length == 0">-->
@@ -246,30 +252,30 @@
 <!--              <span>添加选中座位</span>-->
 <!--            </div>-->
 <!--          </div>-->
-          <div style="margin-bottom:17px;margin-top:16px;color: #333">设定选中座位等级</div>
-          <div class="sales-territory-grade" style="height:24px;position: relative;">
-            <ul class="sales-territory-gradeUL">
-              <li v-for="(el,index) in seatlevArr" 
-                  @click="seatlevEvent(index)"
-                  :class="seatlevActive == index ? 'active' : ''"
-                >{{el.num}}</li>
-              <li style="line-height:20px;"
-                  @click="seatlevEventMore()"
-                  :class="seatlevActive == 'more' ? 'active' : ''"
-                >
-                <svg class="icon icon-addbox" aria-hidden="true">
-                  <use xlink:href="#icon-quanju-xiala"></use>
-                </svg>
-              </li>
-            </ul>
-            <div class="moreseatlevBox" v-if="seatlevMore">
-              <ul class="moreseatlevBox-ul">
-                <li v-for="(item,index) in seatlevArrmore" 
-                    @click="seatlevmoreLiBtn(index)"
-                >{{item.num}}</li>
-              </ul>
-            </div>
-          </div>
+<!--          <div style="margin-bottom:17px;margin-top:16px;color: #333">设定选中座位等级</div>-->
+<!--          <div class="sales-territory-grade" style="height:24px;position: relative;">-->
+<!--            <ul class="sales-territory-gradeUL">-->
+<!--              <li v-for="(el,index) in seatlevArr" -->
+<!--                  @click="seatlevEvent(index)"-->
+<!--                  :class="seatlevActive == index ? 'active' : ''"-->
+<!--                >{{el.num}}</li>-->
+<!--              <li style="line-height:20px;"-->
+<!--                  @click="seatlevEventMore()"-->
+<!--                  :class="seatlevActive == 'more' ? 'active' : ''"-->
+<!--                >-->
+<!--                <svg class="icon icon-addbox" aria-hidden="true">-->
+<!--                  <use xlink:href="#icon-quanju-xiala"></use>-->
+<!--                </svg>-->
+<!--              </li>-->
+<!--            </ul>-->
+<!--            <div class="moreseatlevBox" v-if="seatlevMore">-->
+<!--              <ul class="moreseatlevBox-ul">-->
+<!--                <li v-for="(item,index) in seatlevArrmore" -->
+<!--                    @click="seatlevmoreLiBtn(index)"-->
+<!--                >{{item.num}}</li>-->
+<!--              </ul>-->
+<!--            </div>-->
+<!--          </div>-->
           <div style="margin-bottom:17px;margin-top:16px; color: #333">详情统计</div>
           <div class="sales-details-Statistics">
             <ul class="sales-details-StatisticsUL">
@@ -433,8 +439,12 @@
         drawSaleArea:[],
         // 当前选择的销售区域背景色
         drawBgColor:"",
-        // 当前选择的销售区域名字
-        drawBgName:"",
+        // 当前选择的销售区域UID
+        drawBgRegionUid:"",
+        // 普通区背景色
+        commonBgColor:"",
+        // 普通区域UID
+        commonBgRegionUid:"",
         // 销售区域编辑弹窗名字
         salesArea:false,
         // 添加座位数组
@@ -446,8 +456,8 @@
           hallUid: ''
         },
         linkToHallList: '',
-        minClientX: 208,
-        minClientY: 136,//框选区域时，最少的X、Y坐标
+        minClientX: 222,
+        minClientY: 149,//框选区域时，最少的X、Y坐标
         maxrowsize: defaultMaxRowSize,//最大行数，座位行号列表根据该行数进行生成
         maxcolsize: defaultMaxColSize,//最大列数，座位行号列表根据该列数进行生成
         messageRow: defaultMaxMessageRow,//留白行数默认1行
@@ -532,11 +542,35 @@
         this.delActiveType()
         this.actionType = 11
       },
-      drawSaleAreaEvent(index){
+      // drawSaleAreaEvent(index){
+      //   this.delActiveType()
+      //   this.actionType = 10
+      //   this.drawBgColor = this.drawSaleArea[index].fontColor
+      //   this.drawBgRegionUid = this.drawSaleArea[index].name
+      // },
+      updateActiveType(val) {
         this.delActiveType()
-        this.actionType = 10
-        this.drawBgColor = this.drawSaleArea[index].fontColor
-        this.drawBgName = this.drawSaleArea[index].name
+        this.actionType = val
+      },
+      updateDrawBgData(data) {
+        this.drawBgColor = data.drawBgColor
+        this.drawBgRegionUid = data.drawBgRegionUid
+      },
+      updateCommonBgData(data) {
+        this.commonBgColor = data.commonBgColor
+        this.commonBgRegionUid = data.commonBgRegionUid
+      },
+      updateSeatRegionData(color) {
+        this.seatAreaGrid.forEach( (item, index) => {
+          item.forEach( (innerItem, innerIndex) => {
+            if(innerItem.color === color) {
+              innerItem.color = this.commonBgColor
+              this.seatCellGrid[index][innerIndex].regionUid = this.commonBgRegionUid
+            }
+          })
+        })
+        this.seatAreaGrid = JSON.parse(JSON.stringify(this.seatAreaGrid))
+        this.seatCellGrid = JSON.parse(JSON.stringify(this.seatCellGrid))
       },
       // 右侧添加座位事件
       addSeatArrEvent(index){
@@ -644,7 +678,7 @@
           for (let j = 0; j < this.maxcolsize; j++) {
             let cell = null;
             if(!$.isEmptyObject(this.initHallData)){
-              cell = this.initHallData[[i - this.messageRow,j - this.messageCol].join('_')];
+              cell = this.initHallData[[i,j].join('_')];
             }
             if ($.isEmptyObject(cell) && i <= existRowNum - 1 && j <= existColNum - 1) {
               cell = seatAreaTemp[i][j];
@@ -652,10 +686,16 @@
             if (!$.isPlainObject(cell)) {
               cell = {};
             }
+            // 初始化分区
+            if(cell && cell.regionUid) {
+              cell.color = cell.region.color
+            }
             colArray.push(cell);
           }
           this.seatAreaGrid.push(colArray);
         }
+        console.log(this.seatAreaGrid, 'seatAreaGrid')
+
       },
       /**
        * 根据最大行、列数，生成第三层座位二维数组
@@ -699,7 +739,10 @@
           this.seatCellGrid.push(colArray);
         }
 
-        // console.log(this.seatCellGrid)
+        this.$nextTick( _ => {
+          this.$refs.setRegionPlan.asyncRegionSeatCount()
+        })
+
       },
       //计算画线对应的座位单元格
       calculateDrawlineSeatCell() {
@@ -854,6 +897,8 @@
           curSeatCell.status = 1;
           curSeatCell.sgCode = $sgCode;
           curSeatCell.seatLevel = this.seatlevActive;
+          curSeatCell.color = this.commonBgColor;
+          curSeatCell.regionUid = this.commonBgRegionUid;
           switch (this.actionType) {
             case 1:// 普通单座
               curSeatCell.seatType = 0;
@@ -886,6 +931,8 @@
           seatCellLeft.sgCode = $sgCode;
           seatCellLeft.imageType = 2;
           seatCellLeft.seatLevel = this.seatlevActive;
+          seatCellLeft.color = this.commonBgColor;
+          seatCellLeft.regionUid = this.commonBgRegionUid;
 
           //情侣座右边座位
           //由于座位单元格数据与坐标XY是相反的，所以取数据时传XY值要相反
@@ -895,6 +942,9 @@
           seatCellRight.sgCode = $sgCode;
           seatCellRight.imageType = 3;
           seatCellRight.seatLevel = this.seatlevActive;
+          seatCellRight.color = this.commonBgColor;
+          seatCellRight.regionUid = this.commonBgRegionUid;
+
         }
         //渲染多人座位图标
         else{
@@ -906,6 +956,9 @@
             curSeatCell.seatType = 2;
             curSeatCell.sgCode = $sgCode;
             curSeatCell.seatLevel = this.seatlevActive;
+            curSeatCell.color = this.commonBgColor;
+            curSeatCell.regionUid = this.commonBgRegionUid;
+
             if(j == 0){//左边座位
               curSeatCell.imageType = 4;
             }else if(j == selectedRow.length - 1){//右边座位
@@ -915,6 +968,10 @@
             }
           }
         }
+
+        this.$nextTick( _ => {
+          this.$refs.setRegionPlan.asyncRegionSeatCount()
+        })
       },
       //修改座位
       editSeat(){
@@ -1076,14 +1133,80 @@
               var cell = this.seatAreaGrid[selectedCol.y][selectedCol.x];
               var seatCellGridcell = this.seatCellGrid[selectedCol.y][selectedCol.x];
               if(seatCellGridcell.exist == 1){
-                cell.color = this.drawBgColor;
-                seatCellGridcell.regionCode = this.drawBgName
+                cell.color = this.drawBgColor
+                seatCellGridcell.regionUid = this.drawBgRegionUid
+
+                //由于座位单元格数据与坐标XY是相反的，所以取数据时传XY值要相反
+                // let curSeatCell = this.seatCellGrid[selectedCol.y][selectedCol.x];
+                // if($.isEmptyObject(curSeatCell) || !$.isNumeric(curSeatCell.row)){
+                //   break;
+                // }
+                // let seatGroupArray = [$.extend({}, selectedCol)];
+                // for(let m = selectedCol.x - 1; m > this.messageCol; m--){
+                //   //由于座位单元格数据与坐标XY是相反的，所以取数据时传XY值要相反
+                //   let leftSeatCell = this.seatCellGrid[selectedCol.y][m];
+                //   if($.isEmptyObject(leftSeatCell)
+                //           || !$.isNumeric(leftSeatCell.row)
+                //           || leftSeatCell.sgCode != curSeatCell.sgCode){
+                //     break;
+                //   }
+                //   seatGroupArray.unshift($.extend({}, {'x': m, 'y': selectedCol.y}));
+                // }
+                // for(let m = selectedCol.x + 1; m < this.maxcolsize; m++){
+                //   //由于座位单元格数据与坐标XY是相反的，所以取数据时传XY值要相反
+                //   let rightSeatCell = this.seatCellGrid[selectedCol.y][m];
+                //   if($.isEmptyObject(rightSeatCell)
+                //           || !$.isNumeric(rightSeatCell.row)
+                //           || rightSeatCell.sgCode != curSeatCell.sgCode){
+                //     break;
+                //   }
+                //   seatGroupArray.push($.extend({}, {'x': m, 'y': selectedCol.y}));
+                // }
+                //
+                // console.log(seatGroupArray, 'seatGroupArrayseatGroupArrayseatGroupArray')
+
+                switch (seatCellGridcell.imageType) {
+                  case 2: // 情侣座左
+                  case 11: // 坏情侣左座
+                    this.seatAreaGrid[selectedCol.y][selectedCol.x + 1].color = this.drawBgColor
+                    this.seatCellGrid[selectedCol.y][selectedCol.x + 1].regionUid = this.drawBgRegionUid
+                    break
+                  case 3: // 情侣座右
+                  case 12: // 坏情侣右座
+                    this.seatAreaGrid[selectedCol.y][selectedCol.x - 1].color = this.drawBgColor
+                    this.seatCellGrid[selectedCol.y][selectedCol.x - 1].regionUid = this.drawBgRegionUid
+                    break
+                  case 4: // 多人座左
+                  case 13: // 坏多人左座
+                    this.seatAreaGrid[selectedCol.y][selectedCol.x + 1].color = this.drawBgColor
+                    this.seatCellGrid[selectedCol.y][selectedCol.x + 1].regionUid = this.drawBgRegionUid
+                    this.seatAreaGrid[selectedCol.y][selectedCol.x + 2].color = this.drawBgColor
+                    this.seatCellGrid[selectedCol.y][selectedCol.x + 2].regionUid = this.drawBgRegionUid
+                    break
+                  case 5: // 多人座中
+                  case 14: // 坏多人中座
+                    this.seatAreaGrid[selectedCol.y][selectedCol.x - 1].color = this.drawBgColor
+                    this.seatCellGrid[selectedCol.y][selectedCol.x - 1].regionUid = this.drawBgRegionUid
+                    this.seatAreaGrid[selectedCol.y][selectedCol.x + 1].color = this.drawBgColor
+                    this.seatCellGrid[selectedCol.y][selectedCol.x + 1].regionUid = this.drawBgRegionUid
+                    break
+                  case 6: // 多人座右
+                  case 15: // 坏多人右座
+                    this.seatAreaGrid[selectedCol.y][selectedCol.x - 2].color = this.drawBgColor
+                    this.seatCellGrid[selectedCol.y][selectedCol.x - 2].regionUid = this.drawBgRegionUid
+                    this.seatAreaGrid[selectedCol.y][selectedCol.x - 1].color = this.drawBgColor
+                    this.seatCellGrid[selectedCol.y][selectedCol.x - 1].regionUid = this.drawBgRegionUid
+                    break
+
+                }
+
               }
             }
           }
-        this.seatAreaGrid.push();
-        // 
         }
+
+        this.$refs.setRegionPlan.asyncRegionSeatCount()
+
       },
       // 删除框选销售区域
       deldrawSaleEvent(){
@@ -1105,12 +1228,53 @@
               let seatCellGridcell = this.seatCellGrid[selectedCol.y][selectedCol.x];
               cell.row = '';
               cell.col = '';
-              cell.color = '';
-              seatCellGridcell.regionCode = '';
-            } 
+
+              if(seatCellGridcell.exist == 1) {
+                  cell.color = this.commonBgColor;
+                  seatCellGridcell.regionUid = this.commonBgRegionUid;
+              }else {
+                  cell.color = '';
+                  seatCellGridcell.regionUid = '';
+              }
+              switch (seatCellGridcell.imageType) {
+                case 2: // 情侣座左
+                case 11: // 坏情侣左座
+                  this.seatAreaGrid[selectedCol.y][selectedCol.x + 1].color = this.commonBgColor
+                  this.seatCellGrid[selectedCol.y][selectedCol.x + 1].regionUid = this.commonBgRegionUid
+                  break
+                case 3: // 情侣座右
+                case 12: // 坏情侣右座
+                  this.seatAreaGrid[selectedCol.y][selectedCol.x - 1].color = this.commonBgColor
+                  this.seatCellGrid[selectedCol.y][selectedCol.x - 1].regionUid = this.commonBgRegionUid
+                  break
+                case 4: // 多人座左
+                case 13: // 坏多人左座
+                  this.seatAreaGrid[selectedCol.y][selectedCol.x + 1].color = this.commonBgColor
+                  this.seatCellGrid[selectedCol.y][selectedCol.x + 1].regionUid = this.commonBgRegionUid
+                  this.seatAreaGrid[selectedCol.y][selectedCol.x + 2].color = this.commonBgColor
+                  this.seatCellGrid[selectedCol.y][selectedCol.x + 2].regionUid = this.commonBgRegionUid
+                  break
+                case 5: // 多人座中
+                case 14: // 坏多人中座
+                  this.seatAreaGrid[selectedCol.y][selectedCol.x - 1].color = this.commonBgColor
+                  this.seatCellGrid[selectedCol.y][selectedCol.x - 1].regionUid = this.commonBgRegionUid
+                  this.seatAreaGrid[selectedCol.y][selectedCol.x + 1].color = this.commonBgColor
+                  this.seatCellGrid[selectedCol.y][selectedCol.x + 1].regionUid = this.commonBgRegionUid
+                  break
+                case 6: // 多人座右
+                case 15: // 坏多人右座
+                  this.seatAreaGrid[selectedCol.y][selectedCol.x - 2].color = this.commonBgColor
+                  this.seatCellGrid[selectedCol.y][selectedCol.x - 2].regionUid = this.commonBgRegionUid
+                  this.seatAreaGrid[selectedCol.y][selectedCol.x - 1].color = this.commonBgColor
+                  this.seatCellGrid[selectedCol.y][selectedCol.x - 1].regionUid = this.commonBgRegionUid
+                  break
+
+              }
+            }
           }
-        this.seatAreaGrid.push();
         }
+        this.$refs.setRegionPlan.asyncRegionSeatCount()
+
       },
       //删除座位
       delSeat() {
@@ -1142,6 +1306,9 @@
                     val.status = '';
                     val.exist = 0
                     cell.seatLevel = ""
+
+                    val.color = ''
+                    val.regionUid = ''
                 }
               })
               cell.imageType = 0;
@@ -1154,9 +1321,16 @@
               cell.exist = 0
               cell.sgCode = null
               cell.seatLevel = ""
+
+              cell.color = ''
+              cell.regionUid = ''
             }
           }
-        }     
+        }
+
+        this.$nextTick( _ => {
+          this.$refs.setRegionPlan.asyncRegionSeatCount()
+        })
       },
       //合并座位
       mergeSeat() {
@@ -1470,23 +1644,17 @@
        * 最大行数改变事件处理，将重新初始化座位数据
        */
       maxrowsizeChangeHandler() {
+        let maxRow = this.findCurrentSeatsMaxRowCol().row
         if(typeof(this.maxrowsize) == "string" && parseInt(this.maxrowsize) >= 1 && parseInt(this.maxrowsize) !=NaN){
           this.maxrowsize = Number(this.maxrowsize);
-          let boolean = new RegExp(/^\+?[1-9]\d*$/).test(this.maxrowsize)
+          let boolean = (new RegExp(/^\+?[1-9]\d*$/).test(this.maxrowsize)) && (this.maxrowsize > maxRow)
           if(!boolean){
             this.maxrowsize = Number(this.kktest);
             this.$message({
-              message: '请输入大于0整数',
+              message: '请输入大于当前行数的整数',
               type: 'warning'
             })
           }
-
-        }else{
-          this.maxrowsize = Number(this.kktest);
-          this.$message({
-            message: '请输入大于0整数',
-            type: 'warning'
-          });
         }
           this.generateSeatData();
           let uu = this.seatCellGrid
@@ -1496,22 +1664,18 @@
        * 最大列数改变事件处理，将重新初始化座位数据
        */
       maxcolsizeChangeHandler() {
+        let maxCol = this.findCurrentSeatsMaxRowCol().col
+        // console.log(this.seatColNumArray.length)
         if(typeof(this.maxcolsize) == "string" && parseInt(this.maxcolsize) >= 1 && parseInt(this.maxrowsize) !=NaN){
           this.maxcolsize = Number(this.maxcolsize);
-          let boolean = new RegExp(/^\+?[1-9]\d*$/).test(this.maxcolsize)
+          let boolean = (new RegExp(/^\+?[1-9]\d*$/).test(this.maxcolsize)) && (this.maxcolsize > maxCol)
           if(!boolean){
             this.maxcolsize = Number(this.kktest);
             this.$message({
-              message: '请输入大于0整数',
+              message: '请输入大于当前列数的整数',
               type: 'warning'
             })
           }
-        }else{
-          this.maxcolsize = Number(this.kktest);
-          this.$message({
-            message: '请输入大于0整数',
-            type: 'warning'
-          });
         }
         this.generateSeatData();
         let uu = this.seatCellGrid
@@ -1855,6 +2019,22 @@
           })
         })
       },
+      findCurrentSeatsMaxRowCol() {
+        let seatList = this.getSaveSeatArray()
+        let seatsMaxRowCol = {row: 2, col: 2}
+        let ulXs = []
+        let ulYs = []
+        if(seatList.length) {
+          seatList.forEach(item => {
+             ulXs.push(item.ulX)
+             ulYs.push(item.ulY)
+          })
+          seatsMaxRowCol.col = Math.max.apply(null, ulXs) + 1;
+          seatsMaxRowCol.row = Math.max.apply(null, ulYs) + 1;
+        }
+        console.log(seatsMaxRowCol)
+        return seatsMaxRowCol;
+      },
       //
       getSaveSeatArray(){
         let tempArray = [];
@@ -1869,6 +2049,20 @@
       },
       // 完成编辑保存
       yesEditEvent(){
+        if(!this.getSaveSeatArray().length) {
+          return this.$confirm("暂无座位添加，是否关闭？", "提示", {
+            confirmButtonText: '关闭页面',
+            cancelButtonText: '继续编辑',
+            type: 'warning'
+          }).then(() => {
+            this.$router.push({
+              path:'/ticket/cinema/edit',
+              query:{
+                uid:this.$route.query.cinemaUid
+              }
+            })
+          })
+        }
         this.$confirm('完成编辑', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
@@ -1876,14 +2070,16 @@
         }).then(() => {
             let data = {
             hallUid:this.$route.query.hallUid,
+            hallName: this.hallName,
             cinemaUid:this.$route.query.cinemaUid,
             hallBlankAreaX:this.messageRow,
             hallBlankAreaY:this.messageCol,
             hallSeatX:this.maxrowsize,
             hallSeatY:this.maxcolsize,
-            seatList:this.getSaveSeatArray()
+            seatList:this.getSaveSeatArray(),
+            regionInfoList: this.$refs.setRegionPlan.regionInfoList
           };
-          this.$ctmList.ciseatDesign(data).then( data => {
+          this.$ctmList.ciseatSave(data).then( data => {
               if(data.code === 200) {
                 this.$message.success('保存成功');
                  // 返回影厅列表
@@ -1894,7 +2090,7 @@
                   }
                 })
               }else {
-                this.$message.error(res.msg);
+                this.$message.error(data.msg);
               }
           })
         
@@ -2012,6 +2208,7 @@
       },
       // 统计栏方法、
       countSeatEvent(i){
+        // console.log(i)
         let Seat = this.countSeat
         let allSeat = 0
         let commonSeat = 0
@@ -2075,7 +2272,7 @@
       this.params = this.$route.query;
       this.linkToHallList = '/CTM/cinemawall/list?cinemaUid=' + this.params.cinemaUid;
       let data = {hallUid:this.$route.query.hallUid};
-      this.$ctmList.ciseatMap(data).then( data => {
+      this.$ctmList.ciseatLoad(data).then( data => {
           if (data && data.code === 200) {
             this.initHallData = data.data;
             // console.log('this.initHallData:');
@@ -2099,6 +2296,7 @@
               });
             }
           } else {
+            this.error(data.msg)
           }
           // console.log(this.turnCol)
           this.generateSeatData();
@@ -2113,10 +2311,12 @@
     // },
     destroyed() {
       $('.content-wrapper').css("overflowY", "auto")
+      $('.content-wrapper').css("height", "calc(100% - 34px)")
     },
     mounted() {
       this.$nextTick(() => {
         $('.content-wrapper').css("overflowY", "hidden")
+        $('.content-wrapper').css("height", "auto")
       })
       this.lbGetcolArr(this.messageCol)
       this.lbGetrowArr(this.messageRow)
@@ -2220,12 +2420,6 @@
     -ms-user-select: none;
     user-select: none;
   }
-
-  /**面包屑导航样式**/
-  .el-breadcrumb {
-    margin-top: 10px;
-    margin-bottom: 10px;
-  }
   .edit-seat .el-breadcrumb__inner{
       color: #3B74FF !important;
   }
@@ -2279,6 +2473,12 @@
   .seatcolheader, .seatrowheader, .seatbackground td div {
     height: $seatWidthHeight;
     width: $seatWidthHeight;
+    text-align: center;
+  }
+
+  input.seatcolheader, input.seatrowheader {
+    background: #d2dae6;
+    border: none;
   }
 
   ;
@@ -2286,7 +2486,7 @@
   .tdseatarea td {
     text-align: center;
     vertical-align: middle;
-    opacity: 0.7;
+    /*opacity: 0.3;*/
   }
 
   .tdseatarea td div {

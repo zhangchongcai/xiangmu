@@ -1,5 +1,5 @@
 <template>
-    <div class="content purchase-note-common">
+    <div class="content purchase-protocol-common">
 <!--        <div class="breadcrumb">-->
 <!--            <el-breadcrumb separator-class="el-icon-arrow-right">-->
         <!--                <el-breadcrumb-item>协议管理</el-breadcrumb-item>-->
@@ -59,8 +59,7 @@
                                                 type="primary"
                                                 plain
                                                 @click="handleDialogEvent('refSuppliersDialog')"
-                                        >{{queryData.supName?"编辑":"选择"}}
-                                        </el-button>
+                                        >选择</el-button>
                                     </div>
                                 </el-form-item>
                             </el-col>
@@ -82,31 +81,26 @@
                                         class="cooperation-time"
                                         :rules="[{ required:  routeQuery.type==3 ? false : true, message: '有效期不能为空',trigger: 'change' }]"
                                 >
-                                    <span v-if="routeQuery.type==3">{{queryData.startTime +'至' + queryData.endTime}}</span>
+                                    <span v-if="routeQuery.type==3">{{queryData.beginTime +'至' + queryData.finishTime}}</span>
                                     <el-date-picker
                                             v-else
                                             class="basic-input"
                                             v-model="queryData.cooperationTime"
-                                            type="datetimerange"
-                                            format="yyyy-MM-dd HH:mm"
-                                            value-format="yyyy-MM-dd HH:mm"
+                                            type="daterange"
+                                            value-format="yyyy-MM-dd"
                                             placeholder="选择日期"
                                     ></el-date-picker>
                                 </el-form-item>
                             </el-col>
                             <el-col :span="10">
                                 <el-form-item label="附件">
-                                    <img class="upload-img" v-if="routeQuery.type==3" :src="queryData.fileUrl" alt>
-                                    <img-upload v-else :url="queryData.fileUrl" @on-success="successAvatarUpload" type="accessory"></img-upload>
-<!--                                    <el-upload-->
-<!--                                            class="upload-demo"-->
-<!--                                            action="https://jsonplaceholder.typicode.com/posts/"-->
-<!--                                            :file-list="fileList">-->
-<!--                                        <img v-if="queryData.imgUrl" :src="queryData.imgUrl" class="avatar">-->
-<!--                                        <i v-else class="el-icon-plus avatar-uploader-icon"></i>-->
-<!--                                        <el-button type="primary" plain>点击上传<i class="el-icon-upload el-icon&#45;&#45;right"></i></el-button>-->
-<!--                                    </el-upload>-->
-
+                                    <div v-if="routeQuery.type==3">
+                                        <a target="_Blank" :href="queryData.fileUrl" :download="queryData.fileName" v-if="queryData.fileName">
+                                            <span>点击下载: </span>
+                                            <span class="download">{{queryData.fileName}}</span>
+                                        </a>
+                                    </div>
+                                    <img-upload v-else :url="queryData.fileUrl" :fileName="queryData.fileName" @on-success="successAvatarUpload" type="accessory" @on-successUpload="onSuccessUpload"></img-upload>
                                 </el-form-item>
                             </el-col>
                         </el-row>
@@ -134,12 +128,14 @@
                                             <el-input
                                                     size="small"
                                                     type="number"
-                                                    v-model="row[item.key]"
+                                                    :value="row[item.key]"
+                                                    @input="inputEvent($event,row,item.key)"
                                             ></el-input>
                                         </div>
                                         <div v-else-if="item.selsect && row.purUnitVoList">
                                             <el-select
                                                     v-model="row[item.key]"
+                                                    @change="changePurUnitVoList($event,row,item.key)"
                                             >
                                                 <el-option
                                                         v-for="unitItem in row.purUnitVoList"
@@ -152,16 +148,7 @@
                                         <span v-else>{{row[item.key]}}</span>
                                     </div>
                                     <div v-else>
-                                        <div v-if="item.selsect">
-                                            <!--                                            <el-select v-model="row[item.key]" disabled>-->
-                                            <!--                                                <el-option-->
-                                            <!--                                                        :key="unitItem.id"-->
-                                            <!--                                                        :label="unitItem.unitName"-->
-                                            <!--                                                        :value="unitItem.uid"-->
-                                            <!--                                                        v-for="unitItem in row.unitList"-->
-                                            <!--                                                ></el-option>-->
-                                            <!--                                            </el-select>-->
-                                        </div>
+                                        <div v-if="item.selsect"></div>
                                         <span v-else>{{row[item.key]}}</span>
                                     </div>
                                 </template>
@@ -179,11 +166,11 @@
             </el-collapse>
 
             <!-- 选择影院弹窗 -->
-            <cinemal-dialog
-                    ref="refCinemalDialog"
-                    @onSumit="onCinemalSumit"
-                    :dialogFeedbackData="[{cinemaUid:queryData.cinemaUid,cinemaName:queryData.cinemaName}]"
-            ></cinemal-dialog>
+<!--            <cinemal-dialog-->
+<!--                    ref="refCinemalDialog"-->
+<!--                    @onSumit="onCinemalSumit"-->
+<!--                    :dialogFeedbackData="[{cinemaUid:queryData.cinemaUid,cinemaName:queryData.cinemaName}]"-->
+<!--            ></cinemal-dialog>-->
 
 
 
@@ -192,8 +179,8 @@
             <!-- 选择商品 -->
             <selected-goods
                     :dialogVisible.sync="selectedGoodsDialogVisible"
-                    :cinemaUid="queryData.cinemaUid"
                     :merType="'1,5'"
+                    :canSale="'-1'"
                     @cimSelectedGoodsDialogCallBack="selectedGoodsDialogCallBack"
             ></selected-goods>
 
@@ -231,7 +218,9 @@
                     beginTime: '',
                     finishTime: '',
                     status: 1,
-                    fileUrl: "//onetitemdev.oss-cn-zhangjiakou.aliyuncs.com/picture/goods/GOODS_20190704145410.jpg",
+                    // fileUrl: "//onetitemdev.oss-cn-zhangjiakou.aliyuncs.com/picture/goods/GOODS_20190704145410.jpg",
+                    fileUrl: "",
+                    fileName: "",
                     supName: "", //供应商名称
                     supUid: "", //供应商id
                 },
@@ -264,7 +253,6 @@
         },
         mounted() {
             this.init();
-            console.log(this.routeMerData);
         },
 
         methods: {
@@ -290,12 +278,25 @@
                         this.queryData.agreementDetailList.push(
                             ...resData.data.map(item => {
                                 item.merUid = item.uid;
+                                item.baseUnitUid = item.unitUid;
                                 item.purCostPrice = null;
                                 return item;
                             })
                         );
+                        this.queryData.agreementDetailList = this.unRepeat(this.queryData.agreementDetailList)
                     }
                 });
+            },
+            //去重
+            unRepeat(arr) {
+                let hash = {};
+                return arr.reduce((item, next) => {
+                    if (!hash[next.skuUid]) {
+                        hash[next.skuUid] = true;
+                        item.push(next);
+                    }
+                    return item;
+                }, []);
             },
             // 新增协议单
             agreementSave(param) {
@@ -348,25 +349,31 @@
                 this.$cimList.procurement.agreementGet(param).then(resData => {
                     if (resData.code == 200) {
                         this.queryData = resData.data;
-                        this.queryData.cooperationTime = [
-                            this.queryData.startTime,
-                            this.queryData.endTime
-                        ];
-                        console.log(this.queryData.cooperationTime)
+                        this.$set(this.queryData, 'cooperationTime', [this.queryData.beginTime,this.queryData.finishTime])
                     }
                 });
+            },
+            changePurUnitVoList(value, row, key) {
+                row.purUnitVoList.forEach(item => {
+                    if (value == item.unitUid) {
+                        row.purUnitName = item.name
+                        row.purUnitRatio = item.purUnitRatio
+                    }
+                })
             },
             //图片上传成功回调
             successAvatarUpload(response) {
                 this.queryData.fileUrl = response;
             },
+            onSuccessUpload(response) {
+                this.queryData.fileName = response.fileName;
+            },
+            inputEvent(value, row, key) {
+                // console.log(value, row, key)
+                // 通过正则过滤小数点后两位
+                row[key] = value.match(/^\d*(\.?\d{0,2})/g)[0];
+            },
             handleAddGood() {
-                // if (!this.queryData.cinemaUid) {
-                //     this.$message({
-                //         message: "请先选择一个门店!"
-                //     });
-                //     return;
-                // }
                 this.selectedGoodsDialogVisible = true;
             },
             handleOperateEvent(row) {
@@ -406,7 +413,7 @@
                     this.queryData.beginTime = "";
                     this.queryData.finishTime = "";
                 }
-                console.log(this.queryData);
+                // console.log(this.queryData);
                 this.$refs["ruleForm"].validate(valid => {
                     if (valid) {
                         if (this.queryData.agreementDetailList.length == 0) {
@@ -421,19 +428,33 @@
                             if (typeof item.amount == "number") {
                                 item.amount = item.amount.toString();
                             }
-                            if (!item.purUnitUid) {
-                                this.$message("请选择采购单位");
-                                flag = false;
-                                break;
+                            if (typeof item.taxRate == "number") {
+                                item.taxRate = item.taxRate.toString();
                             }
                             if (!item.purCostPrice) {
-                                this.$message("请填写协议成本");
+                                this.$message("请填写采购成本!");
                                 flag = false;
                                 break;
+                            }else{
+                                if(item.purCostPrice<0){
+                                    this.$message("采购成本不能小于0!");
+                                    flag = false;
+                                    break;
+                                }
                             }
-
                             if (!item.taxRate) {
-                                this.$message("请填写税率");
+                                this.$message("请填写税率!");
+                                flag = false;
+                                break;
+                            }else{
+                                if(item.taxRate<0){
+                                    this.$message("税率不能小于0!");
+                                    flag = false;
+                                    break;
+                                }
+                            }
+                            if (!item.purUnitUid) {
+                                this.$message("请选择采购单位!");
                                 flag = false;
                                 break;
                             }
@@ -453,13 +474,20 @@
             },
             //
             handleCancel() {
-                this.$router.go(-1);
+                this.$store.commit("tagNav/removeTagNav", {
+                    name: this.$route.name,
+                    path: this.$route.path,
+                    title: this.$route.meta.title,
+                    query: this.$route.query
+                })
+                this.$router.push({
+                    path: "/retail/procurement/purchaseProtocol/list",
+                });
             },
             handleDialogEvent(name) {
                 this.$refs[name].handleDialog(true);
             },
             selectedGoodsDialogCallBack(value) {
-                console.log(value);
                 if (value.btnType == 1) {
                     if (value.data.length > 0) {
                         this.purchasePurchaseMer({flag: 1, purchaseMerVoList: value.data});
@@ -477,7 +505,6 @@
                     this.queryData.cinemaName = "";
                     this.queryData.cinemaUid = "";
                 }
-                console.log(this.queryData);
             },
             // 选泽供应商回调
             onSupplierSumit(val = []) {
@@ -488,7 +515,6 @@
                     this.queryData.supName = "";
                     this.queryData.uid = "";
                 }
-                console.log(this.queryData);
             },
         },
         computed: {
@@ -524,7 +550,7 @@
                 let  tempTableColumn = [
                     {
                         label: "商品名称",
-                        key: "merName"
+                        key: "skuName"
                     },
                     {
                         label: "SKU编码",
@@ -582,13 +608,17 @@
 <style lang="scss">
     @import "../../../../assets/css/common.scss";
     @import "../../../../assets/css/element-common.scss";
-
-    .purchase-note-common {
+    .purchase-protocol-common {
+        .el-range-editor{
+            width: 298px;
+        }
         .text-right {
             float: right;
             margin-bottom: 20px;
         }
-
+        .download {
+            color: #3B74FF;
+        }
         .remark-input {
             margin-top: 20px;
             width: 400px;

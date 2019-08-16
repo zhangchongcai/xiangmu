@@ -1,0 +1,135 @@
+._member-index-wrap {
+  height: 100vh;
+  // 会员页面title样式
+  .member-home-title {
+    font-size: $font-size14;
+    @include bg_color($background-color-theme);
+    padding: 1vh 3vw;
+    color: $font-color-white;
+  }
+  // 底部返回按钮样式
+  .foot-buttom-layer {
+    position: fixed;
+    left: 2vw;
+    right: 2vw;
+    bottom: 2.6vh;
+    text-align: right;
+    span {
+      font-size: $font-size12;
+    }
+  }
+  /deep/ .el-dialog {
+    padding: 1vw 0;
+    .el-dialog__title,
+    .el-dialog__close,
+    span {
+      font-size: $font-size12;
+    }
+  }
+
+  .bottom-btn-warp {
+    position: fixed;
+    right: 2vw;
+    bottom: 2.6vh;
+    text-align: right;
+    width: 30vw;
+    button {
+      cursor: pointer;
+      text-align: center;
+      margin-left: 1.5vw;
+      font-size: $font-size12;
+      border-radius:2px;
+      span {
+        font-size: $font-size12;
+      }
+    }
+  }
+  .notselect {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  .el-radio {
+    font-weight: normal;
+  }
+  /deep/ .el-form-item__label {
+    font-size: $font-size12;
+    width: 9vw;
+  }
+  .demo-ruleForm {
+    // margin-top: 2vh;
+    /deep/ .el-input {
+      width: 20vw;
+    }
+  }
+  .el-input__inner {
+    font-size: $font-size12;
+    height: 5vh;
+    width: 20vw;
+  }
+  //input icon
+  .el-input__icon {
+    font-size: $font-size12;
+    line-height: 5vh;
+  }
+  // 行垂直对齐
+  .row-line-center {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0;
+  }
+  //对接硬件按钮
+  .start-btn {
+    height: 5vh;
+    margin-left: 1vw;
+    padding:2px 1vw;
+    border-color: #dcdfe6;
+    border-radius: 2px;
+    font-size: $font-size12;
+    span {
+      font-size: $font-size12;
+    }
+  }
+  .price-btn-group {
+    display: flex;
+    align-items: center;
+    .el-radio-button__inner {
+      display: inline-block;
+      width: 5vw;
+      height: 5vh;
+      line-height: 5vh;
+      padding: 0;
+      text-align: center;
+      font-size: $font-size12;
+    }
+  }
+  .el-radio__inner {
+    display: inline-block;
+    width: 1.3vw;
+    height: 1.3vw;
+  }
+  .el-radio__label {
+    color: #333333;
+    font-size: $font-size12;
+  }
+  .common-btn {
+    height: 5vh;
+    text-align: center;
+    padding: 0 2vw;
+    font-size: $font-size12;
+    span {
+      font-size: $font-size12;
+    }
+  }
+  //title字体
+  .member-info-title {
+    padding: 0 0 0 2vw;
+    font-size: $font-size14;
+    font-weight: bold;
+    text-align: left;
+  }
+  .otherBtn{
+    display:inline;
+  }
+}

@@ -1,7 +1,7 @@
 <template>
     <div class="bar-warp">
         <div class="seach-menu bl">
-            <el-input v-model="seachAddition" placeholder="请输入入店码、条形码、编号"></el-input>
+            <el-input v-model="seachAddition" @keyup.enter.native="search" placeholder="请输入店内码/条形码/商品编码"></el-input>
             <el-button @click="search">查询</el-button>
         </div>
         <div class="pay-menu bl">
@@ -23,20 +23,39 @@
                 <span :class="['el-icon-arrow-down',cartIsshow?'cartIsshow':'']" style="margin-left:5px;font-size:1.2vw"></span>
             </li>
         </ul>
+        
+        <!-- <div v-if="showVipCheckBox" class="number-container">
+            <div class="number-wrapper">
+                <div style="width: 100%; height: 40px; font-size: 1.3vw; color: #333; display: flex; padding: 0 20px; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <span>请输入手机号码</span>
+                    <i class="iconfont iconguanbi" @click="showVipCheckBox = false"></i>
+                </div>
+                <el-input style="width: 56%; margin-bottom: 30px;" v-model="telNumber" placeholder="手机号码"></el-input>
+                <NumberKeyBoard @keynumber="getKeynumber"  style="position: relative; width: 56%;"></NumberKeyBoard>
+                <div style="width: 100%; display: flex; justify-content: center; margin-top: 20px;">
+                  <el-button size="small" style="margin-right: 20px;" type="info" @click="showVipCheckBox = false">取消</el-button>
+                  <el-button size="small" type="success" @click="checkoutVip">确定</el-button>
+                </div>
+            </div>
+        </div> -->
     </div>
 </template>
 
 <script>
-import {mapMutations, mapGetters} from 'vuex'
-import {PAY_DIALOG_TRIGER, MORE_PAY_TRIGER, PAY_METHOD_TRIGER,CART_SEARCH_GOODS_TEXT} from 'types'
+import {mapMutations, mapGetters, mapActions} from 'vuex'
+import {PAY_DIALOG_TRIGER, MORE_PAY_TRIGER, PAY_METHOD_TRIGER,CART_SEARCH_GOODS_TEXT, GET_ACTIVITY_DATA, SET_VIP_CHECKOUT_BOX, CART_FIND_CART_DATA} from 'types'
+import { VM_ON_GOODS_SEACH } from 'types/vmOnType.js'
 import util from 'src/http/app'
 import FormatterData from  'src/http/voucherData'
+import NumberKeyBoard from 'components/numberKeyBoard'
 export default {
     data() {
         return {
             seachAddition:'',
-            
+            noModal: true,
+            // showVipCheckBox: false,
             cartIsshow:false,
+            // telNumber: ''
         }
     },
     computed: {
@@ -54,11 +73,29 @@ export default {
             PAY_DIALOG_TRIGER, //显示隐藏支付弹框
             PAY_METHOD_TRIGER, //修改支付方式
             CART_SEARCH_GOODS_TEXT,//修改输入值
+            SET_VIP_CHECKOUT_BOX, //打开vip输入框环境
         }),
+        ...mapActions([
+            GET_ACTIVITY_DATA,
+            CART_FIND_CART_DATA
+        ]),
+        //检索用户持有的会员卡
+        // checkoutVip() {
+        //    checkoutVip({memberNumber: this.telNumber}).then(res => {
+        //        console.log(res)
+        //    })
+        // },
+        // getKeynumber(val) {
+        //   this.telNumber = val
+        // },
         showPayPanel(item) {
-           if(this.seatSelection.length || this.cartDatalist.length) {
-              this.PAY_METHOD_TRIGER(item)
-              this.PAY_DIALOG_TRIGER()
+           if((this.seatSelection.length || this.cartDatalist.length) && item.payTypeCode != '0X03') {
+                  this.PAY_METHOD_TRIGER(item)
+                  this.PAY_DIALOG_TRIGER()
+                  this.GET_ACTIVITY_DATA()
+           }else if((this.seatSelection.length || this.cartDatalist.length) && item.payTypeCode == '0X03') {
+               this.PAY_METHOD_TRIGER(item)
+               this.SET_VIP_CHECKOUT_BOX(true);
            }else {
                this.$message({
                 message: '请您选择座位或者卖品',
@@ -74,10 +111,14 @@ export default {
             this.cartIsshow = !this.cartIsshow
         },
         search() {
-            this[CART_SEARCH_GOODS_TEXT](this.seachAddition)
+            this.$vm.$emit(VM_ON_GOODS_SEACH,this.seachAddition)
             this.seachAddition = '';
-        }
+        },
     },
+
+    components: {
+        NumberKeyBoard
+    }
 }   
 </script>
 
@@ -90,8 +131,32 @@ export default {
         height: 5.2vh;
         line-height: 5.2vh;
         display: flex;
-        z-index: 500;
+        z-index: 100;
         background: #fff;
+
+        .number-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #0000006c;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            .number-wrapper {
+                width: 40vw;
+                padding: 20px;
+                background: #ffffff;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                border-radius: 4px;
+                position: relative;
+            }
+        }
         .bl{
             display: inline-block;
             vertical-align: middle;
@@ -184,7 +249,7 @@ export default {
                     font-size: $font-size12;
                 }
                 .money{
-                    font-size: $font-size20;
+                    font-size: 1.75vw;
                 }
             }
             li:last-child{

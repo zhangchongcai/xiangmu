@@ -58,6 +58,34 @@ let routes = [{
       },
       component: (resolve) => require(['csm/views/finance/workTime/clearAccount/moneyAdjust.vue'], resolve),
       name: '资金调整单'
+    },{
+      path: 'print',
+      meta: {
+        title: '打印清机结算单'
+      },
+      component: (resolve) => require(['csm/views/finance/workTime/clearAccount/print.vue'], resolve),
+      name: '打印清机结算单'
+    },{
+      path: 'printSimple',
+      meta: {
+        title: '打印清机结算单'
+      },
+      component: (resolve) => require(['csm/views/finance/workTime/clearAccount/printSimple.vue'], resolve),
+      name: '打印清机结算单'
+    },{
+      path: 'export',
+      meta: {
+        title: '导出清机结算单'
+      },
+      component: (resolve) => require(['csm/views/finance/workTime/clearAccount/export.vue'], resolve),
+      name: '导出清机结算单'
+    },{
+      path: 'exportSimple',
+      meta: {
+        title: '导出清机结算单'
+      },
+      component: (resolve) => require(['csm/views/finance/workTime/clearAccount/exportSimple.vue'], resolve),
+      name: '导出清机结算单'
     }]
   },
   // 订单管理
@@ -68,17 +96,17 @@ let routes = [{
       hidden: true,
       keepAlive: true // 需要被缓存
     },
-    name: '交易管理',
+    name: '订单管理',
     component: routerView,
     redirect: 'trandingRecord/list',
     children: [{
       path: 'list',
       meta: {
-        title: '交易管理',
+        title: '订单管理',
         keepAlive: true // 需要被缓存
       },
       component: (resolve) => require(['csm/views/finance/workTime/tradingRecord/list.vue'], resolve),
-      name: '交易管理',
+      name: '订单管理',
     }, {
       path: 'detail',
       meta: {
@@ -286,6 +314,31 @@ let routes = [{
     component: (resolve) => require(['csm/views/finance/workTime/publicModule/ceshi.vue'], resolve),
     name: '总部渠道管理',
   },
+  {
+    path:'groupBuyingChannel',
+    component : routerView,
+    children:[
+      {
+        path : 'index',
+        meta: {
+          title : '团购券管理'
+        },
+        name:'团购券管理',
+        component : (resolve) => require(['csm/views/finance/workTime/groupBuyingChannel/index.vue'], resolve),
+      },
+      {
+        path: 'details',
+        meta:{
+          title:'详情'
+        },
+        name:'团购券管理详情',
+        component : (resolve) => require(['csm/views/finance/workTime/groupBuyingChannel/details.vue'], resolve),
+      }
+    ]
+  }
+
+
+  
 ];
 
 

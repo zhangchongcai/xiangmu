@@ -33,11 +33,35 @@
           <template slot-scope="scope">{{scope.row.createTime | formatCreateTime}}</template>
         </el-table-column>
         <el-table-column prop="numberPeople" label="人数" min-width="120" :formatter="formateEmpty" show-overflow-tooltip>
-          <template slot-scope="scope">{{scope.row.numberPeople}}</template>
+          <template slot-scope="scope">
+            <div class="_calculate-number-people"
+              v-if='scope.row.numberPeople == null || scope.row.numberPeople == undefined'>
+              <div class="_calculate-desc">计算中...</div>
+              <el-tooltip class="item" effect="dark" :visible-arrow="false" content="请稍后手动刷新页面查看计算结果"
+                placement="right-start">
+                <i class="iconfont icon-danchuang-tishi _calculating-tip"></i>
+              </el-tooltip>
+            </div>
+            <div v-else>{{scope.row.numberPeople}}</div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="percent" label="人数占比" min-width="120" :formatter="formateEmpty" show-overflow-tooltip>
+          <template slot-scope="scope">
+            <div class="_calculate-number-people" v-if='scope.row.percent == null || scope.row.percent == undefined'>
+              <div class="_calculate-desc">计算中...</div>
+              <el-tooltip class="item" effect="dark" :visible-arrow="false" content="请稍后手动刷新页面查看计算结果"
+                placement="right-start">
+                <i class="iconfont icon-danchuang-tishi _calculating-tip"></i>
+              </el-tooltip>
+            </div>
+            <div v-else>{{scope.row.percent}}%</div>
+          </template>
         </el-table-column>
         <el-table-column label="操作" min-width="185">
           <template slot-scope="scope">
-            <el-button @click="handleSendMsg(scope.row)" type="text" size="small" class="operation-button">发短信
+            <el-button @click="handleSendMsg(scope.row)"
+              :disabled='scope.row.numberPeople == null || scope.row.numberPeople == undefined || scope.row.numberPeople == 0 || scope.row.percent == null || scope.row.percent == undefined || scope.row.percent == 0'
+              type="text" size="small" class="operation-button">发短信
             </el-button>
             <el-button @click="handleEditTags(scope.row)" type="text" size="small" class="operation-button">编辑
             </el-button>
@@ -64,7 +88,7 @@
     </div>
     <!-- 分页 end -->
     <!--  查看筛选条件的dialog -->
-    <el-dialog title="筛选条件" class="__screen-dialog" :visible.sync="screenDialog">
+    <el-dialog title="筛选条件" class="__screen-dialog" :visible.sync="screenDialog" width="576px">
       <screenDetailDialog :screenData="screenData" />
       <span slot="footer" class="dialog-footer">
         <el-button size="medium" @click="screenDialog = false" class="_el-btn-custom">关闭</el-button>
@@ -93,7 +117,7 @@
       </el-form>
     </el-dialog>
     <!--  发送短信的dialog -->
-    <el-dialog title="发送短信" class="__send-msg-dialog" :visible.sync="sendMsgDialog" @close="handleSendMsgDialogClose">
+    <el-dialog title="发送短信" class="__send-msg-dialog" :visible.sync="sendMsgDialog" @close="handleSendMsgDialogClose" width="576px">
       <el-form :model="sendMsgData" ref="sendMsgData" class="_send-msg-dialog-form-data-wrap">
         <el-form-item label="短信内容：" class="_send-msg-lable" prop="content"
           :rules="[{ max: 70, message: '长度不可超过70个字符', trigger: 'blur' },{required: true, validator: checkMsgContent, trigger: 'blur'}]">
@@ -457,6 +481,17 @@ export default {
     .operation-button span {
       font-size: 12px;
     }
+    ._calculate-number-people {
+      display: flex;
+      ._calculate-desc {
+        margin-right: 10px;
+      }
+      ._calculating-tip {
+        font-size: 14px;
+        position: relative;
+        top: -2px;
+      }
+    }
   }
 }
 // 筛选条件的dialog
@@ -476,6 +511,9 @@ export default {
 }
 // 设置时间间隔的dialog
 .__time-interval-dialog {
+  .el-dialog {
+    width: 448px;
+  }
   .el-dialog__header {
     padding: 10px 20px;
   }
@@ -490,7 +528,7 @@ export default {
     top: 13px;
   }
   ._time-interval-dialog-form-data-wrap {
-    padding: 15px 150px;
+    padding: 15px 50px;
     ._tags-tip {
       font-size: 14px;
       color: #333333;
@@ -535,7 +573,7 @@ export default {
     top: 13px;
   }
   ._send-msg-dialog-form-data-wrap {
-    padding: 0 50px;
+    padding: 10px 50px;
     .el-form-item {
       margin-bottom: 0;
     }

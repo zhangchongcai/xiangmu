@@ -31,24 +31,24 @@ let routes = [{
         children: [{
                 path: "detail",
                 meta: {
-                    title: "等级权益详情"
+                    title: "等级权益管理"
                 },
                 component: resolve =>
                     require([
                         "../views/member/memberLevelEquity/memberLevelEquityDetail.vue"
                     ], resolve),
-                name: "等级权益详情"
+                name: "等级权益管理"
             },
             {
                 path: "edit",
                 meta: {
-                    title: "编辑等级权益"
+                    title: "等级权益编辑"
                 },
                 component: resolve =>
                     require([
                         "../views/member/memberLevelEquity/editMemberLevelEquity.vue"
                     ], resolve),
-                name: "编辑等级权益"
+                name: "等级权益编辑"
             }
         ]
     },
@@ -489,13 +489,35 @@ let routes = [{
             {
                 path: "addEntityCard",
                 meta: {
-                    title: "添加实体卡"
+                    title: "申请会员卡"
                 },
                 component: resolve =>
                     require([
                         "../views/member/membershipCardInfo/addEntityCard.vue"
                     ], resolve),
-                name: "添加实体卡"
+                name: "申请会员卡"
+            },
+            {
+                path: "receiveEntityCard",
+                meta: {
+                    title: "领用礼品卡"
+                },
+                component: resolve =>
+                    require([
+                        "../views/member/membershipCardInfo/receiveEntityCard.vue"
+                    ], resolve),
+                name: "领用礼品卡"
+            },
+            {
+                path: "cardBatchDetail",
+                meta: {
+                    title: "卡批次详情"
+                },
+                component: resolve =>
+                    require([
+                        "../views/member/membershipCardInfo/cardBatchDetail.vue"
+                    ], resolve),
+                name: "卡批次详情"
             }
         ]
     },

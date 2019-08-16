@@ -11,29 +11,29 @@
       <p class="div_title"><i class="el-icon-arrow-down">基础信息</i></p>
       <el-form :inline="true" size="small" label-width="100px">
         <el-row :gutter="24" style="height:32px;">
-          <el-col :span="7">
+          <el-col :span="12">
             <el-form-item label="订单编号:">
               <span>{{dataTotal.timeCode}}</span>
             </el-form-item>
           </el-col>
-          <el-col :span="7">
+          <el-col :span="12">
             <el-form-item label="收银员:">
               <span>{{dataTotal.workerName}}</span>
             </el-form-item>
           </el-col>
-          <el-col :span="7">
+          <el-col :span="12">
             <el-form-item label="班次起始时间:">
               <span>{{dataTotal.workStartTime}}</span>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row :gutter="21">
-          <el-col :span="7">
+          <el-col :span="12">
             <el-form-item label="备用金:">
               <span>{{dataTotal.preAmount}}元</span>
             </el-form-item>
           </el-col>
-          <el-col :span="7">
+          <el-col :span="12">
             <el-form-item label="票纸编号:">
               <span>{{dataTotal.tpCodeStart}}-{{dataTotal.tpCodeEnd}}</span>
             </el-form-item>
@@ -88,12 +88,12 @@
             </el-col>
             <el-col :span="10">
               <el-form-item label="清机交付现金（含备用金）:" class="add_word" required>
-                <el-input v-model.number="clearMoney"></el-input>
+                <el-input v-model="clearMoney"></el-input>
               </el-form-item>
             </el-col>
             <el-col :span="9">
               <el-form-item label="银行卡合计:" class="add_word" required>
-                <el-input v-model.number="bandCardTotal"></el-input>
+                <el-input v-model="bandCardTotal"></el-input>
               </el-form-item>
             </el-col>
           </el-row>
@@ -106,7 +106,7 @@
     <div class="bottom-handler-tool">
       <div class="btn-area">
         <el-button type="primary" @click="nextClear">下一步</el-button>
-        <el-button @click="$router.push('list')">取消</el-button>
+        <el-button @click="$router.push('list')" style="margin-left:32px">取消</el-button>
       </div>
     </div>
   </div>
@@ -218,7 +218,7 @@
             }else{
               this.$message({
                 type: 'error',
-                message: `{data.data}`
+                message: `${data.msg}`
               });
             }
           })
@@ -227,10 +227,12 @@
     
     watch: {
       clearMoney() {
+        this.clearMoney = this.clearMoney.replace(/[^\d^\.]+/g,'')
         this.totalMoney = Number(this.dataTotal.extractAmount) + Number(this.clearMoney) + Number(this.bandCardTotal)
         this.totalMoney = this.totalMoney.toFixed(2)
       },
       bandCardTotal() {
+        this.bandCardTotal = this.bandCardTotal.replace(/[^\d^\.]+/g,'')
         this.totalMoney = Number(this.dataTotal.extractAmount) + Number(this.clearMoney) + Number(this.bandCardTotal)
         this.totalMoney = this.totalMoney.toFixed(2)
       },
@@ -247,12 +249,18 @@
   };
 </script>
 <style lang="scss" scoped>
+  /deep/ .el-form-item__label{
+    color: #666;
+  }
   .el-table .cell {
     width: 100%;
     height: 100%;
 
   }
-
+  .el-button{
+    min-width: 80px;
+    height: 32px;
+  }
   .tb-edit .input-box {
     display: none;
     width: 100%;
@@ -327,14 +335,14 @@
       clear: both;
     }
 
-    &::before {
-      content: '';
-      display: inline-block;
-      width: 2px;
-      height: 10px;
-      background-color: rgb(25, 40, 80);
-      margin-right: 10px;
-    }
+    // &::before {
+    //   content: '';
+    //   display: inline-block;
+    //   width: 2px;
+    //   height: 10px;
+    //   background-color: rgb(25, 40, 80);
+    //   margin-right: 10px;
+    // }
 
     // border-left: 2px rgb(25, 40, 80) solid;
     .el-icon-arrow-down:before {
@@ -444,7 +452,7 @@
     // z-index: 999;
     bottom: 0;
     right: 0;
-    background-color: #f5f5f5;
+    // background-color: #f5f5f5;
 
     .btn-area {
       width: 500px;

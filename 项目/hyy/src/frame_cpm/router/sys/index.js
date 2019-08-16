@@ -1,5 +1,13 @@
 const sysRoutes = [
   {
+    path: 'commFun',
+    meta: {
+      title: '添加功能',
+    },
+    component: (resolve) => require(['../../views/commonFunctions.vue'], resolve),
+    name: '添加功能',
+  },
+  {
     path: 'buyer',
     meta: {
       title: '客户管理',
@@ -301,7 +309,8 @@ const sysRoutes = [
     children: [{
       path: 'messageTemplate',
       meta: {
-        title: "短信模板管理"
+        title: "短信模板管理",
+        keepAlive:true,
       },
       component: (resolve) => require(['../../views/sysMange/messageTemplate/list.vue'], resolve),
       name: '短信模板管理',
@@ -318,7 +327,8 @@ const sysRoutes = [
     {
       path:'editTemplate',
       meta: {
-        title: "编辑短信模板"
+        title: "编辑短信模板",
+        keepAlive:true,
       },
       component: (resolve) => require(['../../views/sysMange/messageTemplate/edit.vue'], resolve),
       name: '编辑短信模板',
@@ -326,10 +336,38 @@ const sysRoutes = [
     {
       path:'addTemplate',
       meta: {
-        title: "新建短信模板"
+        title: "新建短信模板",
+        keepAlive:true,
       },
       component: (resolve) => require(['../../views/sysMange/messageTemplate/add.vue'], resolve),
       name: '新建短信模板',
+    },
+    {
+      path:'distribution',
+      meta: {
+        title: "短信群发管理",
+        keepAlive:true,
+      },
+      component: (resolve) => require(['../../views/sysMange/messageDistribution/list.vue'], resolve),
+      name: '短信群发管理',
+    },
+    {
+      path:'sendDistribution',
+      meta: {
+        title: "新建短信群发",
+        keepAlive:true,
+      },
+      component: (resolve) => require(['../../views/sysMange/messageDistribution/send.vue'], resolve),
+      name: '新建短信群发',
+    },
+    {
+      path:'detailDistribution',
+      meta: {
+        title: "短信群发详情",
+        keepAlive:true,
+      },
+      component: (resolve) => require(['../../views/sysMange/messageDistribution/detail.vue'], resolve),
+      name: '短信群发详情',
     }
     ]
   },
@@ -344,7 +382,8 @@ const sysRoutes = [
     children: [{
       path: 'messageRecord',
       meta: {
-        title: "查询短信记录"
+        title: "查询短信记录",
+        keepAlive:true,
       },
       component: (resolve) => require(['../../views/sysMange/messageRecord/list.vue'], resolve),
       name: '查询短信记录',

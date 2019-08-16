@@ -2,10 +2,11 @@ const homeRoutes = [
     {
         path: '/',
         meta: {
-          title: '销售主页'
+          title: '销售主页',
+          keepAlive: true
         },
         name: 'toHome',
-        component: () => import('views/csmpos/Home'),
+        component: () => import('views/csmpos/Home')
       },
       
       // TODO  补充后续其他栏目 主页

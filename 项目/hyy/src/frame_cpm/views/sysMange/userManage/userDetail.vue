@@ -1,6 +1,6 @@
 <template>
     <div class="content-wrapper">
-        <el-form :model="ruleForm" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+        <el-form :model="ruleForm" ref="ruleForm" label-width="90px" style="margin-top: 1px">
             <el-form-item label="用户账号" prop="loginName">
                 <el-input v-model="ruleForm.loginName" disabled></el-input>
             </el-form-item>
@@ -97,6 +97,7 @@
               });
           },
             to() {
+                this.$store.commit("tagNav/removeTagNav", this.$route)
                 this.$router.push('index')
             },
             getUser(){

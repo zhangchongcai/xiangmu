@@ -49,7 +49,7 @@ export default {
             background-size:cover;
         }
         .text{
-            font-size: 13px;
+            font-size: $font-size12;
             color: #666666;
         }
     }

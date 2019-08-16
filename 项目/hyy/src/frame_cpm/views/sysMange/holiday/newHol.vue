@@ -1,7 +1,7 @@
 <template>
     <div class="content-wrapper">
         <div class="list-wrapper">
-            <el-form :model="ruleForm" :rules="rules" label-width="120px" ref="ruleForm" class="demo-ruleForm">
+            <el-form :model="ruleForm" :rules="rules" label-width="100px" ref="ruleForm" class="demo-ruleForm">
                 <el-form-item label="假日类型：" prop="type" >
                     <el-input v-model="type" disabled></el-input>
                 </el-form-item>
@@ -39,11 +39,13 @@
 
 <script>
   import {newHol,editHol,detailHol} from 'frame_cpm/http/interface.js'
+  import mixins from '../../../mixins/cacheMixin.js'
   export default {
     name: "newHol",
+    mixins: [mixins.cacheMixin],
     data() {
       let name = (rule, value, callback) => {
-        let nameReg = /^[\u4E00-\u9FA5A-Za-z0-9]{1,30}$/
+        let nameReg = /^[\u4E00-\u9FA5A-Za-z0-9`~!@#$%^&*()_+<>?:"{},.【】\\/;\-'[\]\s\u3002|\uff1f|\uff01|\uff0c|\u3001|\uff1b|\uff1a|\u201c|\u201d|\u2018|\u2019|\uff08|\uff09|\u300a|\u300b|\u3008|\u3009|\u3010|\u3011|\u300e|\u300f|\u300c|\u300d|\ufe43|\ufe44|\u3014|\u3015|\u2026|\u2014|\uff5e|\ufe4f|\uffe5]{1,30}$/
         if(!value) {
           return callback(new Error('假日名称不能为空'));
         }else{
@@ -55,6 +57,7 @@
         }
       }
       return {
+        cacheField: ["ruleForm"],
         type: '自定义',
         id: '',
         ruleForm: {
@@ -138,7 +141,9 @@
               editHol(this.ruleForm).then(ret=>{
                 if(ret&&ret.code==200){
                   this.success('修改成功')
+                  this.$store.commit("tagNav/removeTagNav", this.$route)
                   this.$router.push('index')
+                  this.ruleForm = {}
                 }else{
                   this.error(ret.msg)
                 }
@@ -150,7 +155,9 @@
               newHol(this.ruleForm).then(ret=>{
                 if(ret&&ret.code==200){
                   this.success('新建成功')
+                  this.$store.commit("tagNav/removeTagNav", this.$route)
                   this.$router.push('index')
+                  this.ruleForm = {}
                 }else{
                   this.error(ret.msg)
                 }
@@ -165,6 +172,7 @@
       },
       resetForm(formName) {
         this.$refs[formName].resetFields();
+        this.$store.commit("tagNav/removeTagNav", this.$route)
         this.$router.go(-1)
       }
     },

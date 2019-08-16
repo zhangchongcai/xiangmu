@@ -239,7 +239,6 @@ export default {
       let params = { tenantId: this.$store.state.loginUser.consumerId };
       let _this = this;
       _this.$crmList.channelList(params).then(ret => {
-        ret.unshift({ code: "front_desk", desc: "影城前台" });
         _this.sourceOptions = ret;
       });
     },
@@ -273,8 +272,7 @@ export default {
       this.$router.push({
         path: "/member/cardTypeManagement/detail",
         query: {
-          cardProductId: scope.id,
-          tenantId: this.$store.state.loginUser.consumerId
+          cardProductId: scope.id
         }
       });
     },
@@ -389,13 +387,13 @@ export default {
   }
   .member-list-table {
     .unstart {
-      color: #739BFF;
+      color: #739bff;
     }
     .start {
       color: #2dbc2d;
     }
     .stop {
-      color: #F33430;
+      color: #f33430;
     }
     .operation-button span {
       font-size: 12px;

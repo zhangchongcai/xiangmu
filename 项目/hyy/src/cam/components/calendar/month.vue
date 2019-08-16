@@ -14,7 +14,7 @@
                 <template v-for="(item , index) in monthList">
                     <div :key="index">
                         <!-- <a :class="(item.enableChoise ? 'enableChoise' : 'noEnableChoise')" >{{item.label}}月</a> -->
-                        <a :class="{'current':item.current,'enableChoise': item.enableChoise , 'noEnableChoise': (!item.enableChoise) , 'isActive':(selectedIndex == index)}" @click="choiseMonth(item , index)">{{item.label}}月</a>
+                        <a :class="{'current':item.current,'enableChoise': item.enableChoise , 'noEnableChoise': (!item.enableChoise) , 'isActive':item.active}" @click="choiseMonth(item , index)">{{item.label}}月</a>
                     </div>
                 </template> 
             </div>
@@ -28,7 +28,10 @@ export default {
             year: null  ,    //年
             month : null ,   //当前月
             monthList: [] ,  //月list
-            selectedIndex:this.activeIndex        
+           
+            selectedYear:null,
+            selectedMonth:null,
+
         }
     } , 
     props: {
@@ -58,8 +61,6 @@ export default {
                 this.timeNow = new Date();
                 this.year = new Date(this.timeNow).getFullYear();
                 this.month = new Date(this.timeNow).getMonth() + 1;
-                this.selectedIndex = -1;
-
             }else{
                 // month
                 this.timeNow = new Date();
@@ -79,19 +80,30 @@ export default {
         caleMonthList(){
             this.monthList = [] ;
             let nowDate = new Date();
+            if(this.$parent.leftTypeNavIndex == '月'){
+                this.selectedYear = new Date(this.value[0]).getFullYear();
+                this.selectedMonth = new Date(this.value[0]).getMonth()+1;
+
+            }else{
+                // 从天、周、年、自定义切换到月，去掉选中状态
+                this.selectedYear = null;
+                this.selectedMonth = null;
+            }
             for(let i = 1 ;i < 13 ; i++){
                 let selectDate = new Date(this.year , i - 1 , 1); 
                 let label = i + '' ; 
                 let year = this.year ; 
                 let month = i ;     
                 let enableChoise = (selectDate > nowDate) ? false : true ; 
-                let current =  this.month  == i ?  true:false; 
+                let current =  (month == this.month && year == new Date().getFullYear())  ?  true:false; 
+                let active = (year == this.selectedYear && month == this.selectedMonth)?true:false;
                 this.monthList.push({
                     label , 
                     year ,
                     month , 
                     enableChoise,
-                    current
+                    current,
+                    active
                 });
             }
         } , 

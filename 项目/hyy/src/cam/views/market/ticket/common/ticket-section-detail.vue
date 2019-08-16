@@ -17,7 +17,7 @@
             </div>
          </div>
         <div class="reset-table mt10 flex" style="position:relative">
-                <el-table ref="refTable"  border
+                <el-table   border ref=refTable
                     :height="height"
                     :data="tableData"
                     @selection-change='changeSelect' 
@@ -45,42 +45,42 @@
                         </div>
                     </template>
                 </el-table-column>
-                <el-table-column prop="useCounts" label="使用数量" min-width="100" sortable="custom">
+                <el-table-column prop="useCounts" label="使用数量(张)" min-width="120" sortable="custom">
                     <template slot-scope="scope">
                         {{scope.row.useCounts | formatNum(0)}}
                     </template>
                 </el-table-column>
-                <el-table-column prop="useRate" label="使用率" min-width="90" sortable>
+                <el-table-column prop="useRate" label="使用率(%)" min-width="110" sortable>
                     <template slot-scope="scope">
                         {{scope.row.useRate | formatNum}}
                     </template>
                 </el-table-column>
-                <el-table-column prop="consumeAmount" label="带动消费额" min-width="120" sortable>
+                <el-table-column prop="consumeAmount" label="带动消费额(元)" min-width="130" sortable>
                     <template slot-scope="scope">
                         {{scope.row.consumeAmount | formatNum}}
                     </template>
                 </el-table-column>
-                <el-table-column prop="consumeOrders" label="带动销售单量" min-width="120" sortable>
+                <el-table-column prop="consumeOrders" label="带动销售单量(单)" min-width="140" sortable>
                     <template slot-scope="scope">
                         {{scope.row.consumeOrders | formatNum(0)}}
                     </template>
                 </el-table-column>
-                <el-table-column prop="unitPrice" label="客单价" min-width="90" sortable>
+                <el-table-column prop="unitPrice" label="客单价(元)" min-width="110" sortable>
                     <template slot-scope="scope">
                         {{scope.row.unitPrice | formatNum}}
                     </template>
                 </el-table-column>
-                <el-table-column prop="useTicketCost" label="使用票劵成本" min-width="120" sortable>
+                <el-table-column prop="useTicketCost" label="使用票劵成本(元)" min-width="140" sortable>
                     <template slot-scope="scope">
                         {{scope.row.useTicketCost | formatNum}}
                     </template>
                 </el-table-column>
-                <el-table-column prop="memberUserCounts" label="参与会员数量" min-width="120" sortable>
+                <el-table-column prop="memberUserCounts" label="参与会员数量(人)" min-width="140" sortable>
                     <template slot-scope="scope">
                         {{scope.row.memberUserCounts | formatNum(0)}}
                     </template>
                 </el-table-column>
-                <el-table-column prop="memberConsumePer" label="会员消费占比" min-width="120" sortable>
+                <el-table-column prop="memberConsumePer" label="会员消费占比(%)" min-width="140" sortable>
                     <template slot-scope="scope">
                         {{scope.row.memberConsumePer | formatNum}}
                     </template>
@@ -100,7 +100,9 @@
                     </target-label>
                     <ve-line 
                         :colors="colors"
-                        :data="lineData">
+                        :data="lineData"
+                        :extend="lineExtend"
+                        :settings="lineSettings">
                     </ve-line>
                 </div>
             </div>
@@ -117,26 +119,49 @@ export default {
     props:['tableData','orgType'],
     components:{TargetLabel},
     data(){
-        this.colors = [
-            "#3B74FF",
-            "#FE6081",
-            "#FEC107",
-            "#A5F053",
-            "#FE825E",
-            "#8E7EFF",
-            "#ca8622",
-            "#bda29a",
-            "#6e7074",
+        this.colors = ["#3B74FF","#FE6081","#FEC107","#A5F053","#FE825E", "#8E7EFF","#ca8622","#bda29a","#6e7074",
             "#546570",
             "#c4ccd3"
         ];
         return{
+            unitNum:2,
             height:null,
-            targetType:'ffsl',
-            code:'ffsl',
+            newHeight:null,
+            targetType:'sysl',
+            code:'sysl',
             lineData: {
-                columns: ["date", "value"],
+                columns: ["date"],
                 rows: []
+            },
+            lineSettings:{
+                dimension:['date'], // dimension:维度 metrics:指标 columns:维度和指标的集合
+            },
+            // 指标趋势/折线图扩展
+            lineExtend: {
+                "xAxis.0.axisLabel.rotate": 45,
+                "xAxis.0.axisLabel.interval": 0,
+                legend:{
+                    top:20
+                },
+                tooltip: {
+                    trigger:'axis',
+                     texStyle:{
+                        align:'left'
+                    },
+                    formatter: params => {
+                        let date = null;
+                        let str = params.map(item=>{
+                            date = '<div style="text-align:left;font-size:14px">' + item.name + '</div>';
+                            return  `<div style="text-align:left;font-size:14px">`+ item.marker+ item.seriesName + '&nbsp;&nbsp;'+ this.formatNum(item.value[1],this.unitNum)+ this.unit+ '<div>'
+                        })
+                        str.unshift(date);
+                        return str.join('')
+                    },
+                },
+                grid:{
+                    left:'20',
+                    right:'20'
+                }
             },
             selectedList:null,
             isCompar:false,
@@ -148,8 +173,8 @@ export default {
                 'cinema':2,
                 'move':3
             },
-             trendTargetLabel:[
-                {id:'ffsl',name:'发放数量'},
+            trendTargetLabel:[
+                // {id:'ffsl',name:'发放数量'},
                 {id:'sysl',name:'使用数量'},
                 {id:'syl',name:'使用率'},
                 {id:'ddxfe',name:'带动消费额'},
@@ -157,7 +182,7 @@ export default {
                 {id:'kdj',name:'客单价'}
             ],
             trendOtherLabel:[ 
-                {id:'yspqcb',name:'发放票劵成本'},
+                // {id:'yspqcb',name:'发放票劵成本'},
                 {id:'sypqcb',name:'使用票劵成本'},
                 {id:'cyhysl',name:'参与会员数量'},
                 {id:'hyxfzb',name:'会员消费占比'}
@@ -202,6 +227,21 @@ export default {
             }
         }
     },
+    computed:{
+        unit(){
+            let type = this.code;
+            if(type){
+                if(Global.targetNum.includes(type)){
+                    this.unitNum = 0;
+                }else{
+                    this.unitNum = 2; 
+                }
+                return Global.ticketTargetUnitMap[type]
+            }else{
+                return ''
+            }
+        }
+    },
     filters:{
         formatNum(value,count){
             return Global.formatNum(value,count)
@@ -243,24 +283,23 @@ export default {
                         return item.movieId
                     });
                 }
-                console.log(this.$refs.refTable,'ggg')
+                this.newHeight = this.$refs.refTable.$el.offsetHeight;
                 this.height = 500;
                 this.$emit('showCompar',{ids:ids,type:this.authorType,code:this.code})
             }else{
                 this.$message({type:'error',message:'请选择'});
-            
             }
         },
         closeCompar(){
             this.isCompar = false;
-           this.height = null;
+            this.$set(this.lineData,'rows',[]);
+            this.code = 'sysl'
+            this.height = this.newHeight;
         },
         // 切换类型
         changeAuthorType(tab){
             this.authorType = tab.name;
-            this.$set(this.lineData,'columns',[]);
-            this.$set(this.lineData,'rows',[]);
-            this.isCompar = false;
+            this.closeCompar()
             this.$emit('getTableData',{type:this.authorType,page:1})
         },
         // 导出
@@ -274,6 +313,9 @@ export default {
         // 详情
         goDetail(option){
             this.$emit('goDetail',option)
+        },
+        formatNum(value,count){
+            return Global.formatNum(value,count)
         }
     }
 }

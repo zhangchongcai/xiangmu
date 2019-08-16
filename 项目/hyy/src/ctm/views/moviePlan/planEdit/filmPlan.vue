@@ -9,20 +9,22 @@
                     <ul class="flex-base">
                             <el-tooltip placement="right" :disabled="isDropShow || selectMovieData.isSelect || selectMovieData.isShow" v-for="(filmItem,filmItem_index) in item" :key="filmItem_index" :manual="block.click" :enterable="!block.click" :open-delay="400" :hide-after="100">
                             <div slot="content" class="plan-tool-tips">
-                                <div>{{filmItem.movieName}}（{{filmItem.disversion}}/{{filmItem.language}}）{{filmItem.timeLong}}分钟</div>
+                                <div>{{filmItem.movieName}}<span v-if="!filmItem.joinFlag">（{{filmItem.disversion}}/{{filmItem.language}}）</span><span :style="{'margin-left': filmItem.joinFlag ? '5px' : '0px' }">{{filmItem.timeLong}}分钟</span></div>
                                 <div>{{filmItem.startTime.hours+':'+filmItem.startTime.minute + '-' + filmItem.endTime.hours + ':' + filmItem.endTime.minute}}</div>
-                                <div v-if="filmItem.originFlag">
-                                    <div class="plan-tip">审核状态：<span class="font-bold">{{filmItem.approve_text}}</span></div>
+                                <div v-if="filmItem.planUid">
+                                    <div class="plan-tip">价格方案：{{filmItem.programName}}</div>
+                                    <div class="plan-tip">审批状态：<span class="font-bold">{{filmItem.approve_text}}</span></div>
                                     <div class="plan-tip">放映计划状态：<span class="font-bold">{{filmItem.plan_text}}</span></div>
-                                    <div class="plan-tip">销售状态：<span class="font-bold">{{filmItem.sale_text}}</span></div>
+                                    <div class="plan-tip">销售状态：<span class="font-bold">{{filmItem.sale_text}}</span><span style="margin-left: 5px;" v-if="filmItem.approveTip">({{filmItem.approveTip}})</span></div>
                                     <div class="plan-tip"><span class="mr30">人次：{{filmItem.personTime || 0}}人</span> <span class="mr30"> 票房：{{filmItem.tolatMoney || 0}}元</span> <span class="mr30">上座率：{{filmItem.occupancy || 0}}%</span></div>
-                                    <div class="plan-tip"><span class="mr30">我的最低价格: {{filmItem.minPrice}}元</span><span class="mr30">竞对最低价格: {{filmItem.cheapestPrice || '--'}}元</span><span class="mr30" v-if="filmItem.cheapestPrice">差价: {{Number(filmItem.minPrice) - Number(filmItem.cheapestPrice)}}元</span></div>
+                                    <div class="plan-tip"><span class="mr30">我的最低价格：{{filmItem.minPrice}}元</span><span class="mr30">竞对最低价格：{{filmItem.cheapestPrice || '- - '}}元</span><span class="mr30" v-if="filmItem.cheapestPrice">差价：{{Number(filmItem.minPrice) - Number(filmItem.cheapestPrice)}}元</span></div>
                                 </div>
                             </div>
                             <li class="filmItem" :style="{width: filmItem.timeLong + 'px', left: filmItem.positionX + 'px'}" :class="{isSelect: filmItem.isSelect, error: filmItem.saveError}" @mousedown="filmMouseDown(filmItem, index, filmItem_index, $event)" @mousemove="filmMouseMove" @mouseup="filmMouseUp" :data-row="index">
-                                <div class="film-content flex-base" :style="filmContentStyle(filmItem)">
-                                    <div class="text-hide">{{filmItem.movieName}}</div>
-                                    <div v-if="!filmItem.joinFlag">({{filmItem.disversion + '/' + filmItem.language}})</div>
+                                <div class="film-content" :style="filmContentStyle(filmItem)">
+                                    <div class="text-hide">{{filmItem.movieName}}<span v-if="!filmItem.joinFlag">({{filmItem.disversion + '/' + filmItem.language}})</span></div>
+                                    <div v-if="filmItem.programName && !filmItem.joinFlag" v-show="showPricePlanName">{{filmItem.programName}}</div>
+                                    <div class="sale-status" v-show="!showPricePlanName"><span class="p30">{{filmItem.personTime || 0}}人</span> <span class="p30">{{filmItem.tolatMoney || 0}}元</span> <span class="p30">{{filmItem.occupancy || 0}}%</span></div>
                                     <div>{{filmItem.startTime.hours+':'+filmItem.startTime.minute + '-' + filmItem.endTime.hours + ':' + filmItem.endTime.minute}}</div>
                                 </div>
                                 <!-- 影片状态 -->
@@ -34,27 +36,28 @@
             </ul>
             <!-- 单独添加影片：时间刻度线 -->
             <div class="time-line" v-if="selectMovieData.isShow" :style="{left: time_line.positionX + 'px',height:contentSize.height+'px'}">
-                <div class="clock-info" :style="{top: clock.positionY + 'px'}">{{single_movie.startTime.hours+':'+single_movie.startTime.minute + '-' + single_movie.endTime.hours +':' + single_movie.endTime.minute}}</div>
+                <div class="clock-info" :style="{top: clock.positionY + 'px'}">{{single_movie.startTime.hours + ':' + single_movie.startTime.minute + ' - ' + single_movie.endTime.hours + ':' + single_movie.endTime.minute}}</div>
                 <ul class="select-movie-content">
                     <li class="movie-item" :style="{width: selectMovieData.selectMoive.timeLong +'px', top: single_movie.positionY + 'px'}">
                         <div class="movie-header" :style="{background: selectMovieData.selectMoive.color}"></div>
-                        <div class="movie-content flex-base" :style="{background:colorRgba(selectMovieData.selectMoive.color,0.1)}">
-                            <div class="text-hide">{{selectMovieData.selectMoive.movieName}}</div>
-                            <div>({{selectMovieData.selectMoive.disversion + '/' + selectMovieData.selectMoive.language}})</div>
+                        <div class="movie-content" :style="{background:colorRgba(selectMovieData.selectMoive.color,0.1)}">
+                            <div class="text-hide">{{selectMovieData.selectMoive.movieName}}({{selectMovieData.selectMoive.disversion + '/' + selectMovieData.selectMoive.language}})</div>
+                            <!-- <div>({{selectMovieData.selectMoive.disversion + '/' + selectMovieData.selectMoive.language}})</div> -->
                             <div>{{single_movie.startTime.hours+':'+single_movie.startTime.minute +'-'+ single_movie.endTime.hours+':'+ single_movie.endTime.minute}}</div>
                         </div>
                     </li>
                 </ul>
             </div>
             <!-- 拖拽影片：创建模板副本 -->
-            <div class="drop-film" :style="{width:contentSize.width+'px',height:contentSize.height+'px'}" v-if="isDropShow" @mouseup="dropFilmMouseUp" @mousemove="dropFilmMove">
+            <div class="drop-film" :style="{width:contentSize.width + 'px',height:contentSize.height + 'px'}" v-if="isDropShow" @mouseup="dropFilmMouseUp" @mousemove="dropFilmMove">
                 <ul>
                     <li class="drop-item" v-for="(drop_item,drop_item_index) in drop_data" :key="drop_item_index" :style="{top: drop_item.positionY + relative.positionY + 'px', left: drop_item.positionX + relative.positionX + 'px',width: drop_item.timeLong +'px'}">
                         <div class="drop-header" :style="{background: drop_item.color}"></div>
-                        <div class="drop-content flex-base" :style="{background:colorRgba(drop_item.color,0.1)}">
-                            <div class="text-hide">{{drop_item.movieName}}</div>
-                            <div>({{drop_item.disversion + '/' + drop_item.language}})</div>
-                            <div>{{time(dropScale(drop_item.positionX + relative.positionX,dragPrecision)).hours+':'+time(dropScale(drop_item.positionX + relative.positionX,dragPrecision)).minute +'-'+ time(dropScale(drop_item.positionX + relative.positionX,dragPrecision) + Number(drop_item.timeLong)).hours+':'+ time(dropScale(drop_item.positionX + relative.positionX,dragPrecision) + Number(drop_item.timeLong)).minute}}</div>
+                        <div class="drop-content" :style="{background:colorRgba(drop_item.color,0.1)}">
+                            <div class="text-hide">{{drop_item.movieName}}<span v-if="!drop_item.joinFlag">({{drop_item.disversion + '/' + drop_item.language}})</span></div>
+                            <!-- <div>({{drop_item.disversion + '/' + drop_item.language}})</div> -->
+                            
+                            <div>{{time(dropScale(drop_item.positionX + relative.positionX,dragPrecision)).hours + ':' + time(dropScale(drop_item.positionX + relative.positionX,dragPrecision)).minute + '-' + time(dropScale(drop_item.positionX + relative.positionX,dragPrecision) + Number(drop_item.timeLong)).hours + ':' + time(dropScale(drop_item.positionX + relative.positionX,dragPrecision) + Number(drop_item.timeLong)).minute}}</div>
                         </div>
                     </li>
                 </ul>
@@ -97,7 +100,17 @@
                 <el-button type="primary" @click="hallBanTip = false">确 定</el-button>
             </span>
         </el-dialog>
-        <!-- 设置无效影厅提示框 -->
+         <!-- 设置无效影厅提示框 -->
+        <el-dialog
+            title="提示"
+            :visible.sync="dropTimeError"
+            width="30%">
+            <span>影片时间不在指定放映时间或者上下映时间范围内</span>
+            <span slot="footer" class="dialog-footer">
+                <el-button type="primary" @click="dropTimeError = false">确 定</el-button>
+            </span>
+        </el-dialog>
+        <!-- 设置时间错误提示框 -->
         <el-dialog
             title="提示"
             :visible.sync="timeErrorTip"
@@ -112,99 +125,113 @@
             title="错误提示"
             :visible.sync="approveErrorDialog"
             :show-close="false"
-            width="30%">
-            <span>以下放映计划存在最低票价或者基础票价数据为空，请配置!</span>
+            width="70%">
+            <div v-if="!approveErrorType">
+                <!-- 存在低于最低票价或者基础票价数据为空的场次，不允许提交审核! -->
+                <el-table
+                    :data="approveErrorTableData"
+                    style="width: 100%">
+                    <el-table-column
+                        prop="movieName"
+                        label="影片名称"
+                        width="180">
+                    </el-table-column>
+                    <el-table-column
+                        prop="hallName"
+                        label="所在影厅"
+                        width="180">
+                    </el-table-column>
+                    <el-table-column
+                        prop="showTimeStart"
+                        label="放映时间"
+                        width="180">
+                    </el-table-column>
+                    <el-table-column
+                        prop="errorMsg"
+                        label="失败原因">
+                    </el-table-column>
+                    </el-table>
+                </div>
+            <span v-else>直接审核失败!</span>
             <span slot="footer" class="dialog-footer">
                 <el-button type="primary" @click="approveErrorDialog = false">确定</el-button>
             </span>
         </el-dialog>
         <!-- 排片指导校验表格dialog -->
         <el-dialog
-            title="总部排片指导"
+            title="排片指导预警"
             :visible.sync="planAdviceDialog"
             :show-close="false"
-            width="60%">
-            <span >提示, 以下影片排片率未达标, 请确认和调整</span>
+            width="1016px">
             <el-table
-                style="margin-top: 10px;"
-                height="300"
+                :span-method="arraySpanMethod"
                 :row-class-name="tableRowClassName"
-                :data="planAdviceRejectData">
-                
-                <el-table-column
-                    label="影片名称"
-                >
-                 <template slot-scope="scope">
-                    <div>
-                        {{scope.row.movieName}}{{'(' + scope.row.disVersion + ')'}}
-                    </div>   
-                </template>
-                </el-table-column>
-                <el-table-column
-                    prop="myNum"
-                    label="场次数(场)"
-                    width="80"
-                >
-                </el-table-column>
-                <el-table-column
-                    prop="myPer"
-                    label="占比(%)"
-                    width="80"
-                >
-                </el-table-column>
-                <el-table-column
-                    label="总部指标"
-                >
-                <template slot-scope="scope">
-                    <div>
-                        <span v-if="!scope.row.rangeNoCheck">占比{{scope.row.timeRatioLower}}-{{scope.row.timeRatioUpper}}%</span> <span v-if="!scope.row.rangeNoCheck && !scope.row.numNoCheck">,</span> <span v-if="!scope.row.numNoCheck">场次{{scope.row.timeNumLower}}-{{scope.row.timeNumUpper}}场</span>
-                    <span v-if="scope.row.guideType == 1">强制</span> 
-                    <span v-if="scope.row.guideType == 2">指导</span> 
-                    </div>   
-                </template>
-                </el-table-column>
-
-            </el-table>
-            <span slot="footer" class="dialog-footer">
-                <el-button type="primary" @click="planAdviceDialog = false">确定</el-button>
-                <el-button v-if="!adviceTipType" type="primary" @click="continueApprove">继续提交审核</el-button>
-            </span>
-        </el-dialog>
-        <el-dialog
-            title="排片指导预警"
-            :visible.sync="planAdviceWarn"
-            :show-close="false"
-            width="80%">
-            <el-table
-                height="300"
-                :row-class-name="tableRowClassName"
-                :data="planAdviceRejectData">
-                
+                style="width: 974px"
+                max-height="300"
+                :data="adviceDataCheck">        
                 <el-table-column
                     prop="index"
                     label="序号"
                     width="57">
+                    <template slot-scope="scope">
+                        <div>
+                            {{scope.$index + 1}}
+                        </div>   
+                    </template>
                 </el-table-column>
+                    
                 <el-table-column
                     prop="movieName"
                     label="基础影片名"
                     width="174">
+                    <template slot-scope="scope">
+                        <div v-for="(item, index) in scope.row.movieInfoVoList" :key="index">
+                            {{item.movieName}}
+                        </div>   
+                    </template>
                 </el-table-column>
+                    
                 <el-table-column
                     prop="adviceType"
                     label="指导类型"
                     width="103">
+                     <template slot-scope="scope">
+                        <div>
+                            {{scope.row.guideType == 1 ? '强制型' : '指导型'}}
+                        </div>   
+                    </template>
                 </el-table-column>
+                   
                 <el-table-column label="指导场次/百分比">
-                    <!-- prop="province" -->
                     <el-table-column
                     label="黄金场"
-                    width="96">
+                    width="108">
+                        <template slot-scope="scope">
+                                <div>
+                                    {{
+                                        scope.row.movieDetailVoList.find(item => item.detailType == 'h') ? scope.row.movieDetailVoList.find(item => item.detailType == 'h').numberOrRatio ?
+                                        scope.row.movieDetailVoList.find(item => item.detailType == 'h').timeNumLower == scope.row.movieDetailVoList.find(item => item.detailType == 'h').timeNumUpper ? scope.row.movieDetailVoList.find(item => item.detailType == 'h').timeNumLower + '场' : scope.row.movieDetailVoList.find(item => item.detailType == 'h').timeNumLower + '-' + scope.row.movieDetailVoList.find(item => item.detailType == 'h').timeNumUpper + '场' : 
+                                        scope.row.movieDetailVoList.find(item => item.detailType == 'h').timeRatioLower + '-' + scope.row.movieDetailVoList.find(item => item.detailType == 'h').timeRatioUpper + '%'
+                                        : '- -'
+                                        
+                                    }} 
+                                </div>
+                                
+                        </template>
                     </el-table-column>
-                    <!-- prop="city" -->
                     <el-table-column
                     label="所有厅"
-                    width="96">
+                    width="108">
+                    <template slot-scope="scope">
+                            
+                                {{
+                                    scope.row.movieDetailVoList.find(item => item.detailType != 'h') ? 
+                                    scope.row.movieDetailVoList.find(item => item.detailType != 'h').numberOrRatio ? scope.row.movieDetailVoList.find(item => item.detailType != 'h').timeNumLower == scope.row.movieDetailVoList.find(item => item.detailType != 'h').timeNumUpper ? scope.row.movieDetailVoList.find(item => item.detailType != 'h').timeNumLower + '场' : scope.row.movieDetailVoList.find(item => item.detailType != 'h').timeNumLower + '-' + scope.row.movieDetailVoList.find(item => item.detailType != 'h').timeNumUpper + '场'
+                                    : scope.row.movieDetailVoList.find(item => item.detailType != 'h').timeRatioLower + '-' + scope.row.movieDetailVoList.find(item => item.detailType != 'h').timeRatioUpper + '%'
+                                    : '- -'
+                                }}
+                            
+                        </template>
                     </el-table-column>
                     
                 </el-table-column>
@@ -212,37 +239,61 @@
                     prop="planCount"
                     label="场次上限"
                     width="103">
+                    <template slot-scope="scope">
+                        <div>
+                            {{scope.row.planNumUpper}}场
+                        </div>   
+                    </template>
                 </el-table-column>
+                    
                 <el-table-column label="实际已排场次/百分比">
-                    <!-- prop="province" -->
+                    
                     <el-table-column
                     label="黄金场"
-                    width="96">
+                    width="108">
+                        <template slot-scope="scope">
+                            <div :class="scope.row.isGoldErr ? 'error-cell' : ''">
+                                {{scope.row.movieDetailVoList.find(item => item.detailType == 'h') ? scope.row.movieDetailVoList.find(item => item.detailType == 'h').numberOrRatio ? scope.row.goldNum + '场' : scope.row.goldPer + '%' : scope.row.goldNum + '场'}}
+                            </div>
+                        </template>
                     </el-table-column>
-                    <!-- prop="city" -->
+                        
+                    
                     <el-table-column
                     label="所有厅"
-                    width="96">
+                    width="108">
+                        <template slot-scope="scope">
+                            <div :class="scope.row.isNumErr || scope.row.isPerErr ? 'error-cell' : ''">
+                                {{scope.row.movieDetailVoList.find(item => item.detailType != 'h') ? scope.row.movieDetailVoList.find(item => item.detailType != 'h').numberOrRatio ? scope.row.myNum + '场' : scope.row.myPer + '%' : scope.row.myNum + '场'}}
+                            </div>
+                        </template>
                     </el-table-column>
                     
                 </el-table-column>
                 <el-table-column
-                    prop="myPlanCount"
                     label="已排场次"
+                    prop="allPlansNum"
                     width="103">
+                        <template slot-scope="scope">
+                            <div :class="scope.row.allNumErr ? 'all-error-cell' : ''">
+                                {{scope.row.allPlansNum}} 场
+                            </div>
+                        </template>
+                          
                 </el-table-column>
+
                 
             </el-table>
             <span slot="footer" class="dialog-footer">
                 <el-button type="primary" @click="planAdviceDialog = false">确定</el-button>
-                <el-button v-if="!adviceTipType" type="primary" @click="continueApprove">继续提交审核</el-button>
+                <el-button v-if="!adviceTipType" type="primary" @click="continueApprove">继续提交审批</el-button>
             </span>
         </el-dialog>
     </section>
 </template>
 
 <script>
-import {saveMoviePlan, deletePlan, subApproves, saleOpenStop, approvePassPlan, copySinglePlan, getDecision} from 'ctm/http/interface'
+import {saveMoviePlan1, deletePlan, subApproves, saleOpenStop, approvePassPlan, copySinglePlan, getDecision, directApprove} from 'ctm/http/interface'
 export default {
     props: {
         pricePlan: {
@@ -292,6 +343,10 @@ export default {
         adviceData: {
             type: Array,
             default: []
+        },
+        showPricePlanName: {
+            type: Boolean,
+            default: true
         }
     },
     data() {
@@ -425,6 +480,19 @@ export default {
             isCopying: false,
             // 排片指导预警
             planAdviceWarn: false,
+            // 拖拽影片时间错误提示框
+            dropTimeError: false,
+            // 更改需要保存标记
+            saveCheckFlag: true,
+            // 外层价格方案是否变化
+            pricePlanIsChange: false,
+            // 缓存选中需要直接审核的数据
+            curApproveData: [],
+            approveErrorType: 0,
+            // 提交审核失败的表格提示数据
+            approveErrorTableData: [],
+            // 继续提交审核批类型 0: 提交审批 1: 直接审批
+            continueApproveType: 0
         }
     },
     mounted() {
@@ -468,15 +536,15 @@ export default {
                     //     seatPrecent = 0
                     // }
 
-                    // 审核状态
+                    // 审批状态
                     let approveStatus = c_d[j].approveStatus
                     let approve_text
                     if (approveStatus == 'NOT_APPROVE') {
-                        approve_text = '未审核'
+                        approve_text = '未审批'
                     } else if (approveStatus == 'WAIT_APPROVE') {
-                        approve_text = '待审核'
+                        approve_text = '待审批'
                     } else if (approveStatus == 'APPROVED') {
-                        approve_text = '已审核'
+                        approve_text = '已审批'
                     } else if (approveStatus == 'REJECT') {
                         approve_text = '已驳回'
                     }
@@ -491,7 +559,7 @@ export default {
                     } else if (saleStatus == 'STOP') {
                         sale_text = '暂停'
                     }
-
+                    
                     // 放映计划状态
                     let planStatus = c_d[j].planStatus
                     let plan_text
@@ -531,29 +599,39 @@ export default {
                 _data.forEach(row => {
                     row.forEach(plan => {
                         this.approveErrorData.forEach(item => {
-                            if (item == plan.planUid) {
-                                plan.isSelect = true
+                            if (item.planUid) {
+                                if (item.planUid == plan.planUid) {
+                                    plan.isSelect = true
+                                }
+                            } else {
+                                if (item == plan.planUid) {
+                                    plan.isSelect = true
+                                }
                             }
+                            
                         })
                     })
                 })
+                this.approveErrorTableData = JSON.parse(JSON.stringify(this.approveErrorData))
                 this.approveErrorData = null
             }
-                
+           
             this.plan_rooms = _data
             // 初始化排片指导
             this.$emit('initPlanAdvice', _data.reduce((arr, item) => {
                 return arr.concat(item)
             }, []))
-
-             getDecision({
+            
+            
+            getDecision({
                 cinemaUid: this.baseParam.uidCinema,
                 planDate: this.baseParam.planDate
             }).then(res => {
                 if (res.code != 200) return this.error(res.msg)
                 if (res.code == 200) {
+                    let plan_rooms = JSON.parse(JSON.stringify(this.plan_rooms))
                     res.data.forEach(item => {
-                        _data.forEach(row => {
+                        plan_rooms.forEach(row => {
                             row.some(plan => {
                                 if (plan.planUid == item.planUid) {
                                     plan.personTime = item.personTime
@@ -564,9 +642,12 @@ export default {
                             })
                         })
                     })
+                    this.userNeedSave = false
+                    this.saveCheckFlag = false
+                    this.plan_rooms = plan_rooms
                 }
             })
-            this.plan_rooms = _data
+            
 
         },
         plan_rooms(data, old_data) {
@@ -578,52 +659,44 @@ export default {
 
             let old_flage = JSON.parse(JSON.stringify(this.origin_data))
             let new_flage = JSON.parse(JSON.stringify(data))
+                for (let i = 0; i < old_flage.length; i++) {
+                    for (let j = 0; j < old_flage[i].length; j++) {
+                        delete old_flage[i][j].isSelect
+                        delete old_flage[i][j].occupancy
+                        delete old_flage[i][j].personTime
+                        delete old_flage[i][j].tolatMoney
+                        delete old_flage[i][j].showNoInHall
+                        delete old_flage[i][j].sameTimeTip
+                        delete old_flage[i][j].saveError
+                        delete old_flage[i][j].itemIndex
+                        delete old_flage[i][j].approveTip
+                    }
+                }
 
-            // for (let i = 0; i < old_flage.length; i++) {
-            //     for (let j = 0; j < old_flage[i].length; j++) {
-            //         delete old_flage[i][j].isSelect
-            //     }
-            // }
-
-            // for (let i = 0; i < new_flage.length; i++) {
-            //     for (let j = 0; j < new_flage[i].length; j++) {
-            //         delete new_flage[i][j].isSelect
-            //     }
-            // }
-            if (JSON.stringify(new_flage) !== JSON.stringify(old_flage)) {
-                this.userNeedSave = true
+                for (let i = 0; i < new_flage.length; i++) {
+                    for (let j = 0; j < new_flage[i].length; j++) {
+                        delete new_flage[i][j].isSelect
+                        delete new_flage[i][j].occupancy
+                        delete new_flage[i][j].personTime
+                        delete new_flage[i][j].tolatMoney
+                        delete new_flage[i][j].showNoInHall
+                        delete new_flage[i][j].sameTimeTip
+                        delete new_flage[i][j].saveError
+                        delete new_flage[i][j].itemIndex
+                        delete new_flage[i][j].approveTip
+                    }
+                }
+            if (this.saveCheckFlag) {
+                if (JSON.stringify(new_flage) !== JSON.stringify(old_flage)) {
+                    this.userNeedSave = true
+                    
+                } else {
+                    this.userNeedSave = false
+                }
             } else {
-                this.userNeedSave = false
+                this.saveCheckFlag = true
             }
-
-            // 实时修改 
-            // let _data = JSON.parse(JSON.stringify(data));
-            // let mindObj = {};
-            // let allPlanMovieNum = 0;
-            // for (let i = 0; i < _data.length; i++) {
-            //     let c_d = _data[i]
-            //     for (let j = 0; j < c_d.length; j++) {
-            //         let cc_d = c_d[j]
-            //         if (!mindObj[`${cc_d.movieCode}`]) {
-            //             mindObj[`${cc_d.movieCode}`] = {
-            //                 color: cc_d.color,
-            //                 movieName: cc_d.movieName,
-            //                 planNum: 1
-            //             }
-            //         } else {
-            //             mindObj[`${cc_d.movieCode}`].planNum++
-            //         }
-            //         allPlanMovieNum++
-            //     }
-            // }
-            // let mindArr = []
-            // let mindFlagArr = Object.keys(mindObj);
-            // for (let i = 0; i < mindFlagArr.length; i++) {
-            //     let c_obj = mindObj[`${mindFlagArr[i]}`]
-            //     c_obj.planPercent = ((c_obj.planNum / allPlanMovieNum) * 100).toFixed(2)
-            //     mindArr.push(c_obj)
-            // }
-
+            
             
             this.$emit('changeMyData')
         },
@@ -639,12 +712,16 @@ export default {
         }
     },
     methods: {
+        selectStauts(val){
+            // console.log(val)
+            this.$emit("selectStauts",val)
+        },
         /* 滚动时触发影厅和刻度滚动 */
         scroll(e) {
             this.$emit("scroll", {
                 scrollTop: e.target.scrollTop,
                 scrollLeft: e.target.scrollLeft
-            });
+            })
         },
         /* 修改时间线 */
         changeTimeLine(e) {
@@ -664,7 +741,7 @@ export default {
             let margin_left = this.margin_left
             let parentElement = this.$refs.moviePlanWindow
             // 父级滚动条总和
-            let parentScrollAll = this.$options.methods.parentScrollAll(parentElement)
+            let parentScrollAll = this.parentScrollAll(parentElement)
 
             // 鼠标在元素内具体位置
             let position = this.mousePosition(clientX, clientY, parentElement, parentScrollAll, margin_left)
@@ -735,12 +812,12 @@ export default {
             // 鼠标点击位置
             let clientX = e.clientX,
                 clientY = e.clientY
-
+            // debugger
             // 父元素位置
             let margin_left = this.margin_left
             let parentElement = this.$refs.moviePlanWindow
             // 父级滚动条总和
-            let parentScrollAll = this.$options.methods.parentScrollAll(parentElement)
+            let parentScrollAll = this.parentScrollAll(parentElement)
 
             // 鼠标所在元素具体位置
             let position = this.mousePosition(clientX, clientY, parentElement, parentScrollAll, margin_left)
@@ -751,7 +828,6 @@ export default {
                 // 确定当前所点击行
                 let cloum_num = Math.floor(positionY / this.contentSize.roomItemHeight)
                 let cloum_isAddOne = positionY % this.contentSize.roomItemHeight
-
                 if (cloum_isAddOne >= 50) {
                     cloum_num = cloum_num + 1
                 }
@@ -778,10 +854,17 @@ export default {
                     // 超出限定时
                     if (positionX + movieNeedTime >= maxTime) return
 
+                    
                     if (c_plan_rooms.length == 0) {
                         // 直接添加
                         // 电影开始播放时间
                         let _time = this.innerTime(positionX, movieNeedTime)
+                        let timeInfoCheck = this.checkTimeInfoRight(_time, movie)
+                        if (timeInfoCheck.planError) {
+                            this.errorText = timeInfoCheck.errorType
+                            this.timeErrorTip = true
+                            return
+                        }
                         let planStatus = this.checkTimeRight(_time, movie)
                         if (planStatus.planError) {
                             this.errorText = planStatus.errorType
@@ -828,7 +911,7 @@ export default {
                                     movie.personTime = res.data.personTime
                                     movie.tolatMoney = res.data.tolatMoney
                                     movie.occupancy = res.data.occupancy
-                                    movie.approve_text = movie.approveStatus == 'NOT_APPROVE' ? '未审核' : movie.approveStatus == 'WAIT_APPROVE' ? '待审核' : movie.approveStatus == 'APPROVED' ? '已审核' : movie.approveStatus == 'REJECT' ? '已驳回' : ''
+                                    movie.approve_text = movie.approveStatus == 'NOT_APPROVE' ? '未审批' : movie.approveStatus == 'WAIT_APPROVE' ? '待审批' : movie.approveStatus == 'APPROVED' ? '已审批' : movie.approveStatus == 'REJECT' ? '已驳回' : ''
                                     movie.sale_text = movie.saleStatus == 'SALE' ? '可售' : movie.saleStatus == 'NOT_SALE' ? '不可售' : movie.saleStatus == 'STOP' ? '暂停' : ''
                                     movie.plan_text = movie.planStatus == 'NEW' ? '新建' : movie.planStatus == 'VALID' ? '生效' : movie.planStatus == 'LOCKED' ? '锁定' : movie.planStatus == 'DELETED' ? '删除' : ''
 
@@ -855,6 +938,12 @@ export default {
                     } else {
                         let inner_action = this.canInnerRoom(c_plan_rooms, positionX, movieNeedTime, maxTime, this.timeInterval)
                         let _time = this.innerTime(inner_action.innerPositionX, movieNeedTime)
+                        let timeInfoCheck = this.checkTimeInfoRight(_time, movie)
+                        if (timeInfoCheck.planError) {
+                            this.errorText = timeInfoCheck.errorType
+                            this.timeErrorTip = true
+                            return
+                        }
                         let planStatus = this.checkTimeRight(_time, movie)
                         if (planStatus.planError) {
                             this.errorText = planStatus.errorType
@@ -915,7 +1004,7 @@ export default {
                                             movie.personTime = res.data.personTime
                                             movie.tolatMoney = res.data.tolatMoney
                                             movie.occupancy = res.data.occupancy
-                                            movie.approve_text = movie.approveStatus == 'NOT_APPROVE' ? '未审核' : movie.approveStatus == 'WAIT_APPROVE' ? '待审核' : movie.approveStatus == 'APPROVED' ? '已审核' : movie.approveStatus == 'REJECT' ? '已驳回' : ''
+                                            movie.approve_text = movie.approveStatus == 'NOT_APPROVE' ? '未审批' : movie.approveStatus == 'WAIT_APPROVE' ? '待审批' : movie.approveStatus == 'APPROVED' ? '已审批' : movie.approveStatus == 'REJECT' ? '已驳回' : ''
                                             movie.sale_text = movie.saleStatus == 'SALE' ? '可售' : movie.saleStatus == 'NOT_SALE' ? '不可售' : movie.saleStatus == 'STOP' ? '暂停' : ''
                                             movie.plan_text = movie.planStatus == 'NEW' ? '新建' : movie.planStatus == 'VALID' ? '生效' : movie.planStatus == 'LOCKED' ? '锁定' : movie.planStatus == 'DELETED' ? '删除' : ''
 
@@ -975,7 +1064,7 @@ export default {
                                             movie.personTime = res.data.personTime
                                             movie.tolatMoney = res.data.tolatMoney
                                             movie.occupancy = res.data.occupancy
-                                            movie.approve_text = movie.approveStatus == 'NOT_APPROVE' ? '未审核' : movie.approveStatus == 'WAIT_APPROVE' ? '待审核' : movie.approveStatus == 'APPROVED' ? '已审核' : movie.approveStatus == 'REJECT' ? '已驳回' : ''
+                                            movie.approve_text = movie.approveStatus == 'NOT_APPROVE' ? '未审批' : movie.approveStatus == 'WAIT_APPROVE' ? '待审批' : movie.approveStatus == 'APPROVED' ? '已审批' : movie.approveStatus == 'REJECT' ? '已驳回' : ''
                                             movie.sale_text = movie.saleStatus == 'SALE' ? '可售' : movie.saleStatus == 'NOT_SALE' ? '不可售' : movie.saleStatus == 'STOP' ? '暂停' : ''
                                             movie.plan_text = movie.planStatus == 'NEW' ? '新建' : movie.planStatus == 'VALID' ? '生效' : movie.planStatus == 'LOCKED' ? '锁定' : movie.planStatus == 'DELETED' ? '删除' : ''
 
@@ -1007,11 +1096,7 @@ export default {
                 } else if (e.button == 2) {
                     // 右键清空已选影片
                     this.$emit("cleanMovie")
-                    this.copyConfig = {
-                        id: '',
-                        copyFlag: false
-                    }
-                    this.isCopying = false
+                    this.cleanCopy()
                 }
             } else {
                 if (e.button == 0) {
@@ -1028,6 +1113,13 @@ export default {
             }
             
         },
+        cleanCopy() {
+            this.copyConfig = {
+                id: '',
+                copyFlag: false
+            }
+            this.isCopying = false
+        },
         /* 画矩形 */
         drawBlock(e) {
             if (!this.mode) return
@@ -1041,7 +1133,7 @@ export default {
                 let parentElement = this.$refs.moviePlanWindow
                 // let parentElement = this.$refs.content;
                 // 父级滚动条总和
-                let parentScrollAll = this.$options.methods.parentScrollAll(parentElement)
+                let parentScrollAll = this.parentScrollAll(parentElement)
 
                 // 鼠标所在元素具体位置
                 let position = this.mousePosition(clientX, clientY, parentElement, parentScrollAll, margin_left, true)
@@ -1305,16 +1397,16 @@ export default {
         },
         /* 获取父级滚动条总和 */
         parentScrollAll(el) {
-            let parent = el;
-            let parentArray = [];
-            let scorllTop = 0;
-            let scorllLeft = 0;
+            let parent = el
+            let parentArray = []
+            let scorllTop = 0
+            let scorllLeft = 0
             while (parent.tagName != "HTML") {
-                scorllTop += parent.parentNode.scrollTop;
-                scorllLeft += parent.parentNode.scrollLeft;
+                scorllTop += parent.parentNode.scrollTop
+                scorllLeft += parent.parentNode.scrollLeft
 
-                parentArray.push(parent.parentNode);
-                parent = parent.parentNode;
+                parentArray.push(parent.parentNode)
+                parent = parent.parentNode
             }
 
             return {
@@ -1486,42 +1578,42 @@ export default {
                     return false
                 }
                 this.isDropShow = true;
-                let plan_rooms = JSON.parse(JSON.stringify(this.plan_rooms));
+                let plan_rooms = JSON.parse(JSON.stringify(this.plan_rooms))
                 // 备份数据
-                let dropCopyData = JSON.parse(JSON.stringify(plan_rooms));
+                let dropCopyData = JSON.parse(JSON.stringify(plan_rooms))
 
-                this.dropCopyData = dropCopyData;
+                this.dropCopyData = dropCopyData
 
                 // 清空已选排片数据
-                let drop_data = JSON.parse(JSON.stringify(this.drop_data));
+                let drop_data = JSON.parse(JSON.stringify(this.drop_data))
                 for (let i = 0; i < drop_data.length; i++) {
                     let r_index = drop_data[i].rowIndex,
-                        i_positionX = drop_data[i].positionX;
+                        i_positionX = drop_data[i].positionX
                     //plan_rooms[r_index].splice(i_index, 1);
-                    let c_plan_rooms = plan_rooms[r_index];
+                    let c_plan_rooms = plan_rooms[r_index]
                     for (let j = 0; j < c_plan_rooms.length; j++) {
-                        let c_positionX = c_plan_rooms[j].positionX;
+                        let c_positionX = c_plan_rooms[j].positionX
                         if (i_positionX == c_positionX) {
-                            plan_rooms[r_index].splice(j, 1);
-                            break;
+                            plan_rooms[r_index].splice(j, 1)
+                            break
                         }
                     }
                 }
-                this.plan_rooms = plan_rooms;
+                this.plan_rooms = plan_rooms
                 // 鼠标点击位置
                 let clientX = e.clientX,
-                    clientY = e.clientY;
+                    clientY = e.clientY
 
                 // 父元素位置
-                let margin_left = this.margin_left;
-                let parentElement = this.$refs.moviePlanWindow;
+                let margin_left = this.margin_left
+                let parentElement = this.$refs.moviePlanWindow
                 // 父级滚动条总和
-                let parentScrollAll = this.$options.methods.parentScrollAll(parentElement);
+                let parentScrollAll = this.parentScrollAll(parentElement)
 
                 // 鼠标所在元素具体位置
-                let position = this.mousePosition(clientX, clientY, parentElement, parentScrollAll, margin_left);
-                let positionX = position.positionX;
-                let positionY = position.positionY;
+                let position = this.mousePosition(clientX, clientY, parentElement, parentScrollAll, margin_left)
+                let positionX = position.positionX
+                let positionY = position.positionY
                 // 开始拖动的位置
                 this.dropStartPosition = {
                     positionX,
@@ -1558,7 +1650,7 @@ export default {
             let margin_left = this.margin_left
             let parentElement = this.$refs.moviePlanWindow
             // 父级滚动条总和
-            let parentScrollAll = this.$options.methods.parentScrollAll(parentElement)
+            let parentScrollAll = this.parentScrollAll(parentElement)
 
             // 鼠标所在元素具体位置
             let position = this.mousePosition(clientX, clientY, parentElement, parentScrollAll, margin_left)
@@ -1642,11 +1734,12 @@ export default {
             let drop_data = JSON.parse(JSON.stringify(this.drop_data))
             let relative = this.relative
             let plan_rooms = this.plan_rooms
-            
             // 校验是否出现错误
             let isError = false
             // 校验是否有拖动至禁用影厅
             let isHallBanTip = false
+            // 校验是否拖动会出现不符合时间规则的影片
+            let timeError = false
             for (let i = 0; i < drop_data.length; i++) {
                 let d_positionX = drop_data[i].positionX,
                     d_positionY = drop_data[i].positionY
@@ -1661,6 +1754,12 @@ export default {
                 drop_data[i].rowIndex = c_row_index
                 if (c_plan_rooms.length == 0) {
                     let _time = this.innerTime(c_positionX, Number(drop_data[i].timeLong))
+                    let planStatus = this.checkTimeRight(_time, drop_data[i])
+                    
+                    let timeInfoCheck = this.checkTimeInfoRight(_time, drop_data[i])
+                    if (timeInfoCheck.planError || planStatus.planError) {
+                        timeError = true
+                    }
                     drop_data[i].startTime = _time.startTime
                     drop_data[i].endTime = _time.endTime
                     drop_data[i].hallUid = this.rooms[c_row_index].uid_hall
@@ -1673,12 +1772,19 @@ export default {
                     let maxTime = this.maxTime
                     // 校验是否能插入
                     let inner_action = this.canInnerRoom(c_plan_rooms, c_positionX, movieNeedTime, maxTime, this.timeInterval)
+                    
                     let _time = this.innerTime(inner_action.innerPositionX, Number(drop_data[i].timeLong))
                     current_drop.startTime = _time.startTime
                     current_drop.endTime = _time.endTime
                     current_drop.positionX = inner_action.innerPositionX
-
+                    let planStatus = this.checkTimeRight(_time, drop_data[i])
+                    
+                    let timeInfoCheck = this.checkTimeInfoRight(_time, drop_data[i])
+                    if (timeInfoCheck.planError || planStatus.planError) {
+                        timeError = true
+                    }
                     if (inner_action.canIn) {
+                        // console.log(drop_data[i])
                         current_drop.hallUid = this.rooms[c_row_index].uid_hall
                         if (inner_action.type == 'splice') {
                             plan_rooms[c_row_index].splice(inner_action.index, 0, current_drop)
@@ -1703,7 +1809,10 @@ export default {
             if (isHallBanTip) {
                 this.hallBanTip = true
             }
-            if (!isError && !isHallBanTip) {
+            if (timeError) {
+                this.dropTimeError = true
+            }
+            if (!isError && !isHallBanTip && !timeError) {
                 this.plan_rooms = plan_rooms
             } else {
                 this.plan_rooms = this.dropCopyData
@@ -1875,6 +1984,7 @@ export default {
         },
         /* 计算插入电影的时间 */
         innerTime(positionX, movieNeedTime) {
+            // debugger
             let start_time = this.time(positionX)
             let end_time = this.time(positionX + movieNeedTime)
             let startTime = {
@@ -1884,7 +1994,7 @@ export default {
             let endTime = {
                 hours: end_time.hours,
                 minute: end_time.minute
-            };
+            }
             return {
                 startTime,
                 endTime
@@ -2016,10 +2126,11 @@ export default {
         // 提交保存排片
         /**
          * @cb 是否需要回调
-         * 如果是回调 cb == true 时 为编辑/查看场次详情
+         * 如果是回调 cb == true 时 为编辑/查看/连排场次详情
          * cb 类型为 function 时 为回调函数
          */
         submitSave(type, cb) {
+            // debugger
             let subData = []
             this.changePlanIndexInterval()
             this.plan_rooms.forEach((row, rowIndex) => {
@@ -2042,8 +2153,8 @@ export default {
                         "joinFlag": plan.joinFlag != undefined ? plan.joinFlag : 0,
                         "schPlanFavTicketVoList": [],
                         "schPlanBaseTicketVoList": [],
-                        "priceProgramName": this.pricePlan.priceProgramName,
-                        "priceProgramUid": this.pricePlan.priceProgramUid,
+                        "priceProgramName": plan.programName ? plan.programName : this.pricePlan.priceProgramName,
+                        "priceProgramUid": plan.programUid ? plan.programUid : this.pricePlan.priceProgramUid,
                         "showNoInHall": plan.showNoInHall,
                         "planShowInterval": plan.planShowInterval
                         }
@@ -2086,8 +2197,9 @@ export default {
             let _data = {
                 list: subData
             }
-
-            saveMoviePlan(_data).then(res => {
+            this.selectStauts(true)
+            saveMoviePlan1(_data).then(res => {
+                this.selectStauts(false)
                 if (res.code != 200) return this.error(res.msg)
                 if (res.data.length) {
                     this.plan_rooms.forEach(plan => {
@@ -2108,13 +2220,13 @@ export default {
                 this.resetSaveFlage()
                 if (!cb) {
                     this.success('排片保存成功！')
-                    this.$emit('initMoivePlan', {
+                    this.$emit('initMoviePlan', {
                             type: type ? type : null
                         })
                 } else {
                     // 刷新当前排片数据
                     if (cb === true) {
-                        this.$emit('initMoivePlan', {
+                        this.$emit('initMoviePlan', {
                             type: type ? type : null,
                             curPlan: this.curPlan
                         })
@@ -2232,21 +2344,21 @@ export default {
             let setControlArr = [], approveStatus = movie.approveStatus ? movie.approveStatus : '', saleStatus = movie.saleStatus ? movie.saleStatus : ''
             if (this.mode) {
                 if (approveStatus == 'NOT_APPROVE' || approveStatus == '' || approveStatus == 'REJECT') {
-                    // 未审核 或 新建
+                    // 未审批 或 新建
                     setControlArr = !movie.joinFlag ? ['edit', 'copy', 'delete', 'continuityPlan', 'selectSameMoive'] : ['edit', 'copy', 'delete', 'selectSameMoive']
                 } else if (approveStatus == 'WAIT_APPROVE') {
-                    // 审核中
+                    // 审批中
                     setControlArr = ['checkMovie', 'copy']
                 } else if (approveStatus == 'APPROVED') {
-                    // 已审核
+                    // 已审批
                     if (saleStatus == 'SALE') {
                         // 在销售
-                        let startTime = movie.startTime.hours < 6 ? `${this.formatDateTime(new Date(this.baseParam.planDate).getTime() + 24 * 60 * 60 * 1000)} ${movie.startTime.hours}:${movie.startTime.minute}` : `${this.baseParam.planDate} ${movie.startTime.hours}:${movie.startTime.minute}`
-                        setControlArr = new Date(startTime).getTime() <= new Date().getTime() ? ['checkMovie', 'copy', 'selectSameMoive'] : ['checkMovie', 'copy', 'stopSale', 'selectSameMoive']
+                        let endTime = movie.endTime.hours < 6 ? `${this.formatDateTime(new Date(this.baseParam.planDate).getTime() + 24 * 60 * 60 * 1000)} ${movie.endTime.hours}:${movie.endTime.minute}` : `${this.baseParam.planDate} ${movie.endTime.hours}:${movie.endTime.minute}`
+                        setControlArr = new Date(endTime).getTime() <= new Date().getTime() ? ['checkMovie', 'copy', 'selectSameMoive'] : ['checkMovie', 'copy', 'stopSale', 'selectSameMoive']
                     } else if (saleStatus == 'STOP') {
                         // 停售
-                        let startTime = movie.startTime.hours < 6 ? `${this.formatDateTime(new Date(this.baseParam.planDate).getTime() + 24 * 60 * 60 * 1000)} ${movie.startTime.hours}:${movie.startTime.minute}` : `${this.baseParam.planDate} ${movie.startTime.hours}:${movie.startTime.minute}`
-                        setControlArr = new Date(startTime).getTime() <= new Date().getTime() ? ['copy', 'startSale', 'selectSameMoive'] : ['edit', 'copy', 'delete', 'startSale', 'selectSameMoive']
+                        let endTime = movie.endTime.hours < 6 ? `${this.formatDateTime(new Date(this.baseParam.planDate).getTime() + 24 * 60 * 60 * 1000)} ${movie.endTime.hours}:${movie.endTime.minute}` : `${this.baseParam.planDate} ${movie.endTime.hours}:${movie.endTime.minute}`
+                        setControlArr = new Date(endTime).getTime() <= new Date().getTime() ? ['copy', 'startSale', 'selectSameMoive'] : ['edit', 'copy', 'delete', 'startSale', 'selectSameMoive']
                     } else if (saleStatus == 'NOT_SALE') {
                         setControlArr = ['copy', 'startSale', 'selectSameMoive']
                     }
@@ -2282,11 +2394,36 @@ export default {
             let r_index = movie.rowIndex,
                 i_index = movie.itemIndex;
             let plan_rooms = JSON.parse(JSON.stringify(this.plan_rooms))
-            if (movie.originFlag) {
+            if (movie.planUid) {
+                if (movie.isSold) {
+                    this.$confirm('场次有售票记录，是否确认删除?', '确认信息', {
+                        distinguishCancelAndClose: true,
+                        confirmButtonText: '删除',
+                        cancelButtonText: '取消'
+                    })
+                    .then(() => {
+                        // 远端存在排片数据
+                        let param = {
+                            list: [`${movie.planUid}`]
+                        }
+                        deletePlan(param).then(res => {
+                            if (res.code == 200) {
+                                plan_rooms[r_index].splice(i_index, 1);
+                                this.plan_rooms = this.resetItemIndex(plan_rooms)
+                                this.control.movie = null
+                                this.success('删除成功！')
+                            } else {
+                                this.error(res.msg)
+                            }
+                        })
+                    })
+                    .catch(action => {})
+                    return
+                }
                 // 远端存在排片数据
                 let param = {
                     list: [`${movie.planUid}`]
-                };
+                }
                 deletePlan(param).then(res => {
                     if (res.code == 200) {
                         plan_rooms[r_index].splice(i_index, 1);
@@ -2314,6 +2451,8 @@ export default {
             let param = {
                 list: []
             }
+            // 存储删除项用作判断
+            let delPlanList = []
             let newPlanArray = planArray.map(item => [])
             let hasDelete = false
             let cantDelete = false
@@ -2323,8 +2462,9 @@ export default {
                     let deleteStatus = !plan.planStatus || plan.planStatus == 'NEW'
                     if (plan.isSelect && deleteStatus) {
                         hasDelete = true
-                        if (plan.originFlag) {
+                        if (plan.planUid) {
                             param.list.push(plan.planUid)
+                            delPlanList.push(plan)
                         }
                     } else {
                         newPlanArray[rowIndex].push(plan)
@@ -2334,6 +2474,31 @@ export default {
             })
             
             if (param.list.length) {
+                if (delPlanList.some(item => item.isSold)) {
+                    this.$confirm('场次有售票记录，是否确认删除?', '确认信息', {
+                        distinguishCancelAndClose: true,
+                        confirmButtonText: '删除',
+                        cancelButtonText: '取消'
+                    }).then(() => {
+                        deletePlan(param).then(res => {
+                            if (res.code == 200) {
+                                this.plan_rooms = this.resetItemIndex(newPlanArray)
+                                if (cantDelete) {
+                                    this.warning('当前所选场次存在可售或未完全退票，部分不可删除')
+                                } else {
+                                    this.success('删除成功！')
+                                }
+                            } else {
+                                this.error(res.msg)
+                            }
+                        })
+                    }).catch(action => {
+
+                    })
+                    // 隐藏控制器
+                    this.hideControl()
+                    return
+                }
                 deletePlan(param).then(res => {
                     if (res.code == 200) {
                         this.plan_rooms = this.resetItemIndex(newPlanArray)
@@ -2377,6 +2542,7 @@ export default {
                 item.showTimeEnd = item.endTime.hours < 6 ? `${this.formatDateTime(new Date (this.baseParam.planDate).getTime() + 24 * 60 * 60 * 1000)} ${item.endTime.hours}:${item.endTime.minute}` : `${this.baseParam.planDate} ${item.endTime.hours}:${item.endTime.minute}`
             })
             let currentRow = rowData.filter(item => !(item.hallUid == this.curPlan.hallUid && item.positionX == this.curPlan.positionX))
+            // if (this.userNeedSave && this.pricePlanIsChange && this.mode) {
             if (this.userNeedSave && this.mode) {
                 this.savePlan(_type, true)
                 return 
@@ -2493,14 +2659,20 @@ export default {
         resetSaveFlage() {
             this.origin_data = null
             this.userNeedSave = false
+            this.pricePlanIsChange = false
         },
-        /* 提交审核 */
+        /* 提交审批 */
+        /**
+         * @noCheck 参数为排片指导校验继续提交审批时 不需要校验标记位
+         */
         submitReview(noCheck) {
             if (!noCheck) {
+                this.continueApproveType = 0
                 this.checkAllowApprove()
             }
             if (!this.allowApprove) return
             let userNeedSave = this.userNeedSave
+            // if (userNeedSave && this.pricePlanIsChange) {
             if (userNeedSave) {
                 this.savePlan(null, this.subApproves)
             } else {
@@ -2520,10 +2692,11 @@ export default {
 
                     if (res.data && res.data.length) {
                         this.approveErrorData = res.data
+                        this.approveErrorType = 0
                     }
 
                     // 刷新当前排片数据
-                    this.$emit('initMoivePlan', {
+                    this.$emit('initMoviePlan', {
                         type: null
                     })
                     if (!res.data.length) {
@@ -2544,6 +2717,8 @@ export default {
             let param = {
                 list: []
             }
+            // 存储待删除项用作后续判断
+            let delPlanList = []
             let hasDelete = false
 
             planArray.forEach((row, rowIndex) => {
@@ -2552,8 +2727,9 @@ export default {
                     if (!deleteStatus) {
                         newPlanArray[rowIndex].push(plan)
                         cantDelete = true
-                    } else if (plan.originFlag) {
+                    } else if (plan.planUid) {
                         param.list.push(plan.planUid)
+                        delPlanList.push(plan)
                     }
                     if (deleteStatus) {
                         hasDelete = true
@@ -2563,6 +2739,31 @@ export default {
 
 
             if (param.list.length) {
+                if (delPlanList.some(item => item.isSold)) {
+                    this.$confirm('场次有售票记录，是否确认删除?', '确认信息', {
+                        distinguishCancelAndClose: true,
+                        confirmButtonText: '删除',
+                        cancelButtonText: '取消'
+                    })
+                    .then(() => {
+                        deletePlan(param).then(res => {
+                            if (res.code == 200) {
+                                this.plan_rooms = this.resetItemIndex(newPlanArray)
+                                if (cantDelete) {
+                                    // 提示用户存在不可删除项
+                                    this.warning('当前所选场次存在可售或未完全退票，不可删除');
+                                } else {
+                                    this.success('重排成功！')
+                                }
+                            } else {
+                                this.error(res.msg)
+                            }
+                        })
+                    })
+                    .catch(action => {})
+                    return
+                }
+                
                 deletePlan(param).then(res => {
                     if (res.code == 200) {
                         this.plan_rooms = this.resetItemIndex(newPlanArray)
@@ -2582,8 +2783,6 @@ export default {
             } else if (!hasDelete && cantDelete) {
                 this.warning('当前所选场次存在可售或未完全退票，部分不可删除')
             }
-
-            
         },
         /* 停售/开售 */
         stopOrStartSale(saleStatus, isMore) {
@@ -2629,7 +2828,7 @@ export default {
                 saleOpenStop(param).then(res => {
                     if (res.code != 200) return this.error(res.msg)
                     let tips = saleStatus == 'stop' ? '停售' : '开售'
-                    this.$emit('initMoivePlan')
+                    this.$emit('initMoviePlan')
                     this.success(`${tips}操作成功！`)
                 })
             } else {
@@ -2677,7 +2876,7 @@ export default {
         planHaveKeep() {
 
         },
-        /* 审核通过 / 驳回 */
+        /* 审批通过 / 驳回 */
         approvePassPlan(type) {
             let planArray = JSON.parse(JSON.stringify(this.plan_rooms))
             let planUids = []
@@ -2726,7 +2925,7 @@ export default {
                     approvePassPlan(param).then(res => {
                         if (res.code != 200) this.error(res.msg)
                         // 刷新页面
-                        this.$emit('initMoivePlan', {
+                        this.$emit('initMoviePlan', {
                             type: null
                         })
                         this.success(tips)
@@ -2774,7 +2973,17 @@ export default {
             })
             
         },
-        formatDateTime(timeStamp) {
+        // formatDateTime(timeStamp) {
+        //     var date = new Date(timeStamp)
+        //     let y = date.getFullYear()
+        //     let m = date.getMonth() + 1
+        //     m = m < 10 ? `0${m}` : m
+        //     let d = date.getDate()
+        //     d = d < 10 ? `0${d}` : d
+        //     let h = date.getHours()
+        //     return `${y}-${m}-${d}`
+        // },
+        formatDateTime(timeStamp, type) { // type: 0 全格式 1 仅日 2 仅时间
             var date = new Date(timeStamp)
             let y = date.getFullYear()
             let m = date.getMonth() + 1
@@ -2782,40 +2991,66 @@ export default {
             let d = date.getDate()
             d = d < 10 ? `0${d}` : d
             let h = date.getHours()
-            return `${y}-${m}-${d}`
+            h = h < 10 ? `0${h}` : h
+            let mm = date.getMinutes()
+            mm = mm < 10 ? `0${mm}` : mm
+            return type == 0 ? `${y}-${m}-${d} ${h}:${mm}` : type == 1 ? `${y}-${m}-${d}` : type == 2 ? `${h}:${mm}` : `${y}-${m}-${d}`
         },
         // 继续提交审批
         continueApprove() {
             this.allowApprove = true
-            this.submitReview(true)
+            if (!this.continueApproveType) {
+                this.submitReview(true)
+            } else {
+                this.submitReview(true)
+            }
             this.planAdviceDialog = false
         },
         // 校验是否允许审批
         checkAllowApprove() {
             let adviceData = this.adviceData.filter(item => item.isAdvice)
-            if (adviceData.some(item => item.isNumErr || item.isPerErr)) {
+            if (adviceData.some(item => item.isNumErr || item.isPerErr || item.allNumErr || item.isGoldErr)) {
                 this.allowApprove = false
-                this.adviceTipType = adviceData.some(item => item.guideType == 1 && (item.isNumErr || item.isPerErr))
-                this.planAdviceRejectData = adviceData.filter(item => item.isNumErr || item.isPerErr)
+                this.adviceTipType = adviceData.some(item => (item.guideType == 1 && (item.isNumErr || item.isPerErr || item.isGoldErr)) || item.allNumErr)
                 this.planAdviceDialog = true
             } else {
                 this.allowApprove = true
             }
         },
         tableRowClassName({row, rowIndex}) {
-            return row.guideType == 1 ? 'force-row' : ''
+            return row.guideType == 1 ? 'force-row' : 'advice-row'
         },
         changeAllowApprove() {
             let adviceData = this.adviceData.filter(item => item.isAdvice)
-            this.allowApprove = !adviceData.some(item => item.isNumErr || item.isPerErr)
-            
+            this.allowApprove = !adviceData.some(item => item.isNumErr || item.isPerErr || item.isGoldErr || item.allNumErr) 
         },
         // 校验 是否在 上下映时间内
         checkTimeRight(time, movie) {
+            // console.log(movie)
             let planStartTime = time.startTime.hours < 6 ? `${this.formatDateTime(new Date(this.baseParam.planDate).getTime() + 24 * 60 * 60 * 1000)} ${time.startTime.hours}:${time.startTime.minute}` : `${this.baseParam.planDate} ${time.startTime.hours}:${time.startTime.minute}`
             let planTimeEnd = time.endTime.hours < 6 ? `${this.formatDateTime(new Date(this.baseParam.planDate).getTime() + 24 * 60 * 60 * 1000)} ${time.endTime.hours}:${time.endTime.minute}` : `${this.baseParam.planDate} ${time.endTime.hours}:${time.endTime.minute}`
             if (movie.joinFlag == 1) {
                 // 计算各影片开始结束时间 需要接口提供 timelong movieName等
+                movie.planTimeVoList.forEach((item, i) => {
+                    if (!i) {
+                        item.planTimeStart = planStartTime
+                        item.planTimeEnd = this.formatDateTime((new Date(item.planTimeStart).getTime() + item.timeLong * 60 * 1000), 0)
+                    } else {
+                        item.planTimeStart = this.formatDateTime((new Date(movie.planTimeVoList[i - 1].planTimeEnd).getTime() + movie.intervalMinute * 60 * 1000), 0)
+                        item.planTimeEnd = this.formatDateTime((new Date(item.planTimeStart).getTime() + item.timeLong * 60 * 1000), 0)
+                    }
+                })
+                let errorData = []
+                movie.planTimeVoList.forEach(item => {
+                    if (new Date(item.planTimeStart).getTime() >= new Date(item.dateShowOff).getTime() || new Date(item.planTimeStart).getTime() < new Date(item.dateShowFirst).getTime()) {
+                        errorData.push(item)
+                    }
+                })
+
+                return {
+                    planError: errorData.length,
+                    errorType: `影片${errorData.map(item => item.movieName).join(',')}的开场时间不在上下映范围内, 不能编排放映计划`
+                }
             } else {
                 return {
                     planError: new Date (planStartTime).getTime() >= new Date(movie.dateShowOff).getTime() || new Date(planStartTime).getTime() < new Date(movie.dateShowFirst).getTime(),
@@ -2823,6 +3058,160 @@ export default {
                 }
             }
             
+        },
+        // 校验 是否 在信息表时间内
+        checkTimeInfoRight(time, movie) {
+            let planStartDate = time.startTime.hours < 6 ? `${this.formatDateTime(new Date(this.baseParam.planDate).getTime() + 24 * 60 * 60 * 1000)}` : `${this.baseParam.planDate}`
+            let planStartTime =  `${planStartDate} ${time.startTime.hours}:${time.startTime.minute}`
+            let planTimeEnd = time.endTime.hours < 6 ? `${this.formatDateTime(new Date(this.baseParam.planDate).getTime() + 24 * 60 * 60 * 1000)} ${time.endTime.hours}:${time.endTime.minute}` : `${this.baseParam.planDate} ${time.endTime.hours}:${time.endTime.minute}`
+
+            if (movie.joinFlag == 1) {
+                // 计算各影片开始结束时间 需要接口提供 timelong movieName等
+                let errorData = []
+                movie.planTimeVoList.forEach((item, i) => {
+                    // console.log(item)
+                    if (!i) {
+                        item.planTimeStart = planStartTime
+                        item.planTimeEnd = this.formatDateTime((new Date(item.planTimeStart).getTime() + item.timeLong * 60 * 1000), 0)
+                        item.planDate = planStartDate
+                    } else {
+                        item.planDate = this.formatDateTime((new Date(movie.planTimeVoList[i - 1].planTimeEnd).getTime() + movie.intervalMinute * 60 * 1000), 1)
+                        item.planTimeStart = this.formatDateTime((new Date(movie.planTimeVoList[i - 1].planTimeEnd).getTime() + movie.intervalMinute * 60 * 1000), 0)
+                        item.planTimeEnd = this.formatDateTime((new Date(item.planTimeStart).getTime() + item.timeLong * 60 * 1000), 0)
+                    }
+                })
+                
+                movie.planTimeVoList.forEach(item => {
+                    item.planInfoMovieTimeVoList = item.planInfoMovieTimeVoList ? item.planInfoMovieTimeVoList : []
+                    if (item.planInfoMovieTimeVoList.length) {
+                        let isRight = item.planInfoMovieTimeVoList.some(citem => {
+                            if (item.startDate && item.endDate && item.endTime && item.startTime) {
+                                return (new Date (item.planDate).getTime() >= new Date(`${citem.startDate}`).getTime() && new Date(item.planDate).getTime() <= new Date(citem.endDate).getTime()) && (new Date(`${item.planTimeStart}`).getTime() >= new Date(`${item.planDate} ${citem.startTime}`).getTime() && new Date(`${item.planTimeStart}`).getTime() <= new Date(`${item.planDate} ${citem.endTime}`).getTime())
+                                    
+                                
+                            } else if (citem.startDate && citem.endDate && (!citem.endTime || !citem.startTime)) {
+                                 
+                                return new Date (item.planDate).getTime() >= new Date(`${citem.startDate}`).getTime() && new Date(item.planDate).getTime() <= new Date(citem.endDate).getTime()
+                                
+                            } else if ((!citem.startDate || !citem.endDate) && citem.endTime && citem.startTime) {
+                                
+                                return new Date(`${item.planTimeStart}`).getTime() >= new Date(`${item.planDate} ${citem.startTime}`).getTime() && new Date(`${item.planTimeStart}`).getTime() <= new Date(`${item.planDate} ${citem.endTime}`).getTime()
+                            }else {
+                                return true
+                            }
+                        }) 
+                        if (!isRight) {
+                            errorData.push(item)
+                        }
+                    }
+                })
+                
+                return {
+                    planError: errorData.length,
+                    errorType: `影片${errorData.map(item => item.movieName).join(',')}的开场时间不在影片允许的排片时间内, 不能编排放映计划`
+                }
+            } else {
+                return {
+                    planError: movie.planInfoMovieTimeVoList ? movie.planInfoMovieTimeVoList.length ? !movie.planInfoMovieTimeVoList.some(item => {
+                        if (item.startDate && item.endDate && item.endTime && item.startTime) {
+                            return (new Date (planStartDate).getTime() >= new Date(`${item.startDate}`).getTime() && new Date(planStartDate).getTime() <= new Date(item.endDate).getTime()) && (new Date(`${planStartTime}`).getTime() >= new Date(`${planStartDate} ${item.startTime}`).getTime() && new Date(`${planStartTime}`).getTime() <= new Date(`${planStartDate} ${item.endTime}`).getTime())
+                        } else if (item.startDate && item.endDate && (!item.endTime || !item.startTime)) {
+                            return new Date (planStartDate).getTime() >= new Date(`${item.startDate}`).getTime() && new Date(planStartDate).getTime() <= new Date(item.endDate).getTime()
+                        } else if ((!item.startDate || !item.endDate) && item.endTime && item.startTime) {
+                            return new Date(`${planStartTime}`).getTime() >= new Date(`${planStartDate} ${item.startTime}`).getTime() && new Date(`${planStartTime}`).getTime() <= new Date(`${planStartDate} ${item.endTime}`).getTime()
+                        } else {
+                            return false
+                        }
+                        }) : false : false,
+                    errorType: '不在影片允许的排片时间内'
+                }
+            }
+        },
+        // 提交审核表格合并
+        arraySpanMethod({ row, column, rowIndex, columnIndex }) {
+            if (columnIndex === 5 || columnIndex === 8) {
+                if (rowIndex === 0) {
+                    return {
+                        rowspan: this.adviceDataCheck.length,
+                        colspan: 1
+                    }
+                } else {
+                    return {
+                        rowspan: 0,
+                        colspan: 0
+                    }
+                } 
+                
+
+            } 
+        },
+        // 直接审核
+        /**
+         * @noCheck 参数为排片指导校验继续提交审批时 不需要校验标记位
+         */
+        directApprove(noCheck) {
+            if (this.plan_rooms.every(row => row.every(plan => !plan.isSelect))) {
+                return this.warning('请选择需要审核通过场次再点击直接审核!')
+            }
+            
+            let subData = []
+            let userNeedSave = this.userNeedSave
+            
+            this.plan_rooms.forEach((row, rowIndex) => {
+                subData = subData.concat(
+                row.filter(plan => plan.approveStatus !== 'APPROVED' && plan.isSelect))
+            })
+
+            
+            if (!subData.length) {
+                return this.error('当前选中的场次已通过审核!')
+            }
+            if (!noCheck) {
+                this.continueApproveType = 1
+                this.checkAllowApprove()
+            }
+            if (!this.allowApprove) return
+            this.curApproveData = JSON.parse(JSON.stringify(subData))
+            let approveData = {
+                cinemaUid: this.baseParam.uidCinema,
+                makeDate: this.baseParam.planDate,
+                planUids: this.curApproveData.map(item => item.planUid)
+            }
+            if (userNeedSave) {
+                this.savePlan('approve', true)
+            } else {
+                this.selectPlanApprove(approveData)
+            }
+
+            
+        },
+        selectPlanApprove(data) {
+            let approveData = {
+                cinemaUid: this.baseParam.uidCinema,
+                makeDate: this.baseParam.planDate,
+                planUids: this.curApproveData.map(item => item.planUid)
+            }
+            let subData = data ? data : approveData
+            directApprove(subData).then(res => {
+                if (res.code != 200 && res.code != 10000) {
+                    return this.error(res.msg)
+                }
+                if (res.code == 200) {
+                    this.success('直接审批成功')
+                } else if (res.code == 10000) {
+                    this.approveErrorData = res.data
+                    this.approveErrorType = 1
+                }
+                // 刷新当前排片数据 type approved 为 渲染时加特定提示 
+                this.$emit('initMoviePlan', {
+                    type: 'approved'
+                })
+            }) 
+        }
+    },
+    computed: {
+        adviceDataCheck() {
+            return this.adviceData.filter(item => item.isAdvice).sort((a, b) => a.guideType - b.guideType)
         }
     }
 }
@@ -2864,10 +3253,8 @@ export default {
 
                     .film-content {
                         height: 66px;
+                        padding-top: 3px;
                         box-sizing: border-box;
-                        justify-content: center;
-                        align-items: flex-start;
-                        flex-direction: column;
 
                         div {
                             width: 100%;
@@ -2877,21 +3264,29 @@ export default {
                             white-space: nowrap;
                             font-size: 12px;
                             padding: 0 10px;
+                            height: 14px;
+                            margin-bottom: 6px;
+                            color: #666;
+                            &.text-hide {
+                                span {
+                                    color: #666666;
+                                    font-weight: normal;
+                                }
+                            }
+                            .p30 {
+                                display: inline-block;
+                                width: 30%;
+                            }
                         }
 
                         div:nth-of-type(1) {
+                            color: #333;
                             font-weight: bold;
                         }
 
-                        div:nth-of-type(2) {
-                            color: #666666;
-                            margin-top: 3px;
-                            margin-bottom: 3px;
-                        }
-
-                        div:nth-of-type(3) {
+                        div:last-child {
                             font-family: ArialMT;
-                            color: #808080;
+                            color: #666;
                         }
                     }
 
@@ -2928,7 +3323,7 @@ export default {
         top: 0;
 
         .clock-info {
-            width: 70px;
+            width: 96px;
             padding: 3px;
             text-align: center;
             position: absolute;
@@ -2953,10 +3348,8 @@ export default {
 
                 .movie-content {
                     height: 66px;
-                    justify-content: center;
-                    align-items: flex-start;
-                    flex-direction: column;
-
+                    box-sizing: border-box;
+                    padding-top: 3px;
                     div {
                         width: 100%;
                         box-sizing: border-box;
@@ -2964,22 +3357,26 @@ export default {
                         text-overflow: ellipsis;
                         white-space: nowrap;
                         font-size: 12px;
+                        height: 14px;
+                        margin-bottom: 6px;
                         padding: 0 10px;
+                        color: #666666;
+                        &.text-hide {
+                            span {
+                                color: #666;
+                                font-weight: normal;
+                            }
+                        }
                     }
 
                     div:nth-of-type(1) {
+                        color: #333;
                         font-weight: bold;
                     }
 
-                    div:nth-of-type(2) {
-                        color: #666666;
-                        margin-top: 3px;
-                        margin-bottom: 3px;
-                    }
-
-                    div:nth-of-type(3) {
+                    div:last-child {
                         font-family: ArialMT;
-                        color: #808080;
+                        color: #666;
                     }
                 }
             }
@@ -3013,9 +3410,7 @@ export default {
                 .drop-content {
                     height: 66px;
                     box-sizing: border-box;
-                    justify-content: center;
-                    align-items: flex-start;
-                    flex-direction: column;
+                    padding-top: 3px;
 
                     div {
                         width: 100%;
@@ -3024,22 +3419,26 @@ export default {
                         text-overflow: ellipsis;
                         white-space: nowrap;
                         font-size: 12px;
+                        height: 14px;
+                        margin-bottom: 8px;
                         padding: 0 10px;
+                        color: #666;
+                         &.text-hide {
+                            span {
+                                color: #666666;
+                                font-weight: normal;
+                            }
+                        }
                     }
 
                     div:nth-of-type(1) {
+                        color: #333;
                         font-weight: bold;
                     }
 
-                    div:nth-of-type(2) {
-                        color: #666666;
-                        margin-top: 3px;
-                        margin-bottom: 3px;
-                    }
-
-                    div:nth-of-type(3) {
+                    div:last-child {
                         font-family: ArialMT;
-                        color: #808080;
+                        color: #666;
                     }
                 }
             }

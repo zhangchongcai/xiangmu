@@ -3,7 +3,7 @@
         <el-dialog :visible="show" title="影院kpi创建"
             :before-close="handleClose"
             :close-on-click-modal="false">
-            <div class="content ">
+            <div class="content" style="max-height:500px">
                 <el-form class="reset-form"  ref="kpiRef" label-width="150px" label-position="right" 
                     :model="infoData"
                     :rules="rules">

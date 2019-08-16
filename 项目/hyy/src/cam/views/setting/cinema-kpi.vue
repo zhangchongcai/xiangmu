@@ -3,31 +3,25 @@
     <div class="header-fixed">
       <!-- <bread-crumb  :dataList="dataList"></bread-crumb> -->
       <div class="time-wrap">
-        <el-row>
-          <el-col :span="24">
-            <div class="time-item">
-                <label class="label-title">
-                  时间选择：
-                    <el-date-picker 
-                      :editable="false"
-                      clearable
-                      size="small"
-                      v-model="time"
-                      type="month"
-                      placeholder="选择月"
-                      @change="changeTime">
-                    </el-date-picker>
-                </label>
-            </div>
-            <div class="time-item">
-              <label class="label-title">
-                影院名称：
-                <el-input size="small" style="width:200px" v-model="cinemaName"></el-input>
-              </label>
-              <el-button type="primary" size="mini" style="margin-left:30px" @click="search">查询</el-button>
-            </div>
-          </el-col>
-        </el-row>
+          <div class="time-item">
+            <span class="label-title">时间选择:</span>
+              <el-date-picker 
+                :editable="false"
+                clearable
+                size="small"
+                v-model="time"
+                type="month"
+                placeholder="选择月"
+                @change="changeTime">
+              </el-date-picker>
+          </div>
+          <div class="time-item">
+              <span class="label-title">影院名称:</span>  
+              <el-input size="small" style="width:200px" v-model="cinemaName"></el-input>
+          </div>
+          <div class="time-item">
+              <el-button type="primary" size="mini"  @click="search">查询</el-button>
+          </div>
       </div>
     </div>
     <div class="section">
@@ -57,11 +51,12 @@
             <el-table-column prop="cinemaCode" label="专资编码"  min-width="90" fixed></el-table-column>
             <el-table-column prop="cinemaName" label="影院名称"  min-width="160" fixed></el-table-column>
             <el-table-column prop="dateKey" label="月份"  min-width="100"></el-table-column>
-            <el-table-column prop="boxOfficeTarget" label="票房收入目标(元)"  min-width="120"></el-table-column>
-            <el-table-column prop="audienceCountTarget" label="观影人次目标(次)"  min-width="120"></el-table-column>
-            <el-table-column prop="sellGoodsTarget" label="卖品收入目标(元)" min-width="120"></el-table-column>
-            <el-table-column prop="addMemberCount" label="新增会员目标(人)"  min-width="120"></el-table-column>
-            <el-table-column prop="memberConsumeTarget" label="会员消费金额目标(元)"  min-width="140"></el-table-column>
+            <el-table-column prop="boxOfficeTarget" label="票房收入目标(元)"  min-width="120" :formatter="formatNum">
+            </el-table-column>
+            <el-table-column prop="audienceCountTarget" label="观影人次目标(次)"  min-width="120" :formatter="formatNum"></el-table-column>
+            <el-table-column prop="sellGoodsTarget" label="卖品收入目标(元)" min-width="120" :formatter="formatNum"></el-table-column>
+            <el-table-column prop="addMemberCount" label="新增会员目标(人)"  min-width="120" :formatter="formatNum"></el-table-column>
+            <el-table-column prop="memberConsumeTarget" label="会员消费金额目标(元)"  min-width="140" :formatter="formatNum"></el-table-column>
             <el-table-column prop="marketShare" label="票房市场份额目标(%)"  min-width="140"></el-table-column>
             <el-table-column label="操作"  min-width="90" >
               <template slot-scope="scope">
@@ -73,7 +68,7 @@
         </div>
         <div class="reset-page">
           <el-pagination  v-if="total > 15" size="mini"
-            layout=" sizes,total,prev, pager, next, jumper"
+            layout="total,sizes,prev, pager, next, jumper"
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
             :current-page="page"
@@ -188,7 +183,6 @@ export default {
         if(response.code == 200){
           this.$refs.create.handleClose();
           this.getAllData()
-        //   this.getList()
         }else{
           this.$message({
             type:'warning',
@@ -200,11 +194,10 @@ export default {
     // 3.更新kpi
     updateKpi(info){
       let params = {
-          body:info
+        body:info
       }
       this.$camList.updateKpi(params).then(response => {
           this.$refs.update.show = false;
-        //   this.getList();
           this.getAllData()
       })
     },
@@ -238,7 +231,6 @@ export default {
         }else{
             this.time = null;
         }
-      this.getAllData();
     },
     // 新建弹窗
     createShow(){
@@ -260,6 +252,9 @@ export default {
     handleCurrentChange(num) {
       this.page = num;
       this.getList();
+    },
+    formatNum(row,column,cellValue){
+      return global.formatNum(cellValue)
     }
   }
 };

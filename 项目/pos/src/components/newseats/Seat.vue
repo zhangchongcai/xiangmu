@@ -4,42 +4,43 @@
         <div :class="['header', isExtends ? 'extendFontHeader' : '']">
           {{currentFilmTitle}}
           <!-- 放大按钮 -->
-          <i v-if="!isExtends" class="iconfont iconzuoweiquanping extend-btn" @click="extendSeats"></i>
+          <i v-show="!isExtends" class="iconfont iconzuoweiquanping extend-btn" @click="extendSeats"></i>
           <!-- 缩小 -->
-          <i v-else class="iconfont icontuichuquanping extend-btn" @click="narrowSeats"></i>
+          <!-- <i v-show="isExtends" class="iconfont icontuichuquanping extend-btn" @click="narrowSeats"></i> -->
         </div>
         <div class="screen" :style="{width: (extendNum * 48) + 'vw'}">
           银幕
         </div>
 
         <!-- 座位渲染开始begin -->
-        <div class="seats" :style="{width: (extendNum * 54) + 'vw', height: (isExtends ? 59 : 46) + 'vh'}" id="box" @mousedown="drawRect">
-
-          <div v-show="allSeat.length" class="row-default-left" :style="{height: !isExtends ? '46vh' : '59vh'}">
-            <div  class="row-default" :style="{marginTop: (maxHeight + 6 * extendNum)  + 'px'}">
-              <span :class="['row-num-style', lightRow == index + 1 ? 'highlight-row' : '']" :style="{top: item *  extendNum * scaleNum  + 'vw'}" v-for="(item, index) in rowYs" :key="'row' + index">
+        <div class="seats" :style="{width: (extendNum * 54) + 'vw', height: (isExtends ? 65 : 50.5) + 'vh'}" id="box" @mousedown="drawRect">
+          <div v-show="seat_data.length" class="row-default-left" :style="{height: !isExtends ? '50.5vh' : '65vh'}">
+            <div  class="row-default" :style="{marginTop: ((maxHeight + 6) / scaleNum * extendNum)  + 'px'}">
+              <span :class="['row-num-style', lightRow == index + 1 ? 'highlight-row' : '']" :style="{top: item *  extendNum * scaleNum  + 'vw', transform: `translateX(-50%) ${scaleString}`}" v-for="(item, index) in rowYs" :key="'row' + index">
                 {{index + 1}}
               </span>
             </div>
           </div>
           
-          <div id="realRect" v-if="allSeat.length" class="seats-center">
-             <div :style="{width: (isExtends ? extendNum * hallWidth : hallWidth) + 'vw', height: (!isExtends ? 46 : 59) + 'vh', top: maxHeight + 'px', left: maxWidth + 'px'}" class="seats-container"> 
-               <div :style="{width: (2.7 * extendNum) + 'vw', height: (2.7 * extendNum) + 'vw', top: item.y * extendNum * scaleNum + 'vw', left: item.x * extendNum * scaleNum + 'vw', justifyContent: item.imageType == 2 || item.imageType == 4 ? 'flex-end' : item.imageType == 3 || item.imageType == 6 ? 'flex-start' : item.imageType == 5 ? '' : 'center', transform:  scaleString}" class="seat-default" v-for="(item, index) in seat_data" :key="'seat' + index" @click.stop="selSingleSeat(item)" @mouseover="highLigth(item)">
+          <div id="realRect" v-if="seat_data.length" class="seats-center">
+             <div :style="{width: (isExtends ? extendNum * hallWidth : hallWidth) + 'vw', height: (!isExtends ? 50.5 : 65) + 'vh', top: maxHeight + 'px', left: maxWidth + 'px'}" class="seats-container"> 
+               <div :style="{backgroundColor: item.color, width: (2.7 * extendNum) + 'vw', height: (2.7 * extendNum) + 'vw', top: item.y * extendNum * scaleNum + 'vw', left: item.x * extendNum * scaleNum + 'vw', justifyContent: item.imageType == 2 || item.imageType == 4 ? 'flex-end' : item.imageType == 3 || item.imageType == 6 ? 'flex-start' : item.imageType == 5 ? '' : 'center', transform:  scaleString}" class="seat-default" v-for="(item, index) in seat_data" :key="'seat' + index" @click.stop="selSingleSeat(item)" @mouseover="highLigth(item)">
+                  <div v-show="item.netSaleFlag == 1" :style="{transform: scaleString}" class="net-seal-style"></div>
                   <i :class="['iconfont', 'iconputongzuoyi', 'seat-default-style', item.seatIcon, item.status == 3 ? 'seat-default-style-active' : '', item.colorStyle]" :style="{fontSize: isExtends ? '2.5vw' : '2.2vw'}"></i>
-                  <span v-show="item.status != 0" :class="['seat-num-default', item.status != 1 ? 'active-seat-num' : '']" :style="{fontSize: isExtends ? '1.3vw' : '1.2vw', transform: `translate(-50%, -50%)`, scaleString}">{{item.status != 0 ? item.colAlias : ''}}</span>
+                  <span v-show="item.status != 0" :class="['seat-num-default', item.status != 1 ? 'active-seat-num' : '']" :style="{fontSize: isExtends ? '1.26vw' : '1.04vw', transform: `translate(-50%, -50%)`, scaleString}">{{item.status != 0 ? item.colAlias : ''}}</span>
                   <span v-show="item.status == 0" :style="{transform: `translate(-50%, -50%)`, scaleString}" class="seat-num-default iconfont iconhuaizuo1"></span>
                 </div>
              </div>
           </div>
 
           <div v-else>
-            <img class="no-seat-pic" src="/static/imgs/colorLogo.png" alt="新晨星科技">
+            <img class="no-seat-pic" src="/static/imgs/nodate.png" alt="暂无排期">
+            <span class="no-seat-font">{{loadingSeat}}</span>
           </div>
 
-          <div v-show="allSeat.length" class="row-default-right" :style="{height: !isExtends ? '46vh' : '59vh'}">
-            <div class="row-default" :style="{height: rows * extendNum + 'px', marginTop: (maxHeight + 6 * extendNum) + 'px'}">
-                <span :class="['row-num-style', lightRow == index + 1 ? 'highlight-row' : '']" :style="{top: item *  extendNum * scaleNum + 'vw'}" v-for="(item, index) in rowYs" :key="'row' + index">
+          <div v-show="seat_data.length" class="row-default-right" :style="{height: !isExtends ? '50.5vh' : '65vh'}">
+            <div class="row-default" :style="{height: rows * extendNum + 'px', marginTop: ((maxHeight + 6) / scaleNum * extendNum) + 'px'}">
+                <span :class="['row-num-style', lightRow == index + 1 ? 'highlight-row' : '']" :style="{top: item *  extendNum * scaleNum + 'vw',  transform: `translateX(-50%) ${scaleString}`}" v-for="(item, index) in rowYs" :key="'row' + index">
                   {{index + 1}}
                 </span>
               </div>
@@ -49,7 +50,7 @@
         <!-- 坐座渲染结束end -->
 
          <!-- 底部座位说明begin  -->
-        <div :class="['footer-default', isExtends ? '' : 'footer']">
+        <div v-if="seat_data.length" :class="['footer-default', isExtends ? '' : 'footer']">
          <div class="seat-intro">
            <span class="intor-margin">
              <i :class="['iconfont', 'intor-img', 'iconputongzuoyi', isExtends ? 'intor-img-large' : '']"></i>
@@ -62,6 +63,10 @@
            <span class="intor-margin">
              <i :class="['iconfont', 'intor-img', 'iconcanjizuoyi', isExtends ? 'intor-img-large' : '']"></i>
              <span :class="['intor-font', isExtends ? 'intor-font-large' : '']">残疾人座椅</span>
+           </span>
+           <span class="intor-margin" v-for="(item, index) in regionArr" :key="index">
+             <span :class="['intor-img', isExtends ? 'intor-img-large' : '']" :style="{display: 'inline-block', width: '3.0vw', height: '2.0vh', backgroundColor: item.color + '4D'}"></span>
+             <span :class="['intor-font', isExtends ? 'intor-font-large' : '']">{{item.regionName}}</span>
            </span>
          </div>
 
@@ -106,24 +111,18 @@
       
       <!-- 放大后右边详情begin -->
       <div v-show="isExtends" class="seat-detail">
-
-        <div class="small-map-film-name">
-          {{currentFilmTitle}}
-        </div>
-
-        <div class="small-map-screen">
-          银幕
-        </div>
         
         <!-- 右侧小地图区域 -->
-        <div style="width: 100%; position: relative;">
-          <div ref="smallbox" id="smallbox" style="minWidth: 100%; minHeight: 150px; position: relative; overflow: scroll; transition: all 0.2s; display: flex; justify-content: center;" @click="movingCapture">
-            <div ref="captureParent" class="small-seats-map" :style="{height: (14 * rowYs.length) + 'px', width: (14 * colXs.length) + 'px'}">
-              <div title="最佳观影区域" class="small-seats-map-center" @click.stop="selCenter"></div>
+        <div style="width: 23vw">
+          <div class="small-map-screen">
+            银幕
+          </div>
+          <div ref="smallbox" id="smallbox" style="width:23vw; height: 19.9vh; position: relative; overflow: scroll; transition: all 0.2s; display: flex; justify-content: center;" @click="movingCapture">
+            <div ref="captureParent" class="small-seats-map" :style="{height: (16 * rowYs.length) + 'px', width: (16 * colXs.length) + 'px'}">
               <div v-show="showCapture" ref="capture" class="pointer-circle"></div>
-              <div :style="{width: '14px', height: '14px', top: (14 * item.y / 2.7) + 'px', left: (14 * item.x / 2.7) + 'px'}" class="seat-default" v-for="(item, index) in seat_data" :key="'seat' + index">
-                <i :class="['iconfont', 'iconputongzuoyi', 'seat-default-style', item.status == 3 ? 'seat-default-style-active' : '']" style="font-size: 13px;"></i>
-                <span :class="['seat-num-default', item.status == 3 ? 'active-seat-num' : '']" style="font-size: 12px">{{item.col}}</span>
+              <div :style="{width: '16px', height: '16px', top: (16 * item.y / 2.7) + 'px', left: (16 * item.x / 2.7) + 'px'}" class="seat-default" v-for="(item, index) in seat_data" :key="'seat' + index">
+                <i :class="['iconfont', 'iconputongzuoyi', 'seat-default-style', item.status == 3 ? 'seat-default-style-active' : '', item.colorStyle]" style="font-size: 14px;"></i>
+                <span :class="['seat-num-default-small', item.status != 1 ? 'active-seat-num' : '']" style="font-size: 12px">{{item.colAlias}}</span>
               </div>
             </div>
           </div>
@@ -133,9 +132,9 @@
 
          <div class="small-map-control">
             <!-- 居中按钮 -->
-            <span class="iconfont iconfangda  control-common-style" style="font-size: 18px; margin-right: 1px" @click="setCenter"></span>
+            <i title="居中" class="iconfont iconjuzhong  control-common-style" style="font-size: 18px; margin-right: 1px" @click="setCenter"></i>
             <!-- 页面翻转按钮 -->
-            <span class="iconfont iconfanzhuan  control-common-style" style="font-size: 18px" @click="turnReverse"></span>
+            <i title="翻转" class="iconfont iconfanzhuan  control-common-style" style="font-size: 18px" @click="turnReverse"></i>
          </div>
          
          <!-- 系统票类  -->
@@ -158,24 +157,26 @@
           <div class="tickets-sel-container">
             <div :class="['control-common-style-selected']" v-for="(seleteditem, index) in pagesSeatSelection[moreSel]" :key="'sel' + index">
               <span style="font-size: 14px; color: #333333; font-weight: bold; margin-left: 10px">{{seleteditem.seat_name}}</span>
-              <span style="font-size: 14px; color: #ffffff;" class="have-selected-ticket">{{seleteditem.type_price}} <i class="ticket-arrow iconfont iconyoujiantouda"></i></span>
+              <span style="font-size: 14px; color: #ffffff;" class="have-selected-ticket">{{seleteditem.type_price}} 
+                <!-- <i class="ticket-arrow iconfont iconyoujiantouda"></i> -->
+              </span>
             </div>
           </div>
-          <div class="tickets-sel-tab">
-            <span class="commonbtn-pre iconfont iconzuojiantouanniu" @click="preSel"></span>
-            <span class="commonbtn-next iconfont iconyoujiantouanniu" @click="nextSel"></span>
-          </div>
-          <div class="finished-btn" @click="narrowSeats">完成</div>
         </div>
+        <div class="tickets-sel-tab">
+          <span class="commonbtn-pre" @click="preSel">&lt;</span>
+          <span class="commonbtn-next" @click="nextSel">&gt;</span>
+        </div>
+        <div class="finished-btn" @click="narrowSeats">完成</div>
       </div>
       <!-- 放大后右边详情end -->
     </div>
 </template>
 
 <script>
-  import {queryAllSeat, queryCurrentPlanSeat, initCart, lockSeat, addCart, findCart, delTicket, releaseSeat, findTimeSeatStatus} from 'src/http/apis.js'  //获取全部座位，用来座位布局
+  import {queryAllSeat, queryCurrentPlanSeat, initCart, lockSeat, addCart, findCart, delTicket, releaseSeat, findTimeSeatStatus, queryCurrentPlanRegion, getTicketPrice} from 'src/http/apis.js'  //获取全部座位，用来座位布局
   import {mapGetters, mapMutations} from 'vuex'
-  import {SEAT_SELECTION, DEL_SEAT, EXTEND_SEAT, SHOW_BOTTOM_BAR, SET_CURRENT_TICKET_ID, SAVE_CURRENT_PLAN_SEAT, GET_CART_BILLCODE, GET_CART_TICKETS, GET_KIND_PRICE, GET_CART_BILLCODEUID, GET_CART_CINEMAUID, RENDER_SELECTION, RENDER_SELECTION_AFTER_RELEASE,GET_CART_DATA, CHECK_CURRENT_SEAT_STATUS, WITH_OUT_DATA} from 'types'
+  import {SEAT_SELECTION, DEL_SEAT, EXTEND_SEAT, SHOW_BOTTOM_BAR, SET_CURRENT_TICKET_ID, SAVE_CURRENT_PLAN_SEAT, GET_CART_BILLCODE, GET_CART_TICKETS, GET_KIND_PRICE, GET_CART_BILLCODEUID, GET_CART_CINEMAUID, RENDER_SELECTION, RENDER_SELECTION_AFTER_RELEASE,GET_CART_DATA, CHECK_CURRENT_SEAT_STATUS, WITH_OUT_DATA, CLEAR_SELECTION, COVER_TICKET_PRICE} from 'types'
 
   export default {
     props: {
@@ -219,10 +220,14 @@
         selectedPages: [],  //分组后的选中影票
         pages: 0,
         rectArr: [], //框选中的座位
-        multipleSelection: false, //是否开启对选功能
+        startX: 0, //框选时的起点X
+        startY: 0, //框选时的起点Y
+        multipleSelection: false, //是否开启多选功能
         loading: false,
         showCapture: true, //是否显示移动焦点，当选中最佳观影区域时，此点消失
-        lightRow: null //高亮显示座位对应的排数
+        lightRow: null, //高亮显示座位对应的排数
+        regionArr: [], //分区集合
+        loadingSeat: "座位加载中..."
       }
     },
     computed: {
@@ -242,7 +247,8 @@
           'cartData',
           'allowSingleSold',
           'ticketsStatus',
-          'currentDateStr'
+          'currentDateStr',
+          'getUserConfig'
       ]),
 
       extendNum() {  //小屏幕到大屏幕的放大系数
@@ -260,6 +266,8 @@
 
     watch: {
          currentPlanCode() {
+           this.seat_data = []
+           this.regionArr = []
            this.getCurrentSeat({cinemaCode: this.cinemaCode, planCode: this.currentPlanCode}, this.getAllSeatsType);
          }
       },
@@ -289,7 +297,9 @@
         RENDER_SELECTION,
         RENDER_SELECTION_AFTER_RELEASE,
         CHECK_CURRENT_SEAT_STATUS,
-        WITH_OUT_DATA
+        WITH_OUT_DATA,
+        CLEAR_SELECTION,
+        COVER_TICKET_PRICE
       ]),
       //高亮显示排数
       highLigth(item) {
@@ -316,15 +326,12 @@
               this.maxHeight = -(this.maxHeight * 1.2)
             }
       },
-      //选中最佳观影区域
-      selCenter() {
-        let captureParent = this.$refs.captureParent;
-        this.showCapture = false;
-        this.maxWidth = 0;
-        this.maxHeight = (captureParent.offsetHeight - 56) / (-2)
-      },
       //获得当前场次座位以及状态
       getCurrentSeat(paramObj, callback) {
+          this.loadingSeat = "座位加载中..."
+          if(!(paramObj.cinemaCode && paramObj.planCode)) {
+            return
+          }
           queryCurrentPlanSeat(paramObj).then(res => {
               if(res.code == 200) {
                   callback(res.data)
@@ -342,6 +349,12 @@
                   });
               }
           })
+
+          queryCurrentPlanRegion(paramObj).then(res => {
+            if(res.code == 200 && res.data.length) {
+              this.regionArr = res.data
+            }
+          })
       },
       
       //获取所有座位部分状态
@@ -349,12 +362,10 @@
             if(arr.length) {
               this.SAVE_CURRENT_PLAN_SEAT(arr)
             }else {
+              this.loadingSeat = "暂无座位"
               return
             }
               this.seat_data = this.allSeat
-
-              // this.firstXcoord = this.seat_data[0].x
-              // this.firstYcoord = this.seat_data[0].y
               
               this.basicUnit = parseInt(this.seat_data[0].width) //原始座位大小，一个单位
 
@@ -393,22 +404,16 @@
               this.cols = Math.max.apply(null, this.colXs);
               this.rows = Math.max.apply(null, this.rowYs);   
 
-              // 以 8排  15 座  为基数， 大于这两个基数则进行计算按比例缩小
-              if((this.rows > 8 * 2.7 || this.cols > 18 * 2.7) && !this.isExtends) {
-               this.scaleNum =  `${Math.min(8 * 2.7/this.rows, 18 * 2.7/this.cols)}`
-               this.scaleString = `scale(${Math.min(8 * 2.7/this.rows, 18 * 2.7/this.cols)})`
+              // 以 9排  18 座  为基数， 大于这两个基数则进行计算按比例缩小
+              if((this.rows > 9 * 2.7 || this.cols > 18 * 2.7) && !this.isExtends) {
+               this.scaleNum =  `${Math.min(9 * 2.7/this.rows, 18 * 2.7/this.cols)}`
+               this.scaleString = `scale(${Math.min(9 * 2.7/this.rows, 18 * 2.7/this.cols)})`
               }else {
                 this.scaleNum =  1
                 this.scaleString = `scale(1, 1)`
               }
-              // console.log(this.rows, this.cols)
-              // if(this.rows > 43 || this.cols > 54) {
-              //    this.scaleNum =  `${Math.min(43/this.rows, 54/this.cols)}`
-              //    this.scaleString = `scale(${Math.min(43/this.rows, 54/this.cols)})`
-              // }else {
-              //   this.scaleNum =  1
-              //   this.scaleString = `scale(1, 1)`
-              // }
+
+              // console.log(this.scaleNum)
 
               this.hallWidth = this.cols * parseFloat(this.scaleNum) + 2.8
               this.hallHeight = this.rows * parseFloat(this.scaleNum) + 2.8
@@ -417,15 +422,13 @@
       //页面居中
       setCenter() {
         let smallbox = document.getElementById('smallbox')
-        this.cols = this.cols - smallbox.scrollWidth / 4
-        this.rows = this.rows - smallbox.scrollHeight / 4
-        this.maxWidth = 0
-        this.maxHeight = 0
-        smallbox.scrollTo(smallbox.scrollWidth / 4, smallbox.scrollHeight / 4)
-        this.maxWidth = this.maxWidth + smallbox.scrollWidth / 4
-        this.maxHeight = this.maxHeight + smallbox.scrollHeight / 4
-        this.cols = this.cols + smallbox.scrollWidth / 4
-        this.rows = this.rows + smallbox.scrollHeight / 4
+        let diffX = smallbox.scrollWidth - smallbox.clientWidth;
+        let diffY = smallbox.scrollHeight - smallbox.clientHeight;
+        this.maxWidth = 0;
+        this.maxHeight = 0;
+        smallbox.scrollTo( diffX / 2, diffY / 2)
+        this.maxWidth = - diffX / 2;
+        this.maxHeight = - diffY / 2;
       },
       //页面翻转
       turnReverse() {
@@ -459,8 +462,8 @@
       },
       //框选多个
       drawRect(ev) {
-        if(!this.loading) {
-          let that = this;
+        if(!this.loading && this.scaleNum >= 0.75) {
+        let that = this;
         that.rectArr = []; //清空上次选择的数据
         let oBox = document.getElementById("box");
         let oDiv = document.createElement("div");
@@ -474,6 +477,7 @@
         let y2 = 0;
         let cx = 0;
         let cy = 0;
+        let calcx1, calcy1, calcx2, calcy2;
         ev = window.event || ev;
         x1 = ev.clientX - oBox.offsetLeft;
         y1 = ev.clientY - oBox.offsetTop;
@@ -493,7 +497,7 @@
                 cy = y2 - y1;
                 //设置div的样式  四个方向设置不同的矩形位置
                 if(cx>0 && cy>0) {
-                  oDiv.style.left = x1 +"px"; 
+                  oDiv.style.left = x1 +"px";
                   oDiv.style.top = y1 +"px";
                 }else if(cx<0 && cy>0){
                   oDiv.style.left = x2 +"px"; 
@@ -514,7 +518,7 @@
                 oDiv.style.borderStyle = "dashed";
                 oDiv.style.opacity = 1;
                 // 框选区域的整数化 正向华 （左上到右下的方向）
-                  let calcx1, calcy1, calcx2, calcy2;
+                  // let calcx1, calcy1, calcx2, calcy2;
                   if(cx>0 && cy>0) {
                     calcx1 = x1 + that.maxWidth - realRect.offsetLeft
                     calcy1 = y1 + that.maxHeight
@@ -537,38 +541,76 @@
                     calcx2 = x2 + Math.abs(cx) + that.maxWidth - realRect.offsetLeft
                     calcy2 = y2 + Math.abs(cy) + that.maxHeight
                   }
-                  for(let i = 0; i < that.seat_data.length; i++) {
-                    let item = that.seat_data[i]
-                    let y = (item.y) * that.extendNum * that.scaleNum * that.viewWidth / 100 + 5
-                    let x = (item.x)  * that.extendNum * that.scaleNum * that.viewWidth / 100 + 5
-                    if((x<calcx2 && y<calcy2) && (calcx1<=x && calcy1<=y) && item.status == 1) {
-                      that.rectArr.push(item)
-                    }
-                  }
             }
         }
                
         //在鼠标抬起后终止onmousemove事件
         oBox.onmouseup = function (ev) {
+                
                 that.$nextTick(() => {
                     oBox.removeChild(oDiv);
                     oDiv = null
                 })
-                if(that.rectArr.length) {
-                  that.rectArr = Array.from(new Set(that.rectArr))
-                  that.addSeat(that.rectArr)
-                } //选取的同时丢进已选区域  
-              
-              document.onmousemove = null;
+
+                if(Math.abs(cx) > 0 && Math.abs(cy) > 0) {
+                   for(let i = 0; i < that.seat_data.length; i++) {
+                        let item = that.seat_data[i]
+                        let y = (item.y) * that.extendNum * that.viewWidth / 100 + 5
+                        let x = (item.x)  * that.extendNum * that.viewWidth / 100 + 5
+                        if((x<calcx2 && y<calcy2) && (calcx1<=x && calcy1<=y) && item.status == 1) {
+                          that.rectArr.push(item)
+                        }
+                      }
+
+                    // console.log(that.rectArr)
+
+                    if((that.rectArr.length + that.seatSelection.length) >= that.getUserConfig.max_sale_seat_num) {
+                        document.onmousemove = null;
+                        return that.$message({
+                                                      showClose: true,
+                                                      message: "最大锁座个数为" + that.getUserConfig.max_sale_seat_num,
+                                                      type: 'warning'
+                                                  });
+                      }
+
+                    // that.loading = true
+                    if(that.rectArr.length) {
+                      let seatCodeArr = that.rectArr.map(seat => {
+                        return seat.seatCode
+                      })
+                      getTicketPrice({
+                          planCode: that.currentPlanCode,
+                          ticketUid: that.currentTicketId,
+                          seatCode: seatCodeArr
+                        }).then(res => {
+                          if(res.code == 200) {
+                            if(res.data.length) {
+                              that.COVER_TICKET_PRICE(res.data)
+                            }
+                              that.addSeat(that.rectArr)
+                          }else {
+                              that.$message({
+                                            showClose: true,
+                                            message: res.msg,
+                                            type: 'error'
+                                        });
+                          }
+                        })
+                    }
+                }
+
+                document.onmousemove = null;
         }
 
         return false;  //解除在划动过程中鼠标样式改变的BUG
         }
       },
       //单选
-      selSingleSeat(item) {  //逻辑不对： 修改为先添加然后渲染座位状态
+      selSingleSeat(item) {  //修改为先添加然后渲染座位状态
         // console.log(item)
+        
         if(item.status == 1 || item.status == 3) {
+          this.loading = true
           // let currentstatus = !item.is_sel
           let currentItems = []
           if(!this.allowSingleSold) {
@@ -580,8 +622,38 @@
           }else {
             currentItems.push(item)
           }
+          
+          // console.log(currentItems)
           if(item.status == 1) {
-            this.addSeat(currentItems)
+            if(this.seatSelection.length >= this.getUserConfig.max_sale_seat_num) {
+              this.loading = false
+              return this.$message({
+                                            showClose: true,
+                                            message: "最大锁座个数为" + this.getUserConfig.max_sale_seat_num,
+                                            type: 'warning'
+                                        });
+            }
+            let seatCodeArr = currentItems.map(seat => {
+                        return seat.seatCode
+                      })
+            getTicketPrice({
+              planCode: this.currentPlanCode,
+              ticketUid: this.currentTicketId,
+              seatCode: seatCodeArr
+            }).then(res => {
+              if(res.code == 200) {
+                if(res.data.length) {
+                  this.COVER_TICKET_PRICE(res.data)
+                }
+                  this.addSeat(currentItems)
+              }else {
+                   this.$message({
+                                showClose: true,
+                                message: res.msg,
+                                type: 'error'
+                            });
+              }
+            })
           }else if(item.status == 3){
             this.delSeat(currentItems)
           }
@@ -591,12 +663,6 @@
       isBillCode(items) {
          if(!this.billCode) {
            initCart({
-              channelUid: "0",
-              channelCode: "0",
-              channelName: "柜台",
-              cinemaCode: this.cinemaCode,
-              cinemaUid: this.cinemaUid,
-              cinemaName: this.cinemaName,
               netSaleFlag: '0',
               remark: ''
            }).then(res => {
@@ -617,7 +683,6 @@
       },
       //锁座异步方法
       doLockSeat(items) {
-        this.loading = true
         lockSeat({
                     channelCode: this.channelCode,
                     cinemaCode: this.cinemaCode,
@@ -628,9 +693,8 @@
             items.forEach((item, index) => {
                         item.lockSeatKey = res.data.timeSeatList[index].lockSeatKey
                       })
-            let timeSeatStatusList = res.data.timeSeatList
-            this.CHECK_CURRENT_SEAT_STATUS({timeSeatStatusList})
-            this.SEAT_SELECTION(items)
+            // let timeSeatStatusList = res.data.timeSeatList
+            // console.log(timeSeatStatusList)
             this.doAddCart(items)
           }else {
             this.$message({
@@ -646,15 +710,18 @@
       },
       //添加购物车方法
       doAddCart(items) {
+        // console.log(items)
          let addCartParalist = items.map((item) => {
                         let obj = {
                           cinemaUid: item.cinemaUid,
                           goodsType: 4,
                           saleNum: 1,
                           timeSeat: {
+                            seatLevel: item.seatLevel,
                             addPrice: item.addPrice,
                             lockSeatKey: item.lockSeatKey,
                             planCode: item.planCode,
+                            planUid: item.planUid,
                             seatCode: item.seatCode,
                             seatCol: item.col,
                             seatRow: item.row,
@@ -674,6 +741,12 @@
           goodsList: addCartParalist,
         }).then(res => {
           if(res.code == 200) {
+            findTimeSeatStatus({cinemaCode: this.cinemaCode, planCode: this.currentPlanCode}).then(res => {
+                        if(res.code == 200) {
+                           this.CHECK_CURRENT_SEAT_STATUS(res.data)
+                        }
+                    })
+            this.SEAT_SELECTION(items)
             this.loading = false
             findCart({billCode: this.billCode}).then(res => {
                               if(res.code == 200) {
@@ -681,6 +754,7 @@
                                 this.GET_KIND_PRICE(res.data)
                                 this.GET_CART_BILLCODEUID(res.data.uid)
                                 this.GET_CART_CINEMAUID(res.data.cinemaUid)
+                              
                               }else {
                                 this.$message({
                                               showClose: true,
@@ -690,6 +764,33 @@
                               }
                           })
           }else {
+            releaseSeat({
+                        channelCode: this.channelCode,
+                        cinemaCode: this.cinemaCode,
+                        saleBillCode: this.billCode,
+                        timeSeatList: items
+                        }).then(res => {
+                        if(res.code == 200) {
+                            findTimeSeatStatus({cinemaCode: this.cinemaCode, planCode: this.currentPlanCode}).then(res => {
+                                if(res.code == 200) {
+                                this.CHECK_CURRENT_SEAT_STATUS(res.data)
+                                }
+                            })
+                            this.GET_CART_DATA({goodsList: []})
+                            this.CLEAR_SELECTION()
+                            // this.GET_CART_BILLCODE('')
+                            // this.GET_CART_BILLCODEUID('')
+                            this.GET_CART_DATA({goodsList:[]})
+                            this.RENDER_SELECTION_AFTER_RELEASE(res.data)
+                            }else {
+                                this.$message({
+                                        showClose: true,
+                                        message: res.msg,
+                                        type: 'error'
+                                    });
+                            }
+                    })
+            this.loading = false
             this.$message({
                                 showClose: true,
                                 message: res.msg,
@@ -701,8 +802,9 @@
       },
       //将选中的座位放到数组中
       addSeat(items) {
+        // console.log(items)
          if(!this.allowSingleSold) {
-           this.seat_data.forEach(item => {
+           this.allSeat.forEach(item => {
              items.forEach(selitem => {
                if(selitem.groupCode == item.groupCode) {
                  items.push(item)
@@ -719,11 +821,11 @@
 
          items.forEach(item => {
            item.type_price = currentTicketType
-           item.addPrice = currentObj.addFee
+          //  item.addPrice = currentObj.addFee
            item.ticketTypeName = currentObj.name
            item.ticketTypeUid = currentObj.id
-           item.ticketPrice = currentObj.price
-           item.originalTicketPrice = currentObj.price
+          //  item.ticketPrice = currentObj.price
+          //  item.originalTicketPrice = currentObj.price
          })
 
          this.isBillCode(items)
@@ -733,6 +835,15 @@
       },
       //单个座位删除
       delSeat(items) {
+        if(!items[0].lockSeatKey) {
+           this.$message({
+                            showClose: true,
+                            message: "此座位已被其他终端锁定，不可以操作",
+                            type: 'warning'
+                        });
+            this.loading = false
+            return
+        }
         let goodsList = items.map(item => {
           let obj = {
             timeSeat: {
@@ -770,7 +881,13 @@
                   timeSeatList: items
                 }).then(res => {
                   if(res.code == 200) {
+                    findTimeSeatStatus({cinemaCode: this.cinemaCode, planCode: this.currentPlanCode}).then(res => {
+                                if(res.code == 200) {
+                                this.CHECK_CURRENT_SEAT_STATUS(res.data)
+                                }
+                            })
                     this.RENDER_SELECTION_AFTER_RELEASE(res.data)
+                    this.loading = false
                   }
               })
            }else {
@@ -779,6 +896,9 @@
                             message: res.msg,
                             type: 'error'
                         });
+             setTimeout(() => {
+              this.loading = false
+            }, 2500)
            }
         })
         for(let i = 0; i < items.length; i++) {
@@ -799,27 +919,20 @@
       },
       //缩小
       narrowSeats() {
+        this.isReverse = false
         this.EXTEND_SEAT()
         this.SHOW_BOTTOM_BAR()
         this.maxWidth = 0
         this.maxHeight = 0
 
-        // 以 8排  15 座  为基数， 大于这两个基数则进行计算按比例缩小
-        if((this.rows > 8 * 2.7 || this.cols > 18 * 2.7) && !this.isExtends) {
-          this.scaleNum =  `${Math.min(8 * 2.7/this.rows, 18 * 2.7/this.cols)}`
-          this.scaleString = `scale(${Math.min(8 * 2.7/this.rows, 18 * 2.7/this.cols)})`
-        }else {
-          this.scaleNum =  1
-          this.scaleString = `scale(1, 1)`
-        }
-
-        // if(this.rows > 54 || this.cols > 43) {
-        //      this.scaleNum =  `${Math.min(54/this.rows, 43/this.cols)}`
-        //      this.scaleString = `scale(${Math.min(54/this.rows, 43/this.cols)})`
-        //   }else {
-        //     this.scaleNum =  1
-        //     this.scaleString = `scale(1, 1)`
-        //   }
+        // 以 9排  18 座  为基数， 大于这两个基数则进行计算按比例缩小
+        if((this.rows > 9 * 2.7 || this.cols > 18 * 2.7) && !this.isExtends) {
+               this.scaleNum =  `${Math.min(9 * 2.7/this.rows, 18 * 2.7/this.cols)}`
+               this.scaleString = `scale(${Math.min(9 * 2.7/this.rows, 18 * 2.7/this.cols)})`
+              }else {
+                this.scaleNum =  1
+                this.scaleString = `scale(1, 1)`
+              }
 
         this.hallWidth = this.cols * parseFloat(this.scaleNum) + 2.8;
         this.hallHeight = this.rows * parseFloat(this.scaleNum) + 2.8;
@@ -838,21 +951,21 @@
 
 <style scoped lang="scss">
   .seat-container {
+    box-sizing: border-box;
     width: 100%;
     height: 100%;
     user-select: none;
     display: flex;
     justify-content: space-between;
-    box-sizing: border-box;
     overflow: hidden;
   }
 
   .right {
-    width: 100%;
+    box-sizing: border-box;
+    width: 76vw;
     height: 100%;
     background: #ffffff;
     padding: 20px 0;
-    box-sizing: border-box;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -877,7 +990,7 @@
     @include screen_bgcolor();
     text-align: center;
     line-height: 24px;
-    margin-bottom: 36px;
+    margin-bottom: 12px;
     border-bottom-right-radius: 30px;
     border-bottom-left-radius: 30px;
     user-select: none;
@@ -920,6 +1033,7 @@
   }
   .seat-default-style {
     @include seat_color();
+    transition: all 0.3s linear;
   }
   .seat-default-style-active {
     @include seat_active_color();
@@ -932,9 +1046,17 @@
     color: $font-color6;
     user-select: none;
   }
+  .seat-num-default-small {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    color: $font-color6;
+    user-select: none;
+  }
   .active-seat-num {
     color: #ffffff;
-    font-weight: bold;
+    font-weight: 400;
   }
   .row-default  {
     width: 100%;
@@ -952,7 +1074,6 @@
   .row-num-style {
     position: absolute;
     left: 50%;
-    transform: translateX(-50%);
     user-select: none;
   }
   .seatLargeBox {
@@ -977,6 +1098,8 @@
   }
   .intor-margin {
     margin: 0 18px;
+    display: flex;
+    align-items: center;
   }
   .intor-font {
     color: #333333;
@@ -1083,6 +1206,7 @@
     justify-content: flex-start;
     align-items: center;
     font-size: $font-size12;
+    position: relative;
   }
 
   .control-common-style {
@@ -1150,15 +1274,21 @@
     position: absolute;
     top: 0px;
     right: 0;
-    font-size: $font-size16;
+    font-size: 2.24vw;
     color: $font-color-blue;
   }
 
   .commonbtn-pre, .commonbtn-next {
-    font-size: $font-size22;
-    margin: 0 10px;
+    background: #fff;
+    margin: 0 1.5vw;
+    width: 3.9vw;
+    height: 3.4vh;
+    line-height: 3.4vh;
+    text-align: center;
+    font-size: $font-size14;
     color: $font-color-blue;
-    cursor: pointer;
+    border: 1px solid #3B74FF;
+    border-radius: 2px;
   }
 
   .ticket-arrow {
@@ -1205,18 +1335,17 @@
   position: absolute;
   right: 0;
   bottom: 5.5vh;
-  width: 23vw;
+  width: 100%;
   height: 5.5vh;
   display: flex; 
-  justify-content: center; 
-  width: 22.2vw;
+  justify-content: center;
   flex-wrap: wrap;
 }
 .finished-btn {
   position: absolute;
   right: 0;
   bottom: 0;
-  width: 23vw;
+  width: 100%;
   height: 5.5vh;
   color: #ffffff; 
   background: #3b74ff;
@@ -1246,6 +1375,7 @@
 .is-sel-seats-header-font {
   margin-left: 12px;
   font-size: $font-size13;
+  color: #333;
 }
 .iconduorenzuoyizhong {
   transform: scaleX(1.4);
@@ -1265,6 +1395,8 @@
 }
 .seat-detail {
   width: 23vw;
+  height: 100vh;
+  position: relative;
 }
 .broken-seat {
   color: #dddddd !important;
@@ -1291,21 +1423,89 @@
 .pointer-circle {
   position: absolute;
   z-index: 500;
-  background: #ff8900aa;
+  background: rgba(255, 137, 0, 0.6);
   width: 40px;
   height: 40px;
   border-radius: 50%;
 }
 .highlight-row {
   color: $font-color-blue;
-  font-weight: 500;
+  font-weight: 400;
   text-decoration: underline;
+  transform: translateX(-50%) scale(1.04) !important;
 }
 .no-seat-pic {
-  width: 120px;
+  width: 200px;
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  animation:mymove 3s infinite;
+  -webkit-animation:mymove 3s infinite;
+}
+.no-seat-font {
+  position: absolute;
+  top: 70%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #666;
+}
+.net-seal-style {
+  width: 1.2vw;
+  height: 1.2vw;
+  border-radius: 50%;
+  background: #F33430;
+  box-shadow: 0 0 2px 2px #fff;
+  font-size: 0.85vw;
+  position: absolute;
+  right: 0;
+  top: -0.14vw;
+}
+.net-seal-style:before {
+  display: block;
+  content: '网';
+  color: #fff;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+.notoken-seal-style {
+  width: 1.2vw;
+  height: 1.2vw;
+  border-radius: 50%;
+  background: #F33430;
+  box-shadow: 0 0 2px 2px #fff;
+  position: absolute;
+  right: 0;
+  top: -0.3vw;
+}
+.notoken-seal-style:before {
+  display: block;
+  content: '未';
+  color: #fff;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes mymove
+{
+  
+0%   {opacity: 0.68;}
+30%  {opacity: 0.73;}
+50%  {opacity: 0.78;}
+70%  {opacity: 0.88;}
+100% {opacity: 1.0;}
+}
+
+@-webkit-keyframes mymove /* Safari and Chrome */
+{
+0%   {opacity: 0.68;}
+30%  {opacity: 0.73;}
+50%  {opacity: 0.78;}
+70%  {opacity: 0.88;}
+100% {opacity: 1.0;}
 }
 </style>

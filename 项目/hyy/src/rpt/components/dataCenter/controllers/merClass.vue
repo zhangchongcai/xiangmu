@@ -2,7 +2,7 @@
   <div class="mer-class-wrapper">
     <div class="input-button">
       <div @mouseenter="showIcon" @mouseleave="hideIcon">
-        <el-input v-model="merClassValue" :disabled="true">
+        <el-input v-model="merClassObj.merClassValue" :disabled="true">
           <i
             v-if="isShowIcon"
             class="iconfont icon-neiye-danchuangquxiao"
@@ -13,7 +13,6 @@
       </div>
       <button class="edit-button" @click="openDialog">选择</button>
     </div>
-    <!-- <el-input v-model="merClassValue" v-on:click.native="openMerClassTree"></el-input> -->
     <my-dialog
       title="商品类别"
       :isShow="dialogVisible"
@@ -21,7 +20,7 @@
       :dialogHeight="576"
       :marginTop="1"
       :marginBottom="1"
-      :dialogContentHeight="473"
+      :dialogContentHeight="440"
       @handleBtnComfirmClick="confirmTreeBtn"
       @handleBtnCancelClick="cancelTreeBtn"
       @close="handleClose"
@@ -31,27 +30,24 @@
           <el-form>
             <el-form-item label="商品类别:">
               <el-select popper-class="rpt-select" v-model="merClass" style="width:184px">
-                <div v-if="this.merClassArr.length > 0">
-                  <div v-for="(item, index) in merClassArr[0].children" :key="index">
+                <div v-if="merClassObj.merClassArr.length > 0">
+                  <div v-for="(item, index) in selectData" :key="index">
                     <el-option :label="item.name" :value="item.uid">{{item.name}}</el-option>
                   </div>
                 </div>
-                <div v-if="this.merClassArr.length === 0">
-                  <div v-for="(item, index) in merClassArr" :key="index">
+                <div v-if="merClassObj.merClassArr.length === 0">
+                  <div v-for="(item, index) in merClassObj.merClassArr" :key="index">
                     <el-option :label="item.name" :value="item.uid">{{item.name}}</el-option>
                   </div>
                 </div>
               </el-select>
             </el-form-item>
-            <!-- <el-form-item label="商品类别">
-              <el-input v-model="merClassSearchValue" style="width:184px"></el-input>
-            </el-form-item>-->
           </el-form>
           <el-button type="primary" @click="searchClick">查询</el-button>
         </div>
         <div class="tree-content">
           <el-tree
-            :data="merClassArr"
+            :data="merClassObj.merClassArr"
             show-checkbox
             default-expand-all
             :node-key="String(Math.random())"
@@ -68,38 +64,36 @@
 
 <script>
 import MyDialog from "../dataCommon/myDialog";
-import mixins from "src/frame_cpm/mixins/cacheMixin.js";
 export default {
-  mixins: [mixins.cacheMixin],
   components: {
     MyDialog
   },
   props: {
-    resetStatus: Boolean
+    resetStatus: Boolean,
+    merClassObj: Object
   },
   data() {
     return {
-      cacheField: ["merClass", "merClassArr"],
-      subComName: "merClass",
       merClass: "",
       isShowIcon: false,
-      merClassValue: "",
       merClassSearchValue: "",
       dialogVisible: false,
-      merClassArr: [],
       defaultProps: {
         children: "children",
         label: "name"
-      }
+      },
+      getDataTimes: 0,
+      selectData: []
     };
   },
   methods: {
     handleIconClick() {
-      this.merClassValue = "";
-      this.$emit("selectMerClassData", this.merClassValue);
+      this.merClassObj.merClassValue = "";
+      this.$forceUpdate();
+      this.$emit("selectMerClassData", this.merClassObj.merClassValue);
     },
     showIcon() {
-      if (this.merClassValue !== "") this.isShowIcon = true;
+      if (this.merClassObj.merClassValue !== "") this.isShowIcon = true;
     },
     hideIcon() {
       this.isShowIcon = false;
@@ -112,7 +106,13 @@ export default {
           if (res.code === 200) {
             let merClassData = [];
             merClassData.push(res.data);
-            this.merClassArr = JSON.parse(JSON.stringify(merClassData));
+            this.merClassObj.merClassArr = JSON.parse(
+              JSON.stringify(merClassData)
+            );
+            if (this.getDataTimes === 0) {
+              this.selectData = this.merClassObj.merClassArr[0].children;
+              this.getDataTimes++;
+            }
           } else {
             this.error(res.msg);
           }
@@ -131,7 +131,7 @@ export default {
         checkedMerClassUidArr.push(element.uid);
         checkedMerClassNameArr.push(element.name);
       });
-      this.merClassValue = checkedMerClassNameArr.join(",");
+      this.merClassObj.merClassValue = checkedMerClassNameArr.join(",");
       this.$emit("selectMerClassData", checkedMerClassUidArr.join(","));
     },
     cancelTreeBtn() {},
@@ -145,7 +145,7 @@ export default {
   watch: {
     resetStatus(newVal) {
       if (newVal) {
-        this.merClassValue = "";
+        this.merClassObj.merClassValue = "";
       }
     }
   }
@@ -182,7 +182,7 @@ export default {
         font-family: "MicrosoftYaHei";
         font-size: 12px;
         color: #666666;
-        background: #f5f5f5;
+        background: #ffffff;
         border: 1px solid #bcbcbc;
         border-radius: 4px;
         text-overflow: ellipsis;
@@ -252,7 +252,7 @@ export default {
   }
 
   .tree-content {
-    height: 419px;
+    height: 390px;
     overflow: auto;
     /deep/ .el-tree {
       .el-tree-node__expand-icon {
@@ -273,6 +273,9 @@ export default {
       }
       .icon-neiye-zhankaijiantou:before {
         font-size: 8px;
+      }
+      .is-leaf {
+        visibility: hidden;
       }
 
       .el-button {

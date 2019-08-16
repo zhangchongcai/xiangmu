@@ -1,10 +1,8 @@
 <template>
-    <div class="single-dialgo">
+    <div class="ccm_dialog">
         <el-dialog
         title="选择影院"
         :visible.sync="framedialogVisible"
-        :show-close="false"
-        width="62%"
         :close-on-click-modal="false"
         >
         <div>
@@ -15,14 +13,14 @@
                 <el-form-item label="影院全称：">
 					<el-input v-model="searchAdition.fullName"></el-input>
 				</el-form-item>
-                <el-button type="primary" @click="searchFunc" icon="el-icon-search" style="margin-top: 1px;margin-left:8px;">搜索</el-button>
+                <el-button type="primary" @click="searchFunc"  style="position:absolute;right:0px">搜索</el-button>
             </el-form>
         </div>
-        <div class="single-dialog-body">
-                <el-table :data="filmList" @row-click= "showRow"  height="308px" ref="filmListRef" highlight-current-row>
+        <div class="choose-body">
+                <el-table :data="filmList" @row-click= "showRow"  ref="filmListRef" highlight-current-row>
                     <el-table-column label="选择" width="50" align="center">
                         <template slot-scope="scope">
-                            <el-radio class="radio"  v-model="selectedId" :label="scope.row.id">&nbsp;</el-radio>
+                            <el-radio class="radio"  v-model="selectedId" :label="scope.row.code">&nbsp;</el-radio>
                         </template>
                     </el-table-column>
 					<el-table-column prop="code" label="影院编码" show-overflow-tooltip></el-table-column>
@@ -38,14 +36,14 @@
                     :current-page="pageNum"
                     :page-sizes="[10, 25, 50, 100]"
                     :page-size="pageSize"
-                    layout="total, sizes, prev, pager, next, jumper"
+                    layout="total, prev, pager, next, jumper"
                     :total="total">
                     </el-pagination>
                 </div>
         </div>
-        <div  class="dialog-footer">
-            <el-button @click="closeDialog(false)">取 消</el-button>
+        <div  slot="footer">
             <el-button type="primary" @click="confirmData()">确 定</el-button>
+            <el-button @click="closeDialog(false)">取 消</el-button>
         </div>
         
     </el-dialog>
@@ -91,8 +89,9 @@ export default {
     },
     methods:{
 
-        openDialog() {
+        openDialog(flag,innerData) {
             this.framedialogVisible = true
+            this.selectedId = innerData
             this.listAuthCommCinemas()
         },
         closeDialog() {
@@ -101,20 +100,12 @@ export default {
         },
         showRow(row){
             //赋值给radio
-            let _this = this;
-            let selectedRowsIndex = this.filmList.indexOf(row);
             this.selectedRows = row;
-            _this.$nextTick(function () { 
-                if(selectedRowsIndex != -1){
-                    this.selectedId = row.id
-                }
-            })
+            this.selectedId = row.code
         },
         confirmData(){
             let _this = this;
-            let rowData = !!this.selectedRows?this.selectedRows:{}
-            // console.log(cinemaIdss)
-            _this.$emit('cinemaSingleCallBack',rowData) 
+            _this.$emit('cinemaSingleCallBack',this.selectedRows) 
             this.framedialogVisible =false
         },
         //查询
@@ -161,33 +152,6 @@ export default {
     }
 }
 </script>
-
-<style lang="scss">
-.single-dialgo{
-    
-    .el-dialog {
-        .el-dialog__body,{
-            padding: 20px 20px 10px 20px;
-        }
-        .el-dialog__header{
-            border-bottom: 1px solid #f5f5f5;
-        }
-    }
-}
-</style>
 <style lang="scss" scoped>
-    .single-dialog-body{
-        border: 1px solid #E5E5E5;
-        .selected-ul{
-            .li-item{
-                width: 100%;
-                clear: both;
-                display: block;
-            }
-        }
-    }
-    .dialog-footer{
-        margin-top:10px;
-        text-align: center
-    }
+@import "../../assets/css/dialogs.scss"; 
 </style>

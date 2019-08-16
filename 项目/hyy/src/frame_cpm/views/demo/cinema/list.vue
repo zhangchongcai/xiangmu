@@ -119,8 +119,12 @@
 
 <script>
 import { userList, resetPassword, orgList } from "frame_cpm/http/interface.js";
+import frameSinglecinema from 'frame_cpm/dialogs/cinemaDialog/singleCinema'
 export default {
   name: "userList",
+  components: {
+    frameSinglecinema
+  },
   data() {
     return {
       statusArr: [
@@ -396,7 +400,7 @@ export default {
     chooseCinemaSingle() {
       this.singleCinemaVisible = true;
       this.cinematype = 1;
-      this.$refs.frameSingleCinema.listAuthCommCinemas();
+      // this.$refs.frameSingleCinema.listAuthCommCinemas();
     },
     confirmCinemaDialog() {
       this.$refs.frameMultiCinema.confirmData();

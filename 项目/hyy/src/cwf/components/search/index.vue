@@ -38,8 +38,8 @@
         </template>
 
         <el-form-item class="btn-group">
-            <el-row class="flex-base" :class="{'isTicketManagement': modelName == 'salesManagement'}">
-                <el-button type="primary" @click="emitSearch">查询</el-button>
+            <el-row class="flex-base" :class="{'isTicketManagement': modelName == 'salesManagement'}" style="margin:5px 0px;">
+                <el-button type="primary" class="searchBtn" @click="emitSearch">查询</el-button>
                 <el-button type="text" v-if="searchLevelButton" @click="changeSearchType">高级查询<i class="el-icon--right" :class="{'el-icon-arrow-down': !isShowHightLevel, 'el-icon-arrow-up': isShowHightLevel}"></i></el-button>
             </el-row>
         </el-form-item>
@@ -257,12 +257,11 @@ export default {
     }
     .searchBtn{
         width: 80px;
-        padding-left: 0;
-        padding-right: 0;
         height: 32px;
+        line-height: 32px;
         font-size: 12px;
-        position: relative;
-        top: 4px;
+        padding: 0;
+        text-align: center;
     }
     .el-form-item{
         margin-right: 32px;

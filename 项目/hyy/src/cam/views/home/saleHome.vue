@@ -5,17 +5,25 @@
   </div>
 </template>
 <script>
-import {goSaleHome} from '../../http/interface'
-
+import {getOrgInfo} from '../../http/interface'
 export default {
   data() {
     return {};
   },
   beforeRouteEnter(to,from,next){
-    goSaleHome().then(response =>{
-        next((vm)=>{
-          vm.$router.push({path:response.data});
-        })
+    getOrgInfo({body:{}}).then(response =>{
+         if(response.data){
+             next(vm=>{
+                let type = response.data.orgType;
+                if(type == 'group'){
+                    vm.$router.push('/analysis/group/sale/total')
+                }else if(type == 'city'){
+                    vm.$router.push('/analysis/area/sale/total')
+                }else if(type == 'cinema'){
+                    vm.$router.push('/analysis/cinema/sale/total')
+                }
+             })
+        }
      }) 
   }
 };

@@ -422,9 +422,9 @@ export default {
 <style lang="scss">
 ._screen-detail-dialog {
   min-height: 200px;
-  padding: 10px 70px 0;
+  padding: 10px 30px 0;
   ._screen-detail-item {
-    padding: 5px 0;
+    padding: 4px 20px 4px 0;
     line-height: 1.5;
     font-size: 12px;
     color: #666;

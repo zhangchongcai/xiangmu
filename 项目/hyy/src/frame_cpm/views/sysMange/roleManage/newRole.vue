@@ -1,64 +1,70 @@
 <template>
   <div class="content-wrapper">
-      <!--<div class="org-wrap">-->
         <div class="form-wrapper">
             <el-form ref="prole" :model="prole" :rules="rules" :inline="true" label-width="90px">
-                <el-form-item label="角色名称:" prop="name">
+                <el-form-item label="角色名称：" prop="name">
                     <el-input v-model.trim="prole.name" placeholder="" :disabled="isJustSee"></el-input>
                 </el-form-item>
-                <el-form-item label="状态:" prop="status">
+                <el-form-item label="状态：" prop="status" v-auth="'system_roleManage_enableDisabling'">
                     <el-radio-group v-model="prole.status" :disabled="isJustSee">
                         <el-radio label="1">启用</el-radio>
                         <el-radio label="0">禁用</el-radio>
                     </el-radio-group>
                 </el-form-item>
-                <el-form-item label="描述:" prop="remark">
-                    <el-input type="textarea" v-model="prole.remark" :disabled="isJustSee"></el-input>
+                <el-form-item label="描述：" prop="remark">
+                    <el-input v-model="prole.remark" :disabled="isJustSee"></el-input>
                 </el-form-item>
-                <el-form-item style="width:100%;">
+                <el-form-item style="width:100%" label="权限设置：" prop="resource">
+                    <div class="role-tree" style="border:1px solid #ccc; padding:10px;">
+                        <div v-if="loading" style="text-align: center;color:#606266">
+                            <i class="el-icon-loading"></i>
+                            <span>加载中</span>
+                        </div>
+                        <el-tree
+                            v-else
+                            :data="data5"
+                            node-key="id"
+                            ref="tree"
+                            :props="defaultProps"
+                            default-expand-all
+                            :show-checkbox="isShowCheckbox"
+                            :expand-on-click-node="false"
+                            :default-checked-keys='ids'
+                            @check-change="handleCheckChange">
+                                <span class="custom-tree-node" slot-scope="{ node, data }" :class="{'menuType':data.menuType == 5}">
+                                    <span>
+                                        {{ node.label }}
+                                    </span>
+                                </span>
+                        </el-tree>
+                    </div>
+                </el-form-item>
+                <el-form-item style="width:100%;text-align: center">
                     <el-button type="primary" @click="confirmRole('prole',false)" v-if="isSee">保存</el-button>
                     <el-button @click="out" v-if="isSee">取消</el-button>
                     <el-button @click="out" type="primary" v-else>返回</el-button>
                 </el-form-item>
             </el-form>
         </div>
-        <div class="role">
-            <h2 class="tree-title" style="margin-bottom:6px;">权限设置</h2>
-            <div class="role-tree" style="border:1px solid #ccc; padding:10px;">
-                <div
-                    v-if="loading" style="text-align: center;color:#606266"><i class="el-icon-loading"></i><span>加载中</span></div>
-                <el-tree
-                  v-else
-                  :data="data5"
-                  node-key="id"
-                  ref="tree"
-                  :props="defaultProps"
-                  default-expand-all
-                  :show-checkbox="isShowCheckbox"
-                  :expand-on-click-node="false"
-                  :default-checked-keys='ids'
-                  @check-change="handleCheckChange">
-                    <span class="custom-tree-node" slot-scope="{ node, data }" :class="{'menu-zi-class':data.menuType == 2}">
-                        <span>
-                            <i class="iconfont" :class="{'icon-neiye-kedanjia':data.menuType == 1,'neiye-kedanjia':data.menuType == 2,'caidan':data.menuType == 3}"></i>
-                            {{ node.label }}
-                        </span>
-                    </span>
-                </el-tree>
-            </div>
-        </div>
-    <!--</div>-->
   </div>
 </template>
 
 <script>
     import {addRole,roleMenuTree,editRole,roleListTree} from 'frame_cpm/http/interface.js'
-
+    import mixins from '../../../mixins/cacheMixin.js'
 export default {
   name: "newRole",
+  mixins: [mixins.cacheMixin],
   data() {
+    let resource = (rule, value, callback) => {
+      if(this.prole.resource.length==0) {
+        callback(new Error('请勾选权限控制'));
+      }else{
+        callback()
+      }
+    }
     let loginName = (rule, value, callback) => {
-      let nameReg = /^[\u4E00-\u9FA5A-Za-z0-9]{1,20}$/
+      let nameReg = /^[\u4E00-\u9FA5A-Za-z0-9`~!@#$%^&*()_+<>?:"{},.【】\\/;\-'[\]\s\u3002|\uff1f|\uff01|\uff0c|\u3001|\uff1b|\uff1a|\u201c|\u201d|\u2018|\u2019|\uff08|\uff09|\u300a|\u300b|\u3008|\u3009|\u3010|\u3011|\u300e|\u300f|\u300c|\u300d|\ufe43|\ufe44|\u3014|\u3015|\u2026|\u2014|\uff5e|\ufe4f|\uffe5]{1,20}$/
       if(!value) {
         return callback(new Error('角色名称不能为空'));
       }else{
@@ -82,6 +88,7 @@ export default {
       }
     }
     return {
+      cacheField: ["prole"],
       isJustSee:false,
       isSee:true,
       isEdit:false,
@@ -92,7 +99,8 @@ export default {
       prole:{
         name:null,
         status:'1',
-        remark:null
+        remark:null,
+        resource:[]
       },
       rules:{
         name: [
@@ -103,7 +111,11 @@ export default {
         ],
         remark:[
             {validator: remark, trigger: 'blur' },
-        ]
+        ],
+        resource: [
+          {required: true ,validator: resource, trigger: 'blur' },
+        ],
+
       },
       currentPage: 1,
       total: "" || 1,
@@ -148,13 +160,25 @@ export default {
       this.isSee = true
       this.isJustSee = this.isEdit = false
     }
+
   },
   methods: {
+    changeCss() {
+      let menuType= document.getElementsByClassName('menuType')
+        console.log(menuType)
+     /* for (var i = 0; i < levelName.length; i++) {
+        console.log(11111111)
+        // cssFloat 兼容 ie6-8  styleFloat 兼容ie9及标准浏览器
+        levelName[i].parentNode.style.cssFloat = 'left' // 最底层的节点，包括多选框和名字都让他左浮动
+        levelName[i].parentNode.style.styleFloat = 'left'
+      }*/
+    },
     getMenu() {
         roleListTree().then(ret=>{
           if(ret&&ret.code==200){
             this.loading = false
             this.data5 = ret.data
+            // this.changeCss()
             if(this.isJustSee){
               this.formateTree(this.data5, node => node.id != false)
             }
@@ -194,46 +218,46 @@ export default {
         let _this = this
         let postObj = this.prole
         let roleArr = this.$refs.tree.getCheckedNodes()
-        if(roleArr.length!=0) {
-            let resourceArr = []
-            roleArr.forEach(item=>{
-                resourceArr.push(item.resourceId)
-            })
-            this.$refs[formName].validate((valid) => {
-                if (valid) {
-                    if(this.isEdit) {
-                        editRole({'role':postObj,'resourceIds':resourceArr}).then(ret => {
-                            if(ret.result){
-                                this.$refs[formName].clearValidate()
-                                _this.success('修改成功')
-                                this.$router.go(-1)
-                            }else{
-                                _this.error(ret.msg)
-                            }
-                        }).catch(() => {
-                            _this.error('网络繁忙，请稍后再试')
-                        });
-                    }else {
-                        addRole({'role':postObj,'resourceIds':resourceArr}).then(ret => {
-                            if(ret.result){
-                                this.$refs[formName].clearValidate()
-                                _this.success("新建成功")
-                                this.$router.go(-1)
-                            }else{
-                                _this.error(ret.msg)
-                            }
-                        }).catch(() => {
-                            _this.error('网络繁忙，请稍后再试')
-                        });
-                    }
+        let resourceArr = []
+        roleArr.forEach(item=>{
+            resourceArr.push(item.resourceId)
+        })
+        this.prole.resource = resourceArr
+        this.$refs[formName].validate((valid) => {
+            if (valid) {
+                if(this.isEdit) {
+                    editRole({'role':postObj,'resourceIds':resourceArr}).then(ret => {
+                        if(ret.result){
+                            this.$refs[formName].clearValidate()
+                            _this.success('修改成功')
+                            this.$store.commit("tagNav/removeTagNav", this.$route)
+                            this.$router.go(-1)
+                            this.prole = {}
+                        }else{
+                            _this.error(ret.msg)
+                        }
+                    }).catch(() => {
+
+                    });
                 }else {
-                    return false;
+                    addRole({'role':postObj,'resourceIds':resourceArr}).then(ret => {
+                        if(ret.result){
+                            this.$refs[formName].clearValidate()
+                            _this.success("新建成功")
+                            this.$store.commit("tagNav/removeTagNav", this.$route)
+                            this.$router.go(-1)
+                            this.prole = {}
+                        }else{
+                            _this.error(ret.msg)
+                        }
+                    }).catch(() => {
+
+                    });
                 }
-            })
-        }else{
-            _this.error('请选择权限')
-            return
-        }
+            }else {
+                return false;
+            }
+        })
 
     },
     getData(data) {
@@ -251,15 +275,39 @@ export default {
       this.form.orgUid = this.$refs.tree.getCheckedNodes()[0].text
     },
     out(){
+      this.$store.commit("tagNav/removeTagNav", this.$route)
       this.$router.go(-1)
+      this.prole = {}
     }
   }
 };
 </script>
-
+<style lang="scss">
+    .el-tree-node__content:hover {
+        background-color: #3B74FF !important;
+        color: #ffffff;
+    }
+</style>
 <style lang="scss" scoped>
     .content-wrapper {
         height: 100%;
+        .el-tree{
+            max-height:500px;
+            overflow-y: scroll;
+           /* .custom-tree-node {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                font-size: 12px;
+                padding-right: 8px;
+                .org-button-wrap {
+                    span {
+                        font-size: 12px;
+                    }
+                }
+            }*/
+        }
     }
 
 </style>

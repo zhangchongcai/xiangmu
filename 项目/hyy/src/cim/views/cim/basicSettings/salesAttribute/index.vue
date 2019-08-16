@@ -4,12 +4,11 @@
       <el-form
         :inline="true"
         :model="queryData"
-        label-position="right"
-        label-width="80px"
+        label-position="left"
         label-suffix="："
       >
         <el-form-item label="属性名称">
-          <el-input v-model="queryData.name" placeholder="请输入容"></el-input>
+          <el-input v-model="queryData.name" placeholder="请输入"></el-input>
         </el-form-item>
         <el-form-item label="属性类型">
           <el-select v-model="queryData.attrType">
@@ -126,7 +125,7 @@ export default {
         name: '',
         attrType: '',
         page: 1,
-        pageSize: 10
+        pageSize: 15
       },
       //表头
       tableColumn: [

@@ -1,28 +1,5 @@
 <template>
   <div class="cinemaList">
-    <!-- 面包屑 -->
-    <!-- <el-breadcrumb separator-class="el-icon-arrow-right">
-      <el-breadcrumb-item>首页</el-breadcrumb-item>
-      <el-breadcrumb-item>领用物品管理</el-breadcrumb-item>
-      <el-breadcrumb-item :to="{ path: 'list' }">领用物品管理</el-breadcrumb-item>
-    </el-breadcrumb> -->
-    <!-- <div class="searchAdition">
-      <el-form :inline="true" class="demo-form-inline search-form" size="small" label-width="90px">
-        <el-form-item label="物品名称:">
-          <el-input v-model="searchAdition.billCode"></el-input>
-        </el-form-item>
-        <el-form-item label="物品编号:">
-          <el-input v-model="searchAdition.billCode"></el-input>
-        </el-form-item>
-        <el-form-item label="适用影院:">
-          <el-radio-group v-model="searchAdition.resource">
-            <el-radio label="全部影院"></el-radio>
-            <el-radio label="制定影院"></el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-button type="primary" @click="search" class="search-btn">添加</el-button>
-      </el-form>
-    </div> -->
     <div class="content">
       <el-row style="padding:5px;float:right;">
         <el-button type="primary" plain class="xinjian" @click="$router.push('add')">添加</el-button>
@@ -218,7 +195,9 @@
     width: 177px;
   }
   .xinjian{
-    padding: 8px 32px;
+    padding: 8px 24px;
+    width: 80px;
+    height: 32px;
   }
   .search-btn {
     margin-left: 30px;

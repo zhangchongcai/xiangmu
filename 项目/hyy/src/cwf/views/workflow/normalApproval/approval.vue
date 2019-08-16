@@ -79,7 +79,7 @@
                 </div>
                 <div class="text item">
                     <el-row>
-                        <label for="">审批结果：</label>
+                        <label >审批结果：</label>
                         <el-radio v-model="approvalValue" label="2">审批通过</el-radio>
                         <el-radio v-model="approvalValue" label="3">驳回申请</el-radio>
                     </el-row>
@@ -98,10 +98,8 @@
                             </el-input>
                         </el-col>
                     </el-row>
-                    
                 </div>
             </el-card>
-
             <div slot="footer" class="dialog-footer">
                 <el-button @click="closeBack" >取 消</el-button>
                 <el-button type="primary" @click="commitApproval">确 定</el-button>

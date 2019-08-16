@@ -65,6 +65,7 @@
         });
         },
         back(){
+            this.$store.commit("tagNav/removeTagNav", this.$route)
             this.$router.back(-1)
         },
     },
@@ -97,7 +98,9 @@
         .el-col {
             border-radius: 4px;
         }
-
+        .el-col-12{
+            width:49%;
+        }
         .align-right {
             text-align: right;
         }

@@ -59,12 +59,9 @@ export default {
             margin-bottom: 10px;
         }
         .aside{
-            width: 250px;
+            width: 240px;
             overflow-x:auto;
-            background: #f0f0f0;
-            .el-tree{
-                background: #f0f0f0;
-            }
+            background: #f5f5f5;
         }
         .main{
             flex: 1;
@@ -82,9 +79,15 @@ export default {
             }
         }
         .footer{
-            text-align:center;
-            margin-top:10px;
-            width: 950px;
+            position: fixed;
+            left: 400px;
+            right: 10px;
+            bottom: 0px;
+            height: 40px;
+            padding-bottom: 10px;
+            z-index: 99;
+            background: #fff;
+            text-align: center;
         }
         
     }

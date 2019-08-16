@@ -26,16 +26,16 @@
         <li @click="MeClick('1')" :class="{active:cur==1}">
           <div>观影人次</div>
           <div>
-            <span>{{BoxofficeTop.audienceCount | capitalizePerson}}</span>{{BoxofficeTop.audienceCount | too}}
+            <span class="page-num">{{BoxofficeTop.audienceCount | capitalizePerson}}</span>{{BoxofficeTop.audienceCount | too}}
           </div>
         </li>
         <li @click="MeClick('2')" :class="{active:cur==2}">
           <div>平均票价</div>
           <div v-if="BoxofficeTop.avgTicketPrice != 0">
-            <span>{{BoxofficeTop.avgTicketPrice | capitalizeOne}}</span>{{BoxofficeTop.avgTicketPrice | foo}}
+            <span class="page-num">{{BoxofficeTop.avgTicketPrice | capitalizeOne}}</span>{{BoxofficeTop.avgTicketPrice | foo}}
           </div>
           <div v-else-if="BoxofficeTop.avgTicketPrice == 0">
-            <span>0</span>元
+            <span class="page-num">0</span>元
           </div>
           <div v-else>
             <span>--</span>
@@ -44,8 +44,7 @@
         <li @click="MeClick('3')" :class="{active:cur==3}">
           <div>上座率</div>
           <div>
-
-            <span>{{BoxofficeTop.attendanceRate | woo}}</span>%
+            <span class="page-num">{{BoxofficeTop.attendanceRate | woo}}</span>%
           </div>
         </li>
         <li>
@@ -56,16 +55,14 @@
             </el-tooltip> 
           </div>
           <div v-if="BoxofficeTop.marketShare != 0">
-            <span>{{BoxofficeTop.marketShare | woo}}</span>%
+            <span class="page-num">{{BoxofficeTop.marketShare | woo}}</span>%
           </div>
           <div v-else>
             <span>--</span>
           </div>
         </li>
-      </ul>
-         
+      </ul> 
     </div>
-
     <!--票房收入Content-->
     <div class="Boxoffice_Content" v-if="cur==0">
       <!--KPI完成率-->
@@ -77,9 +74,9 @@
               <div slot="content" style="width:300px">
                 <ul id="ulMain">
                   <li>票房收入当日达成 : <span>{{BoxKPIData.boxOfficeCurrent | capitalizeOne}}{{BoxKPIData.boxOfficeCurrent | foo}}</span></li>
-                  <li>环比前一日 : <span :class="[BoxKPIData.boxOfficeChainDay > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[BoxKPIData.boxOfficeChainDay > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{BoxKPIData.boxOfficeChainDay | woo}}%</span></li>
+                  <li>环比前一日 : <span :class="[BoxKPIData.boxOfficeChainDay > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[BoxKPIData.boxOfficeChainDay > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{BoxKPIData.boxOfficeChainDay | woo(true)}}%</span></li>
                   <li>月至今达成 : <span>{{BoxKPIData.boxOfficeMonthToNow | capitalizeOne}}{{BoxKPIData.boxOfficeMonthToNow | foo}}</span></li>
-                  <li>环比上月 : <span :class="[BoxKPIData.boxOfficeChainMonth > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[BoxKPIData.boxOfficeChainMonth > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{BoxKPIData.boxOfficeChainMonth | woo}}%</span></li>
+                  <li>环比上月 : <span :class="[BoxKPIData.boxOfficeChainMonth > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[BoxKPIData.boxOfficeChainMonth > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{BoxKPIData.boxOfficeChainMonth | woo(true)}}%</span></li>
                   <li>本月目标为 : <span>{{BoxKPIData.boxOfficeTarget | capitalizeOne}}</span>{{BoxKPIData.boxOfficeTarget | foo}}</li>
                   <li>达成率 : <span>{{BoxKPIData.boxOfficeRate | woo}}</span>%</li>
                   <li>与时间进度差距为 : <span :class="[BoxKPIData.timeRateGap > 0? 'green':'red']">{{BoxKPIData.timeRateGap | woo}}%</span></li>
@@ -159,13 +156,15 @@
       <div class="reset-page">
         <el-pagination v-if="this.totalPage>10"
           background 
-          layout="prev, pager, next"
+          layout="total,prev, pager, next"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
           :page-size="this.pageSize"
           :total="this.totalPage" 
         >
         </el-pagination>
+        <span class="page-else" v-else-if="totalPage>0">共{{totalPage}}条</span>
+        <span class="page-else" v-else></span>
       </div>
     </div>
 
@@ -232,13 +231,15 @@
       <div class="reset-page">
         <el-pagination v-if="this.totalPage>10"
           background 
-          layout="prev, pager, next"
+          layout="total,prev, pager, next"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
           :page-size="this.pageSize"
           :total="this.totalPage" 
         >
         </el-pagination>
+        <span class="page-else" v-else-if="totalPage>0">共{{totalPage}}条</span>
+        <span class="page-else" v-else></span>
       </div>
     </div>
 
@@ -301,12 +302,14 @@
       <div class="reset-page">
         <el-pagination v-if="this.totalPage>10"
           background 
-          layout="prev, pager, next"
+          layout="total,prev, pager, next"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
           :page-size="this.pageSize"
           :total="this.totalPage" 
         ></el-pagination>
+        <span class="page-else" v-else-if="totalPage>0">共{{totalPage}}条</span>
+        <span class="page-else" v-else></span>
       </div>
     </div>
 
@@ -369,12 +372,14 @@
       <div class="reset-page">
        <el-pagination v-if="this.totalPage>10"
           background 
-          layout="prev, pager, next"
+          layout="total,prev, pager, next"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
           :page-size="this.pageSize"
           :total="this.totalPage" 
         ></el-pagination>
+        <span class="page-else" v-else-if="totalPage>0">共{{totalPage}}条</span>
+        <span class="page-else" v-else></span>
       </div>
     </div>
   </div>
@@ -573,7 +578,7 @@ export default {
         tooltip:{
           trigger:'item',
           formatter:(params)=>{
-              let value = this.formatValue(params.value,'人');
+              let value = this.formatPerson(params.value,'人');
               let percent = params.percent;
               let name = params.name;
               let str = name + '<br>' + value + '('+ percent + '%)'
@@ -619,9 +624,9 @@ export default {
     }
   },
   filters: {
-    woo(value){
+    woo(value,isPositive){
       if (!value) return "--"
-      return value.toFixed(2)
+      return isPositive ? Math.abs(value).toFixed(2): value.toFixed(2) 
     },
     //处理万元单位
     capitalizeOne(value) {
@@ -648,31 +653,12 @@ export default {
     //处理万人计算保留两位小数
     capitalizePerson(value) {
       if (!value) return "--"
-      let newValue = value.toString();
-      
-      if(newValue.indexOf('.') != -1){
-        if(newValue.length <= 7){
-          return newValue
-        }
-        else if(newValue.length >= 8 && newValue.length <= 11){
-
-          return (newValue / 10000).toFixed(2)
-        }
-        else if(newValue.length >= 12){
-          return ((newValue / 10000) / 10000).toFixed(2)
-        }
-      }
-      else{
-        if(newValue.length < 5){
-          return newValue
-        }
-        else if(newValue.length >= 5 && newValue.length <= 8){
-
-          return (newValue / 10000).toFixed(2)
-        }
-        else if(newValue.length >= 9){
-          return ((newValue / 10000) / 10000).toFixed(2)
-        }
+      if(value < 10000){
+          return value.toFixed(2) < 10000 ? value : '1.00';
+      }else if(value < 100000000){
+          return (value/10000).toFixed(2) < 10000 ? (value/10000).toFixed(2) : '1.00';
+      }else {
+          return (value/100000000).toFixed(2);
       }
     },
     //处理万人单位计算
@@ -1048,7 +1034,7 @@ export default {
         let foo = ChartsDataY.map(item => {
           return {
             name: item.movieName,
-            value: item.audienceCount.toFixed(2)
+            value: item.audienceCount
           };
         });
         this.ChartViewing.columns = ["name", "value"];
@@ -1106,14 +1092,14 @@ export default {
         }
       });
     },
-    tableRowClassName({ row, rowIndex }) {
-      if (rowIndex === 1) {
-        return "warning-row";
-      } else if (rowIndex === 3) {
-        return "success-row";
-      }
-      return "";
-    },
+    // tableRowClassName({ row, rowIndex }) {
+    //   if (rowIndex === 1) {
+    //     return "warning-row";
+    //   } else if (rowIndex === 3) {
+    //     return "success-row";
+    //   }
+    //   return "";
+    // },
   }
 };
 </script>
@@ -1149,8 +1135,11 @@ export default {
       width: 100%;
       line-height: 40px;
       padding: 0 16px;
-      font-size: 16px;
-      font-weight: bold;
+    .title{
+        font-family: PingFangSC-Medium;
+        font-size: 14px;
+        color:#333;
+      }
       .iconfont {
         margin-right: 5px;
         color: #1296db;
@@ -1166,7 +1155,7 @@ export default {
       .tip {
         font-size: 12px;
         color: #3b74ff;
-        font-weight: normal;
+        // font-weight: normal;
         vertical-align: middle;
       }
     }
@@ -1197,6 +1186,7 @@ export default {
             text-align: center;
             display: block;
             margin-top:13px;
+            font-weight:bold;
           }
           p {
             font-size: 12px;
@@ -1233,7 +1223,7 @@ export default {
           span {
             font-family: "Microsoft YaHei";
             font-size: 18px;
-            color: black;
+            // color: black;
             letter-spacing: -1px;
             font-weight: bold;
             margin-right:3px;
@@ -1279,14 +1269,14 @@ export default {
     }
   }
 }
-.ModuleTable {
-  .el-table .warning-row {
-    background: oldlace;
-  }
-  .el-table .success-row {
-    background: #f0f9eb;
-  }
-}
+// .ModuleTable {
+//   .el-table .warning-row {
+//     background: oldlace;
+//   }
+//   .el-table .success-row {
+//     background: #f0f9eb;
+//   }
+// }
 .ModuleTable {
   .el-table__header-wrapper {
     .has-gutter {
@@ -1298,6 +1288,7 @@ export default {
 }
 .icon-shouye-piaofang {
   color: #477DFF !important;
+  font-size:16px;
 }
 .reset-table .el-table th.is-leaf {
   padding: 0px;
@@ -1337,4 +1328,9 @@ export default {
   line-height:50px
 }
 
+@media screen and (max-width: 1500px) {
+  .BoxContainer .right-col .listUl li.first-li .cont h1 {
+    transform: scale(.8)
+  }
+}
 </style>

@@ -118,7 +118,7 @@
       </el-collapse-item>
       <el-collapse-item title="会员卡规则" name="3">
         <div class="card-rule">
-          <div class="basic-info-item">
+          <div class="basic-info-item _card-rule-channel">
             <!-- 可售渠道 -->
             <div class="item-inner" v-if="detailData.cardTypeCode != 'cobranded_card'"><label
                 class="lable-name">可售渠道：</label>{{detailData.channelList |
@@ -165,8 +165,8 @@
                   </ul>
                 </div>
               </template>
-              <div class="item-inner"><label class="lable-name">出票金额：</label>{{formatOutTicket(detailData)}}
-              </div>
+              <!-- <div class="item-inner"><label class="lable-name">出票金额：</label>{{formatOutTicket(detailData)}}
+              </div> -->
             </div>
 
           </div>
@@ -465,20 +465,20 @@ export default {
       }
     },
     // 出票金额
-    formatOutTicket(detailData) {
-      if (detailData.cardProductExtVO.outTicketType == "0") {
-        return "最低票价";
-      } else if (detailData.cardProductExtVO.outTicketType == "1") {
-        if (
-          detailData.cardProductExtVO.outTicketAmount == "" ||
-          detailData.cardProductExtVO.outTicketAmount == null
-        ) {
-          return "-";
-        } else {
-          return detailData.cardProductExtVO.outTicketAmount + "元";
-        }
-      }
-    },
+    // formatOutTicket(detailData) {
+    //   if (detailData.cardProductExtVO.outTicketType == "0") {
+    //     return "最低票价";
+    //   } else if (detailData.cardProductExtVO.outTicketType == "1") {
+    //     if (
+    //       detailData.cardProductExtVO.outTicketAmount == "" ||
+    //       detailData.cardProductExtVO.outTicketAmount == null
+    //     ) {
+    //       return "-";
+    //     } else {
+    //       return detailData.cardProductExtVO.outTicketAmount + "元";
+    //     }
+    //   }
+    // },
     // 查看卡政策详情
     getDetail() {
       let params = {
@@ -510,12 +510,29 @@ export default {
             type: "success",
             message: "已启用!"
           });
-          this.$router.push({ path: "/member/cardTypeManagement/list" });
+          this.$store.commit("tagNav/removeTagNav", this.$route);
+          // this.$router.push({ path: "/member/cardTypeManagement/list" });
+          if (this.$route.query.pathOrigin == "detail") {
+            this.$router.push({
+              path: "/member/membershipCard/detail",
+              query: { cardNo: this.$route.query.cardNo }
+            });
+          } else {
+            this.$router.push({ path: "/member/cardTypeManagement/list" });
+          }
         })
         .catch(err => console.log(err));
     },
     handleCancle() {
-      this.$router.push({ path: "/member/cardTypeManagement/list" });
+      this.$store.commit("tagNav/removeTagNav", this.$route);
+      if (this.$route.query.pathOrigin == "detail") {
+        this.$router.push({
+          path: "/member/membershipCard/detail",
+          query: { cardNo: this.$route.query.cardNo }
+        });
+      } else {
+        this.$router.push({ path: "/member/cardTypeManagement/list" });
+      }
     }
   }
 };
@@ -533,6 +550,9 @@ export default {
       display: flex;
       justify-content: space-between;
       flex-wrap: wrap;
+      ._card-rule-channel {
+        width: 100% !important;
+      }
       .basic-info-item {
         display: flex;
         flex-direction: column;
@@ -602,8 +622,9 @@ export default {
         }
         .white-dot {
           position: absolute;
-          height: 85px;
-          left: 4px;
+          height: 80px;
+          top: -2px;
+          left: 8px;
         }
         .coupon-item-type {
           font-family: MicrosoftYaHei;
@@ -678,7 +699,7 @@ export default {
   }
   .detail-btn-wrap {
     width: 100%;
-    margin: 0 0 40px;
+    margin: 1px 0 40px;
     text-align: center;
   }
 }

@@ -148,11 +148,13 @@ export default {
             type: "success",
             message: "已上架!"
           });
+          this.$store.commit("tagNav/removeTagNav", this.$route);
           this.$router.push({ path: "/member/differentIndustryGoods/list" });
         })
         .catch(err => console.log(err));
     },
     handleCancle() {
+      this.$store.commit("tagNav/removeTagNav", this.$route);
       this.$router.push({ path: "/member/differentIndustryGoods/list" });
     }
   },
@@ -248,7 +250,7 @@ export default {
   }
   .detail-btn-wrap {
     width: 100%;
-    margin: 0 0 40px;
+    margin: 1px 0 40px;
     text-align: center;
   }
 }

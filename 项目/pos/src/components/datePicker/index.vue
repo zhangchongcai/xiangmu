@@ -20,7 +20,7 @@
       <ul class="footLayer">
         <li class="today" @click="today">今天</li>
         <li>
-          <el-button type="info" @click="close">取消</el-button>
+          <el-button style="background: #fff;" @click="close">取消</el-button>
           <el-button type="primary" @click="confirm">确定</el-button>
         </li>
       </ul>
@@ -98,7 +98,7 @@ export default {
     initArrObj(time){ //传时间戳进来 格式化数据
       let obj = {};
       let date = new Date(time);
-      obj.dateStr = `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate() > 9 ? date.getDate() : '0'+date.getDate()}`
+      obj.dateStr = `${date.getFullYear()}-${(date.getMonth()+1) > 9 ? date.getMonth()+1:'0'+(date.getMonth()+1) }-${date.getDate() > 9 ? date.getDate() : '0'+date.getDate()}`
       obj.day = date.getDate();
       obj.time = time;
       return obj

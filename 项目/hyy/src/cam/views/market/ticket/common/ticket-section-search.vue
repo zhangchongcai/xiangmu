@@ -1,52 +1,56 @@
 <template>
     <div class="time-wrap">
        <el-row>
-           <el-col :span="4" style="text-align:left">
+           <el-col :span="8" style="text-align:left">
                 <div class="time-item">
-                    <label class="label-title">
-                    {{orgType =='group'?'总部':(orgType =='city'?'区域':'影院')}}：{{orgName}}
-                    </label>
+                    <span class="label-title">{{orgType =='group'?'总部':(orgType =='city'?'区域':'影院')}}:</span>
+                    {{orgName}}
                 </div>
            </el-col>
-           <el-col :span="4">
+           <el-col :span="8">
                 <div class="time-item">
-                    <label class="label-title">票劵批次ID：{{ticketInfo.id}}</label>
+                    <span class="label-title">票劵批次ID:</span>
+                     {{ticketInfo.id}}
                 </div> 
            </el-col>
-           <el-col :span="4">
+           <el-col :span="8">
                 <div class="time-item">
-                    <label class="label-title">票劵名称：{{ticketInfo.name}}</label>
+                    <span class="label-title">票劵名称:</span>
+                    {{ticketInfo.name}}
                 </div>
            </el-col>
-            <el-col :span="4">
+       </el-row>
+       <el-row class="mt10">
+            <el-col :span="8">
                  <div class="time-item">
-                    <label class="label-title">票劵类型：{{ticketInfo.type | typeMap}}</label>
+                    <span class="label-title">票劵类型:</span>
+                    {{ticketInfo.type | typeMap}}
                 </div>
            </el-col>
             <el-col :span="8">
                  <div class="time-item">
-                    <label class="label-title">票劵有效期：{{ticketInfo.time[0]}} 至 {{ticketInfo.time[1]}}</label>
+                    <span class="label-title">票劵有效期:</span>
+                    {{ticketInfo.time[0]}} 至 {{ticketInfo.time[1]}}
                  </div>
            </el-col>
        </el-row>
        <el-row>
-           <el-col :span="24" class="mt10">
+           <el-col :span="16" class="mt10">
                 <div class="time-item">
-                    <label>
-                        <span class="label-title">统计时间段：</span>
-                        <el-date-picker v-model="timeRange"  size="mini"
-                            type="daterange"
-                            range-separator="~"
-                            start-placeholder="开始时间"
-                            end-placeholder="结束时间" 
-                            :picker-options="pickerOptions"
-                            @change="changeTime"
-                            value-format="yyyy-MM-dd">
-                        </el-date-picker>
-                       
-                    </label>
-                    <el-button type="primary" size="small" style="margin-left:30px" @click="search">查询</el-button>
+                    <span class="label-title">统计时间段:</span>
+                    <el-date-picker v-model="timeRange"  size="mini"
+                        type="daterange"
+                        range-separator="~"
+                        start-placeholder="开始时间"
+                        end-placeholder="结束时间" 
+                        :picker-options="pickerOptions"
+                        @change="changeTime"
+                        value-format="yyyy-MM-dd">
+                    </el-date-picker>
                 </div>
+           </el-col>
+           <el-col :span="8">
+                <el-button type="primary" size="small" style="margin-left:20px" @click="search">查询</el-button>
            </el-col>
        </el-row> 
     </div>
@@ -68,7 +72,6 @@ export default {
             type:Array
         }
     },
-   
     data(){
         return {
             timeRange:null,

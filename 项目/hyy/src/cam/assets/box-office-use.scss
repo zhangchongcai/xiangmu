@@ -7,16 +7,6 @@
     background-color: #fff;
 
     .header-fixed {
-        // position: fixed;
-        // z-index: 100;
-        // box-sizing: border-box;
-        // top: 64px;
-        // left: 136px;
-        // right: 10px;
-        // padding-left: 24px;
-        // padding-right: 24px;
-        // font-size: 12px;
-        // background: #fff;
         .fs12 {
             font-size: 12px;
         }
@@ -30,7 +20,7 @@
     .time-wrap {
         border: 1px solid #e6e5e5;
         border-radius: 4px;
-        padding: 16px 0;
+        padding: 8px 0 16px 0;
         padding-right: 44px;
         font-size: 12px;
         .area-name {
@@ -48,10 +38,11 @@
         .label-title {
             color: #666;
             font-size:12px;
+            padding-right:16px;
         }
     }
     .section {
-        padding-top: 30px;
+        padding-top: 12px;
         .flex-wraper {
             display: flex;
             .section-item {

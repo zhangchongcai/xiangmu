@@ -8,8 +8,8 @@
                 :innerData="innerData"
                 @callBackSingle="callBackSingle">
             <div slot="footerId">
-                <el-button @click="singleCinemaVisible = false">取 消</el-button>
                 <el-button type="primary" @click="$refs.frameSingleCinema.confirmData(), singleCinemaVisible = false">确 定</el-button>
+                <el-button @click="singleCinemaVisible = false">取 消</el-button>
             </div>
         </singleCinema>
 
@@ -133,7 +133,7 @@
                     </el-option>
                 </el-select>
             </el-form-item>
-            <el-form-item label="渠道：">
+            <el-form-item label="销售渠道：">
                 <el-select v-model="formData.channelUid" placeholder="请选择">
                     <el-option label="全部" value=""></el-option>
                     <el-option
@@ -265,7 +265,7 @@
                 show-overflow-tooltip>
                 <template slot-scope="scope">
                     <el-popover trigger="hover" placement="bottom" v-if="scope.row.favTicketList && scope.row.favTicketList.length > 0">
-                        <div style="padding: 10px" v-for="(item, index) in scope.row.favTicketList" :key="index">
+                        <div style="padding: 10px" v-if="item.saleStatus === 'SALE'" v-for="(item, index) in scope.row.favTicketList" :key="index">
                             <span style="display: inline-block; min-width: 70px">{{item.channelName}}</span>
                             <span>￥{{item.price}}</span>
                         </div>
@@ -279,7 +279,20 @@
                 label="增值服务费"
                 show-overflow-tooltip>
                 <template slot-scope="scope">
-                    0.00
+                    <el-popover
+                            trigger="hover"
+                            placement="bottom"
+                            v-if="(scope.row.baseTicketList && scope.row.baseTicketList.length > 0) || (scope.row.favTicketList && scope.row.favTicketList.length > 0)">
+                        <div style="padding: 10px" v-for="(item, index) in scope.row.baseTicketList" :key="item.ticketName">
+                            <span style="display: inline-block; min-width: 70px">{{item.ticketName}}</span>
+                            <span>￥{{item.addFee}}</span>
+                        </div>
+                        <div style="padding: 10px" v-if="item.saleStatus === 'SALE'" v-for="(item, index) in scope.row.favTicketList" :key="item.channelName">
+                            <span style="display: inline-block; min-width: 70px">{{item.channelName}}</span>
+                            <span>￥{{item.addFee}}</span>
+                        </div>
+                        <el-button type="text" slot="reference">查看</el-button>
+                    </el-popover>
                 </template>
             </el-table-column>
             <el-table-column
@@ -436,6 +449,9 @@
         methods: {
 
             callBackSingle(data) {
+                this.singleCinemaVisible = data.framedialogVisible
+                if(data.isCloseWindow) return
+
                 console.log(data, '-----> data')
                 this.cinemaName = data.data.name
                 this.formData.cinemaUid = data.data.id

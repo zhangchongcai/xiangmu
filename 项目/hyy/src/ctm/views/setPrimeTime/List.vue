@@ -127,6 +127,7 @@
                             v-if="!scope.row.children"
                             class="table-date"
                             is-range
+                            :clearable="false"
                             value-format="HH:mm"
                             format="HH:mm"
                             v-model="scope.row.timeList[index].time"
@@ -148,6 +149,8 @@
 </template>
 
 <script>
+    import areaData from 'ctm/assets/data/area'
+
     export default {
         name: "List",
         data() {
@@ -214,6 +217,12 @@
         methods: {
 
             batchSettingTime() {
+                if(!this.formInline.batchTime) {
+                    this.error('请先选择时间段！')
+                    return
+                }
+
+                let flag = true
                 this.tableData.forEach( item => {
                     item.children.forEach( innerItem => {
                         if(innerItem.checked) {
@@ -221,9 +230,15 @@
                                 return time.dayType === this.formInline.dayType
                             })
                             data.time = this.formInline.batchTime
+
+                            flag = false
                         }
                     })
                 })
+                if(flag) {
+                    this.error('请先选择影院！')
+                }
+
                 // this.formInline.batchTime = ''
             },
 
@@ -467,20 +482,24 @@
             },
 
             getAreaInfo() {
-                this.$ctmList.getAreaInfo().then( res => {
-                    console.log(res)
-                    if(res.code === 200) {
-                        this.provinceOptions = res.data
+                this.provinceOptions = areaData
+                this.getCinemaAreaList()
 
-                        this.getCinemaAreaList()
+                // this.$ctmList.getAreaInfo().then( res => {
+                //     console.log(res)
+                //     if(res.code === 200) {
+                //         this.provinceOptions = res.data
+                //
+                //         this.getCinemaAreaList()
+                //
+                //     }else {
+                //         this.error(res.msg)
+                //     }
+                //
+                // }).catch( err => {
+                //     console.log(err)
+                // })
 
-                    }else {
-                        this.error(res.msg)
-                    }
-
-                }).catch( err => {
-                    console.log(err)
-                })
             },
 
             provinceChange(provinceCode) {
@@ -517,6 +536,15 @@
                 })
             },
 
+            // 数组排序方法
+            sortFunc(prop) {
+                return function(obj1, obj2){
+                    let value1 = obj1[prop]
+                    let value2 = obj2[prop]
+                    return value1 - value2
+                }
+            },
+
             getPrimeTimeList() {
                 this.$ctmList.getPrimeTimeList(this.formData).then( res => {
                     console.log(res)
@@ -551,29 +579,30 @@
                             res.data.primeTimeListVoPageInfo.list.forEach( innerItem => {
                                 if(item.cityCode === innerItem.cityCode) {
                                     innerItem.checked = false
-                                    if(innerItem.timeList.length) {
+                                    if(innerItem.timeList.length === 4) {
                                         let data = []
                                         innerItem.timeList.forEach( time => {
                                             data.push({
                                                 dayType: time.dayType,
-                                                time: (time.startTime && time.endTime) ? [time.startTime, time.endTime] : '',
+                                                time: (time.startTime && time.endTime) ? [time.startTime, time.endTime] : ['18:00', '22:00'],
                                             })
                                         })
-                                        innerItem.timeList = data
+                                        // 需要根据dayType排序
+                                        innerItem.timeList = data.sort(this.sortFunc('dayType'))
 
                                     }else {
                                         innerItem.timeList = [{
                                             dayType: 1,
-                                            time: ''
+                                            time: ['18:00', '22:00']
                                         }, {
                                             dayType: 2,
-                                            time: ''
+                                            time: ['18:00', '22:00']
                                         }, {
                                             dayType: 3,
-                                            time: ''
+                                            time: ['18:00', '22:00']
                                         }, {
                                             dayType: 4,
-                                            time: ''
+                                            time: ['18:00', '22:00']
                                         }]
 
                                     }

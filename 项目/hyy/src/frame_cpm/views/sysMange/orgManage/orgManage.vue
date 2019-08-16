@@ -1,125 +1,16 @@
 <template>
     <div class="content-wrapper">
-        <!--<el-aside width="48%" style="background: red;height: 100%">
-            <div class="header-wrap">
-                <div class="search-wrap">
-                    <span class="span">查询组织：</span>
-                    <el-input clearable size="small" placeholder="请输入查询内容" prefix-icon="el-icon-search" v-model="filterText"></el-input>
-                    <el-button type="primary" size="mini" @click="getDatas">搜索</el-button>
-                </div>
-                <el-button style="margin-right:10px" type="primary" size="mini" @click="addNewOrgFun()" v-auth="'system_orgManage_add'">新建组织</el-button>
-            </div>
-            <div class="org-sys">
-                <el-tree
-                        :data="dataTree"
-                        node-key="id"
-                        ref="tree"
-                        default-expand-all
-                        highlight-current
-                        :filter-node-method="filterNode"
-                        :expand-on-click-node="false"
-                        :props="defaultProps">
-                        <span class="custom-tree-node" slot-scope="{ node, data }" @click="getListOrganizationCinema(data)">
-                          <span>
-                            {{data.text}}
-                          </span>
-                          <span class="org-button-wrap">
-                            <el-button
-                                    v-auth="'system_orgManage_add'"
-                                    type="text"
-                                    size="mini"
-                                    @click="() => append(node,data)">
-                              新建下级
-                            </el-button>
-                            <el-button
-                                    v-auth="'systemo_rgeManage_update'"
-                                    type="text"
-                                    size="mini"
-                                    @click="() => edit(node, data)"
-                            >
-                              编辑
-                            </el-button>
-                            <el-button
-                                    v-auth="'system_orgeManage_remove'"
-                                    v-if="node.level!=1"
-                                    type="text"
-                                    size="mini"
-                                    @click="() => remove(node, data)">
-                              删除
-                            </el-button>
-                          </span>
-                        </span>
-                </el-tree>
-            </div>
-        </el-aside>
-        <el-main>
-            <div class="header-btn">
-                <el-button type="primary" plain @click="removeRelationGroup" v-auth="'system_orgeManage_removeBind'">批量解绑</el-button>
-                <el-button type="primary" plain @click="addRelationOpen()" v-auth="'system_orgeManage_bindCinema'">绑定影院</el-button>
-            </div>
-            <div class="org-right">
-                <el-table
-                        ref="multipleTable"
-                        :data="tableData"
-                        tooltip-effect="dark"
-                        :stripe=true
-                        :row-class-name="tableRowClassName"
-                        :header-cell-style='{"background":"#E7EBFF"}'
-                        @selection-change="handleSelectionChange">
-                    <el-table-column
-                            type="selection"
-                    >
-                    </el-table-column>
-                    <el-table-column
-                            prop="code"
-                            label="影院编码"
-                    >
-                    </el-table-column>
-                    <el-table-column
-                            prop="name"
-                            label="影院名称"
-                    >
-                    </el-table-column>
-                    <el-table-column
-                            label="操作"
-                            width="100"
-                            show-overflow-tooltip>
-                        <template slot-scope="scope">
-                            <el-button
-                                    v-auth="'system_orgeManage_removeBind'"
-                                    size="mini"
-                                    type="text"
-                                    @click="removeRelation(scope.$index, scope.row)"
-                            >解绑</el-button>
-                        </template>
-                    </el-table-column>
-                </el-table>
-                <div class="page-wrap">
-                    <el-pagination
-                            background
-                            @size-change="handleSizeChange"
-                            @current-change="handleCurrentChange"
-                            :current-page.sync="currentPage"
-                            :page-sizes="[10, 20, 30]"
-                            :page-size="pageSize"
-                            layout="total, sizes, prev, pager, next, jumper"
-                            :total="total"
-                    >
-                    </el-pagination>
-                </div>
-            </div>
-        </el-main>-->
-        <el-row :gutter="20">
-            <el-col :span="12"><div class="grid-content bg-purple">
+        <div class="contentBigBox">
+            <div class="leftBox">
                 <div class="header-wrap">
-                    <div class="search-wrap">
-                        <span class="span">查询组织：</span>
-                        <el-input clearable size="small" placeholder="请输入查询内容" prefix-icon="el-icon-search" v-model="filterText"></el-input>
-                        <el-button type="primary" size="mini" @click="getDatas">搜索</el-button>
+                    <span class="span">查询组织：</span>
+                    <el-input clearable size="small" placeholder="请输入查询内容" prefix-icon="el-icon-search" v-model.trim="filterText"></el-input>
+                    <el-button type="primary" @click="getDatas">搜索</el-button>
+                    <div class="btn">
+                        <el-button style="padding: 0" type="primary" @click="addNewOrgFun()" v-auth="'system_orgManage_add'">新建组织</el-button>
                     </div>
-                    <el-button style="margin-right:10px" type="primary" size="mini" @click="addNewOrgFun()" v-auth="'system_orgManage_add'">新建组织</el-button>
                 </div>
-                <div class="org-sys" style="height:1000px">
+                <div class="org-sys">
                     <el-tree
                             :data="dataTree"
                             node-key="id"
@@ -131,7 +22,13 @@
                             :props="defaultProps">
                         <span class="custom-tree-node" slot-scope="{ node, data }" @click="getListOrganizationCinema(data)">
                           <span>
-                            {{data.text}}
+                                  <i
+                                          class="iconfont"
+                                          :class="{'icon-neiye-zongbu':data.text == '总部','icon-neiye-zuzhi':data.isCinema == 0,'icon-neiye-quyu':data.isCinema == 1}"
+                                  >
+                                      {{data.text}}
+                                  </i>
+
                           </span>
                           <span class="org-button-wrap">
                             <el-button
@@ -142,7 +39,7 @@
                               新建下级
                             </el-button>
                             <el-button
-                                    v-auth="'systemo_rgeManage_update'"
+                                    v-auth="'system_orgManage_update'"
                                     type="text"
                                     size="mini"
                                     @click="() => edit(node, data)"
@@ -150,7 +47,7 @@
                               编辑
                             </el-button>
                             <el-button
-                                    v-auth="'system_orgeManage_remove'"
+                                    v-auth="'system_orgManage_remove'"
                                     v-if="node.level!=1"
                                     type="text"
                                     size="mini"
@@ -161,18 +58,18 @@
                         </span>
                     </el-tree>
                 </div>
-            </div></el-col>
-            <el-col :span="12"><div class="grid-content bg-purple-light">
+            </div>
+            <div class="rightBox">
                 <div class="header-btn">
-                    <el-button type="primary" plain @click="removeRelationGroup" v-auth="'system_orgeManage_removeBind'">批量解绑</el-button>
-                    <el-button type="primary" plain @click="addRelationOpen()" v-auth="'system_orgeManage_bindCinema'">绑定影院</el-button>
+                    <el-button class="orgBtn" plain @click="removeRelationGroup" v-auth="'system_orgManage_removeBind'">批量解绑</el-button>
+                    <el-button class="orgBtn" plain @click="addRelationOpen()" v-auth="'system_orgManage_bindCinema'">绑定影院</el-button>
                 </div>
                 <div class="org-right">
                     <el-table
+                            style="width:100%"
                             ref="multipleTable"
                             :data="tableData"
-                            tooltip-effect="dark"
-                            :stripe=true
+                            stripe
                             :row-class-name="tableRowClassName"
                             :header-cell-style='{"background":"#E7EBFF"}'
                             @selection-change="handleSelectionChange">
@@ -193,10 +90,11 @@
                         <el-table-column
                                 label="操作"
                                 width="100"
+                                fixed="right"
                                 show-overflow-tooltip>
                             <template slot-scope="scope">
                                 <el-button
-                                        v-auth="'system_orgeManage_removeBind'"
+                                        v-auth="'system_orgManage_removeBind'"
                                         size="mini"
                                         type="text"
                                         @click="removeRelation(scope.$index, scope.row)"
@@ -204,79 +102,83 @@
                             </template>
                         </el-table-column>
                     </el-table>
-                    <div class="page-wrap">
-                        <el-pagination
-                                background
-                                @size-change="handleSizeChange"
-                                @current-change="handleCurrentChange"
-                                :current-page.sync="currentPage"
-                                :page-sizes="[10, 20, 30]"
-                                :page-size="pageSize"
-                                layout="total, sizes, prev, pager, next, jumper"
-                                :total="total"
-                        >
-                        </el-pagination>
-                    </div>
                 </div>
-            </div></el-col>
-        </el-row>
-        <el-dialog
-          :visible.sync="dialogVisible_cinemaList"
-          width='60%'
-          height="100%"
-          :show-close='false'
-          title="绑定影院"
-        >
-          <cinema-list
-                  ref="cinema"
-                  :orgUid='orgUid'
-                  :orgName="orgName"
-                  @cancel="hide"
-                  @getListOrganizationCinema='getListOrganizationCinema'
-                  @addRelationOpen='addRelationOpen'
-          />
-        </el-dialog>
-        <el-dialog
-          :visible.sync="dialogVisible_addorg"
-          width="50%"
-          height="100%"
-          :show-close='true'
-          :close-on-click-modal='false'
-          title="新建组织"
-        >
-          <add-org @openOrgListFun='openOrgListFun' @bigName="bigName" :chosenOneOrg='chosenOneOrg' @dialogVisible_addorgChange='dialogVisible_addorgChange' @getOrgList='getOrgList'  />
-           <el-dialog
-            :visible.sync="dialogVisible_orgList"
-            width="50%"
-            height="100%"
-            :show-close='true'
-            :close-on-click-modal='false'
-            title="选择组织"
-             append-to-body
+                <div class="page-wrap">
+                    <el-pagination
+                            background
+                            @size-change="handleSizeChange"
+                            @current-change="handleCurrentChange"
+                            :current-page.sync="currentPage"
+
+                            :page-size="pageSize"
+                            layout="total, prev, pager, next, jumper"
+                            :total="total"
+                    >
+                    </el-pagination>
+                </div>
+            </div>
+        </div>
+        <div class="diaWindow">
+            <el-dialog
+              :visible.sync="dialogVisible_cinemaList"
+              width='500px'
+              lock-scroll
+              :show-close='false'
+              title="绑定影院"
             >
-              <org-list @getOneOrgChosen='getOneOrgChosen' @dialogVisible_orgListChange='dialogVisible_orgListChange'/>
-          </el-dialog>
-        </el-dialog>
-        <el-dialog
-          :visible.sync="dialogVisible_addNextOrg"
-          width="50%"
-          height="100%"
-          :show-close='true'
-          :close-on-click-modal='false'
-          title="新建下级组织"
-        >
-          <add-next-org  @dialogVisible_appendChange='dialogVisible_appendChange' @getOrgList='getOrgList' :lastOrgData='lastOrgData' ref="addOrgNode"/>
-        </el-dialog>
-        <el-dialog
-          :visible.sync="dialogVisible_editNextOrg"
-          width="50%"
-          height="100%"
-          :show-close='true'
-          :close-on-click-modal='false'
-          title="编辑本级组织"
-        >
-          <edit-next-org  @dialogVisible_editNextOrgChange='dialogVisible_editNextOrgChange' @getOrgList='getOrgList' :lastOrgData='lastOrgData' :parentOrgData='parentOrgData'/>
-        </el-dialog>
+                <div class="divider"></div>
+              <cinema-list
+                      ref="cinema"
+                      :orgUid='orgUid'
+                      :orgName="orgName"
+                      @cancel="hide"
+                      @getListOrganizationCinema='getListOrganizationCinema'
+                      @addRelationOpen='addRelationOpen'
+              />
+            </el-dialog>
+            <el-dialog
+              :visible.sync="dialogVisible_addorg"
+              width="448px"
+              style="height:320px;margin-top: 15vh"
+              :show-close='true'
+              :close-on-click-modal='false'
+              title="新建组织"
+            >
+
+              <add-org @openOrgListFun='openOrgListFun' @bigName="bigName" :chosenOneOrg='chosenOneOrg' @dialogVisible_addorgChange='dialogVisible_addorgChange' @getOrgList='getOrgList'  />
+               <el-dialog
+                :visible.sync="dialogVisible_orgList"
+                width="448px"
+                lock-scroll
+                :show-close='true'
+                :close-on-click-modal='false'
+                title="选择组织"
+                 append-to-body
+                >
+                  <org-list @getOneOrgChosen='getOneOrgChosen' @dialogVisible_orgListChange='dialogVisible_orgListChange'/>
+              </el-dialog>
+            </el-dialog>
+            <el-dialog
+              :visible.sync="dialogVisible_addNextOrg"
+              width="448px"
+              style="height:320px;margin-top: 15vh"
+              :show-close='true'
+              :close-on-click-modal='false'
+              title="新建下级组织"
+            >
+              <add-next-org  @dialogVisible_appendChange='dialogVisible_appendChange' @getOrgList='getOrgList' :lastOrgData='lastOrgData' ref="addOrgNode"/>
+            </el-dialog>
+            <el-dialog
+              :visible.sync="dialogVisible_editNextOrg"
+              width="448px"
+              style="height:320px;margin-top: 15vh"
+              :show-close='true'
+              :close-on-click-modal='false'
+              title="编辑本级组织"
+            >
+              <edit-next-org  @dialogVisible_editNextOrgChange='dialogVisible_editNextOrgChange' @getOrgList='getOrgList' :lastOrgData='lastOrgData' :parentOrgData='parentOrgData'/>
+            </el-dialog>
+        </div>
     </div>
 </template>
 
@@ -622,115 +524,105 @@ import mixins from '../../../mixins/cacheMixin.js'
         background-color: #3B74FF !important;
         color: #ffffff;
     }
+    .el-tree>.el-tree-node {
+        display: inline-block;
+        min-width: 100%;
+    }
+
 </style>
 
 <style lang="scss" scoped>
   .content-wrapper {
-    overflow-x: hidden;
-    height: 100%;
-    .el-dialog {
-      border-radius: 5px;
-      overflow: hidden;
-      .el-dialog__header {
-        padding: 18px;
-      }
-      .el-dialog__body {
-        padding: 10px;
-      }
-    }
-
-      .el-row {
-          margin-bottom: 20px;
-          &:last-child {
-              margin-bottom: 0;
+    /*height: 100%;*/
+      .el-dialog {
+          border-radius: 5px;
+          overflow: hidden;
+          .el-dialog__header {
+            padding: 18px;
+          }
+          .el-dialog__body {
+            padding: 10px;
           }
       }
-      .el-col {
-          border-radius: 4px;
-      }
-      .bg-purple {
-          background:#f0f0f0;
-      }
-      .bg-purple-light {
-          /*background: #e5e9f2;*/
-      }
-          .grid-content {
-          .header-wrap{
-              width: 100%;
-              padding-top: 20px;
-              padding-bottom: 20px;
-              display: flex;
-              flex-wrap: nowrap;
-              .search-wrap {
-                  height: 35px;
+      .contentBigBox{
+          width:100%;
+          overflow-x: scroll;
+          .orgBtn{
+              border:1px solid #3b74ff;
+              color:#3b74ff;
+              height: 32px;
+              width:80px;
+              padding: 0;
+          }
+          .el-button--primary{
+              width: 80px;
+              height: 32px;
+              span{
+                  font-size: 12px;
+              }
+          }
+          .leftBox{
+              background:#f0f0f0;
+              display: inline-block;
+              width: 49%;
+              overflow-x: hidden;
+              .header-wrap{
+                  margin: 20px 0 30px;
+                  height: 34px;
                   .span{
                       color: #606266;
                       font-size: 14px;
-                      margin-left: 10px;
+                      margin-left: 5px;
                   }
                   .el-input {
-                      width: 50%;
+                      width: 170px;
                   }
-                  span {
-                      font-size: 12px;
-                  }
-              }
-              .el-button--primary{
-                  width:80px;
-                  height: 30px;
-                  padding-top:7px;
-                  span{
-                      font-size: 12px;
+                  .btn{
+                      height: 34px;
+                      margin-right: 5px;
+                      display: inline-block;
                   }
               }
-              .right-offset{
-                  float: right;
-                  margin-right: 16px;
-                  span{
-                      font-size: 12px;
-                      margin-left:-12px;
-                      vertical-align: middle;
-                      .icon-neiye-tianjia{
-                          margin-right: 5px;
-                          font-size: 10px;
-                          margin-top:-2px ;
-                          display: inline-block;
+              .org-sys {
+                  .el-tree {
+                      width: 100%;
+                      height: 400px;
+                      overflow: scroll;
+                      background: #f0f0f0;
+
+                      .custom-tree-node {
+                          flex: 1;
+                          display: flex;
+                          align-items: center;
+                          justify-content: space-between;
+                          font-size: 12px;
+                          padding-right: 8px;
+                          .org-button-wrap {
+                              .el-button {
+                                  padding: 0;
+                                  margin-right: 10px;
+                                  margin-left: 0px;
+                                  color: #f0f0f0;
+                              }
+
+                              span {
+                                  font-size: 12px;
+                              }
+                          }
                       }
                   }
               }
           }
-          .el-tree{
-              background-color: #f0f0f0;
-              .custom-tree-node{
-                  flex: 1;
-                  display: flex;
-                  align-items: center;
-                  justify-content: space-between;
-                  font-size: 14px;
-                  padding-right: 8px;
-                  .org-button-wrap{
-                      .el-button{
-                          padding: 0;
-                          margin-right: 10px;
-                          margin-left: 0px;
-                          color:#f0f0f0;
-                      }
-                      span{
-                          font-size: 12px;
-                      }
-                  }
-              }
+          .rightBox{
+              display: inline-block;
+              width: 49%;
+              float:right;
           }
           .header-btn{
               display: flex;
               justify-content: flex-end;
               margin: 10px 0;
           }
-          /*.org-right{
-              .el-table {
-                   border:0 !important;
-              }
-          }*/
 
       }
   }

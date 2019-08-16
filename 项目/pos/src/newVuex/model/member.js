@@ -18,7 +18,10 @@ export default {
         pageLoading:false,//全局数据加载loading
         cardNoOrphoneNumState:false,//判断输入的卡号或手机号是否正确
         makeUpPrice:'',//补卡手续费
-        cancellationFees:''//注销手续费
+        cancellationFees:'',//注销手续费
+        canCharge:'', //储值卡是否可充值
+        cardProductId:'' ,//卡政策id
+        cashBox:false,//钱箱
     },
     mutations : {
         handleHttp:function(state,{res,router}){
@@ -43,6 +46,8 @@ export default {
             }
             state.isshow = true;
             state.memberCardInfo = resInfo.data;
+            state.cardNoOrphoneNumState = true;
+            state.cardState = resInfo.data.status
         },
         getListHandle(state,res){
             state.loading = false;
@@ -55,8 +60,13 @@ export default {
             })
         },
         cardPolicy(state,res){
-            state.makeUpPrice = res.makeUpPrice;
-            state.cancellationFees = res.cancellationFees;
+            if(res){
+                state.makeUpPrice = res.makeUpPrice;
+                state.cancellationFees = res.cancellationFees;
+            }else{
+                state.makeUpPrice = '';
+                state.cancellationFees = '';
+            }
         }
     },
     actions:{
@@ -65,8 +75,8 @@ export default {
             return new Promise((reslove,reject)=>{
                 axios.post(url,Vue.prototype.$sign(data)).then(function(res){
                     if (res.data.code == 200 && res.data.msg === '操作成功') {
-                        commit('handleHttp',{res,router})
                         reslove(res.data)
+                        commit('handleHttp',{res,router})
                     }else{
                         Vue.prototype.error(res.data.msg);
                         reject(res.data)
@@ -118,12 +128,12 @@ export default {
         cardPolicy:function({commit},data){
             return new Promise((reslove,reject)=>{
                 axios.get(memeberApi.applyCardNoInfo['url'],Vue.prototype.$sign(data)).then(res=>{
-                    if(res.data.code === 200){
+                    // if(res.data.code === 200 && res.data.data){
                         commit('cardPolicy',res.data.data);
                         reslove(res.data)
-                    }else{
-                        Vue.prototype.error(res.data.msg);
-                    }
+                    // }else{
+                    //     Vue.prototype.error(res.data.msg);
+                    // }
                 }).catch(err=>{
                     Vue.prototype.error(err)
                 })

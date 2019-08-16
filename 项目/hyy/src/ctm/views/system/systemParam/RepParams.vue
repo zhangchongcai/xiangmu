@@ -9,206 +9,207 @@
                 ref="formData"
                 label-width="150px"
             >
-                <div class="title"> 统计上报设置 </div>
-                <div>
-                    <el-row>
-                        <el-col :span="10">
-                            <el-form-item label="上报接口地址："  prop="statisticalReportParamVo.reportUploadUrl">
-                                <el-input v-model="data.statisticalReportParamVo.reportUploadUrl"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="10">
-                            <el-form-item label="端口号："  prop="statisticalReportParamVo.reportPoint">
-                                <el-input v-model="data.statisticalReportParamVo.reportPoint"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row>
-                        <el-col :span="10">
-                            <el-form-item label="上报接口备用地址："  prop="statisticalReportParamVo.reportBackupUploadUrl">
-                                <el-input v-model="data.statisticalReportParamVo.reportBackupUploadUrl"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="10">
-                            <el-form-item label="端口号："  prop="statisticalReportParamVo.reportBackupPoint">
-                                <el-input v-model="data.statisticalReportParamVo.reportBackupPoint"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row>
-                        <el-col :span="10">
-                            <el-form-item label="用户名："  prop="statisticalReportParamVo.userName">
-                                <el-input v-model="data.statisticalReportParamVo.userName"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="10">
-                            <el-form-item label="密码："  prop="statisticalReportParamVo.password2">
-                                <el-input v-model="data.statisticalReportParamVo.password2" type="password"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row>
-                        <el-col :span="10">
-                            <el-form-item label="上报方式："  prop="statisticalReportParamVo.autoReportType" >
-                                <el-radio-group v-model="data.statisticalReportParamVo.autoReportType">
-                                    <el-radio :label="0">自动上报</el-radio>
-                                    <el-radio :label="1">手动上报</el-radio>
-                                </el-radio-group>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="10">
-                            <el-form-item label="自动上报时间："  prop="statisticalReportParamVo.autoReportTime">
-                                <el-time-select
-                                v-model="data.statisticalReportParamVo.autoReportTime"
-                                :picker-options="{
-                                    start: '06:30',
-                                    step: '00:30',
-                                    end: '11:30'
-                                }"
-                                placeholder="选择时间">
-                                </el-time-select>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                </div>
-                <div class="title">  信息接口设置</div>
-            
-                <div >
-                    <el-radio v-model="radio" label=-1   @change="messageRadio">启用</el-radio>
-                    <el-row>
-                        <el-col :span="10">
-                            <el-form-item label="对接平台："  prop="movieName">
-                                <el-input v-model="dockInterface"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row>
-                        <el-col :span="10">
-                            <el-form-item label="通讯接口IP地址："  prop="messageInterfaceSetParamVo.messageUrl">
-                                <el-input v-model="data.messageInterfaceSetParamVo.messageUrl"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="10">
-                            <el-form-item label="端口号："  prop="messageInterfaceSetParamVo.messagePoint">
-                                <el-input v-model="data.messageInterfaceSetParamVo.messagePoint"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row>
-                        <el-col :span="10">
-                            <el-form-item label="通讯接口备用地址："  prop="messageInterfaceSetParamVo.messageBackupUrl">
-                                <el-input v-model="data.messageInterfaceSetParamVo.messageBackupUrl"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="10">
-                            <el-form-item label="端口号："  prop="messageInterfaceSetParamVo.messageBackupPoint">
-                                <el-input v-model="data.messageInterfaceSetParamVo.messageBackupPoint"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row>
-                        <el-col :span="10">
-                            <el-form-item label="用户名："  prop="messageInterfaceSetParamVo.userName">
-                                <el-input v-model="data.messageInterfaceSetParamVo.userName"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="10">
-                            <el-form-item label="密码："  prop="messageInterfaceSetParamVo.password2">
-                                <el-input v-model="data.messageInterfaceSetParamVo.password2" type="password"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                </div>
-                <div v-for="(item,ind) in data.platAddressInfoList" :key="ind" class="platAddressInfoList">
-                        <el-radio v-model="radio" :label="ind"  @change="platRadio">启用</el-radio>
-                        <i class="el-icon-close" @click="cutPlatAdd(ind)"></i>
+            <el-collapse v-model="activeNames">
+                <el-collapse-item title="统计上报设置" name="statisti">
+                    <div>
                         <el-row>
                             <el-col :span="10">
-                                <el-form-item label="对接平台："  
-                                :prop="'platAddressInfoList.'+ind+'.platName'"
-                                :rules="[{ required: true, message: '名字不能为空',trigger: 'blur'}]"
-                                >
-                                    <el-input v-model="item.platName"></el-input>
+                                <el-form-item label="上报接口地址："  prop="statisticalReportParamVo.reportUploadUrl">
+                                    <el-input v-model="data.statisticalReportParamVo.reportUploadUrl"></el-input>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="10">
+                                <el-form-item label="端口号："  prop="statisticalReportParamVo.reportPoint">
+                                    <el-input v-model="data.statisticalReportParamVo.reportPoint"></el-input>
                                 </el-form-item>
                             </el-col>
                         </el-row>
                         <el-row>
                             <el-col :span="10">
-                                <el-form-item label="通讯接口IP地址："  
-                                :prop="'platAddressInfoList.'+ind+'.platIpAddress'"
-                                :rules="[{required:true, message:'ip地址不能为空',trigger:'blur'}]"
-                                >
-                                    <el-input v-model="item.platIpAddress"></el-input>
+                                <el-form-item label="上报接口备用地址："  prop="statisticalReportParamVo.reportBackupUploadUrl">
+                                    <el-input v-model="data.statisticalReportParamVo.reportBackupUploadUrl"></el-input>
                                 </el-form-item>
                             </el-col>
                             <el-col :span="10">
-                                <el-form-item label="端口号："  
-                                :prop="'platAddressInfoList.'+ind+'.platPort'"
-                                :rules="[{required:true, message:'端口号不能为空',trigger:'blur'}]"
-                                >
-                                    <el-input v-model="item.platPort"></el-input>
+                                <el-form-item label="端口号："  prop="statisticalReportParamVo.reportBackupPoint">
+                                    <el-input v-model="data.statisticalReportParamVo.reportBackupPoint"></el-input>
                                 </el-form-item>
                             </el-col>
                         </el-row>
                         <el-row>
                             <el-col :span="10">
-                                <el-form-item label="通讯接口备用地址："  
-                                :prop="'platAddressInfoList.'+ind+'.platSpareIpAddress'"
-                                :rules="[{required:true, message:'备用地址不能为空',trigger:'blur'}]"
-                                >
-                                    <el-input v-model="item.platSpareIpAddress"></el-input>
+                                <el-form-item label="用户名："  prop="statisticalReportParamVo.userName">
+                                    <el-input v-model="data.statisticalReportParamVo.userName"></el-input>
                                 </el-form-item>
                             </el-col>
                             <el-col :span="10">
-                                <el-form-item label="端口号："  
-                                :prop="'platAddressInfoList.'+ind+'.platSparePort'"
-                                :rules="[{required:true,message:'备用端口号不能空',trigger:'blur'}]"
-                                >
-                                    <el-input v-model="item.platSparePort"></el-input>
+                                <el-form-item label="密码："  prop="statisticalReportParamVo.password2">
+                                    <el-input v-model="data.statisticalReportParamVo.password2" type="password"></el-input>
                                 </el-form-item>
                             </el-col>
                         </el-row>
                         <el-row>
                             <el-col :span="10">
-                                <el-form-item label="用户名："  
-                                :prop="'platAddressInfoList.'+ind+'.platUserName'"
-                                :rules="[{required:true,message:'用户名不能空',trigger:'blur'}]"
-                                >
-                                    <el-input v-model="item.platUserName"></el-input>
+                                <el-form-item label="上报方式："  prop="statisticalReportParamVo.autoReportType" >
+                                    <el-radio-group v-model="data.statisticalReportParamVo.autoReportType">
+                                        <el-radio :label="0">自动上报</el-radio>
+                                        <el-radio :label="1">手动上报</el-radio>
+                                    </el-radio-group>
                                 </el-form-item>
                             </el-col>
                             <el-col :span="10">
-                                <el-form-item label="密码："  
-                                :prop="'platAddressInfoList.'+ind+'.platPassword2'"
-                                :rules="[{required:true,message:'密码不能空',trigger:'blur'}]"
-                                >
-                                    <el-input v-model="item.platPassword2" type="password"></el-input>
+                                <el-form-item label="自动上报时间："  prop="statisticalReportParamVo.autoReportTime">
+                                    <el-time-select
+                                    v-model="data.statisticalReportParamVo.autoReportTime"
+                                    :picker-options="{
+                                        start: '06:30',
+                                        step: '00:30',
+                                        end: '11:30'
+                                    }"
+                                    placeholder="选择时间">
+                                    </el-time-select>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                    </div>
+                </el-collapse-item>
+                <el-collapse-item title="信息接口设置" name="messageInterface">
+                    <div>
+                        <el-radio v-model="radio" label=-1   @change="messageRadio">启用</el-radio>
+                        <el-row>
+                            <el-col :span="10">
+                                <el-form-item label="对接平台："  prop="movieName">
+                                    <el-input v-model="dockInterface"></el-input>
                                 </el-form-item>
                             </el-col>
                         </el-row>
                         <el-row>
-                            <el-form-item label="授权接口：">
-                                <div class="interface">
-                                    <el-checkbox :indeterminate="item.isIndeterminate" v-model="item.checkAll" @change="handleCheckAllChange($event,item)">全选</el-checkbox>
-                                    <div style="margin: 15px 0;"></div>
-                                    <el-checkbox-group 
-                                        v-model="item.interfaceCodes" 
-                                        @change="handleCheckedCitiesChange(...arguments,item)"
+                            <el-col :span="10">
+                                <el-form-item label="通讯接口IP地址："  prop="messageInterfaceSetParamVo.messageUrl">
+                                    <el-input v-model="data.messageInterfaceSetParamVo.messageUrl"></el-input>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="10">
+                                <el-form-item label="端口号："  prop="messageInterfaceSetParamVo.messagePoint">
+                                    <el-input v-model="data.messageInterfaceSetParamVo.messagePoint"></el-input>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row>
+                            <el-col :span="10">
+                                <el-form-item label="通讯接口备用地址："  prop="messageInterfaceSetParamVo.messageBackupUrl">
+                                    <el-input v-model="data.messageInterfaceSetParamVo.messageBackupUrl"></el-input>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="10">
+                                <el-form-item label="端口号："  prop="messageInterfaceSetParamVo.messageBackupPoint">
+                                    <el-input v-model="data.messageInterfaceSetParamVo.messageBackupPoint"></el-input>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row>
+                            <el-col :span="10">
+                                <el-form-item label="用户名："  prop="messageInterfaceSetParamVo.userName">
+                                    <el-input v-model="data.messageInterfaceSetParamVo.userName"></el-input>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="10">
+                                <el-form-item label="密码："  prop="messageInterfaceSetParamVo.password2">
+                                    <el-input v-model="data.messageInterfaceSetParamVo.password2" type="password"></el-input>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                    </div>
+                    <div v-for="(item,ind) in data.platAddressInfoList" :key="ind" class="platAddressInfoList">
+                            <el-radio v-model="radio" :label="ind"  @change="platRadio">启用</el-radio>
+                            <i class="el-icon-close" @click="cutPlatAdd(ind)"></i>
+                            <el-row>
+                                <el-col :span="10">
+                                    <el-form-item label="对接平台："  
+                                    :prop="'platAddressInfoList.'+ind+'.platName'"
+                                    :rules="[{ required: true, message: '名字不能为空',trigger: 'blur'}]"
                                     >
-                                        <el-checkbox  v-for="_item in interfaceParamList" :label="_item.interfaceCode" :key="_item.interfaceCode">{{_item.interfaceName}}</el-checkbox>
-                                    </el-checkbox-group>
-                                </div>
-                            </el-form-item>
-                        </el-row>
-                </div>
+                                        <el-input v-model="item.platName"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                            <el-row>
+                                <el-col :span="10">
+                                    <el-form-item label="通讯接口IP地址："  
+                                    :prop="'platAddressInfoList.'+ind+'.platIpAddress'"
+                                    :rules="[{required:true, message:'ip地址不能为空',trigger:'blur'}]"
+                                    >
+                                        <el-input v-model="item.platIpAddress"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :span="10">
+                                    <el-form-item label="端口号："  
+                                    :prop="'platAddressInfoList.'+ind+'.platPort'"
+                                    :rules="[{required:true, message:'端口号不能为空',trigger:'blur'}]"
+                                    >
+                                        <el-input v-model="item.platPort"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                            <el-row>
+                                <el-col :span="10">
+                                    <el-form-item label="通讯接口备用地址："  
+                                    :prop="'platAddressInfoList.'+ind+'.platSpareIpAddress'"
+                                    :rules="[{required:true, message:'备用地址不能为空',trigger:'blur'}]"
+                                    >
+                                        <el-input v-model="item.platSpareIpAddress"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :span="10">
+                                    <el-form-item label="端口号："  
+                                    :prop="'platAddressInfoList.'+ind+'.platSparePort'"
+                                    :rules="[{required:true,message:'备用端口号不能空',trigger:'blur'}]"
+                                    >
+                                        <el-input v-model="item.platSparePort"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                            <el-row>
+                                <el-col :span="10">
+                                    <el-form-item label="用户名："  
+                                    :prop="'platAddressInfoList.'+ind+'.platUserName'"
+                                    :rules="[{required:true,message:'用户名不能空',trigger:'blur'}]"
+                                    >
+                                        <el-input v-model="item.platUserName"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :span="10">
+                                    <el-form-item label="密码："  
+                                    :prop="'platAddressInfoList.'+ind+'.platPassword2'"
+                                    :rules="[{required:true,message:'密码不能空',trigger:'blur'}]"
+                                    >
+                                        <el-input v-model="item.platPassword2" type="password"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                            <el-row>
+                                <el-form-item label="授权接口：">
+                                    <div class="interface">
+                                        <el-checkbox :indeterminate="item.isIndeterminate" v-model="item.checkAll" @change="handleCheckAllChange($event,item)">全选</el-checkbox>
+                                        <div style="margin: 15px 0;"></div>
+                                        <el-checkbox-group 
+                                            v-model="item.interfaceCodes" 
+                                            @change="handleCheckedCitiesChange(...arguments,item)"
+                                        >
+                                            <el-checkbox  v-for="_item in interfaceParamList" :label="_item.interfaceCode" :key="_item.interfaceCode">{{_item.interfaceName}}</el-checkbox>
+                                        </el-checkbox-group>
+                                    </div>
+                                </el-form-item>
+                            </el-row>
+                    </div>
+                    <el-button type="primary" style="margin-top:5px" @click="addplatAddressInfo">添加</el-button>
+                </el-collapse-item>
+            </el-collapse>
             </el-form>
             
-            <el-button type="primary" style="margin-top:5px" @click="addplatAddressInfo">添加</el-button>
         </div>
         <div class="footer">
-            <el-row style="text-align:center;margin-top:5px">
-                <el-button type="primary" @click="saveParams" style="width:80px;height:32px">修改</el-button>
-            </el-row>
+            <el-button type="primary" @click="saveParams" style="width:80px;height:32px">修改</el-button>
         </div>
     </div>
 </template>
@@ -220,6 +221,7 @@ export default {
     },
     data() {
         return {
+            activeNames:['statisti','messageInterface'],
             sizeForm:{},
             rules:{},
             dockInterface:'广电平台',
@@ -417,8 +419,6 @@ export default {
                 "settingType":0
             }
             this.$ctmList.systemParamLoad(data).then(res => {
-                let type = "success"
-                let message = "查询成功！"
                 if(res.code == 200 ){
                     let pointer = this
                     let {data} = res
@@ -446,14 +446,14 @@ export default {
                     pointer.data = data
                     // console.log("初始化值完成",res)
                 }else{
-                    type = "error"
-                    message = res.msg
+                    let type = "error"
+                    let message = res.msg?res.msg:'查询失败'
+                    this.$message({
+                        type,
+                        message,
+                        duration:1000
+                    })
                 }
-                this.$message({
-                    type,
-                    message,
-                    duration:1000
-                })
             })
         }
     },
@@ -464,7 +464,7 @@ export default {
 }
 </script>
 <style lang="scss">
-    .rep-params{
+    .rep-params{ 
         display: flex;
         height: 100%;
         flex-direction: column;
@@ -495,7 +495,20 @@ export default {
         .interface{
             width: 700px;
         }
-        
+        .el-collapse-item__header{
+            display: flex;
+            justify-content:flex-end;
+            flex-direction: row-reverse;
+        }
+        .el-collapse-item__header::after{
+            display: none
+        }
+        .el-collapse-item__arrow{
+            margin: 0 8px 0px 0;
+        }
+        .el-collapse-item__wrap{
+            padding-left: 10px
+        }
     }
 </style>
 

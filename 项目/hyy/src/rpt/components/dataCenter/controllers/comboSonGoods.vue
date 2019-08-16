@@ -1,27 +1,19 @@
 <template>
   <div class="checkSing">
-    <el-checkbox v-model="checkValue" @change="handCheckEvent">{{ this.queryName }}</el-checkbox>
+    <el-checkbox v-model="comboSonGoodsObj.checkValue" @change="handCheckEvent">{{ this.queryName }}</el-checkbox>
   </div>
 </template>
 <script>
-import mixins from "src/frame_cpm/mixins/cacheMixin.js";
 export default {
-  mixins: [mixins.cacheMixin],
   props: {
-    queryName: String
+    queryName: String,
+    comboSonGoodsObj: Object
   },
   data() {
-    return {
-      cacheField: [
-        "checkValue",
-      ],
-      subComName: "comboSonGoods",
-      checkValue: false
-    };
+    return {};
   },
   methods: {
     handCheckEvent(data) {
-      console.log(data);
       let selectSonGoodsData = data === true ? "1" : "0";
       this.$emit("selectComboSonGoodsData", selectSonGoodsData, this.queryName);
     }
@@ -29,12 +21,16 @@ export default {
 };
 </script>
 
-<style Scoped>
+<style lang="scss" scoped>
 .checkSing {
   margin-left: 15px;
+  height: 32px;
+  line-height: 32px;
+  /deep/ .el-checkbox {
+    .el-checkbox__label {
+      font-weight: normal;
+      font-size: 12px;
+    }
+  }
 }
-/*.el-dialog__body{
-    height: 500px;
-    overflow: hidden;
-}*/
 </style>

@@ -1,5 +1,5 @@
 <template>
-    <section class="regionType">
+    <section class="regionType clearfix">
 
         <el-dialog :title="type === 'add' ? '新建分区类型' : '编辑分区类型'" :visible.sync="dialogVisible">
             <el-form :model="ruleForm" :rules="rules" ref="ruleForm" :label-width="formLabelWidth">
@@ -38,13 +38,13 @@
             <div style="width: 180px; height: 50px; line-height: 50px; padding: 0 10px">
                 <span>{{item.name}}</span>
                 <span style="float: right">
-                    <span class="deleteButton" @click="deleteRegionType(item.uid)">删除</span>
-                    <i class="el-icon-edit" @click="editRegionType(index)"></i>
+<!--                    <span class="deleteButton" @click="deleteRegionType(item.uid)">删除</span>-->
+                    <i class="el-icon-edit" v-if="item.name !== '普通区'" @click="editRegionType(index)"></i>
                 </span>
             </div>
         </div>
 
-        <i class="el-icon-plus add-icon" :class="{ disabled: regionTypeList.length > 9 }" @click="addManageType"></i>
+<!--        <i class="el-icon-plus add-icon" :class="{ disabled: regionTypeList.length > 9 }" @click="addManageType"></i>-->
 
     </section>
 </template>

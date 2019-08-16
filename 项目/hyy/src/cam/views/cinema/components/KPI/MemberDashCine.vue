@@ -252,7 +252,7 @@ export default {
   methods:{
     //会员KPI
     getMemKpiData(MemKPIvalueCine){
-       console.log(MemKPIvalueCine,'kpi')
+    //    console.log(MemKPIvalueCine,'kpi')
       //取到时间进度
       let tool1 = MemKPIvalueCine.timeRate?MemKPIvalueCine.timeRate:0, tool2 = MemKPIvalueCine.newMemberRate?MemKPIvalueCine.newMemberRate:0;
       //取值title

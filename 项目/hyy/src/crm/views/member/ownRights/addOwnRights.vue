@@ -1,7 +1,7 @@
 <template>
   <div class="add-own-rights-type">
     <!-- 内容区 - 折叠面板 -->
-    <el-form :model="ruleForm" :rules="rules" ref="ruleForm" size="medium" label-width="105px" label-position="right">
+    <el-form :model="ruleForm" :rules="rules" ref="ruleForm" size="medium" label-width="105px" label-position="left">
       <el-collapse v-model="activeNames" class="card-type-content">
         <!-- 基础设置 -->
         <el-collapse-item :title="stepData.stepList[0].name" name="1">
@@ -166,7 +166,7 @@
                         </div>
                       </el-form-item>
                       <!-- 补贴方式 -->
-                      <el-form-item label="补贴方式：" class="set-options-wrap" :rules="{
+                      <el-form-item label="补贴方式：" class="set-options-wrap" :prop="'movieList.'+ index" :rules="{
                               required: true, message: '请选择一项', trigger: 'change'
                             }">
                         <div class="detail-time-select-item">
@@ -254,7 +254,7 @@
                       <div style="padding: 10px 0 0 0" class="dajinjuan" v-for="(item, index) in ruleForm.ticketList"
                         :key="index">
                         <el-row :gutter="20" align="middle">
-                          <el-col :span="5">
+                          <el-col :span="6">
                             <el-form-item label-width="100px" label="销售单号：" :prop="'ticketList.'+index+'.ticketNo'"
                               :rules="{
                               required: true, validator: checkticketListTicketNo, trigger: 'change'}"
@@ -272,14 +272,14 @@
                               </el-input>
                             </el-form-item>
                           </el-col>
-                          <el-col :span="10">
+                          <el-col :span="9">
                             <el-form-item label-width="120px" label="发放时间与张数：" required class="maximum-subsidy-wrap">
                               <div class="grid-content bg-purple">
                                 <el-row :gutter="20">
                                   <el-col :span="1">
                                     <div class="grid-content bg-purple font-style">每</div>
                                   </el-col>
-                                  <el-col :span="10">
+                                  <el-col :span="9">
                                     <div class="grid-content bg-purple" style="text-align: center">
                                       <el-select v-model="item.outOfTime" placeholder="选择" size="medium">
                                         <el-option label="年" value="year" size="medium"></el-option>
@@ -365,8 +365,8 @@
                                       <el-form-item label="销售单号" label-width="80px"
                                         :prop="'birthday.voucherList.'+index"
                                         :rules="{required: true, validator: checkvoucherListTicketNo, trigger: 'change'}">
-                                        <el-input v-model="voucheritem.ticketNo" placeholder="销售单号" style="width:200px"
-                                          readonly @focus="showccmSaleList('birthdaydai',index)"></el-input>
+                                        <el-input v-model="voucheritem.ticketNo" placeholder="销售单号" readonly
+                                          @focus="showccmSaleList('birthdaydai',index)"></el-input>
                                       </el-form-item>
                                     </div>
                                   </el-col>
@@ -416,8 +416,8 @@
                                     <div class="grid-content bg-purple">
                                       <el-form-item label="销售单号" label-width="80px" :prop="'birthday.cdkeyList.'+index"
                                         :rules="{required: true, validator: checkcdkeyListTicketNo, trigger: 'change'}">
-                                        <el-input v-model="cdkeyitem.ticketNo" placeholder="销售单号" style="width:200px"
-                                          readonly @focus="showccmSaleList('birthdaycdk',index)"></el-input>
+                                        <el-input v-model="cdkeyitem.ticketNo" placeholder="销售单号" readonly
+                                          @focus="showccmSaleList('birthdaycdk',index)"></el-input>
                                       </el-form-item>
                                     </div>
                                   </el-col>
@@ -465,6 +465,149 @@
               </div>
             </div>
           </div>
+          <div class="card-equity" v-if="ruleForm.equityCategory == 'time_card'">
+            <div class="equity-options" v-for="(domain, index) in ruleForm.movieList" :key="index">
+              <div class="ticket-discount">
+                <span class="remove-equity" v-if="ruleForm.movieList.length > 1" @click="removeEquity(index,domain)">
+                  <i class="iconfont icon-neiye-danchuangquxiao" style="fontSize:12px" />
+                </span>
+                <div class="applicable-cinema-hall-wrap">
+                  <div class="applicable-cinema-hall-inner">
+                    <el-form-item label="适用影院：" :prop="'movieList.'+ index +'.cinemaList'" :rules="{
+                          required: true, validator: checkSaleCinema, trigger: 'change'
+                        }" class="shiyong_yingyuan">
+                      <div class="select-btn" v-show="!(domain.cinemaList && domain.cinemaList.length > 0)"
+                        @click="chooseCinema(index)">请选择影院</div>
+                      <div class="cinema-list" v-show="domain.cinemaList && domain.cinemaList.length > 0"
+                        @click="chooseCinema(index)">
+                        {{getArrCinemaListName(domain.cinemaList)}}
+                        <i class="el-tag__close el-icon-close myclose" @click.stop="clearIndexCinema(index)"></i>
+                      </div>
+                      <div class="select-btn" v-show="domain.cinemaList && domain.cinemaList.length > 0"
+                        @click="chooseCinema(index)">
+                        编辑
+                      </div>
+                    </el-form-item>
+                    <!-- 适用影厅 -->
+                    <el-form-item label="适用影厅：" :prop="'movieList.'+ index + '.hallList'" :rules="{
+                          required: true, validator: checkHallListSelected, trigger: 'change'
+                        }" class="cinema-hall-selection">
+                      <el-checkbox :indeterminate="domain.isIndeterminateHallList" v-model="domain.checkAllHallList"
+                        @change="handleCheckAllCinemaHall($event,index)">全选</el-checkbox>
+                      <el-checkbox-group v-model="domain.hallList"
+                        @change="handleCheckedCinemaHallsChange($event,index)">
+                        <el-checkbox v-for="(hall,index) in CinemaHalls" :label="hall" :key="index">{{hall.hallName}}
+                        </el-checkbox>
+                      </el-checkbox-group>
+                    </el-form-item>
+                    <!-- 适用制式 -->
+                    <el-form-item label="适用制式：" :prop="'movieList.'+ index + '.screenList'" :rules="{
+                          required: true, validator: checkScreenListSelected, trigger: 'change'
+                        }" class="cinema-hall-selection">
+                      <el-checkbox :indeterminate="domain.isIndeterminateScreenList" v-model="domain.checkAllScreenList"
+                        @change="handleCheckAllStandards($event,index)">全选</el-checkbox>
+                      <el-checkbox-group v-model="domain.screenList"
+                        @change="handleCheckedStandardsChange($event,index)">
+                        <el-checkbox v-for="(standard,index) in Standards" :label="standard" :key="index">
+                          {{standard.screenName}}</el-checkbox>
+                      </el-checkbox-group>
+                    </el-form-item>
+                    <div class="unified-setup">
+                      <!-- 放映星期 -->
+                      <el-form-item label="放映星期：" :prop="'movieList.'+ index + '.weeks'" :rules="{
+                          required: true, validator: checkWeeksSelected, trigger: 'change'
+                        }" class="week-select-wrap">
+                        <el-checkbox :indeterminate="domain.isIndeterminateWeeks" v-model="domain.checkAllWeeks"
+                          @change="handleCheckAllWeeks($event,index)">全部时段</el-checkbox>
+                        <el-checkbox-group v-model="domain.weeks" @change="handleCheckedWeeksChange($event,index)">
+                          <el-checkbox v-for="(week,index) in Weeks" :label="index+1" :key="index+1">{{week}}
+                          </el-checkbox>
+                        </el-checkbox-group>
+                      </el-form-item>
+                      <!-- 放映时段 -->
+                      <el-form-item label="放映时段：" :prop="'movieList.'+ index + '.dayTimesJson'" :rules="{
+                          required: true, validator: checkProjectionTime, trigger: 'change'
+                        }" class="detail-time-select">
+                        <div v-for="(domainTime, indexTime) in domain.dayTimesJson" :key="indexTime"
+                          class="detail-time-select-item">
+                          <el-time-picker is-range size="medium" v-model="domain.dayTimesJson[indexTime]"
+                            range-separator="至" start-placeholder="开始时间" end-placeholder="结束时间" placeholder="选择时间范围"
+                            value-format="HH:mm:ss"></el-time-picker>
+                          <el-button type="text" v-if="domain.dayTimesJson.length > 1"
+                            @click.prevent="removeTimeInterval(index,indexTime,'ruleForm')">删除</el-button>
+                        </div>
+                        <el-row>
+                          <el-col :span="1" style="width:25px">
+                            <div class="grid-content bg-purple cursor" @click.prevent="handleAddTimeInterval(index)"><i
+                                class="el-icon-circle-plus-outline" style="color:#3b74ff;font-size:20px;"></i></div>
+                          </el-col>
+                          <el-col :span="1">
+                            <div class="grid-content bg-purple-light cursor"
+                              style="font-size:12px;margin-top:-2px;color:#3b74ff"
+                              @click.prevent="handleAddTimeInterval(index)">添加</div>
+                          </el-col>
+                        </el-row>
+                      </el-form-item>
+                      <!-- 出票金额 -->
+                      <el-form-item label="出票金额：" :prop="'movieList.'+ index" :rules="{
+                              required: true, validator: checkTicketIssueType, trigger: 'blur'
+                            }" class="ticket-preferential-way">
+                        <el-select v-model="domain.ticketIssueType" placehaolder="请选择" size="medium">
+                          <el-option v-for="(item,index) in timeCardSetOptions" :key="index" :label="item.label"
+                            :value="item.value"></el-option>
+                        </el-select>
+                        <el-input v-model="domain.ticketIssueValue" placeholder="请输入内容"
+                          :disabled="!domain.ticketIssueType" size="medium"></el-input>
+                      </el-form-item>
+                      <!-- 优惠限制 -->
+                      <!-- <el-form-item label="优惠限制：" :prop="'movieList.'+ index" :rules="{
+                              required: false, validator: checkLimitSaleData, trigger: 'blur'
+                            }" class="ticket-preferential-restrictions-wrap">
+                        <div class="ticket-preferential-restrictions-item">
+                          <el-radio v-model="domain.ticketLimitSaleType" label="perMemberDay">每日优惠张数上限</el-radio>
+                          <el-input @input="changeTicketLimitSaleData($event,index)"
+                            :value="domain.ticketLimitSaleType == 'perMemberDay'?domain.ticketLimitSaleData:''"
+                            placeholder="请输入优惠张数" :disabled="!(domain.ticketLimitSaleType == 'perMemberDay')"
+                            size="medium"></el-input>
+                        </div>
+                        <div class="ticket-preferential-restrictions-item">
+                          <el-radio v-model="domain.ticketLimitSaleType" label="perMemberWeek">每周优惠张数上限</el-radio>
+                          <el-input @input="changeTicketLimitSaleData($event,index)"
+                            :value="domain.ticketLimitSaleType == 'perMemberWeek'?domain.ticketLimitSaleData:''"
+                            placeholder="请输入优惠张数" :disabled="!(domain.ticketLimitSaleType == 'perMemberWeek')"
+                            size="medium"></el-input>
+                        </div>
+                        <div class="ticket-preferential-restrictions-item">
+                          <el-radio v-model="domain.ticketLimitSaleType" label="perMemberMonth">每月优惠张数上限</el-radio>
+                          <el-input @input="changeTicketLimitSaleData($event,index)"
+                            :value="domain.ticketLimitSaleType == 'perMemberMonth'? domain.ticketLimitSaleData : ''"
+                            placeholder="请输入优惠张数" :disabled="!(domain.ticketLimitSaleType == 'perMemberMonth')"
+                            size="medium"></el-input>
+                        </div>
+                      </el-form-item> -->
+                      <!-- 补贴方式 -->
+                      <el-form-item label="补贴方式：" class="set-options-wrap" :prop="'movieList.'+ index" :rules="{
+                              required: true, message: ' ', trigger: 'change'
+                            }">
+                        <div class="detail-time-select-item">
+                          <el-select v-model="domain.lowPriceMark" placehaolder="请选择" size="medium">
+                            <el-option v-for="(item,index) in lowPriceMarkList" :key="index" :label="item.label"
+                              :value="item.value"></el-option>
+                          </el-select>
+                        </div>
+                      </el-form-item>
+                      <el-form-item label="最高补贴N元：" :prop="'movieList.'+ index" :rules="{
+                              required: true, validator: checkLowPriceMark, trigger: 'blur'
+                            }" class="maximum-subsidy-wrap" v-if="domain.lowPriceMark == 'cinemaPay'">
+                        <el-input v-model="domain.maxSubsidies" placeholder="最高补贴N元" size="medium"></el-input>
+                      </el-form-item>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="add-equity-btn" @click="handleAddEquity">添加其他影院的不同优惠</div>
+          </div>
         </el-collapse-item>
       </el-collapse>
       <el-form-item style="textAlign:center">
@@ -481,10 +624,12 @@
       :reviewData="innerCinemaMultiData" :disabledData="disabledData" @frameCinemaDialogCallBack="handleCallBack">
     </frameMultiCinema>
     <!--选择销售单号弹窗-->
-    <ccmSaleList ref="ccmSaleList" :incomeData="incomeData" @ccmSaleListCallBack="ccmSaleListCallBack" />
+    <ccmSaleList ref="ccmSaleList" :incomeData="incomeData" :disabledData="disabledVoucherData"
+      @ccmSaleListCallBack="ccmSaleListCallBack" />
     <!--选择卖品弹窗-->
     <cimSelectedGoods ref="cimSelectedGoods" :dialogFeedbackData="dialogFeedbackData"
-      :dialogVisible.sync="selectedGoodsDialogVisible" @cimSelectedGoodsDialogCallBack="selectedGoodsDialogCallBack" />
+      :dialogVisible.sync="selectedGoodsDialogVisible" :autoClose="false"
+      @cimSelectedGoodsDialogCallBack="selectedGoodsDialogCallBack" />
   </div>
 </template>
 <script>
@@ -576,6 +721,7 @@ export default {
     };
 
     return {
+      disabledVoucherData: [], //代金券中销售单号禁选数据
       uploadHeaders: {
         Authorization: this.$store.state.loginToken,
         "Cpm-User-Token": this.$store.state.loginToken
@@ -606,7 +752,8 @@ export default {
         { name: "影票折扣", value: "movie" },
         { name: "卖品折扣", value: "goods" },
         { name: "生日赠券", value: "birthday" },
-        { name: "代金券", value: "voucher" }
+        { name: "代金券", value: "voucher" },
+        { name: "次卡", value: "time_card" }
       ], //权益类别列表
       stepData: {
         stepEl: ".el-collapse-item",
@@ -678,6 +825,8 @@ export default {
             ticketLimitSaleType: "",
             ticketSaleData: "",
             ticketSaleType: "discountPrice",
+            ticketIssueType: "discountPrice", //出票金额类型
+            ticketIssueValue: "", //出票金额数值
             weeks: [],
             isIndeterminateWeeks: false,
             checkAllWeeks: true,
@@ -732,6 +881,24 @@ export default {
           label: "零售价-N（元）"
         }
       ],
+      timeCardSetOptions: [
+        {
+          value: "fixPrice",
+          label: "固定金额（元）"
+        },
+        {
+          value: "discountPrice",
+          label: "零售价打折（%）"
+        },
+        {
+          value: "subPrice",
+          label: "零售价-N（元）"
+        },
+        {
+          value: "addToLowestPrice",
+          label: "最低发行价±N（元）"
+        }
+      ],
       lowPriceMarkList: [
         {
           value: "cinemaPay",
@@ -774,15 +941,28 @@ export default {
       });
   },
   mixins: [fixStepMixin],
+  watch: {
+    "ruleForm.logoPic": {
+      handler(newName, oldName) {
+        this.$refs["ruleForm"].clearValidate("logoPic");
+      },
+      deep: true
+    }
+  },
   methods: {
     //卖品弹窗返回数据
     selectedGoodsDialogCallBack(opt) {
       if (opt.btnType == 0) {
         return;
       }
-      if (opt.data) {
+      if (opt.btnType == 1 && opt.data.length == 0) {
+        this.selectedGoodsDialogVisible = true;
+        this.$message.warning("请至少选择一项卖品");
+        return false;
+      } else {
         this.ruleForm.goods.goodsList = this.goodsAddGoodsCodeAndName(opt.data);
         this.$refs["ruleForm"].validateField(["goods.goodsList"]);
+        this.selectedGoodsDialogVisible = false;
       }
     },
     //营销单号返回数据
@@ -805,12 +985,35 @@ export default {
       this.saleListIndex = index;
       if (type == "dai") {
         this.incomeData.couponType = 1;
+        this.$set(this, "disabledVoucherData", this.getOtherVoucherList(index));
       } else if (type == "birthdaydai") {
         this.incomeData.couponType = 1;
       } else if (type == "birthdaycdk") {
         this.incomeData.couponType = 0;
       }
       this.$refs.ccmSaleList.isShowDialog(true);
+    },
+    // 获取index除外其他所有列表的销售单号合集
+    getOtherVoucherList(index) {
+      var otherVoucherList = [];
+      for (let i = 0; i < this.ruleForm.ticketList.length; i++) {
+        if (index != i) {
+          otherVoucherList.push(this.ruleForm.ticketList[i]);
+        }
+      }
+      otherVoucherList = this.formateVoucher(otherVoucherList);
+      return otherVoucherList;
+    },
+    // 格式化禁选数据
+    formateVoucher(arr) {
+      if (!arr) {
+        return [];
+      }
+      arr.map((item, index) => {
+        item.applyCode = item.ticketNo;
+        return item;
+      });
+      return arr;
     },
     //展示当前适用影院合集
     getArrCinemaListName(arr) {
@@ -942,21 +1145,41 @@ export default {
         this.$set(this, "innerCinemaMultiData", editDataIndex);
         this.$set(this, "disabledData", this.getIndexOtherCinemaList(index));
       }
-      console.log(this.innerCinemaMultiData, "222222222", this.disabledData);
+      // console.log(this.innerCinemaMultiData, "222222222", this.disabledData);
       this.dialogVisible = true;
     },
     handleCallBack(opt) {
       var arr = new Array(...opt.data);
-      if (this.cinemaIndex == "卖品") {
-        this.ruleForm.goods.cinemaList = this.cinemaAddId(arr);
-        this.$refs["ruleForm"].validateField(["goods.cinemaList"]);
+      if (opt.btnType == 1) {
+        if (arr.length == 0) {
+          this.dialogVisible = true;
+          this.$message.warning("请至少选择一家影院");
+          return false;
+        } else {
+          if (this.cinemaIndex == "卖品") {
+            this.ruleForm.goods.cinemaList = this.cinemaAddId(arr);
+            this.$refs["ruleForm"].validateField(["goods.cinemaList"]);
+          } else {
+            this.ruleForm.movieList[
+              this.cinemaIndex
+            ].cinemaList = this.cinemaAddId(arr);
+            this.$refs["ruleForm"].validateField([
+              "movieList." + this.cinemaIndex + ".cinemaList"
+            ]);
+          }
+        }
       } else {
-        this.ruleForm.movieList[this.cinemaIndex].cinemaList = this.cinemaAddId(
-          arr
-        );
-        this.$refs["ruleForm"].validateField([
-          "movieList." + this.cinemaIndex + ".cinemaList"
-        ]);
+        if (this.cinemaIndex == "卖品") {
+          this.ruleForm.goods.cinemaList = this.cinemaAddId(arr);
+          this.$refs["ruleForm"].validateField(["goods.cinemaList"]);
+        } else {
+          this.ruleForm.movieList[
+            this.cinemaIndex
+          ].cinemaList = this.cinemaAddId(arr);
+          this.$refs["ruleForm"].validateField([
+            "movieList." + this.cinemaIndex + ".cinemaList"
+          ]);
+        }
       }
     },
     //适用影院 截止
@@ -1040,6 +1263,12 @@ export default {
         case "voucher":
           itemOne = {
             name: "权益规则-代金券",
+            isactive: false
+          };
+          break;
+        case "time_card":
+          itemOne = {
+            name: "权益规则-次卡",
             isactive: false
           };
           break;
@@ -1204,6 +1433,68 @@ export default {
           )
         ) {
           callback(new Error("整数部分为1到9999的数字,最多一位小数"));
+        } else {
+          callback();
+        }
+      }
+      callback();
+    },
+    // 次卡--出票金额
+    checkTicketIssueType(rule, value, callback) {
+      if (value.ticketIssueValue.toString().replace(/\s/g, "") == "") {
+        callback(new Error("请输入数字"));
+      }
+
+      //零售打折
+      if (value.ticketIssueType == "discountPrice") {
+        if (
+          !/^\d+(\.\d+)?$/.test(
+            value.ticketIssueValue.toString().replace(/\s/g, "")
+          )
+        ) {
+          callback(new Error("请输入正确的数字"));
+        }
+        if (
+          !/^[1-9][0-9]{0,1}$/.test(
+            value.ticketIssueValue.toString().replace(/\s/g, "")
+          )
+        ) {
+          callback(new Error("整数部分为1到99的数字"));
+        } else {
+          callback();
+        }
+      }
+      //零售价-N  固定金额  最低发行价
+      if (
+        value.ticketIssueType == "subPrice" ||
+        value.ticketIssueType == "fixPrice"
+      ) {
+        if (
+          !/^\d+(\.\d+)?$/.test(
+            value.ticketIssueValue.toString().replace(/\s/g, "")
+          )
+        ) {
+          callback(new Error("请输入正确的数字"));
+        }
+        if (
+          !/^[1-9]$|^[1-9][0-9]{1,3}$|^[1-9][.]\d{1}$|^[1-9][0-9]{1,3}[.]\d{1}$/.test(
+            value.ticketIssueValue.toString().replace(/\s/g, "")
+          )
+        ) {
+          callback(new Error("整数部分为1到9999的数字,最多一位小数"));
+        } else {
+          callback();
+        }
+      }
+      if (value.ticketIssueType == "addToLowestPrice") {
+        if (
+          !/^((\+|-)?[1-9][0-9]{0,3}(\.[1-9])?)$/.test(
+            value.ticketIssueValue.toString().replace(/\s/g, "")
+          )
+        ) {
+          callback(
+            new Error("可输入正负数,整数部分为1到9999的数字,最多一位小数")
+          );
         } else {
           callback();
         }
@@ -1442,7 +1733,7 @@ export default {
       return formatDate;
     },
     initStepData(ruleForm) {
-      var stepList = [{ name: "权益信息", isactive: false }];
+      // var stepList = [{ name: "权益信息", isactive: false }];
       var itemOne = {};
       if (ruleForm.equityType == "consumer_type") {
         switch (ruleForm.equityCategory) {
@@ -1471,8 +1762,14 @@ export default {
               isactive: false
             };
             break;
+          case "time_card":
+            itemOne = {
+              name: "权益规则-次卡",
+              isactive: false
+            };
+            break;
         }
-        stepList.push(itemOne);
+        // stepList.push(itemOne);
         this.$set(this.stepData.stepList, 1, itemOne);
       }
     },
@@ -1547,6 +1844,11 @@ export default {
             res.birthday.birthdayCodeOrId = birthdayCodeOrId;
             this.ruleForm.birthday = res.birthday;
             this.selectAll(0);
+          } else if (
+            res.equityType == "consumer_type" &&
+            res.equityCategory == "time_card"
+          ) {
+            this.ruleForm.movieList = this.dataTurnFormatDate(res).movieList;
           }
           //卡类型滚动标签注册
           this.initStepData(this.ruleForm);
@@ -1581,6 +1883,8 @@ export default {
             movieList[i].dayTimesJson = this.timeTurnStr(
               movieList[i].dayTimesJson
             );
+            delete movieList[i].ticketIssueType;
+            delete movieList[i].ticketIssueValue;
           }
           data.movieList = movieList;
         } else if (data.equityCategory == "goods") {
@@ -1596,6 +1900,16 @@ export default {
             delete birthday.voucherList;
           }
           data.birthday = birthday;
+        } else if (data.equityCategory == "time_card") {
+          for (var i = 0; i < movieList.length; i++) {
+            movieList[i].weeks = movieList[i].weeks.join(",");
+            movieList[i].dayTimesJson = this.timeTurnStr(
+              movieList[i].dayTimesJson
+            );
+            delete movieList[i].ticketSaleType;
+            delete movieList[i].ticketSaleData;
+          }
+          data.movieList = movieList;
         }
       }
       return data;
@@ -1621,6 +1935,7 @@ export default {
               .then(res => {
                 // this.loading = false;
                 this.$message.success("编辑成功");
+                this.$store.commit("tagNav/removeTagNav", this.$route);
                 this.$router.push({
                   path: "/member/ownRights/seeOwnrightsCard",
                   query: {
@@ -1639,6 +1954,7 @@ export default {
               .then(res => {
                 // this.loading = false;
                 this.$message.success("添加成功");
+                this.$store.commit("tagNav/removeTagNav", this.$route);
                 this.$router.push({
                   path: "/member/ownRights/seeOwnrightsCard",
                   query: {
@@ -1659,7 +1975,7 @@ export default {
       });
     },
     resetForm(formName) {
-      this.$refs[formName].resetFields();
+      this.$store.commit("tagNav/removeTagNav", this.$route);
       this.$router.push({ path: "/member/ownRights/ownRightsList" });
     },
     //适用影厅 制式 星期 默认全选
@@ -1721,6 +2037,8 @@ export default {
         ticketLimitSaleType: "",
         ticketSaleData: "",
         ticketSaleType: "discountPrice",
+        ticketIssueType: "discountPrice", //出票金额类型
+        ticketIssueValue: "", //出票金额数值
         weeks: [],
         isIndeterminateWeeks: false,
         checkAllWeeks: true,
@@ -1780,11 +2098,11 @@ export default {
     line-height: 30px;
     position: relative;
     display: inline-block;
-    background: rgb(230, 229, 229);
-    border: 1px solid #777777;
+    background: #f5f5f5;
+    border: 1px solid #bcbcbc;
     border-radius: 4px;
     font-size: 12px;
-    color: #333333;
+    color: #666;
     letter-spacing: 0;
     text-align: center;
     cursor: pointer;

@@ -9,18 +9,25 @@
   </div>
 </template>
 <script>
-import {goHome} from '../../http/interface'
+import {getOrgInfo} from '../../http/interface'
 export default {
-  // created(){
-  //   this.$camList.goHome().then(response =>{
-  //       this.$router.push({path:response.data})
-  //    }) 
-  // },
+  data() {
+    return {};
+  },
   beforeRouteEnter(to,from,next){
-    goHome().then(response =>{
-        next((vm)=>{
-          vm.$router.push({path:response.data});
-        })
+    getOrgInfo({body:{}}).then(response =>{
+         if(response.data){
+             next(vm=>{
+                let type = response.data.orgType;
+                if(type == 'group'){
+                    vm.$router.push('/analysis/group/inventory')
+                }else if(type == 'city'){
+                    vm.$router.push('/analysis/group/inventory')
+                }else if(type == 'cinema'){
+                    vm.$router.push('/analysis/group/inventory')
+                }
+             })
+        }
      }) 
   }
 };

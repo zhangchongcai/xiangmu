@@ -3,13 +3,15 @@ import * as TYPES from '../types'
 export default {
   state:{
     show:false,
-    type:2,
+    typesCode:'',
+    type:1,
     user:'',
     password:'',
   },
   mutations:{
-    [TYPES.EMPOWER_SET_SHOW] : (state,val) => {
-      state.show = val
+    [TYPES.EMPOWER_SET_SHOW] : (state,data) => {
+      state.show = data.show
+      state.typesCode = data.type
     },
     [TYPES.EMPOWER_SET_USER] : (state,val) => {
       state.user = val

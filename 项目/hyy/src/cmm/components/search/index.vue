@@ -28,7 +28,7 @@
                 </template>
                 <!-- 选择框 -->
                 <template v-if="item.type == 'select'">
-                    <el-select class="input-type-166" style="width:264px;" v-model="baseConfig.form[`${item.keyName}`]" :placeholder="item.placeholder ? item.placeholder : '请选择'" :multiple="item.multiple" :multiple-limit="item.multipleLimit">
+                    <el-select class="input-type-166" style="width:192px;" v-model="baseConfig.form[`${item.keyName}`]" :placeholder="item.placeholder ? item.placeholder : '请选择'" :multiple="item.multiple" :multiple-limit="item.multipleLimit">
                         <el-option v-for="item in item.options" :key="item.value" :label="item.label" :value="item.value"></el-option>
                     </el-select>
                 </template>
@@ -38,10 +38,10 @@
                 </template>
             </el-form-item>
         </template>
-        <br/>
         <el-form-item class="btn-group">
             <el-row class="flex-base" :class="{'isTicketManagement': modelName == 'salesManagement'}">
                 <el-button class="searchBtn" type="primary" @click="emitSearch">查询</el-button>
+                <el-button class="searchBtn" style="border-color:#3b74ff;color:#3b74ff;margin-left:8px;" @click="emitReset">重置</el-button>
                 <el-button type="text" v-if="searchLevelButton" @click="changeSearchType">高级查询<i class="el-icon--right" :class="{'el-icon-arrow-down': !isShowHightLevel, 'el-icon-arrow-up': isShowHightLevel}"></i></el-button>
             </el-row>
         </el-form-item>
@@ -88,10 +88,11 @@
 <script>
 // 弹窗混入回调方法，注册弹窗和设置回调都在此处
 import searchAlertHandle from 'cmm/mixins/marketing/searchAlertHandle.js';
-import minxins from 'frame_cpm/mixins/cacheMixin.js'
+// import minxins from 'frame_cpm/mixins/cacheMixin.js'
 export default {
     components: {},
-    mixins: [searchAlertHandle,minxins.cacheMixin],
+    // mixins: [searchAlertHandle,minxins.cacheMixin],
+    mixins: [searchAlertHandle],
     props: {
         config: {
             required: true,
@@ -111,7 +112,7 @@ export default {
     data() {
         return {
             /* 缓存数据 */
-            cacheField: ["baseConfig"],
+            // cacheField: ["baseConfig"],
             /* 基本配置 */
             isShowForm: false,
             aaa:{},
@@ -131,11 +132,11 @@ export default {
             /* 是否显示高级检索内容 */
             isShowHightLevel: false,
             /* 此处监听数据变化 */
-            watchDataChange: null
+            watchDataChange: null,
         }
     },
     created() {
-        this.init();       
+        this.init();
     },
     mounted(){
         if(!this.isCache){
@@ -148,7 +149,6 @@ export default {
             let form = {};
             let system = {}
                system = JSON.parse(JSON.stringify(this.config));
-            
             try {
                 for (let i = 0; i < system.length; i++) {
                     let item = system[i];
@@ -174,14 +174,12 @@ export default {
             } catch (msg) {
                 console.log(msg);
             }
-
             // 实时将数据变化返回
-            this.watchDataChange = this.$watch('baseConfig.form', (new_val, old_val) => {
+            this.watchDataChange = this.$watch('baseConfig', (new_val, old_val) => {
                 this.$emit('searchValueChange', new_val);
             }, {
                 deep: true
             })
-            console.log(this.baseConfig)
             /*------star--------*/
             let _form = this.baseConfig.form
             let cacheForm = false
@@ -209,6 +207,7 @@ export default {
                 system
             }
             this.isShowForm = true;
+            
         },
         /**
          * @function callWindow - 唤起弹窗
@@ -277,6 +276,25 @@ export default {
         emitSearch() {
             let param = this.baseConfig.form;
             this.$emit('pressSearch', param)
+        },
+        /**
+         * @function emitReset - 重置查询内容
+         */
+        emitReset(){
+            let form = {};
+            let system = JSON.parse(JSON.stringify(this.config));
+            console.log(system)
+            for(let item of system){
+                if(!item.options){
+                    form[item.keyName] = "";
+                    item.value = "";
+                }else{
+                    form[item.keyName] = item.options[0].value;
+                    item.value = item.options[0].value;
+                }
+            }
+            this.baseConfig.form = form;
+            this.baseConfig.system = system;
         },
         /**
          * @function changeSearchType - 修改查询规则 高级/低级
@@ -365,50 +383,59 @@ export default {
     }
     .searchActivityName{
         .el-input{
-            width: 264px;
+            width: 192px;
         }
     }
     .validDate{
-        // .el-icon-date {
-        //     position: absolute;
-        //     top: 0;
-        //     right: 9px;
-        // }
         .el-range-input{
             font-size: 12px;
             color: #666666;
+            position: relative;
+            left: -18px;
         }
         .el-range-separator{
             width:50px;
             font-size: 12px;
             color: #666666;
+            position: relative;
+            left: -18px;
         }
         .el-form-item__label{
-            padding-right: 24px;
+            padding-right: 16px;
         }
         .el-date-editor{
-            width: 264px;
+            position: relative;
+            top: 4px;
+            width: 256px;
+            .el-range__close-icon{
+                position: relative;
+                left: -18px;
+            }
+            .el-range__icon{
+                position: relative;
+                left: 218px;
+            }
         }
     }
     .searchCreaterId{
         .el-form-item__label{
-            padding-right: 24px;
+            padding-right: 16px;
         }
         .el-input{
-            width: 174px;
+            width: 192px;
         }
     }
     .searchApprovalmanId{
         .el-form-item__label{
-            padding-right: 24px;
+            padding-right: 16px;
         }
         .el-input{
-            width: 174px;
+            width: 192px;
         }
     }
     .searchCreaterArea,.searchBusinessCode{
         .el-input{
-            width: 174px;
+            width: 192px;
         }
     }
     .windowInput{
@@ -421,9 +448,16 @@ export default {
         font-size: 12px !important;
     }
     .btn-group{
-        float: right;
+        // float: right;
         margin-right:8px; 
     }
+    .el-form-item__label{
+        padding-right:16px;
+    }
+    .el-form-item__content{
+        height: 40px;
+    }
+    
 }
 .el-select-dropdown__item{
     font-size: 12px !important;

@@ -141,9 +141,6 @@ export default {
             }
         }   
     },
-    created(){
-        console.log(this.timeRadio,this.targetRadio,'props')
-    },
 }
 </script>
 

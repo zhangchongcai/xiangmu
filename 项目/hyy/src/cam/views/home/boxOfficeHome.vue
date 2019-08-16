@@ -6,7 +6,6 @@
 </template>
 <script>
 import {getOrgInfo} from '../../http/interface'
-
 export default {
   data() {
     return {};

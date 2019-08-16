@@ -63,7 +63,7 @@
 	}
 </script>
 <style type="text/css" scoped>	
-	.login-container {
+	/* .login-container {
     	-webkit-border-radius: 5px;
     	border-radius: 5px;
     	-moz-border-radius: 5px;
@@ -82,5 +82,5 @@
     }
     .login-container .remember {
       margin: 0px 0px 35px 0px;
-    }
+    } */
 </style>

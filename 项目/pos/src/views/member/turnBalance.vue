@@ -1,6 +1,6 @@
 <template>
     <div class="_member-home">
-        <div class="member-home-title">余额转结</div>
+        <div class="member-home-title">余额结转</div>
         <div class="trun-out-card">
             <div class="member-info-title">转出会员卡</div>
             <div style="position:relative">
@@ -15,7 +15,7 @@
                     <label>姓名：</label>{{firstCardInfo.userName}}
                 </div>
                 <div class='first-card-item'>
-                    <label>卡政策：</label>{{firstCardInfo.cardType}}
+                    <label>卡政策：</label>{{firstCardInfo.cardProductName}}
                 </div>
                 <div class='first-card-item'>
                     <label>开卡影城：</label>{{firstCardInfo.cinemaName}}
@@ -39,7 +39,7 @@
                         class="phoneOrCard"
                         @focus="(e)=>{e.target.style.borderColor = 'rgb(63, 118, 253)'}"
                         @blur="(e)=>{e.target.style.borderColor = '#bcbcbc'}">
-                    <el-button size="medium" type="primary" @click="readCard">读卡</el-button>
+                    <el-button class="common-btn" type="primary" @click="readCard">读卡</el-button>
                     <div v-show="secondCardError.cardName" class="cardNoNameStyle">
                         <span v-text="secondCardError.cardType"></span>
                         <span style="margin-left:2vw" v-text="'卡政策：'+secondCardError.cardName"></span>
@@ -53,7 +53,7 @@
                 </div>
                 <div class='first-card-item'>
                     <label>卡政策：</label>
-                    {{secondCardInfo.cardType}}
+                    {{secondCardInfo.cardProductName}}
                 </div>
                 <div class='first-card-item'>
                     <label>开卡影城：</label>
@@ -74,20 +74,17 @@
                 </div>
             </div>
         </div>
-         <!-- <div class="foot-buttom-layer" v-if="!isshow">
-            <el-button size="medium" @click="back()">返回</el-button>
-        </div> -->
-        <div class="bottom-btn-warp" >
-            <el-button @click="back()">返回</el-button>
-            <el-button class="submit" @click="submit" v-if="isshow && confirmCardShow" type="primary">确定</el-button>
+        <div class="bottom-btn-warp">
+            <el-button @click="back()" class="common-btn">取消</el-button>
+            <el-button class="common-btn" @click="submit" v-if="isshow && confirmCardShow" type="primary">确定</el-button>
         </div>
 
         <!-- dialog -->
         <el-dialog title="请输入密码" :visible.sync="dialogFormVisible" width='40%'>
             <el-input v-model="password" type="password"></el-input>
-            <div slot="footer" class="dialog-footer">
-            <el-button @click="dialogFormVisible = false">取 消</el-button>
-            <el-button type="primary" @click="getInfo">确 定</el-button>
+            <div slot="footer">
+            <el-button @click="dialogFormVisible = false" class="common-btn">取 消</el-button>
+            <el-button type="primary" @click="getInfo" class="common-btn">确 定</el-button>
             </div>
         </el-dialog>
     </div>
@@ -97,7 +94,7 @@
 import CardReading from "./components/cardReading";
 import { mapState, mapGetters  } from "vuex";
 import { memeberApi , MemberAjax} from "src/http/memberApi";
-import { secKeyBoard ,readCard } from './util/utils'
+import { secKeyBoard ,readCard ,routerJump , statusDeter, cardStatusCN} from './util/utils'
 export default {
     data(){
         return {
@@ -130,9 +127,18 @@ export default {
     watch:{
         'member.memberCardInfo':{
             handler:function(val){
-                this.firstCardInfo = val;
-                this.firstCardShow = true;
-                this.trunBalance();
+                if(val.cardTypeCode === 'times_card' || val.cardTypeCode === 'month_card' || val.cardTypeCode === 'gift_card'){
+                    Vue.prototype.$message.warning(`${val.cardType}不可此操作`);
+                    this.member.isshow = false;
+                    return;
+                }
+                if(routerJump.call(this,val.cardNo,val.phoneNumber)){
+                    if(statusDeter.call(this,true,'normal',`该卡状态为${cardStatusCN(this.member.cardState)},不许余额结转`)){
+                        this.firstCardInfo = val;
+                        this.firstCardShow = true;
+                        this.trunBalance();
+                    }
+                }
             },  
             immediate:false
         }
@@ -242,9 +248,11 @@ export default {
                         this.$message.warning('请检查卡是否正常或为储值卡');
                         return;
                     }
-                    this.secondCardInfo = res.data;
-                    this.secondCardShow = true;
-                    this.trunBalance();
+                    if(routerJump.call(this,res.data.cardNo,res.data.phoneNumber)){
+                        this.secondCardInfo = res.data;
+                        this.secondCardShow = true;
+                        this.trunBalance();
+                    }
                 }else{
                     this.$message.warning(res.msg)
                 }
@@ -261,23 +269,19 @@ export default {
 }
 </script>
 <style lang='scss' scoped>
-.member-info-title{
-    padding:3vh 0 0 2vw;
-    font-size:18px;
-    font-weight:bold;
-    text-align:left;
-}
+
 .trun-out-card{
+    padding-top:2vw;
     .first-card-info{
         display:flex;
         flex-wrap:wrap;
         padding-left:2vw;
         .first-card-item{
             width:30vw;
-            margin-top: 1vh;
-            font-size:16px;
-            label{
-                font-size:16px;
+            margin-top: 2vh;
+            font-size:$font-size12;
+            label,em{
+                font-size:$font-size12;
             }
         }
     }
@@ -294,11 +298,15 @@ export default {
         display:inline-block;
         width:10vw;
         height:6vh;
+        font-size:$font-size12;
         border:1px dashed rgba(64, 120, 246, 1);
         line-height:6vh;
         text-align:center;
         color:rgba(64, 120, 246, 1);
         margin-right:1.5vw;
+        +span{
+            font-size:$font-size12
+        }
     }
 }
   .iskeyBoard{

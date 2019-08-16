@@ -16,6 +16,10 @@ export default {
             pos_show_type:[],//POS机客显类型
             print_voucher:[],//打印凭证
             meal_preparation:[],//备餐菜单
+            sale_goods_print_type:1, // 设置商品是否直接出库
+            fictitious_keyboard : 0, //设置虚拟键盘
+            isSetting:false,//是否有设置过，用于判断是否初始化
+            counter_type_value : 'both',//售卖商品范围值
         }
     },
 

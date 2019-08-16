@@ -1,6 +1,6 @@
 <template>
 <transition name="slider">
-    <div class="wrap" v-show="show" :style="{'top':show ?'100px':'-100px'}">
+    <div class="wrap" v-show="show" :style="{'top':show ?'10vw':'-10vw'}">
         <div class="mop-css-5 chasing-dots">
             <div class="dot1"></div>
             <div class="dot2"></div>
@@ -23,14 +23,14 @@ export default {
     position:fixed;
     left:50%;
     top:0;
-    width:100px;
-    height:100px;
+    width:10vw;
+    height:10vw;
     transform:translateX(-50%);
     transition:.5s linear;
 }
 .chasing-dots {
-    min-width: 100px;
-    min-height: 100px;
+    min-width: 10vw;
+    min-height: 10vw;
     position: relative;
     text-align: center;
     -webkit-animation: rotate 2s infinite linear;
@@ -41,7 +41,6 @@ export default {
 .mop-load-text {
     font-weight: 700;
     margin-left: 1.2em;
-    font-family: Trebuchet MS,Verdana,Helvetica,Arial,sans-serif;
 }
 .dot1, .dot2 {
     width: 50%;

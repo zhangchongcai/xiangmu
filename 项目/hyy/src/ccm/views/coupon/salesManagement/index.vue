@@ -7,7 +7,7 @@
 
     <!-- 按钮组 -->
     <section class="btnGroup-section flex-base flex-end">
-        <el-button type="primary" plain @click="create">新建</el-button>
+        <el-button type="primary" plain @click="create" style="width:80px;height:32px">新建</el-button>
     </section>
 
     <!-- 表格 -->
@@ -24,7 +24,18 @@
                             {{ticketStatus(scope.row)}}
                         </div>
                         <div v-else-if="item.prop == 'auditState'">
-                            {{auditStatus(scope.row.auditState)}}
+                            <!-- <span v-if="scope.row.auditState=='0'" style="font-size:12px;color:#2DBC2D">
+                                {{auditStatus(scope.row.auditState)}}
+                            </span>
+                            <span v-else-if="scope.row.auditState=='1'" style="font-size:12px;color:#F33430">
+                                {{auditStatus(scope.row.auditState)}}
+                            </span>
+                            <span v-else-if="scope.row.auditState=='2'" style="font-size:12px;color:##739BFF">
+                                {{auditStatus(scope.row.auditState)}}
+                            </span>
+                            <span v-else> -->
+                                {{auditStatus(scope.row.auditState)}}
+                            <!-- </span> -->
                         </div>
                         <div v-else-if="item.prop == 'validDateStart' || item.prop == 'validDateEnd'">
                             {{tiemRule(scope.row[`${item.prop}`])}}
@@ -49,8 +60,15 @@
     </section>
 
     <!-- 分页 -->
-    <section class="pagination-section flex-base flex-center" v-if="table.data.length != 0">
-        <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="pageConfig.pageNo" :page-sizes="pageConfig.pageSizes" :page-size="pageConfig.pageSize" layout="total, sizes, prev, pager, next, jumper" :total="pageConfig.total">
+    <section class="flex-base flex-center pageStyle" v-if="table.data.length != 0">
+        <el-pagination 
+        @size-change="handleSizeChange" 
+        @current-change="handleCurrentChange" 
+        :current-page="pageConfig.pageNo" 
+        :page-sizes="pageConfig.pageSizes" 
+        :page-size="pageConfig.pageSize" 
+        background layout="total, prev, pager, next, jumper, sizes" 
+        :total="pageConfig.total">
         </el-pagination>
     </section>
 
@@ -451,18 +469,6 @@ export default {
             });
         },
         /**
-         * @function create - 新建
-         */
-        create() {
-            this.$router.push({
-                name: 'createSales',
-                query:{
-                    pageName:'create'
-                }
-            });
-        },
-
-        /**
          * @function ticketTypes - 票券类型
          * @param {Number} statusVal - 状态码
          */
@@ -531,6 +537,9 @@ export default {
                 case 9:
                     statusText = '票券生成中';
                     break;
+                case 10:
+                    statusText = '迁移';
+                    break;
                 default:
                     statusText = '未知'
                     break;
@@ -578,11 +587,20 @@ export default {
                 emitFn: 'change',
                 use: '2&&0,2&&8,1&&1,1&&0'
             }];
-            if(row.genStatus == 2){
+            if(row.genStatus == 2){  //票券生成中的按钮菜单
                 return [{
                         label: '查看',
                         emitFn: 'check',
                         use: 'all'
+                    }
+                ]
+            }
+
+            if(ticketStatus==10){   //数据迁移按钮菜单
+                return [
+                    {
+                        label: '修订',
+                        emitFn: 'revise',
                     }
                 ]
             }
@@ -628,8 +646,7 @@ export default {
                 label: '修订',
                 emitFn: 'revise',
                 use: '0&&2'
-            }, 
-            {
+            }, {
                 label: '停用',
                 emitFn: 'stop',
                 use: '0&&2'
@@ -644,21 +661,25 @@ export default {
             }];
 
             let controlArray = [];
-            if(row.genStatus == 2){
+            if(row.genStatus == 2){   //票券生成中的按钮菜单
                 return [
                     {
                         label: '复制',
                         emitFn: 'copy',
-                        use: 'all'
                     },{
                         label: '查看审批单',
                         emitFn: 'checkApporve',
-                        use: '2&&1,2&&0,0&&9,0&&2,0&&3,0&&4,0&&5,1&&1,2&&7,1&&0'
                     },{
                         label: '作废',
                         emitFn: 'blankOut',
-                        use: '0&&9,0&&2,0&&3'
                     },
+                ]
+            }else if (ticketStatus == 10){  //数据迁移的按钮菜单
+                return[
+                    {
+                        label: '修订',
+                        emitFn: 'revise',
+                    }
                 ]
             }
             let currentStatus = `${auditStatus}&&${ticketStatus}`;
@@ -669,7 +690,7 @@ export default {
                 } else if (currentUse.indexOf(currentStatus) != -1) {
                     if(controls[i]['emitFn']=='revise'){
                         if(row.isRevision == 1) {
-                            console.log('修订中---------')
+                            // console.log('修订中---------')
                             continue
                         }   //如果是修订中 则去除修订菜单
                     }
@@ -706,6 +727,17 @@ export default {
             })
         },
         /**
+         * @function create - 新建
+         */
+        create() {
+            this.$router.push({
+                name: 'createSales',
+                query:{
+                    pageName:'add'
+                }
+            });
+        },
+        /**
          * @function change - 修改
          */
         change(param) {
@@ -723,14 +755,16 @@ export default {
          * @function export - 导出
          */
         export (param) {
-            console.log('导出:', param)
             let pointer = this;
             let type = "warning";
             let url = this.baseUrl + "/coupon/apply/export?applyCode="+param.applyCode ;
-            let headers = {
-                 "Cpm-User-Token": localStorage.getItem("token")
+            let headers={}
+            if(this.$store.state.CpmUserKey){
+                headers['Cpm-User-Token'] = this.$store.state.CpmUserKey;
             }
-            // this.$ccmList.couponExport({applyCode:param.applyCode})
+            if (sessionStorage.getItem('token')) {
+                headers['Cpm-User-Token'] = sessionStorage.getItem('token');
+            }
             Axios(url, {
                 headers,
                 method: "post",
@@ -1031,6 +1065,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "../../../assets/css/comList.scss";   
 .el-dropdown-link {
     cursor: pointer;
     color: #409EFF;
@@ -1044,5 +1079,8 @@ export default {
 .delayLine {
     margin-left: 15px;
     margin-right: 15px;
+}
+/deep/.el-dropdown-link{
+    color: #3B74FF
 }
 </style>

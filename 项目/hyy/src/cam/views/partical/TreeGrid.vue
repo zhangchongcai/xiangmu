@@ -1,6 +1,16 @@
 <template>
-    <el-table :data="data" border style="width: 100%" :height="tableHeight" :row-style="showTr" size="mini" class="tree-table">
-        <el-table-column v-for="(column,index) in columns" :key="column.dataIndex" :label="column.text" show-overflow-tooltip>
+    <el-table 
+        :data="data" 
+        border 
+        style="width: 100%" 
+        :height="tableHeight" 
+        :row-class-name="showTr" 
+        :default-sort="defaultSort"
+        size="mini" 
+        ref="table"
+        @sort-change="tableSortChange"
+        class="tree-table">
+        <el-table-column :prop="column.dataIndex" :key="column.dataIndex" :label="column.text" show-overflow-tooltip :min-width="column.width || 110" :fixed="column.fixed || false" :sortable="column.isNotSort ? false:'custom'"  v-for="(column,index) in columns">
             <template slot-scope="scope">
                 <template v-for="(space, levelIndex) in scope.row._level">
                     <span 
@@ -9,22 +19,45 @@
                         class="ms-tree-space">
                     </span>
                 </template>
-                <span :style="{marginLeft: 16*scope.row._level +'px'}" v-if="index === 0">
+                <span :style="{marginLeft: 18*scope.row._level +'px'}" v-if="index === 0">
                 </span>
                 <i v-if="!scope.row._expanded && toggleIconShow(index,scope.row)" class="el-icon-caret-right" aria-hidden="true" @click="toggle(scope.$index)"></i>
                 <i v-if="scope.row._expanded && toggleIconShow(index,scope.row)" class="el-icon-caret-bottom" aria-hidden="true" @click="toggle(scope.$index)"></i>
-                <span>
-                    {{scope.row[column.dataIndex]}}
+                <span v-if="column.isNotFormat">
+                    <template v-if="column.isSlot && !scope.row.child">
+                        <slot :row="scope.row"></slot>
+                    </template>
+                    <template v-else>
+                        {{scope.row[column.dataIndex]}}
+                    </template>   
+                </span>
+                <span v-else>
+                    {{scope.row[column.dataIndex] | formatNum}}
                 </span>
             </template>
         </el-table-column>
+        <!-- <template v-else>
+            <slot :name="column.dataIndex"></slot>
+        </template> -->
+            
+        
+        
     </el-table>
 </template>
 <script>
 import tool from '../../util/table'
+import Global from "../../util/global";
+
 export default {
     name: 'TreeGrid',
     props: {
+        // 默认的排序列
+        defaultSort: {
+            type: Object,
+            default: function () {
+                return {}
+            }
+        },
         // 该属性是确认父组件传过来的数据是否已经是树形结构了，如果是，则不需要进行树形格式化
         treeStructure: {
             type: Boolean,
@@ -82,7 +115,12 @@ export default {
     },
     data() {
         return {
-            tableHeight: 500
+            tableHeight: 100
+        }
+    },
+    filters: {
+        formatNum: (money, count,unit) => {
+            return Global.formatNum(money,count,unit);
         }
     },
     computed: {
@@ -100,24 +138,42 @@ export default {
         this.calcTableHeight()
     },
     methods: {
+        tableSortChange(column) {
+            this.$emit('tableSortChange',column)
+        },
         calcTableHeight() {
             let h = 0
             document.querySelectorAll('.tree-table tr').forEach(node => {
                 h += node.clientHeight
             })
-            this.tableHeight = h + 2
+            if(this.columns.some(item=>item.fixed)) { //如果列表有fixed的列，需要调整计算逻辑
+                h/=2
+            }
+            this.tableHeight = h + 8
         },
         // 显示行
-        showTr(row, index) {
-                let show = (row.row._parent ? (row.row._parent._expanded && row.row._parent._show) : true)
-                row.row._show = show
-                return show ? '' : 'display:none;'
+        showTr({row, index}) {
+            let show = (row._parent ? (row._parent._expanded && row._parent._show) : true)
+            row._show = show
+            return show ? '' : 'hidden'
         },
         // 展开下级
         toggle(trIndex) {
             let me = this
             let record = me.data[trIndex]
-            record._expanded = !record._expanded
+            // record._expanded = !record._expanded
+            if(record._level == 0) {
+                me.data.forEach((item,index)=>{
+                    if(trIndex === index && item._level == 0) {
+                        me.data[index]._expanded = !me.data[index]._expanded
+                    }else if(item._level == 0){
+                        me.data[index]._expanded = false
+                    }
+                })
+            }else {
+                record._expanded = !record._expanded
+            }
+            
         },
         // 显示层级关系的空格和图标
         spaceIconShow(index) {
@@ -133,7 +189,7 @@ export default {
                 this.calcTableHeight()
             })
             let me = this
-            if (me.treeStructure && index === 0 && record.children && record.children.length > 0) {
+            if (me.treeStructure && index === 0 && record.child && record.child.length > 0) {
                 return true
             }
             return false
@@ -142,5 +198,13 @@ export default {
 }
 </script>
 <style scoped lang="scss">
-
+    .tree-table {
+        /deep/ tr {
+            &.hidden {
+                display: none;
+                height: 0;
+            }
+        }
+    }
+    
 </style>

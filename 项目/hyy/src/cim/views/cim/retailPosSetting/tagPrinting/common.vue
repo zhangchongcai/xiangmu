@@ -13,7 +13,6 @@
       ref="ruleForm"
       :model="queryData"
       label-position="left"
-      label-width="100px"
       label-suffix="："
     >
       <el-collapse  v-model="activeNames">
@@ -258,7 +257,7 @@
   import applyChannel from "cim/components/applyChannel/applyChannel.vue";
   import {letterAndNumReg} from "cim/util/reg.js";
 
-  console.log(letterAndNumReg)
+  // console.log(letterAndNumReg)
   export default {
   mixins: [mixin],
   data() {
@@ -303,7 +302,7 @@
   },
   mounted() {
     this.init();
-    console.log(this.routeMerData);
+    // console.log(this.routeMerData);
   },
 
   methods: {
@@ -412,9 +411,9 @@
         }
       });
     },
-    // //提交
+    //提交
     handleSubmit() {
-      console.log(this.queryData);
+      // console.log(this.queryData);
       this.$refs["ruleForm"].validate(valid => {
         if (valid) {
           if (!this.queryData.cityId) {

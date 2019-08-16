@@ -10,7 +10,7 @@
             <el-form-item label="备用金:" required>
               <el-input v-model="searchAdition.preAmount"></el-input>
             </el-form-item>
-            <el-form-item label="票纸编号:" required>
+            <el-form-item label="票纸编号:">
               <el-col  style="width:300px">
                 <el-input v-model="searchAdition.tpCodeStart" placeholder="票纸编号"></el-input>
               </el-col>
@@ -23,9 +23,9 @@
         </el-collapse-item>
 
         <el-collapse-item title="会员卡领用记录" name="1">
-          <el-form :model="dynamicValidateForm" ref="dynamicValidateForm" label-width="100px" :inline="true">
+          <el-form :model="dynamicValidateForm" ref="dynamicValidateForm" label-width="100px" :inline="true" label-position="left">
             <div v-for="(domain, index) in dynamicValidateForm.domains" :key="domain.key" class="like_ul">
-              <el-form-item :prop="'domains.' + index + '.thingName'" label="会员等级">
+              <el-form-item :prop="'domains.' + index + '.thingName'" label="会员卡政策">
                 <el-input v-model="domain.thingName" @focus="openVipDialog(index)"></el-input>
               </el-form-item>
               <el-form-item :label="'领用数量'" :prop="'domains.' + index + '.thingCount'">
@@ -35,7 +35,7 @@
                 删除</el-button>
             </div>
             <div class="add-time-btn">
-              <el-button type="text" style="padding:0 6px 0 44px;" @click="addDomain">
+              <el-button type="text" style="padding:0 6px 0 24px;" @click="addDomain">
                 <i class="el-icon-circle-plus-outline"></i>
                 <!-- <i class="iconfont icon-neiye-tianjia"></i> -->
                 添加
@@ -44,7 +44,7 @@
           </el-form>
         </el-collapse-item>
         <el-collapse-item title="其他物品领用记录" name="2">
-          <el-form :model="dynamicValidateForm" ref="dynamicValidateForm" label-width="100px" :inline="true">
+          <el-form :model="dynamicValidateForm" ref="dynamicValidateForm" label-width="100px" :inline="true" label-position="left">
             <div v-for="(domain, index) in dynamicValidateForm.domains2" :key="domain.key" class="like_ul">
               <el-form-item :prop="'domains2.' + index + '.thingName'" label="物品类型">
                 <el-input v-model="domain.thingName" @focus="openOtherDialog(index)"></el-input>
@@ -56,7 +56,7 @@
                 删除</el-button>
             </div>
             <div class="add-time-btn">
-              <el-button type="text" style="padding:0 6px 0 44px;" @click="addDomain2">
+              <el-button type="text" style="padding:0 6px 0 24px;" @click="addDomain2">
                 <i class="el-icon-circle-plus-outline"></i>
                 添加
               </el-button>
@@ -69,7 +69,7 @@
       <div class="bottom-handler-tool">
         <div class="btn-area">
           <el-button type="primary" @click="increaseWorker">开始上班</el-button>
-          <el-button @click="cancelFun">取消</el-button>
+          <el-button @click="cancelFun" style="margin-left:32px;">取消</el-button>
         </div>
       </div>
     </div>
@@ -172,11 +172,13 @@
           })
       },
       // 获取收银员
-      getWorker(current) {
+      getWorker(current,userName,userAccount) {
         let limit = {
           current,
           size: this.pageSize,
-          cinemaUid: this.$route.query.cinemaUid
+          cinemaUid: this.$route.query.cinemaUid,
+          userAccount,
+          userName
         };
         this.$csmList.getCashier(Object.assign({}, limit))
           .then(data => {
@@ -219,9 +221,7 @@
             if (!obj.empty && obj.fill) { // 单项全都有数据
               vips.push(obj)
             } else if (!obj.empty && !obj.fill) {
-              return this.$alert('请填写完整的会员卡领用情况', '错误提示', {
-                confirmButtonText: '确定',
-              });
+              return this.$message('请填写完整的会员卡领用情况'); 
             }
           }
         }
@@ -248,9 +248,7 @@
             if (!obj.empty && obj.fill) {
               otherThings.push(obj)
             } else if (!obj.empty && !obj.fill) {
-              return this.$alert('请填写完整的其他物品领用情况', '错误提示', {
-                confirmButtonText: '确定',
-              });
+              return this.$message('请填写完整的其他物品领用情况');
             }
           }
         }
@@ -263,16 +261,10 @@
           .then(data => {
             console.log(data)
             if (data && data.code === 200) {
-              this.$alert('新建班次', '提示', {
-                confirmButtonText: '确定',
-                type: 'success'
-              }).then(() => {
-                this.$router.push("list")
-              })
+              this.$message('新建班次成功')
+              this.$router.push("list")
             } else {
-              this.$alert(`{data.msg}`, '提示', {
-                confirmButtonText: '确定',
-              });
+              this.$message(`${data.msg}`);
             }
           })
       },
@@ -352,6 +344,7 @@
         }
       },
       searchWorker(current, userName, userAccount) {
+        console.log(current, userName, userAccount)
         this.getWorker(current, userName, userAccount)
       },
       // 收银员
@@ -401,15 +394,15 @@
       }
     },
     created() {
-
-
-
-      console.log(this.$store.state.csm.cinemaUid)
+      this.getWorker()
     },
 
   };
 </script>
 <style lang="scss" scoped>
+  /deep/ .el-form-item__label{
+    color: #666;
+  }
   .cinemaList {
     box-sizing: border-box;
     width: 100%;
@@ -420,7 +413,17 @@
       padding: 12px 24px;
       margin-bottom: 10px;
       min-width: 1000px;
+      // /deep/ .el-form-item__label{
+      //   padding-right: 12px;
+      // }
+      .el-form-item{
+        color: #666;
+        margin-bottom: 24px;
+      }
     }
+    // /deep/ .el-form--inline .el-form-item__label{
+    //   padding-left: 1.5em;
+    // }
   }
 
   .demo-form-inline {
@@ -430,7 +433,7 @@
   }
   // 设置表单增删的长度
   .like_ul {
-    padding: 8px 8px 0;
+    padding: 0 8px 16px;
 
     .el-input {
       width: 192px;
@@ -438,6 +441,10 @@
 
     .el-form-item {
       margin: 0;
+    }
+    /deep/ .el-form-item__label{
+      padding-left: 20px;
+      color: #666;
     }
   }
 
@@ -462,25 +469,6 @@
   .el-collapse-item__content{
     padding-bottom: 0;
   }
-  // .el-collapse-item__header {
-  //   display: inline-block;
-  //   border-bottom: none;
-  //   position: relative;
-  //   padding: 7px 0;
-  //   font-size: 14px;
-  //   color: #333;
-
-  //   &::after {
-  //     left: 0;
-  //     bottom: 0;
-  //     width: 968px;
-  //     height: 1px;
-  //     content: "";
-  //     position: absolute;
-  //     background-color: #ebeef5;
-  //     z-index: 1;
-  //   }
-  // }
 
   // 清除.el-form-item的长度限制
   .el-form-item {
@@ -530,5 +518,13 @@
       padding-top: 16px;
       box-sizing: border-box;
     }
+  }
+  .el-button{
+    height:32px;
+    min-width: 80px;
+  }
+  // 
+  /deep/ .el-pagination.is-background .el-pager li{
+    margin: 0 1px
   }
 </style>

@@ -116,7 +116,7 @@ export default {
        
       ], // 表格列表
       sizes: Global.pageSizes,
-      size: 10,
+      size: Global.pageSize,
       page: 1,
       total: 0,
       tableSortMsg: null, //表格排序信息
@@ -162,7 +162,7 @@ export default {
           formatter: params => {
             let date = params[0].name;
             let index = params[0].dataIndex;
-            let value = this.$options.filters.formatNum(params[0].value[1]);
+            let value = this.$options.filters.formatNum(params[0].value[1], this.trendIndicatorType) + this.$options.filters.formatTargetUnit(this.trendIndicatorType);
             let str = params[0].marker + date + "<br>" + value;
             return str;
           }
@@ -183,13 +183,28 @@ export default {
         rows: []
       },
       //柱状图扩展
-      barExtend: {
+      barExtendChannel: {
         barWidth: 10,
         color: "#3B74FF",
         tooltip: {
           formatter: params => {
             let name = params[0].name;
-            let value = this.$options.filters.formatNum(params[0].value);
+            let value = this.$options.filters.formatNum(params[0].value, this.channelIndicatorType) + this.$options.filters.formatTargetUnit(this.channelIndicatorType);
+            let str = params[0].marker + name + "<br>" + value;
+            return str;
+          }
+        },
+        "xAxis.0.axisLabel.interval": 0,
+        "xAxis.0.axisLabel.rotate": 45
+      },
+      //柱状图扩展
+      barExtendMovie: {
+        barWidth: 10,
+        color: "#3B74FF",
+        tooltip: {
+          formatter: params => {
+            let name = params[0].name;
+            let value = this.$options.filters.formatNum(params[0].value, this.movieIndicatorType) + this.$options.filters.formatTargetUnit(this.movieIndicatorType);
             let str = params[0].marker + name + "<br>" + value;
             return str;
           }
@@ -198,7 +213,7 @@ export default {
         "xAxis.0.axisLabel.rotate": 45
       },
       // 饼图扩展
-      pieExtend: {
+      pieExtendChannel: {
         legend: {
           top: "bottom",
           itemWidth: 10,
@@ -209,14 +224,46 @@ export default {
           }
         },
         label: {
-          formatter: "{b}({d}%)"
+          formatter: params => {
+            // let name =  params.name;
+            // name = name.length > 15 ? name.slice(0,3) + '...' : name ;
+            let value = this.$options.filters.formatNum(params.value, this.channelIndicatorType) + this.$options.filters.formatTargetUnit(this.channelIndicatorType);
+            return params.percent + "%" +'（'+ value +'）' ;
+          }
         },
         tooltip: {
           formatter: params => {
             let name = params.name;
-            let value = this.$options.filters.formatNum(params.value);
+            let value = this.$options.filters.formatNum(params.value, this.channelIndicatorType) + this.$options.filters.formatTargetUnit(this.channelIndicatorType);
             let percent = params.percent;
-            let str = params.marker + name + "<br>" + value +  "（" + percent + "%）";
+            let str = params.marker + name + "<br>"+ percent + "%"  + "（" + value +"）";
+            return str;
+          }
+        }
+      },
+      // 饼图扩展
+      pieExtendMovie: {
+        legend: {
+          top: "bottom",
+          itemWidth: 10,
+          itemHeight: 10,
+          textStyle: {
+            color: "#333",
+            fontSize: 12
+          }
+        },
+        label: {
+          formatter: params => {
+            let value = this.$options.filters.formatNum(params.value, this.movieIndicatorType) + this.$options.filters.formatTargetUnit(this.movieIndicatorType);
+            return params.percent + "%" + '（' + value + '）';
+          }
+        },
+        tooltip: {
+          formatter: params => {
+            let name = params.name;
+            let value = this.$options.filters.formatNum(params.value, this.movieIndicatorType) + this.$options.filters.formatTargetUnit(this.movieIndicatorType);
+            let percent = params.percent;
+            let str = params.marker + name + "<br>" + percent + "%" + "（" + value + "）";
             return str;
           }
         }
@@ -239,6 +286,16 @@ export default {
     }
   },
   filters: {
+    numberToFixed: (val) => {
+      if(val == '-9999') {
+        return '--'
+      }
+      val = +val
+      if(val < 0) {
+        val = -val
+      }
+      return val.toFixed(2)
+    },
     // 未返回的数据格式
     formatNull: (num) => {
       if(num === null || num === undefined) return '--'
@@ -253,11 +310,16 @@ export default {
       return num
     },
     // 带单位
-    formatNum: (money, count,unit) => {
-      return Global.formatNum(money,count,unit);
+    formatNum: (money,type,unit) => {
+      if (['audienceCount', 'avgPlanShowCount', 'planShowCount'].includes(type)){
+        return Global.formatNum(money,0, unit);
+      }else{
+        return Global.formatNum(money,2, unit);
+      }
     },
     // 不带单位
     formatMoney(money,indicatorCode) {
+      // 场次、人均场次、观影人次
         if(['cc','rjcc','gyrc'].includes(indicatorCode)){
             if(money > 10000) {
               return Global.formatMoney(money);
@@ -265,7 +327,7 @@ export default {
               return isNaN(money) ? '--' : Math.round(money)
             } 
         }else{
-            return Global.formatMoney(money);
+          return Global.formatMoney(money);
         }
     },
     formatTargetUnit: (type, money) => {
@@ -320,7 +382,7 @@ export default {
     changeCinema() {
       (!this.cinemaId) && (this.cinemaId = null);
       this.page = 1;
-      this.getAllData()
+      // this.getAllData()
     },
     getCinemaList() {
       this.$camList.selectBrand({
@@ -474,7 +536,7 @@ export default {
 
         if(res.data && res.data.yAxis.length > 0) {
           this.channelChartEmpty = false
-          this.channelSettings.level[1] = res.data.xAxis
+          // this.channelSettings.level[1] = res.data.xAxis
           let data = res.data.yAxis.map(item=> {
               return {
                 name:item.channelName,
@@ -483,9 +545,9 @@ export default {
             } 
           )
           // 线上线下数据处理
-          if((!['avgTicketPrice','memberBoxOfficePer'].includes(this.channelIndicatorType)) && res.data.channel && Array.isArray(res.data.channel)) {
-            data = data.concat(this.transArr(res.data.channel))
-          }
+          // if((!['avgTicketPrice','memberBoxOfficePer'].includes(this.channelIndicatorType)) && res.data.channel && Array.isArray(res.data.channel)) {
+          //   data = data.concat(this.transArr(res.data.channel))
+          // }
           this.channelData.rows = data
         }else {
           this.channelChartEmpty = true
@@ -613,9 +675,9 @@ export default {
         this.showTimeLabel = `${this.startTime}-${this.endTime}`
       }
       this.page = 1;
-      this.$nextTick(() => {
-        this.getAllData();
-      });
+      // this.$nextTick(() => {
+      //   this.getAllData();
+      // });
     },
     // 改变/会员
     changeMemberType() {

@@ -6,8 +6,8 @@
           clearable></el-input>
       </el-form-item>
       <el-form-item label="商品名称：" prop="goodsName">
-        <el-input v-model="formData.goodsName" @blur="()=>{formData.goodsName = formData.goodsName.trim()}" placeholder="商品名称"
-          clearable></el-input>
+        <el-input v-model="formData.goodsName" @blur="()=>{formData.goodsName = formData.goodsName.trim()}"
+          placeholder="商品名称" clearable></el-input>
       </el-form-item>
       <el-form-item label="商家名称：" prop="merchantName">
         <el-input v-model="formData.merchantName" @blur="()=>{formData.merchantName = formData.merchantName.trim()}"
@@ -15,22 +15,26 @@
       </el-form-item>
       <el-form-item label="商品属性：" prop="goodsAttribute">
         <el-select v-model="formData.goodsAttribute" placeholder="请选择商品属性" clearable>
-          <el-option v-for="item in goodsAttributeList" :key="item.code" :label="item.name" :value="item.code"></el-option>
+          <el-option v-for="item in goodsAttributeList" :key="item.code" :label="item.name" :value="item.code">
+          </el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="商品类型：" prop="goodsType">
         <el-select v-model="formData.goodsType" placeholder="请选择商品类型" clearable>
-          <el-option v-for="item in goodsTypeList" :key="item.commodityTypeNo" :label="item.commodityTypeName" :value="item.commodityTypeNo"></el-option>
+          <el-option v-for="item in goodsTypeList" :key="item.commodityTypeNo" :label="item.commodityTypeName"
+            :value="item.commodityTypeNo"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="状态：" prop="goodsStatus">
         <el-select v-model="formData.goodsStatus" placeholder="全部状态" clearable>
-          <el-option v-for="item in goodsStatusOptions" :key="item.code" :label="item.desc" :value="item.code"></el-option>
+          <el-option v-for="item in goodsStatusOptions" :key="item.code" :label="item.desc" :value="item.code">
+          </el-option>
         </el-select>
       </el-form-item>
       <el-form-item class="btn-wrap">
         <el-button type="primary" @click="handleSearch" class="_el-btn-custom">搜索</el-button>
-        <el-button @click="resetForm('formData')" plain class="_el-btn-custom _member-custom-ghost-button">重置</el-button>
+        <el-button @click="resetForm('formData')" plain class="_el-btn-custom _member-custom-ghost-button">重置
+        </el-button>
       </el-form-item>
     </el-form>
     <div class="member-level-title">
@@ -39,8 +43,10 @@
     </div>
     <div class="member-list-table _m-member-table-custom">
       <el-table :data="tableData" stripe style="width: 100%" :empty-text="tipMessage">
-        <el-table-column prop="goodsNo" label="商品ID" min-width="100" :formatter="formateEmpty" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="goodsName" label="商品名称" min-width="120" :formatter="formateEmpty" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="goodsNo" label="商品ID" min-width="100" :formatter="formateEmpty" show-overflow-tooltip>
+        </el-table-column>
+        <el-table-column prop="goodsName" label="商品名称" min-width="120" :formatter="formateEmpty" show-overflow-tooltip>
+        </el-table-column>
         <el-table-column prop="merchantName" label="商家名称" min-width="120" :formatter="formateEmpty"
           show-overflow-tooltip>
         </el-table-column>
@@ -60,36 +66,42 @@
         </el-table-column>
         <el-table-column prop="status" label="状态" min-width="120" show-overflow-tooltip>
           <template slot-scope="scope">
-            <span :class="scope.row.status=='not_on'?'not_on':scope.row.status=='has_been_on'?'has_been_on':'has_been_off'"
+            <span
+              :class="scope.row.status=='not_on'?'not_on':scope.row.status=='has_been_on'?'has_been_on':'has_been_off'"
               style="fontSize:12px;">{{scope.row.status
               | judegStatus}}</span>
           </template>
         </el-table-column>
         <el-table-column fixed="right" label="操作" min-width="200">
           <template slot-scope="scope">
-            <el-button @click="handleGoodsDetail(scope.row)" type="text" size="small" class="operation-button">查看</el-button>
-            <el-button @click="handleEditGoods(scope.row)" type="text" size="small" class="operation-button" v-if="scope.row.status=='not_on'?true:false">编辑</el-button>
-            <el-button @click="handleStartStopUse('has_been_on',scope.row)" type="text" size="small" class="operation-button"
-              v-if="scope.row.status=='not_on'?true:false">上架</el-button>
-            <el-button @click="handleStartStopUse('has_been_off',scope.row)" type="text" size="small" class="operation-button"
-              v-if="scope.row.status=='has_been_on'?true:false">下架</el-button>
-            <el-button @click="handleSupplement(scope.row)" type="text" size="small" class="operation-button" v-if="scope.row.status=='has_been_on'?true:false">补加</el-button>
+            <el-button @click="handleGoodsDetail(scope.row)" type="text" size="small" class="operation-button">查看
+            </el-button>
+            <el-button @click="handleEditGoods(scope.row)" type="text" size="small" class="operation-button"
+              v-if="scope.row.status=='not_on'?true:false">编辑</el-button>
+            <el-button @click="handleStartStopUse('has_been_on',scope.row)" type="text" size="small"
+              class="operation-button" v-if="scope.row.status=='not_on'?true:false">上架</el-button>
+            <el-button @click="handleStartStopUse('has_been_off',scope.row)" type="text" size="small"
+              class="operation-button" v-if="scope.row.status=='has_been_on'?true:false">下架</el-button>
+            <el-button @click="handleSupplement(scope.row)" type="text" size="small" class="operation-button"
+              v-if="scope.row.status=='has_been_on'?true:false">补加</el-button>
           </template>
         </el-table-column>
       </el-table>
     </div>
     <!-- 分页 start -->
     <div class="page-wrap">
-      <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="formData.current-0"
-        :page-size="formData.size-0" layout="total, sizes, prev, pager, next, jumper" :page-sizes="[20 , 50 , 100]"
-        :total="total-0"></el-pagination>
+      <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange"
+        :current-page="formData.current-0" :page-size="formData.size-0" layout="total, sizes, prev, pager, next, jumper"
+        :page-sizes="[20 , 50 , 100]" :total="total-0"></el-pagination>
     </div>
     <!-- 分页 end -->
     <!-- 选择商品属性的dialog -->
     <el-dialog title="请选择商品属性" :visible.sync="goodsAttributeVisible">
       <div class="_mbmber-goods-attribute-visible">
-        <div class="_member-goods-item-wrap" @click="handleCreatCoupon" @mouseover="()=>{iconStatus = 1}" @mouseout="()=>{iconStatus = 0}">
-          <div class="_icon-wrap"><i :class="iconStatus==2?'iconfont icon-dianziyouhuiquan-selected':'iconfont icon-dianziyouhuiquan-normal'"
+        <div class="_member-goods-item-wrap" @click="handleCreatCoupon" @mouseover="()=>{iconStatus = 1}"
+          @mouseout="()=>{iconStatus = 0}">
+          <div class="_icon-wrap"><i
+              :class="iconStatus==2?'iconfont icon-dianziyouhuiquan-selected':'iconfont icon-dianziyouhuiquan-normal'"
               style="font-size:80px;color:#3B74FF;" :style="iconStatus==1?'color:#0F55FF':'color:#3B74FF'"></i></div>
           <div class="_goods-item-name">电子优惠券</div>
           <div class="_goods-item-desc">（无需物流）</div>
@@ -100,7 +112,8 @@
           <div class="_goods-item-desc">（无需物流）</div>
         </div>
         <div class="_member-goods-item-wrap">
-          <div class="_icon-wrap"><i class="iconfont icon-shiwushangpin-normal" style="font-size:80px;color:#999;"></i></div>
+          <div class="_icon-wrap"><i class="iconfont icon-shiwushangpin-normal" style="font-size:80px;color:#999;"></i>
+          </div>
           <div class="_goods-item-name">实物商品</div>
           <div class="_goods-item-desc">（需要物流）</div>
         </div>
@@ -117,16 +130,20 @@
         </el-upload>
       </div>
       <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="handleAddTitcket" class="_el-btn-custom _member-add-edit-save-btn">确定</el-button>
+        <el-button type="primary" @click="handleAddTitcket" class="_el-btn-custom _member-add-edit-save-btn">确定
+        </el-button>
         <el-button @click="supplementVisible = false" class="_el-btn-custom">取消</el-button>
       </span>
     </el-dialog>
     <!-- 上架、下架的dialog -->
-    <el-dialog title="" :visible.sync="stopStartDialog" width="320px" :show-close="false" class="_member-tip-dialog-custom-style">
+    <el-dialog title="" :visible.sync="stopStartDialog" width="320px" :show-close="false"
+      class="_member-tip-dialog-custom-style">
       <i class="iconfont icon-danchuang-tishi _member-tip-dialog-icon"></i>
-      <span class="_member-tip-dialog-desc">确定要{{statusFlag == 'has_been_on'?'上架':'下架'}} {{stopStartInfo.goodsName}} 吗？</span>
+      <span class="_member-tip-dialog-desc">确定要{{statusFlag == 'has_been_on'?'上架':'下架'}} {{stopStartInfo.goodsName}}
+        吗？</span>
       <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="handleSureChangeStatus" class="_el-btn-custom _member-add-edit-save-btn">确定</el-button>
+        <el-button type="primary" @click="handleSureChangeStatus" class="_el-btn-custom _member-add-edit-save-btn">确定
+        </el-button>
         <el-button @click="stopStartDialog = false" class="_el-btn-custom _member-add-edit-save-btn">取消</el-button>
       </span>
     </el-dialog>
@@ -312,7 +329,7 @@ export default {
             goodsAttribute: "electronic_coupons"
           }
         });
-      }, 30);
+      }, 10);
     },
     // 商品类型管理
     handleGoodsType() {
@@ -418,7 +435,7 @@ export default {
     .goods-types-button-custom {
       padding: 5px 20px;
       border: none;
-      color: #739BFF;
+      color: #739bff;
       span {
         font-size: 12px;
       }
@@ -426,13 +443,13 @@ export default {
   }
   .member-list-table {
     .not_on {
-      color: #739BFF;
+      color: #739bff;
     }
     .has_been_on {
       color: #2dbc2d;
     }
     .has_been_off {
-      color: #F33430;
+      color: #f33430;
     }
     .operation-button span {
       font-size: 12px;
@@ -448,7 +465,7 @@ export default {
     text-align: center;
     cursor: pointer;
     ._icon-wrap {
-      height: 50px;
+      height: 88px;
     }
     ._goods-item-name {
       font-size: 14px;

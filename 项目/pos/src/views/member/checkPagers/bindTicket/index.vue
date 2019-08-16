@@ -12,10 +12,8 @@
             @getDate='getDate'>
                 <div slot='otherSubmitBtn' class="otherBtn">
                     <el-form-item>
-                        <el-button type="primary" @click="onSubmit(0)">查询</el-button>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-button type="primary" @click="onSubmit(1)">近一个月</el-button>
+                        <el-button type="primary" @click="onSubmit(0)" class="common-btn">查询</el-button>
+                        <el-button type="primary" @click="onSubmit(1)" class="common-btn">近一个月</el-button>
                     </el-form-item>
                 </div>
         </table-data>
@@ -75,11 +73,12 @@ export default {
         getOrderList(vo){
             this.member.loading = true;
             let paramsObj;
+            this.pageNo = vo;
             if(this.startTime && this.endTime){
                 paramsObj = {
                     memberId:sessionStorage['memberId'],
                     current:vo,
-                    size:10,
+                    size:8,
                     startTime:this.startTime+" 00:00:00",
                     endTime:this.endTime+" 23:59:59",
                     tenantId:this.tenantId,
@@ -89,7 +88,7 @@ export default {
                 paramsObj = {
                     current:vo,
                     memberId:sessionStorage['memberId'],
-                    size:10,
+                    size:8,
                     tenantId:this.tenantId,
                     status:this.chooseMonth.status
                 };
@@ -119,8 +118,3 @@ export default {
     }
 }
 </script>
-<style scoped>
-.otherBtn{
-    display:inline;
-}
-</style>

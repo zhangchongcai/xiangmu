@@ -15,9 +15,9 @@ export default{
             }
             Vue.set(record, '_level', _level)
             tmp.push(record)
-            if(record.children && record.children.length > 0) {
-                let children = this.treeToArray(record.children, record, _level, expandedAll)
-                tmp = tmp.concat(children)
+            if(record.child && record.child.length > 0) {
+                let child = this.treeToArray(record.child, record, _level, expandedAll)
+                tmp = tmp.concat(child)
             }
         })
         return tmp;

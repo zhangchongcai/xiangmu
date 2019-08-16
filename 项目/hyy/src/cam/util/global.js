@@ -1,8 +1,8 @@
 
 
 const install =  {
+    pageSize: 15,
     pageSizes:[15,30,45,60],
-    // icon-colors
     iconColors: [
         "#fe825e", // 橙色
         "#8e7eff", // 紫色
@@ -10,6 +10,130 @@ const install =  {
         "#FE6081", //红色
         "#fec107", // 黄色 
         "#17cd31" // 绿色
+    ],
+    //商品详情 --趋势指标
+    commodityDetailTrend: [
+      {id: 'xse',
+        name: "销售额"
+      },
+      {
+        id: 'xsdl',
+        name: "销售单量"
+      },
+      {
+        id: 'xssl',
+        name: "销售数量 "
+      },
+      {
+        id: 'kdj',
+        name: "客单价"
+      },
+      {
+        id: 'jdj',
+        name: "件单价"
+      },
+      {
+        id: 'kdl',
+        name: "客单量"
+      }
+    ],
+    //商品详情 --其他趋势指标
+    commodityDetailTrendOther: [
+      {
+        id: 'xsml',
+        name: "销售毛利"
+      },
+      {
+        id: 'xsmll',
+        name: "销售毛利率"
+      },
+      {
+        id: 'xscb',
+        name: "销售成本 "
+      },
+      {
+        id: 'cbj',
+        name: "成本价"
+      },
+      {
+        id: 'gml',
+        name: "购买率"
+      },
+      {
+        id: 'rjmpje',
+        name: "人均卖品金额"
+      },
+      {
+        id: 'hyxfzb',
+        name: "会员消费占比"
+      },
+      {
+        id: 'tcxfzb',
+        name: "套餐消费占比"
+      },
+      {
+        id: 'cgsl',
+        name: "采购数量"
+      },
+      {
+        id: 'cgcb',
+        name: "采购成本"
+      },
+      {
+        id: 'pjcgj',
+        name: "平均采购价"
+      },
+      {
+        id: 'cqkcsl',
+        name: "期初库存数量"
+      },
+      {
+        id: 'cqkccb',
+        name: "期初库存成本"
+      },
+      {
+        id: 'qmkcsl',
+        name: "期末库存数量"
+      },
+      {
+        id: 'qmkccb',
+        name: "期末库存成本"
+      },
+      {
+        id: 'kcslzzt',
+        name: "库存数量周转天"
+      },
+      {
+        id: 'kcjezzt',
+        name: "库存金额周转天"
+      }
+    ],
+    //商品分析 --趋势指标
+    commodityTrend: [
+      {
+        id: 'zssl',
+        name: "在售SKU数量"
+      },
+      {
+        id: 'dxsl',
+        name: "动销SKU数量"
+      },
+      {
+        id: 'dxl',
+        name: "动销率 "
+      },
+      {
+        id: 'tcsl',
+        name: "套餐数量"
+      },
+      {
+        id: 'tcxse',
+        name: "套餐销售额"
+      },
+      {
+        id: 'tcxfzb',
+        name: "套餐消费占比"
+      }
     ],
     //品类 --组织类型识别
     judgeOrgType: ['group','area','cinema'].find(item => location.pathname.includes(item)),
@@ -63,7 +187,7 @@ const install =  {
         isHistogram: true
       },
       {
-        id: 'xsmll',
+        id: 'xsmlr',
         name: "销售毛利率",
         isHistogram: true
       },
@@ -72,11 +196,11 @@ const install =  {
         name: "购买率",
         isHistogram: true
       },
-      {
-        id: 'tcxfzb',
-        name: "套餐消费占比",
-        isHistogram: true
-      },
+      // {
+      //   id: 'tcxfzb',
+      //   name: "套餐消费占比",
+      //   isHistogram: true
+      // },
       {
         id: 'hyxfzb',
         name: "会员消费占比",
@@ -277,9 +401,7 @@ const install =  {
         },
     },
     // 票房icon
-    officeIcon:{
-
-    },
+    officeIcon:{},
     boxOfficeMemberMap: {
       boxOffice: 'memberBoxOffice',
       audienceCount: 'memberAudienceCount',
@@ -290,38 +412,92 @@ const install =  {
       servicePrice: 'memberServicePrice',
       splitBoxOffice: 'memberSplitBoxOffice',
     },
+    // 票房指标单位
     formatBoxOfficeTargetUnit(type,money) {
-      function formatUnit(num){
-        if(!isNaN(num)){
-          if(num <10000){
-            let number = num.toFixed(2)
-            return number < 10000 ? '' : '万';
-          }else if(num <100000000){
-            let number = (num/10000).toFixed(2)
-            return number < 10000 ? '万' : '亿';
-          }else {
-            return  '亿'
-          }
-        }else{
-          return ''
-        } 
-      }
+       function formatUnit(num) {
+         if (!isNaN(num)) {
+           if (num >= 0) {
+             if (num < 10000) {
+               let number = num.toFixed(2)
+               return number < 10000 ? '' : '万';
+             } else if (num < 100000000) {
+               let number = (num / 10000).toFixed(2)
+               return number < 10000 ? '万' : '亿';
+             } else {
+               return '亿'
+             }
+           } else {
+             let n = num * (-1);
+             if (n < 10000) {
+               let number = n.toFixed(2)
+               return number < 10000 ? '' : '万';
+             } else if (n < 100000000) {
+               let number = (n / 10000).toFixed(2)
+               return number < 10000 ? '万' : '亿';
+             } else {
+               return '亿'
+             }
+           }
+         } else {
+           return ''
+         }
+       }
+       let num = money*1;
       let unitMap = {
-        'pf': `${formatUnit(money)}元`,
-        'gyrc': `${formatUnit(money)}人`,
+        'pf': `${formatUnit(num)}元`,
+        'gyrc': `${formatUnit(num)}人`,
         'pjpj': '元',
         'szl': '%',
         'hyxfzb': '%',
         'scfe': '%',
-        'sffwf': `${formatUnit(money)}元`,
-        'ytfwf': `${formatUnit(money)}元`,
-        'yjzzpf': `${formatUnit(money)}元`,
-        'fzpf': `${formatUnit(money)}元`,
-        'cc': `${formatUnit(money)}场`,
-        'rjcc': `${formatUnit(money)}场`, 
-        'cjrc': `${formatUnit(money)}人`, 
-        'dzsy': `${formatUnit(money)}元`, 
-        'kcl': '%'
+        'sffwf': `${formatUnit(num)}元`,
+        'ytfwf': `${formatUnit(num)}元`,
+        'yjzzpf': `${formatUnit(num)}元`,
+        'fzpf': `${formatUnit(num)}元`,
+        'cc': `${formatUnit(num)}场`,
+        'rjcc': `${formatUnit(num)}人`, 
+        'cjrc': `${formatUnit(num)}人`, 
+        'dzsy': `${formatUnit(num)}元`, 
+        'kcl': '%',
+        // 另外一套key
+        'boxOffice': `${formatUnit(num)}元`,
+        'audienceCount': `${formatUnit(num)}人`,
+        'avgTicketPrice': '元',
+        'attendanceRate': '%',
+        'memberBoxOfficePer': '%',
+        'servicePrice': `${formatUnit(num)}元`,
+        'hallServicePrice': `${formatUnit(num)}元`,
+        'payBoxOffice': `${formatUnit(num)}元`,
+        'splitBoxOffice': `${formatUnit(num)}元`,
+        'planShowCount': `${formatUnit(num)}场`,
+        'avgPlanShowCount': `${formatUnit(num)}人`, 
+        'unShowCountRate': '%',
+        'avgSeatPrice': `${formatUnit(num)}元`, 
+        'marketShare': '%',
+        // 商品详情的一套key
+        '销售额': `${formatUnit(num)}元`,
+        '销售单量': `${formatUnit(num)}单`,
+        '销售数量': `${formatUnit(num)}件`,
+        '客单价': `${formatUnit(num)}元`,
+        '件单价': `${formatUnit(num)}元`,
+        '客单量': `${formatUnit(num)}件/单`,
+        '销售成本': `${formatUnit(num)}元`,
+        '销售毛利': `${formatUnit(num)}元`,
+        '成本价': `${formatUnit(num)}元`,
+        '销售毛利率': `${formatUnit(num)}%`,
+        '人均卖品金额': `${formatUnit(num)}元`,
+        '购买率': `${formatUnit(num)}%`,
+        '会员消费占比': `${formatUnit(num)}%`,
+        '套餐消费占比': `${formatUnit(num)}%`,
+        '采购数量': `${formatUnit(num)}件`,
+        '采购金额': `${formatUnit(num)}元`,
+        '采购平均金额': `${formatUnit(num)}元`,
+        '期初库存': `${formatUnit(num)}件`,
+        '期初库存金额': `${formatUnit(num)}元`,
+        '期末库存数量': `${formatUnit(num)}件`,
+        '期末库存金额': `${formatUnit(num)}元`,
+        '库存数量周转天': `${formatUnit(num)}天`,
+        '库存金额周转天': `${formatUnit(num)}天`,
       }
       return unitMap[type]
     },
@@ -473,7 +649,7 @@ const install =  {
         onlyMember: true
       }
     ],
-     // 卖品指标
+    // 卖品指标
     targetLabel: [
         {
           id: 'xse',
@@ -549,92 +725,91 @@ const install =  {
         id: 'tcxfzb',
         name: "套餐消费占比"
     }],
+    // 卖品指标单位Map
+    saleTargetUnitMap:{
+      xse:'元', // 销售额
+      xscb:'元', // 销售成本
+      xsdl:'单', // 销售单量
+      xssl:'件', // 销售数量
+      xsml:'元', // 销售毛利
+      xsmlr:'%', // 销售毛利润
+      kdj:'元',  // 客单价
+      kdl:'件/单', // 客单量
+      jdj:'元', // 件单价
+      gml:'%', // 购买率
+      rjmpje:'元', // 人均卖品金额
+      hyxfzb:'%', // 会员消费占比
+      tcxfzb:'%', // 套餐消费占比
+      cbj:'元' // 成本价
+    },
+    // 会员指标单位Map
+    memberTargetUnitMap:{
+      xzhy:'人', // 新增会员
+      yxhy:'人', // 有效会员
+      ljhy:'人', // 累计会员
+      kzhyh:'人', // 可转化用户
+      xinkhy:'人', //新卡会员
+      xukhy:'人',// 续卡会员
+      bkhy:'人', //补卡会员
+      czhy:'人' ,// 储值会员
+      ydqhy30:'人',// 已到期30天会员
+      ydqhy7:'人',// 已到期七天会员
+      hykfsy:'元',// 会员卡费收益
+      hyczje:'元',// 会员储值金额
+      ljczye:'元',// 累计储值余额
+      hyxfje:'元', // 会员消费金额
+      hyxksy:'元', // 会员新开卡收益
+      hyxuksy:'元',// 会员续卡收益
+      hybksy:'元',// 会员补卡收益
+      hykdj:'元',// 会员客单价
+      hyrjgx:'元',// 会员人均贡献
+      hyxfzb:'%', // 会员消费占比
+      myxhyzb:'%', // 有效会员占比
+    },
     // 会员指标
-    memberTargetLabel:[{
-        id:'xzhy',
-        name:'新增会员数'
-    },{
-        id:'yxhy',
-        name:'有效会员数'
-    },{
-        id:'ljhy',
-        name:'累计会员数'
-    },{
-        id:'kzhyh',
-        name:'可转化用户数'
-    },{
-        id:'xinkhy',
-        name:'新卡会员数'
-    },{
-        id:'xukhy',
-        name:'续卡会员数'
-    }],
-    // 会员其他指标
-    memberOtherLabel:[{
-        id:'bkhy',
-        name:'补卡会员数'
-    },{
-        id:'czhy',
-        name:'储值会员数'
-    },{
-        id:'ydqhy30',
-        name:'到期30天内会员数'
-    },{
-        id:'ydqhy7',
-        name:'到期7天内会员数'
-    },{
-        id:'hykfsy',
-        name:'会员卡费收益'
-    },{
-        id:'hyczje',
-        name:'会员储值金额'
-    },{
-        id:'hyxfje',
-        name:'会员消费金额'
-    },{
-        id:'ljczje',
-        name:'累计储值金额'
-    },{
-        id:'hyxksy',
-        name:'会员新开卡收益'
-    },{
-        id:'hyxuksy',
-        name:'会员续卡收益'
-    },{
-        id:'hybksy',
-        name:'会员补卡收益'
-    },{
-        id:'hykdj',
-        name:'会员客单价'
-    },{
-        id:'hyrjgx',
-        name:'会员人均贡献'
-    },{
-        id:'hyzhl',
-        name:'会员转化率'
-    },{
-        id:'hyxfzb',
-        name:'会员消费占比'
-    },{
-        id:'yxhyxfzb',
-        name:'有效会员占比'
-    }],
-    // 票劵使用指标
-    ticketTargetLabel:[
-        {id:1,name:'发放数量'}, 
-        {id:2,name:'使用数量'},
-        {id:3,name:'使用率'},
-        {id:4,name:'带动消费额'},
-        {id:5,name:'带动消费单量'},
-        {id:6,name:'客单价'},
+    memberTargetLabel:[
+      {id:'xzhy',name:'新增会员数'},
+      {id:'yxhy',name:'有效会员数'},
+      {id:'ljhy',name:'累计会员数'},
+      {id:'kzhyh',name:'可转化用户数'},
+      {id:'xinkhy',name:'新卡会员数'},
+      {id:'xukhy',name:'续卡会员数'}
     ],
-    // 票劵使用其他指标
-    ticketOtherLabel:[
-        {id:7,name:'销售增长率'},
-        {id:8,name:'发放票券成本'},
-        {id:9,name:'使用票券成本'},
-        {id:10,name:'参与会员数量'},
-        {id:11,name:'会员消费占比'},
+    // 会员其他指标
+    memberOtherLabel:[
+      {id:'bkhy',name:'补卡会员数'},
+      {id:'czhy',name:'储值会员数'},
+      {id:'ydqhy30',name:'到期30天内会员数'},
+      {id:'ydqhy7',name:'到期7天内会员数'},
+      {id:'hykfsy',name:'会员卡费收益'},
+      {id:'hyczje',name:'会员储值金额'},
+      {id:'hyxfje',name:'会员消费金额'},
+      {id:'ljczje',name:'累计储值金额'},
+      {id:'hyxksy',name:'会员新开卡收益'},
+      {id:'hyxuksy',name:'会员续卡收益'},
+      {id:'hybksy',name:'会员补卡收益'},
+      {id:'hykdj',name:'会员客单价'},
+      {id:'hyrjgx',name:'会员人均贡献'},
+      {id:'hyzhl',name:'会员转化率'},
+      {id:'hyxfzb',name:'会员消费占比'},
+      {id:'yxhyxfzb',name:'有效会员占比'}
+    ],
+    // 票券单位Map
+    ticketTargetUnitMap:{
+      ddxfe: '元', // 带动消费额
+      ddxfdl: '单', // 带动消费单量
+      kdj: '元', // 客单价
+      ffsl: '张', // 发放数量
+      sysl: '张', // 使用数量
+      syl: '%', // 使用率
+      yspqcb: '元', //发放票券成本
+      sypqcb:'元',// 使用票券成本
+      cyhysl:'人',// 参与会员数量
+      hyxfzb:'%',// 会员消费占比
+    },
+    // 单位是整数的指标
+    targetNum: [
+      'xzhy', 'yxhy', 'ljhy', 'kzhyh','xinkhy', 'xukhy', 'bkhy', 'czhy', 'ydqhy30', 'ydqhy7','ddxfdl', 'ffsl', 'sysl', 'cyhysl'
     ],
     // 格式化数字（1万/亿）
     formatNum:(money,count,unit) =>{
@@ -648,23 +823,36 @@ const install =  {
         }else{
             point = 2;
         }
-      
         if(!isNaN(num)){
-          if(num < 10000){
-              let number = num.toFixed(point)
-              return number < 10000 ? (number + unit) : ('1.00万' +unit);
-          }else if(num < 100000000){
-              let number = (num/10000).toFixed(2)
-              return number < 10000 ? (number + '万' + unit) : ('1.00亿' +unit);
-          }else {
-              return (num/100000000).toFixed(2) + '亿' + unit;
+          if(num>=0){
+             if (num < 10000) {
+               let number = num.toFixed(point)
+               return number < 10000 ? (number + unit) : ('1.00万' + unit);
+             } else if (num < 100000000) {
+               let number = (num / 10000).toFixed(2)
+               return number < 10000 ? (number + '万' + unit) : ('1.00亿' + unit);
+             } else {
+               return (num / 100000000).toFixed(2) + '亿' + unit;
+             }
+          }else{
+            let n = num*(-1);
+            if (n < 10000) {
+              let number = n.toFixed(point)
+              return number < 10000 ? ((number * (-1)).toFixed(point) + unit) : ('-1.00万' + unit);
+            } else if (n < 100000000) {
+                let number = (n / 10000).toFixed(2)
+                return number < 10000 ? ((number * (-1)).toFixed(2) + '万' + unit) : ('-1.00亿' + unit);
+            } else {
+              return ((n / 100000000) * (-1)).toFixed(2) + '亿' + unit;
+            }
           }
+        }else if(money == '∞'){
+          return '∞' + unit;
         }else{
-            // return moeny
               return '--' + unit
         }
     },
-    // 格式化数字（不带单位）
+    // 格式化数字（不带单位,指标）
     formatMoney(money,count){
         let num = money*1;
         let point = 2;
@@ -674,233 +862,216 @@ const install =  {
             point = count;
         }
         if(!isNaN(num)){
-            if(num < 10000){
+            if(num>=0){
+              if (num < 10000) {
                 let number = num.toFixed(point)
                 return number < 10000 ? number : '1.00';
-                // return num.toFixed(point);
-            }else if(num < 100000000){
-                let number = (num/10000).toFixed(2)
+              } else if (num < 100000000) {
+                let number = (num / 10000).toFixed(2)
                 return number < 10000 ? number : '1.00';
-                // return (num/10000).toFixed(2);
-            }else {
-                return (num/100000000).toFixed(2);
+              } else {
+                return (num / 100000000).toFixed(2);
+              }
+            }else{
+              let n = num*(-1);
+               if (n < 10000) {
+                 let number = n.toFixed(point)
+                 return number < 10000 ? (number * (-1)).toFixed(point) : '-1.00';
+               } else if (n < 100000000) {
+                  let number = (n / 10000).toFixed(2)
+                  return number < 10000 ? (number * (-1)).toFixed(2) : '-1.00';
+               } else {
+                 return ((n / 100000000) * (-1)).toFixed(2);
+               }
             }
+          } else if (money == '∞') {
+            return '∞'
           }else{
             return '--'
         }
       },
-    // 格式化卖品指标单位
+    // 卖品指标单位
     formatTargetUnit:(type,money)=>{
-        function formatUnit(num){
-            if(!isNaN(num)){
-                if(num <10000){
+          function formatUnit(num) {
+            if (!isNaN(num)) {
+              if (num >= 0) {
+                if (num < 10000) {
                   let number = num.toFixed(2)
                   return number < 10000 ? '' : '万';
-                  // return ''
-                }else if(num <100000000){
-                  let number = (num/10000).toFixed(2)
+                } else if (num < 100000000) {
+                  let number = (num / 10000).toFixed(2)
                   return number < 10000 ? '万' : '亿';
-                  // return  '万'
-                }else {
-                  return  '亿'
+                } else {
+                  return '亿'
                 }
-            }else{
+              } else {
+                let n = num * (-1);
+                if (n < 10000) {
+                  let number = n.toFixed(2)
+                  return number < 10000 ? '' : '万';
+                } else if (n < 100000000) {
+                  let number = (n / 10000).toFixed(2)
+                  return number < 10000 ? '万' : '亿';
+                } else {
+                  return '亿'
+                }
+              }
+            } else {
               return ''
             }
+          }
+        let num = money*1;
+        let unitMap = {
+          'xse': `${formatUnit(num)}元`, // 销售额
+          'xscb': `${formatUnit(num)}元`, // 销售成本
+          'xsdl': `${formatUnit(num)}元`, // 销售单量
+          'xssl': `${formatUnit(num)}元`, // 销售数量
+          'xsml': `${formatUnit(num)}元`, // 销售毛利
+          'kdj': `${formatUnit(num)}元`, // 客单价
+          'kdl': `${formatUnit(num)}件/单`, // 客单量
+          'jdj': `${formatUnit(num)}元`, // 件单价
+          'rjmpje': `${formatUnit(num)}元`, // 人均卖品金额
+          'cbj': `${formatUnit(num)}元`, // 成本价
+          'gml': `${formatUnit(num)}%`, // 购买率
+          'xsmlr': `${formatUnit(num)}%`, // 销售毛利率
+          'hyxfzb': `${formatUnit(num)}%`, // 会员消费占比
+          'tcxfzb': `${formatUnit(num)}%`, // 套餐消费占比
         }
-        let unit = formatUnit(money*1);
-        switch(type){
-          case 'xse': // 销售额
-            return unit + '元';
-          break;
-          case 'xscb': // 销售成本
-            return unit + '元';
-          break;
-          case 'xsdl': // 销售单量
-            return unit+ '单';
-          break;
-          case 'xssl': // 销售数量
-            return unit + '件';
-          break;
-          case 'xsml': // 销售毛利
-            return unit + '元';
-          break;
-          case 'xsmlr': // 销售毛利率
-            return '%';
-          break;
-          case 'kdj': // 客单价
-            return unit + '元';
-          break;
-          case 'kdl': // 客单量
-            return unit + '件/单';
-          break;
-          case 'jdj': // 件单价
-            return unit + '元';
-          break;
-          case 'gml': // 购买率
-            return '%';
-          break;
-          case 'rjmpje': // 人均卖品金额
-            return unit + '元';
-          break;
-          case 'hyxfzb': // 会员消费占比
-            return '%';
-          break;
-          case 'tcxfzb': // 套餐消费占比
-            return '%';
-          break;
-          case 'cbj': // 成本价
-            return unit + '元';
-          break;
-        }
+        return unitMap[type]
     },
-    // 进销存指标耽误
+    // 进销存指标单位
     formatInventoryUnit(type,money){
-        function formatUnit(num){
-            if(!isNaN(num)){
-                if(num <10000){
-                  return ''
-                }else if(num <100000000){
-                  return  '万'
-                }else {
-                  return  '亿'
-                }
-            }else{
-              return ''
-            }
-        }
+         function formatUnit(num) {
+           if (!isNaN(num)) {
+             if (num >= 0) {
+               if (num < 10000) {
+                 let number = num.toFixed(2)
+                 return number < 10000 ? '' : '万';
+               } else if (num < 100000000) {
+                 let number = (num / 10000).toFixed(2)
+                 return number < 10000 ? '万' : '亿';
+               } else {
+                 return '亿'
+               }
+             } else {
+               let n = num * (-1);
+               if (n < 10000) {
+                 let number = n.toFixed(2)
+                 return number < 10000 ? '' : '万';
+               } else if (n < 100000000) {
+                 let number = (n / 10000).toFixed(2)
+                 return number < 10000 ? '万' : '亿';
+               } else {
+                 return '亿'
+               }
+             }
+           } else {
+             return ''
+           }
+         }
         let unit = formatUnit(money*1);
         return unit + type;
     },
     // 会员指标单位
     formatMemberTargetUnit(type,money){
-        function formatUnit(num){
-            if(!isNaN(num)){
-                if(num <10000){
-                  return ''
-                }else if(num <100000000){
-                  return  '万'
-                }else {
-                  return  '亿'
-                }
-            }else{
-              return ''
-            }
-        }
-        let unit = formatUnit(money*1);
-        switch(type){
-          case 'xzhy': // 新增会员
-            return unit + '人';
-          break;
-          case 'yxhy': // 有效会员
-            return unit + '人';
-          break;
-          case 'ljhy': // 累计会员
-            return unit+ '人';
-          break;
-          case 'kzhyh': // 可转化用户
-            return unit + '人';
-          break;
-          case 'xinkhy': // 新卡会员
-            return unit + '人';
-          break;
-          case 'xukhy': // 续卡会员
-            return unit + '人';   
-          break;
-          case 'bkhy': // 补卡会员
-            return unit + '人';
-          break;
-          case 'czhy': // 储值会员
-            return unit + '人';
-          break;
-          case 'ydqhy30': // 已到期30天会员
-            return unit + '人';
-          break;
-          case 'ydqhy7': // 已到期7天会员
-          return unit + '人';
-          break;
-          case 'hykfsy': // 会员卡费收益
-            return unit + '元';
-          break;
-          case 'hyczje': // 会员储值金额
-            return unit + '元';
-          break;
-          case 'ljczye': // 累计储值余额
-            return unit + '元';
-          break;
-          case 'hyxfje': // 会员消费金额
-            return unit + '元';
-          break;
-          case 'hyxksy': // 会员开新卡收益
-            return unit + '元';
-            break;  
-          case 'hyxuksy': // 会员续卡收益
-            return unit + '元';
-          break;
-          case 'hybksy': // 会员补卡收益
-          return unit + '元';
-            break;
-          case 'hykdj': // 会员客单价
-            return unit + '元';
-          break;
-          case 'hyrjgx': // 会员人均贡献
-            return unit + '元';
-          case 'hyxfzb': // 会员消费占比
-            return '%';
-          case 'myxhyzb': // 有效会员占比
-            return '%';
-          break;
-        }
+         function formatUnit(num) {
+           if (!isNaN(num)) {
+             if (num >= 0) {
+               if (num < 10000) {
+                 let number = num.toFixed(2)
+                 return number < 10000 ? '' : '万';
+               } else if (num < 100000000) {
+                 let number = (num / 10000).toFixed(2)
+                 return number < 10000 ? '万' : '亿';
+               } else {
+                 return '亿'
+               }
+             } else {
+               let n = num * (-1);
+               if (n < 10000) {
+                 let number = n.toFixed(2)
+                 return number < 10000 ? '' : '万';
+               } else if (n < 100000000) {
+                 let number = (n / 10000).toFixed(2)
+                 return number < 10000 ? '万' : '亿';
+               } else {
+                 return '亿'
+               }
+             }
+           } else {
+             return ''
+           }
+         }
+        let num = money*1;
+        let unitMap = {
+          'xzhy':`${formatUnit(num)}人`, // 新增会员
+          'yxhy': `${formatUnit(num)}人`, // 有效会员
+          'ljhy': `${formatUnit(num)}人`, // 累计会员
+          'kzhyh': `${formatUnit(num)}人`, // 可转化用户
+          'xinkhy': `${formatUnit(num)}人`, // 新卡会员
+          'xukhy': `${formatUnit(num)}人`, // 续卡会员
+          'bkhy': `${formatUnit(num)}人`, // 补卡会员
+          'czhy': `${formatUnit(num)}人`, // 储值会员
+          'ydqhy30': `${formatUnit(num)}人`, // 已到期30天会员
+          'ydqhy7': `${formatUnit(num)}人`, // 已到期7天会员
+          'hykfsy': `${formatUnit(num)}元`, // 会员卡费收益
+          'hyczje': `${formatUnit(num)}元`, // 会员储值金额
+          'ljczye': `${formatUnit(num)}元`, // 累计储值余额
+          'hyxfje': `${formatUnit(num)}元`, // 会员消费金额
+          'hyxksy': `${formatUnit(num)}元`, // 会员开新卡收益
+          'hyxuksy': `${formatUnit(num)}元`, // 会员续卡收益
+          'hybksy': `${formatUnit(num)}元`, // 会员补卡收益
+          'hykdj': `${formatUnit(num)}元`, // 会员客单价
+          'hyrjgx': `${formatUnit(num)}元`, // 会员人均贡献
+          'hyxfzb': `${formatUnit(num)}%`,// 会员消费占比
+          'myxhyzb': `${formatUnit(num)}%`, // 有效会员占比
+        };
+        return unitMap[type]
     },
     // 票劵指标单位
     formatTicketUnit(type,money){
-        function formatUnit(num){
-            if(!isNaN(num)){
-                if(num <10000){
-                  return ''
-                }else if(num <100000000){
-                  return  '万'
-                }else {
-                  return  '亿'
-                }
-            }else{
-              return ''
-            }
+         function formatUnit(num) {
+           if (!isNaN(num)) {
+              if(num>=0){
+                  if (num < 10000) {
+                    let number = num.toFixed(2)
+                    return number < 10000 ? '' : '万';
+                  } else if (num < 100000000) {
+                    let number = (num / 10000).toFixed(2)
+                    return number < 10000 ? '万' : '亿';
+                  } else {
+                    return '亿'
+                  }
+              }else{
+                  let n = num*(-1);
+                  if (n < 10000) {
+                    let number = n.toFixed(2)
+                    return number < 10000 ? '' : '万';
+                  } else if (n < 100000000) {
+                    let number = (n / 10000).toFixed(2)
+                    return number < 10000 ? '万' : '亿';
+                  } else {
+                    return '亿'
+                  }
+              }
+           } else {
+             return ''
+           }
+         }
+        let num = money*1;
+        let unitMap = {
+          'ddxfe': `${formatUnit(num)}元`, // 带动消费额
+          'ddxfdl': `${formatUnit(num)}单`, // 带动消费单量
+          'kdj':`${formatUnit(num)}元`, // 客单价
+          'ffsl': `${formatUnit(num)}张`, // 发放数量
+          'sysl': `${formatUnit(num)}张`, // 使用数量
+          'syl': `%`, // 使用率
+          'yspqcb': `${formatUnit(num)}元`, // 预算票劵成本
+          'sypqcb': `${formatUnit(num)}元`, // 使用票券成本
+          'cyhysl': `${formatUnit(num)}人`, // 参与会员数量
+          'hyxfzb': `%` // 会员消费占比
         }
-        let unit = formatUnit(money*1);
-        switch(type){
-          case 'ddxfe': // 带动消费额
-            return unit + '元';
-          break;
-          case 'ddxfdl': // 带动消费单量
-            return unit + '单';
-          break;
-          case 'kdj': // 客单价
-            return unit+ '元';
-          break;
-          case 'ffsl': // 发放数量
-            return unit + '张';
-          break;
-          case 'sysl': // 使用数量
-            return unit + '张';
-          break;
-          case 'syl': // 使用率
-            return '%';   
-          break;
-          case 'yspqcb': // 预算票劵成本
-            return unit + '元';
-          break;
-          case 'sypqcb': // 使用票券成本
-            return unit + '元';
-          break;
-          case 'cyhysl': // 参与会员数量
-            return unit + '人';
-          break;
-          case 'hyxfzb': // 会员消费占比
-          return '%';
-          break;
-        }
+        return unitMap[type]
     }
-
 }
 export default install

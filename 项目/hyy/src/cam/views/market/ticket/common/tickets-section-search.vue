@@ -1,10 +1,69 @@
 <template>
      <div class="search-wrap">
-        <el-form :inline="true">
+         <el-row>
+            <el-col :span="7">
+                <div class="search-item" style="padding-left:0px;">
+                    <span class="label">{{orgMap(orgType)}}:</span>
+                    {{orgName}}
+                </div>
+            </el-col>
+            <el-col :span="10">
+                <div class="search-item">
+                    <span class="label">日期选择:</span>
+                    <el-date-picker 
+                        class="tickets-date"
+                        v-model="time" 
+                        type="daterange" 
+                        range-separator="~"
+                        start-placeholder="开始日期"
+                        end-placeholder="结束日期"
+                        @change="changeTime">
+                    </el-date-picker>
+                 </div>
+            </el-col>
+            <el-col :span="7">
+                <div class="search-item">
+                    <span class="label">票券类型:</span>
+                    <el-select v-model="type" @change="changeType" clearable>
+                        <el-option v-for="item in options1"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
+                        </el-option>
+                    </el-select>
+                </div>
+            </el-col>
+         </el-row>
+        <el-row>
+            <el-col :span="7">
+                <div class="search-item"  style="padding-left:0px;">
+                    <span class="label">票券状态:</span>
+                    <el-select v-model="status" @change="changeStatus" clearable>
+                        <el-option v-for="item in options2"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value"
+                        ></el-option>
+                    </el-select>
+                </div>
+            </el-col>
+            <el-col :span="10">
+                <div class="search-item">
+                    <span class="label">票券名称:</span>
+                    <el-input  style="display:inline-block;width:280px" v-model="name" placeholder="请输入内容" @blur="changeName"></el-input>
+                </div>
+            </el-col>
+            <el-col :span="7">
+                <div class="search-item">
+                    <el-button  type="primary" @click="search">查询</el-button>
+                </div>
+            </el-col>
+        </el-row>
+        <!-- <el-form :inline="true">
             <el-row>
                 <el-col :span="7">
                     <el-form-item :label="orgMap(orgType)+' :'">
-                        {{orgName}}
+                        <span style="font-size:12px">{{orgName}}</span>
                     </el-form-item>
                 </el-col>
                 <el-col :span="10">
@@ -55,7 +114,7 @@
                     </el-form-item>
                 </el-col>
             </el-row>
-        </el-form>
+        </el-form> -->
     </div>
 </template>
 <script>

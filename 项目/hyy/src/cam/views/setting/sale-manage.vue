@@ -4,8 +4,7 @@
       <!-- <bread-crumb  :dataList="naveList"></bread-crumb> -->
       <div class="time-wrap">
         <div class="time-item">
-          <label class="label-title">
-            品类选择：
+            <span class="label-title">品类选择:</span>
             <el-cascader
               size="small"
               :show-all-levels="false"
@@ -16,8 +15,9 @@
               change-on-select
               @change="changeCategory"
             ></el-cascader>
-          </label>
-          <el-button type="primary" size="mini" style="margin-left:30px" @click="search">查询</el-button>
+        </div>
+        <div class="time-item">
+           <el-button type="primary" size="mini"  @click="search">查询</el-button>
         </div>
       </div>
     </div>
@@ -42,7 +42,7 @@
                   class="text-blue cursor"
                   @click="update(scope.row)"
                   style="padding-right:10px;"
-                >修改</span>
+                >编辑</span>
                 <span
                   class="text-blue cursor"
                   @click="switchOpen(scope.row)"
@@ -53,7 +53,7 @@
         </div>
         <div class="reset-page" >
           <el-pagination  v-if="total>15" size="mini"
-            layout="sizes,total,prev, pager, next, jumper"
+            layout="total,sizes,prev, pager, next, jumper"
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
             :current-page="page"

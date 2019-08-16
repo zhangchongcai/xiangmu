@@ -1,4 +1,5 @@
 import axios from 'frame_cpm/http/api';
+import Qs from 'qs'
 // import axios from './api'
 /**
  * 将所有接口统一起来便于维护
@@ -58,7 +59,7 @@ export const getOtherthing = (params) => {
 // 新增数据 （上班登记）
 export const increaseWorker = (data) => {
   return axios({
-    url: '/trade/trade/workTime/save',
+    url: '/trade/workTime/save',
     method: 'post',
     data
   })
@@ -184,25 +185,21 @@ export const getAdjustSubject = (data) => {
   })
 }
 // 清机结算（清机结算完成）
+export const exportExcel = (data) => {
+  return axios({
+    url: '/trade/workTime/exportExcel',
+    method: 'post',
+    data,
+    responseType: 'blob',
+    // async: true
+  })
+}
+// 清机结算（导出）
 export const clearFinish = (data) => {
   return axios({
     url: '/trade/workTime/workTimeCleared',
     method: 'post',
-    data
-  })
-}
-export const tickettypeUpdate = data => {
-  console.log(data)
-  let datas = JSON.stringify(data)
-  console.log(datas)
-  return axios({
-    url: '/tickettype/update',
-    method: 'post',
-    headers: {
-      'Content-Type': 'application/json;charset=utf-8'
-    },
-    dataType: "json",
-    data: datas
+    data,
   })
 }
 
@@ -224,6 +221,15 @@ export const payType = (params) => {
   return axios({
     // baseURL:'http://192.168.100.118:2302',
     url: '/trade/payType/findAllForBillQuery',
+    method: 'get',
+    params
+  })
+}
+// 获取收银员 
+export const orderWorker = (params) => {
+  return axios({
+    // baseURL:'http://192.168.100.118:2302',
+    url: `/trade/saleBillSearch/selectTransactionUsersByPage`,
     method: 'get',
     params
   })
@@ -274,39 +280,39 @@ export const deleteOtherthing = (uid) => {
 // 获取电影影院
 export const getCinemaByParam = (params) => {
   // console.log(document.domain)
-  let domain = document.domain;
-  let baseURL = "";
-  switch (domain) {
-    case '192.168.100.124':   // 黎康本地IP
-      // baseURL = 'http://apitest.oristarcloud.com'
-      baseURL = 'http://apidev.oristarcloud.com'
-      break;
-    case '127.0.0.1':
-      // baseURL = 'http://apitest.oristarcloud.com'
-      baseURL = 'https://api.oristarcloud.com'
-      // baseURL = 'http://apidev.oristarcloud.com'
-      break;
-    case "dev.oristarcloud.com":
-      baseURL = 'http://apidev.oristarcloud.com'
+  // let domain = document.domain;
+  // let baseURL = "";
+  // switch (domain) {
+  //   case '192.168.100.124':   // 黎康本地IP
+  //     // baseURL = 'http://apitest.oristarcloud.com'
+  //     baseURL = 'http://apidev.oristarcloud.com'
+  //     break;
+  //   case '127.0.0.1':
+  //     // baseURL = 'http://apitest.oristarcloud.com'
+  //     baseURL = 'https://api.oristarcloud.com'
+  //     // baseURL = 'http://apidev.oristarcloud.com'
+  //     break;
+  //   case "dev.oristarcloud.com":
+  //     baseURL = 'http://apidev.oristarcloud.com'
 
-      break;
-    case "test.oristarcloud.com":
-      baseURL = 'http://apitest.oristarcloud.com'
-      break;
-    case "www.oristarcloud.com":
-      baseURL = 'https://api.oristarcloud.com'
-      break;
-    default:
-      baseURL = 'https://api.oristarcloud.com';
-      break;
-  }
+  //     break;
+  //   case "test.oristarcloud.com":
+  //     baseURL = 'http://apitest.oristarcloud.com'
+  //     break;
+  //   case "www.oristarcloud.com":
+  //     baseURL = 'https://api.oristarcloud.com'
+  //     break;
+  //   default:
+  //     baseURL = 'https://api.oristarcloud.com';
+  //     break;
+  // }
   return axios({
     //🌲状结构
     // baseURL:'http://apidev.oristarcloud.com/report',
     // url: '/condition/getCinemaByParam',
     // 表格结构 （正确数据）
     // baseURL:'http://apidev.oristarcloud.com',
-    baseURL:baseURL,
+    // baseURL:baseURL,
     url: '/cpm/user/auth/queryUserCinemas',
     method: 'get',
     params
@@ -334,7 +340,7 @@ export const getMoneyPerson = (params) => {
 // 抽钞记录查询-收银员列表
 export const getMoneyCashier = (params) => {
   return axios({
-    url: `/extractFund/findExtractUsersByPage/workers`,
+    url: `/trade/extractFund/findExtractUsersByPage/workers`,
     method: 'get',
     params
   });
@@ -418,18 +424,19 @@ export const terminalList2 = (code,status,cinemaUid) => {
   })
 }
 // 销售终端 获取编码
-export const getAddressCode = (uid) => {
+export const getAddressCode = (params) => {
   return axios({
-    // baseURL: 'http://apidevpos.oristarcloud.com',
     url: `/trade/salePlace/getSalePlaceCode`,
     method: 'get',
+    params
   })
 }
-export const rackAll = (uid) => {
+export const rackAll = (uid,params) => {
   return axios({
     // baseURL: 'http://apidevpos.oristarcloud.com',
     url: `/trade/terminal/rackAll?cinemaUid=${uid}`,
     method: 'get',
+    params
   })
 }
 export const addressUpdata = (data) => {
@@ -457,9 +464,9 @@ export const delateSubject = (subjectCode) => {
   });
 }
 // 修改资金调整科目
-export const changeSubject = (subjectCode,data) => {
+export const changeSubject = (data) => {
   return axios({
-    url: `/trade/fundChangeSubject/update/${subjectCode}`,
+    url: `/trade/fundChangeSubject/update`,
     method: 'post',
     data
   });
@@ -572,6 +579,15 @@ export const deletePayType = (data) => {
   return axios({
     url: `/trade/faPayType/delete/${data.code}`,
     method: 'delete',
+  });
+};
+
+// 修改支付是否显示状态
+export const updatePayTypeShowFlag = (data) => {
+  return axios({
+    url: `/trade/faPayTypeCinema/set/showFlag`,
+    method: 'post',
+    data
   });
 };
 
@@ -717,6 +733,40 @@ export const getDictionaryData = params => {
     params
   })
 }
+export const  grouponTicketSave = data => {
+  return axios({
+    url: '/trade/grouponTicket/save',
+    method: 'post',
+    data
+  }).then(res => res)
+}
+export const  grouponTicketQuery = data => {
+  return axios({
+    url: '/trade/grouponTicket/query',
+    method: 'post',
+    data,
+  }).then( res => res )
+}
+export const  grouponTicketView = params => {
+  return axios({
+    url: '/trade/grouponTicket/view',
+    method: 'get',
+    params,
+  }).then( res => res )
+}
+export const  grouponTicketUpdate = data => {
+  return axios({
+    url: '/trade/grouponTicket/update',
+    method: 'post',
+    data,
+  }).then( res => res )
+}
+export const grouponTicketDelete = params => {
+  return axios({
+    url: `/trade/grouponTicket/delete/${params}`,
+    method: 'delete'
+  }).then( res => res)
+}
 /*** 渠道管理 end ***/
 
 export default {
@@ -744,9 +794,11 @@ export default {
   adjustList,
   adjustAdd,
   getAdjustSubject,
+  exportExcel,
   //****end */
   //订单查询**start*/
   orderList,
+  orderWorker,
   payType,
   payDetail,
   getGoodCode,
@@ -802,6 +854,7 @@ export default {
   savePayType,
   updatePayType,
   deletePayType,
+  updatePayTypeShowFlag,
   updatePayTypeStatus,
   findPayTypeByCode,
   getCinemaPayType,

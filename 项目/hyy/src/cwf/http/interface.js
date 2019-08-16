@@ -28,6 +28,43 @@ export const searchApproval = data => {
 }
 
 /**
+ * @function  - 检索业务审批
+ * 
+ * @param {Object} data 
+ * @param {Number} data.pageNo - 数据页数
+ * @param {Number} data.pageSize - 数据条数
+ * @param {String} data.bizNo - 业务单据号
+ * @param {String} data.applyUserName - 申请人名称
+ * @param {String} data.bizTypeName - 单据类型名称
+ * @param {Array} data.status - 审批状态
+ * 
+ */
+
+export const findspAuditBill = data => {
+    return axios({
+        url: '/workflow/AuthorizationSearching/findspAuditBillNotJurisdiction',
+        method: 'post',
+        data
+    })
+}
+
+/**
+ * @function  - 根据任务id查询单据详情
+ * 
+ * @param {Object} data 
+ * @param {Number} data.id - 任务id
+ * 
+ */
+
+export const findspAuditBillRecord = data => {
+    return axios({
+        url: '/workflow/AuthorizationSearching/findspAuditBillRecord',
+        method: 'post',
+        data
+    })
+}
+
+/**
  * @function  - 审批任务
  * 
  * @param {Object} data 
@@ -124,6 +161,22 @@ export const selectApprovalProcess = data => {
 }
 
 /**
+ * @function  - 根据id查询审批流程详情
+ * 
+ * @param {Object} data 
+ * @param {Number} data.spId - id
+ * 
+ */
+
+export const findSpById = params => {
+    return axios({
+        url: '/workflow/manage/findSpById',
+        method: 'post',
+        params
+    })
+}
+
+/**
  * @function  - 删除审批流程
  * 
  * @param {Object} data 
@@ -140,7 +193,7 @@ export const deleteApprovalProcess = data => {
 }
 
 /**
- * @function  - 用租户ID获取用户
+ * @function  - 用租户ID获取用户(弃用)
  * 
  * @param {Object} data 
  * @param {Number} data.tenantId - 审批流程id
@@ -156,7 +209,30 @@ export const getUserInfo = params => {
 }
 
 /**
- * @function  - 用租户ID获取角色
+ * @function  - 用租户ID获取用户(最新)
+ * 
+ * @param {Object} data 
+ * @param {String} data.loginName - 用户账号
+ * @param {String} data.fullName - 用户名
+ * @param {Number} data.status - 用户状态
+ * @param {String} data.attributeType - 审批流程id
+ * @param {Number} data.tenantId - 租户id
+ * @param {String} data.orgUid - 用户组织uid
+ * @param {Number} data.pageSize - 条数
+ * @param {Number} data.pageNum - 页数
+ * 
+ */
+
+export const getUser = data => {
+    return axios({
+        url: '/common/user/listUserByCondition',
+        method: 'post',
+        data
+    })
+}
+
+/**
+ * @function  - 用租户ID获取角色(弃用)
  * 
  * @param {Object} data 
  * @param {Number} data.tenantId - 审批流程id
@@ -172,16 +248,36 @@ export const getRoleInfo = params => {
 }
 
 /**
- * @function  - 获取租户下组织结构
+ * @function  - 用租户ID获取角色(最新)
  * 
  * @param {Object} data 
- * @param {Number} data.consumerId - 审批流程id
+ * @param {Number} data.name - 角色名称
+ * @param {Number} data.pageNum - 页数
+ * @param {Number} data.pageSize - 条数
+ * @param {Number} data.status - 角色状态
+ * @param {Number} data.tenantId - 租户id
  * 
  */
 
-export const getOrgTree = data => {
+export const roleList = data => {
     return axios({
-        url: '/common/consumer/getOrgTree',
+        url: '/common/role/listCustomerRoleByRequirements',
+        method: 'post',
+        data
+    })
+}
+
+/**
+ * @function  - 获取租户下组织结构(弃用)
+ * 
+ * @param {Object} data 
+ * @param {Number} data.tenantId - 审批流程id
+ * 
+ */
+
+export const organizationList = data => {
+    return axios({
+        url: '/common/consumer/organizationList',
         method: 'post',
         data
     })
@@ -241,6 +337,23 @@ export const searchBillSetting = params => {
 }
 
 /**
+ * @function  - 业务个性单据设置-根据id查询列表详情
+ * 
+ * @param {Object} data 
+ * @param {Number} data.businessId - id
+ * 
+ */
+
+export const findSetUpById = params => {
+    return axios({
+        url: '/workflow/type/findSetUpById',
+        method: 'post',
+        params
+    })
+}
+
+
+/**
  * @function  - 业务个性单据设置-按商户个性设置列表
  * 
  * @param {Object} data 
@@ -251,21 +364,22 @@ export const searchBillSetting = params => {
  */
 
 export const getBillSettingList = params => {
-        return axios({
-            url: '/workflow/type/queryPersonalization',
-            method: 'post',
-            params
-        })
-    }
-    /**
-     * @function  - 业务个性单据设置-检查是否新建时有重复的组织节点
-     * 
-     * @param {Object} data 
-     * @param {Number} data.pageNo - 页数
-     * @param {Number} data.pageSize - 条数
-     * @param {Number} data.tenantId - 租户id
-     * 
-     */
+    return axios({
+        url: '/workflow/type/queryPersonalization',
+        method: 'post',
+        params
+    })
+}
+
+/**
+ * @function  - 业务个性单据设置-检查是否新建时有重复的组织节点
+ * 
+ * @param {Object} data 
+ * @param {Number} data.pageNo - 页数
+ * @param {Number} data.pageSize - 条数
+ * @param {Number} data.tenantId - 租户id
+ * 
+ */
 
 export const querySetHistory = params => {
     return axios({
@@ -368,12 +482,14 @@ export default {
     searchApproval,
     commitApproval,
     getApprovalrecord,
-
+    findspAuditBill,
+    findspAuditBillRecord,
     //业务流程接口
     editApprovalProcess,
     deleteApprovalProcess,
     addApprovalProcess,
     selectApprovalProcess,
+    findSpById,
 
     //业务个性单据设置接口
     searchBillSetting,
@@ -384,10 +500,15 @@ export default {
     deleteBillSetting,
     addPersonalSetting,
     querySetHistory,
+    findSetUpById,
 
+    //基础数据
+    getUser,
+    getUserInfo, //弃用
 
-    getUserInfo,
-    getRoleInfo,
-    getOrgTree,
-    getOrgTreeAndCinema
+    roleList,
+    getRoleInfo, //弃用
+
+    getOrgTreeAndCinema,
+    organizationList, //弃用
 };

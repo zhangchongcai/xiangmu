@@ -1,7 +1,7 @@
 <template>
   <el-select
     popper-class="rpt-select"
-    v-model="hallTypeValue"
+    v-model="hallTypeObj.hallTypeValue"
     placeholder="请选择"
     @focus="getHallType('CI_HALL_TYPE',2)"
   >
@@ -16,17 +16,13 @@
 </template>
 
 <script>
-import mixins from "src/frame_cpm/mixins/cacheMixin.js";
 export default {
-  mixins: [mixins.cacheMixin],
   props: {
-    resetStatus: Boolean
+    resetStatus: Boolean,
+    hallTypeObj: Object
   },
   data() {
     return {
-      cacheField: ["hallTypeValue"],
-      subComName: "hallType",
-      hallTypeValue: "",
       options: [[]]
     };
   },
@@ -42,11 +38,11 @@ export default {
   },
   watch: {
     hallTypeValue(val) {
-      this.$emit("selectHallTypeData", this.hallTypeValue);
+      this.$emit("selectHallTypeData", this.hallTypeObj.hallTypeValue);
     },
     resetStatus(newVal) {
       if (newVal) {
-        this.hallTypeValue = "";
+        this.hallTypeObj.hallTypeValue = "";
       }
     }
   }

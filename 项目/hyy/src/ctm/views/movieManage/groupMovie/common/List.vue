@@ -67,7 +67,7 @@
           type="primary"
           size="small"
           class="button-reset"
-          @click="getDatas"
+          @click="getDatas('backPageOne')"
         >查询</el-button>
 
       </div>
@@ -94,7 +94,7 @@
       <el-dialog
         title="下载影片"
         :visible.sync="dialogVisible"
-        width="40%"
+        width="448px"
         :before-close="handleClose">
         <div>
           <div class="block">
@@ -218,7 +218,7 @@
               size="mini"
               type="text"
               @click="handleEdit(scope.$index, scope.row)"
-            >修改</el-button>
+            >编辑</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -320,8 +320,11 @@ export default {
       
       return type == 0 ? `${y}-${m}-${d} ${h}:${mm}:${ss}` : type == 1 ? `${y}-${m}-${d}` : type == 2 ? `${h}:${mm}` : `${y}-${m}-${d} ${h}:${mm}`
      },
-    getDatas() {
+    getDatas(backPageOne) {
       let self = this;
+      if(backPageOne) {
+        self.currentPage = 1
+      }
       console.log(':self.currentPage',self.currentPage)
       let params = {
         // is_public_value:self.is_public_value == true ? 1 : 0,
@@ -496,6 +499,10 @@ export default {
   .el-dialog__header .el-dialog__title{
     color: #333333;
   }
+
+  .el-icon-close{
+    font-size: 12px;
+  }
   .block{
     .demonstration{
       color:#666666;
@@ -515,10 +522,10 @@ export default {
       padding: 0 10px;
     }
     .el-date-editor--daterange.el-input__inner{
-      width: 360px;
+      width: 256px;
     }
     .el-date-editor .el-range-separator{
-      width: 5%;
+      width: 8%;
     }
     span {
       color: #666666;

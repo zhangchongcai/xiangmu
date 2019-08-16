@@ -1,8 +1,10 @@
 import axios from "./http";
 const baseUrl = '/member/pos';
 const memeberApi = {
-    getInfoByPhone: { url: baseUrl+ '/getInfoByPhone', method: 'get' },// 获取会员信息以及会员卡列表
-    getCardInfoByNo: { url: baseUrl+ '/getCardInfoByNo', method: 'get' },// 获取会员信息以及会员卡列表
+    // /static/mock/getInfoByPhone.json  /getInfoByPhone
+    getInfoByPhone: { url: baseUrl + '/getInfoByPhone', method: 'get' },// 获取会员信息以及会员卡列表   
+    // /static/mock/getCardInfoByNo.json   /getCardInfoByNo
+    getCardInfoByNo: { url: baseUrl + '/getCardInfoByNo', method: 'get' },// 获取会员信息以及会员卡列表 
     applyCardNoInfo: { url: baseUrl+ '/getProductDetailByCardNo', method: 'get' },//  开卡查卡 查卡政策
     getActivityList: { url: baseUrl+ '/getMarketingActivityList', method: 'get' },//  营销活动列表获取getActivityList
     bindCardAndCharge: { url: baseUrl+ '/cardOpenAndPay' },//  会员开卡

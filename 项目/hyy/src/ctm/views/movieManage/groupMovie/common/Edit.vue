@@ -266,7 +266,230 @@
           >
             <div class="basic-info">
               <div class="separate-accounts-wrap">
-                
+
+                <div>
+                  <el-form-item
+                    prop="dateShowFirst"
+                    label-width="0px"
+                  >
+                    <div class="f-12 label-color">
+                      <span class="valid-color">* </span>
+                      <span class="c-s-title f-w-b">A类城市（{{movieAreaGradeVo.areaGradeListA?movieAreaGradeVo.areaGradeListA.length:""}}）：</span>
+                      <el-tooltip
+                        popper-class="w-400"
+                        class="item"
+                        effect="dark"
+                        :content="movieAreaGradeVo.areaA || ''"
+                        placement="bottom"
+                      >
+                        <span class="c-s-title f-w-b">{{movieAreaGradeVo.areaAStr || ""}}</span>
+                      </el-tooltip>
+                      <span
+                        class="m-l-15 c-primary cur-p"
+                        @click="editCitys('A')"
+                      >编辑</span>
+                    </div>
+                    <div
+                      v-for="(item,index) in priceListA"
+                      class="m-l-19 m-t-8"
+                      :key="index"
+                    >
+                      <div class="separate-accounts-price">
+                        <span>最低票价：</span>
+                        <el-input
+                          size="small"
+                          v-model="item.minPrice"
+                          @change="priceGradeChange(priceListA,item.minPrice,index)"
+                        ></el-input>
+                        <span>元 ，</span>
+                      </div>
+
+                      <div class="separate-accounts-date">
+                        <span>日期</span>
+                        <el-date-picker
+                          disabled
+                          v-model="item.dateStart"
+                          type="date"
+                          value-format="yyyy-MM-dd"
+                          placeholder="选择日期"
+                        >
+                        </el-date-picker>
+                        <el-date-picker
+                          @change="priceDateEndGradeFun($event,index,priceListA)"
+                          :disabled="index == priceListA.length*1-1"
+                          v-model="item.dateEnd"
+                          value-format="yyyy-MM-dd"
+                          type="date"
+                          @focus="pickerOptionsFun(priceListA,'pickerOptionsA',index)"
+                          :picker-options="pickerOptionsA"
+                          placeholder="选择日期"
+                        >
+                        </el-date-picker>
+                      </div>
+                      <span
+                        class="delete"
+                        @click="deleGradeMinPrice(priceListA,index)"
+                        v-if="priceListA.length >1"
+                      >删除</span>
+                    </div>
+                    <div
+                      class="no-info"
+                      v-if="priceListA.length==0"
+                    >
+                      暂无
+                    </div>
+                    <span
+                      class="add m-l-80"
+                      @click="addGradeMinPrice(priceListA)"
+                    ><i class="iconfont icon-neiye-tianjia-"></i>添加</span>
+                  </el-form-item>
+                </div>
+
+                <div>
+                  <el-form-item
+                    prop="dateShowFirst"
+                    label-width="0px"
+                  >
+                    <div class="f-12 label-color">
+                      <span class="valid-color">* </span>
+                      <span class="c-s-title f-w-b">B类城市（{{movieAreaGradeVo.areaGradeListB?movieAreaGradeVo.areaGradeListB.length:""}}）：</span>
+                      <el-tooltip
+                        popper-class="w-400"
+                        class="item"
+                        effect="dark"
+                        :content="movieAreaGradeVo.areaB || ''"
+                        placement="bottom"
+                      >
+                        <span class="c-s-title f-w-b">{{movieAreaGradeVo.areaBStr || ""}}</span>
+                      </el-tooltip>
+                      <span
+                        @click="editCitys('B')"
+                        class="m-l-15 c-primary cur-p"
+                      >编辑</span>
+                    </div>
+                    <div
+                      v-for="(item,index) in priceListB"
+                      class="m-l-19 m-t-8"
+                      :key="index"
+                    >
+                      <div class="separate-accounts-price">
+                        <span>最低票价：</span>
+                        <el-input
+                          size="small"
+                          v-model="item.minPrice"
+                          @change="priceGradeChange(priceListB,item.minPrice,index)"
+                        ></el-input>
+                        <span>元 ，</span>
+                      </div>
+
+                      <div class="separate-accounts-date">
+                        <span>日期</span>
+                        <el-date-picker
+                          disabled
+                          v-model="item.dateStart"
+                          type="date"
+                          value-format="yyyy-MM-dd"
+                          placeholder="选择日期"
+                        >
+                        </el-date-picker>
+                        <el-date-picker
+                          @change="priceDateEndGradeFun($event,index,priceListB)"
+                          :disabled="index == priceListB.length*1-1"
+                          v-model="item.dateEnd"
+                          value-format="yyyy-MM-dd"
+                          type="date"
+                          @focus="pickerOptionsFun(priceListB,'pickerOptionsB',index)"
+                          :picker-options="pickerOptionsB"
+                          placeholder="选择日期"
+                        >
+                        </el-date-picker>
+                      </div>
+                      <span
+                        class="delete"
+                        @click="deleGradeMinPrice(priceListB,index)"
+                        v-if="priceListB.length >1"
+                      >删除</span>
+                    </div>
+                    <div
+                      class="no-info"
+                      v-if="priceListB.length==0"
+                    >
+                      暂无
+                    </div>
+                    <span
+                      class="add m-l-80"
+                      @click="addGradeMinPrice(priceListB)"
+                    ><i class="iconfont icon-neiye-tianjia-"></i>添加</span>
+                  </el-form-item>
+                </div>
+
+                <div>
+                  <el-form-item
+                    prop="dateShowFirst"
+                    label-width="0px"
+                  >
+                    <div class="f-12 label-color">
+                      <span class="valid-color">* </span>
+                      <span class="c-s-title f-w-b">C类城市：</span>
+                      <span class="c-s-title f-w-b">除A类 B类所有城市外默认都归为C类</span>
+                    </div>
+                    <div
+                      v-for="(item,index) in priceListC"
+                      class="m-l-19 m-t-8"
+                      :key="index"
+                    >
+                      <div class="separate-accounts-price">
+                        <span>最低票价：</span>
+                        <el-input
+                          size="small"
+                          v-model="item.minPrice"
+                          @change="priceGradeChange(priceListC,item.minPrice,index)"
+                        ></el-input>
+                        <span>元 ，</span>
+                      </div>
+
+                      <div class="separate-accounts-date">
+                        <span>日期</span>
+                        <el-date-picker
+                          disabled
+                          v-model="item.dateStart"
+                          type="date"
+                          value-format="yyyy-MM-dd"
+                          placeholder="选择日期"
+                        >
+                        </el-date-picker>
+                        <el-date-picker
+                          @change="priceDateEndGradeFun($event,index,priceListC)"
+                          :disabled="index == priceListC.length*1-1"
+                          v-model="item.dateEnd"
+                          value-format="yyyy-MM-dd"
+                          type="date"
+                          @focus="pickerOptionsFun(priceListC,'pickerOptionsC',index)"
+                          :picker-options="pickerOptionsC"
+                          placeholder="选择日期"
+                        >
+                        </el-date-picker>
+                      </div>
+                      <span
+                        class="delete"
+                        @click="deleGradeMinPrice(priceListC,index)"
+                        v-if="priceListC.length >1"
+                      >删除</span>
+                    </div>
+                    <div
+                      class="no-info"
+                      v-if="priceListC.length==0"
+                    >
+                      暂无
+                    </div>
+                    <span
+                      class="add m-l-80"
+                      @click="addGradeMinPrice(priceListC)"
+                    ><i class="iconfont icon-neiye-tianjia-"></i>添加</span>
+                  </el-form-item>
+                </div>
+
+                <!-- <div>
                   <el-form-item
                     label="最低票价："
                     prop="dateShowFirst"
@@ -324,19 +547,22 @@
                       @click="addMinPrice()"
                     ><i class="iconfont icon-neiye-tianjia-"></i>添加</span>
                   </el-form-item>
-                
+                </div> -->
 
                 <el-form-item
-                  label="院方分账："
                   prop="dateShowFirst"
+                  label-width="0px"
                 >
-
+                  <div class="f-12 label-color">
+                    <span class="valid-color">* </span>
+                    <span class="c-s-title f-w-b">发行方分账：</span>
+                  </div>
                   <div
                     v-for="(item,index) in rateList"
-                    style="margin-top:8px;"
+                    class="m-l-79 m-t-8"
                     :key='index'
                   >
-                    <div class="separate-accounts-price">
+                    <div class="separate-accounts-price rate">
                       <el-input
                         size="small"
                         v-model="item.rate"
@@ -380,7 +606,7 @@
                     暂无
                   </div>
                   <span
-                    class="add"
+                    class="add m-l-79"
                     @click="addAccount()"
                   ><i class="iconfont icon-neiye-tianjia-"></i>添加</span>
                 </el-form-item>
@@ -407,15 +633,47 @@
       </div>
     </div>
     <fixStepTool :stepData="stepData.stepList"></fixStepTool>
+    <TableSelect
+      :formItems="formItems"
+      nameKey="areaName"
+      rowKey="areaCode"
+      :request="requestApi"
+      :columns="brandColumns"
+      :multiSelect="true"
+      title="修改城市级别分类"
+      :modelVisible="modelVisible"
+      @close="modelVisible=false"
+      @select="selectedTable"
+      :defaultSelectRows="defaultSelectRows"
+    />
   </div>
 </template>
 <script>
 import FixStepTool from "ctm/components/fix-step-tool/fix-step-tool"
+import TableSelect from 'ctm/components/TableSelect/TableSelect';
 import fixStepMixin from "ctm/mixins/fixStepTool"
+import { fetchCitySortList, queryAreatList, saveCitySortList } from 'ctm/http/interface'
 
 export default {
   data () {
     return {
+      formItems: [
+        {          label: '所在城市：',
+          prop: "provinceCode",
+          prop1: "cityCode",
+          type: 'divider-cascader',
+          options: 'divider-area',
+          options1: [],
+          props: { disabled: false, props: { value: 'areaCode', label: 'areaName' }, level: 2 }        }
+      ],
+      defaultSelectRows: [],
+      currentGrade: "",
+      brandColumns: [
+        { label: '城市名称', prop: 'areaName' }
+      ],
+      requestApi: queryAreatList,
+      modelVisible: false,
+      movieAreaGradeVo: {},
       sum: 1,
       accountSum: 1,
       priceItem: {
@@ -466,11 +724,26 @@ export default {
       optionFilmSubtitlesList: [],
       optionFilmTypeList: [],
       priceList: [],
-      aPriceList: [],
-      bPriceList: [],
-      cPriceList: [],
+      priceListA: [],
+      priceListB: [],
+      priceListC: [],
       rateList: [],
       pickerOptions: {
+        disabledDate (time) {
+          return time.getTime() > Date.now();
+        },
+      },
+      pickerOptionsA: {
+        disabledDate (time) {
+          return time.getTime() > Date.now();
+        },
+      },
+      pickerOptionsB: {
+        disabledDate (time) {
+          return time.getTime() > Date.now();
+        },
+      },
+      pickerOptionsC: {
         disabledDate (time) {
           return time.getTime() > Date.now();
         },
@@ -514,9 +787,55 @@ export default {
   },
   mixins: [fixStepMixin],
   components: {
-    fixStepTool: FixStepTool
+    fixStepTool: FixStepTool,
+    TableSelect
   },
   methods: {
+editCitys (grade) {
+      // console.log(grade);
+      this.currentGrade = grade;
+      if (grade == 'A') {
+        this.defaultSelectRows = this.movieAreaGradeVo.areaGradeListA || [];
+      } else if (grade == 'B') {
+        this.defaultSelectRows = this.movieAreaGradeVo.areaGradeListB || [];
+      }
+      // this.defaultSelectRows = row.areaList || [];
+      this.modelVisible = true;
+    },
+    async selectedTable (val) {
+      console.log(val);
+      if (this.currentGrade == 'A') {
+        this.movieAreaGradeVo.areaGradeListA = val;
+      } else if (this.currentGrade == 'B') {
+        this.movieAreaGradeVo.areaGradeListB = val;
+      }
+
+      let arr = val;
+      let str = "";
+      if (arr && arr.length > 0) {
+        arr.forEach((item, index) => {
+          if (index != arr.length - 1) {
+            str = str + item.areaName + ","
+          } else {
+            str = str + item.areaName
+          }
+        })
+        if (this.currentGrade == 'A') {
+          this.movieAreaGradeVo.areaAStr = str + "共" + arr.length + "个城市";
+          this.movieAreaGradeVo.areaA = str;
+          if (arr.length > 4) {
+            this.movieAreaGradeVo.areaAStr = arr[0].areaName + "," + arr[1].areaName + "," + arr[2].areaName + "," + arr[3].areaName + "共" + arr.length + "个城市"
+          }
+        }else if(this.currentGrade == 'B'){
+          this.movieAreaGradeVo.areaBStr = str + "共" + arr.length + "个城市";
+          this.movieAreaGradeVo.areaB = str;
+          if (arr.length > 4) {
+            this.movieAreaGradeVo.areaBStr = arr[0].areaName + "," + arr[1].areaName + "," + arr[2].areaName + "," + arr[3].areaName + "共" + arr.length + "个城市"
+          }
+        }
+      }
+
+    },
     moreInfoChange () {
       //有数据再跳转
       if (!this.getInfo()) {
@@ -548,6 +867,20 @@ export default {
       return this.noDatadialogVisible
     },
     //修改最低票价时间配置项禁用
+    pickerOptionsFun (priceList, pickerOptions, index) {
+      // let _this = this
+      console.log("pickerOptionsFun");
+
+      let date_A = new Date(priceList[index].dateStart)
+      let date_B = new Date(priceList[index + 1].dateEnd)
+      date_B.setTime(date_B.getTime() - 3600 * 1000 * 24)
+      this[pickerOptions] = {
+        disabledDate (time) {
+          return !(time.getTime() < date_B && time.getTime() >= date_A);
+        },
+      }
+    },
+    //修改最低票价时间配置项禁用
     priceChangePickerOptionsFun (index) {
       let _this = this
       let date_A = new Date(_this.priceList[index].dateStart)
@@ -570,6 +903,16 @@ export default {
           return !(time.getTime() < date_B && time.getTime() >= date_A);
         },
       }
+    },
+    priceGradeChange (priceList, val, index) {
+      let newVal = parseFloat(val)
+      console.log('newVal:', newVal)
+      if (newVal < 0) {
+        priceList[index].minPrice = 0
+        return
+      }
+      priceList[index].minPrice = newVal ? newVal : ''
+      console.log(' this.priceList[index].minPrice:', priceList[index].minPrice)
     },
     priceChange (val, index) {
       let newVal = parseFloat(val)
@@ -606,6 +949,14 @@ export default {
       return (time_ / (3600 * 24));
     },
     //修改下个日期起始日期
+    priceDateEndGradeFun ($event, index, priceList) {
+      if (priceList.length <= 1) {
+
+      } else {
+        priceList[index + 1].dateStart = this.nowDayAddOneFun($event, 1)
+      }
+    },
+    //修改下个日期起始日期
     priceDateEndFun ($event, index) {
       if (this.priceList.length <= 1) {
 
@@ -625,6 +976,9 @@ export default {
       let self = this
       self.priceList[0].dateStart = val
       self.rateList[0].dateStart = val
+      self.priceListA[0].dateStart = val
+      self.priceListB[0].dateStart = val
+      self.priceListC[0].dateStart = val
       self.sum = 1
       self.accountSum = 1
     },
@@ -633,8 +987,63 @@ export default {
       let self = this
       self.priceList[self.priceList.length - 1].dateEnd = val
       self.rateList[self.rateList.length - 1].dateEnd = val
+      self.priceListA[self.priceListA.length - 1].dateEnd = val
+      self.priceListB[self.priceListB.length - 1].dateEnd = val
+      self.priceListC[self.priceListC.length - 1].dateEnd = val
       self.sum = 1
       self.accountSum = 1
+    },
+    //新增最低票价和分账比列
+    addGradeMinPrice (priceList) {
+      let self = this
+      if (!self.sizeForm.dateShowFirst) {
+        this.$message({
+          message: '上映日期不能为空',
+          type: 'warning'
+        });
+        return
+      }
+      if (!self.sizeForm.dateShowOff) {
+        this.$message({
+          message: '下映日期不能为空',
+          type: 'warning'
+        });
+        return
+      }
+      let item = {
+        dateEnd: '',
+        dateStart: '',
+        minPrice: 0,
+      }
+      //设置日期
+      //默认只有一条时
+      if (priceList.length == 1) {
+        // if (self.sum == 1) {
+        priceList[0].dateEnd = self.dayFun(priceList.length)
+        item.dateStart = self.dayFun(priceList.length + 1);
+        // }
+      }
+      // if (priceList.length == 2 && self.sum == 2) {
+      //   priceList[1].dateEnd = self.nowDayAddOneFun(priceList[1].dateStart, 1)
+      //   item.dateStart = self.nowDayAddOneFun(priceList[1].dateEnd, 1)
+      // }
+      //默认有两条时
+      if (priceList.length == 2) {
+        priceList[1].dateEnd = self.nowDayAddOneFun(priceList[1].dateStart, 1)
+        item.dateStart = self.nowDayAddOneFun(priceList[1].dateEnd, 1)
+      }
+      item.dateEnd = self.sizeForm.dateShowOff
+      if (priceList.length > 2) {
+        this.$message({
+          message: '不能超过三条',
+          type: 'warning'
+        });
+        return
+      }
+      priceList.push(item)
+      // if (this.sum < 2) {
+      //   this.sum++;
+      // }
     },
     //新增最低票价和分账比例
     addMinPrice () {
@@ -687,6 +1096,20 @@ export default {
       if (this.sum < 2) {
         this.sum++;
       }
+    },
+    //删除
+    deleGradeMinPrice (priceList, index) {
+      if (priceList.length <= 1) {
+        return
+      }
+      let isLast = false;
+      if (index == priceList.length - 1) {
+        isLast = true;
+        priceList[index - 1].dateEnd = this.sizeForm.dateShowOff;
+      } else {
+
+      }
+      priceList.splice(index, 1)
     },
     //删除
     deleMinPrice (index) {
@@ -805,7 +1228,9 @@ export default {
     },
     //提交form表单
     onSubmit (ruleForm) {
-      console.log(this.priceList);
+      console.log(this.priceListA);
+      console.log(this.priceListB);
+      console.log(this.priceListC);
       console.log(this.rateList);
       // return;
       this.$refs[ruleForm].validate((valid) => {
@@ -842,6 +1267,18 @@ export default {
             item.dateEnd = self.formatDateTime(item.dateEnd, 0)
             item.dateStart = self.formatDateTime(item.dateStart, 0)
           })
+          self.priceListA.forEach((item, index) => {
+            item.dateEnd = self.formatDateTime(item.dateEnd, 0)
+            item.dateStart = self.formatDateTime(item.dateStart, 0)
+          })
+          self.priceListB.forEach((item, index) => {
+            item.dateEnd = self.formatDateTime(item.dateEnd, 0)
+            item.dateStart = self.formatDateTime(item.dateStart, 0)
+          })
+          self.priceListC.forEach((item, index) => {
+            item.dateEnd = self.formatDateTime(item.dateEnd, 0)
+            item.dateStart = self.formatDateTime(item.dateStart, 0)
+          })
 
           self.rateList.forEach((item, index) => {
             item.dateEnd = self.formatDateTime(item.dateEnd, 0)
@@ -856,6 +1293,27 @@ export default {
           }
           //最低票价和分账比例不能为零
           if (self.priceList.some((item, index) => { return (item.minPrice == 0) })) {
+            self.$message({
+              message: '最低票价不能为空或者为0',
+              type: 'warning'
+            });
+            return
+          }
+          if (self.priceListA.some((item, index) => { return (item.minPrice == 0) })) {
+            self.$message({
+              message: '最低票价不能为空或者为0',
+              type: 'warning'
+            });
+            return
+          }
+          if (self.priceListB.some((item, index) => { return (item.minPrice == 0) })) {
+            self.$message({
+              message: '最低票价不能为空或者为0',
+              type: 'warning'
+            });
+            return
+          }
+          if (self.priceListC.some((item, index) => { return (item.minPrice == 0) })) {
             self.$message({
               message: '最低票价不能为空或者为0',
               type: 'warning'
@@ -888,9 +1346,12 @@ export default {
           {
             //分账比例
             schBashMovie: self.sizeForm,
-            priceList: self.priceList,
+            priceList: self.priceListA,
+            priceListB: self.priceListB,
+            priceListC: self.priceListC,
             rateList: self.rateList,
-            movieLanguages: moviedesclanguagesResult
+            movieLanguages: moviedesclanguagesResult,
+            movieAreaGradeVo:self.movieAreaGradeVo
           };
           console.log('data------------------', data)
           self.$ctmList
@@ -941,13 +1402,78 @@ export default {
           console.log("retsssssssssss", ret.data);
           if (ret.data) {
             let result = ret.data;
+
+            let arr = result.movieAreaGradeVo.areaGradeListA;
+            let str = "";
+            if (arr && arr.length > 0) {
+              arr.forEach((item, index) => {
+                if (index != arr.length - 1) {
+                  str = str + item.areaName + ","
+                } else {
+                  str = str + item.areaName
+                }
+              })
+              result.movieAreaGradeVo.areaAStr = str + "共" + arr.length + "个城市";
+              result.movieAreaGradeVo.areaA = str;
+              if (arr.length > 4) {
+                result.movieAreaGradeVo.areaAStr = arr[0].areaName + "," + arr[1].areaName + "," + arr[2].areaName + "," + arr[3].areaName + "共" + arr.length + "个城市"
+              }
+            }
+
+            //重置str
+            str = "";
+            let arr1 = result.movieAreaGradeVo.areaGradeListB;
+            if (arr1 && arr1.length > 0) {
+              arr1.forEach((item, index) => {
+                if (index != arr1.length - 1) {
+                  str = str + item.areaName + ","
+                } else {
+                  str = str + item.areaName
+                }
+              })
+              result.movieAreaGradeVo.areaBStr = str + "共" + arr1.length + "个城市";
+              result.movieAreaGradeVo.areaB = str;
+              if (arr1.length > 4) {
+                result.movieAreaGradeVo.areaBStr = arr1[0].areaName + "," + arr1[1].areaName + "," + arr1[2].areaName + "," + arr1[3].areaName + "共" + arr1.length + "个城市"
+              }
+              self.movieAreaGradeVo = result.movieAreaGradeVo;
+            }
+
             // self.sizeForm = result.schBashMovie;
             Object.assign(self.sizeForm, result.schBashMovie);
+            result.priceListA = result.priceList;
+            if (!result.priceList) {
+              result.priceList = [];
+            }
+            if (!result.priceListA) {
+              result.priceListA = [];
+            }
+            if (!result.priceListB) {
+              result.priceListB = [];
+            }
+            if (!result.priceListC) {
+              result.priceListC = [];
+            }
+
             //如果分账比例 最低票价只有一条
             if (result.priceList.length == 1) {
               result.priceList[0].dateStart = self.sizeForm.dateShowFirst
               result.priceList[0].dateEnd = self.sizeForm.dateShowOff
             }
+            //如果分账比列 最低票价只有一条
+            if (result.priceListA.length == 1) {
+              result.priceListA[0].dateStart = self.sizeForm.dateShowFirst
+              result.priceListA[0].dateEnd = self.sizeForm.dateShowOff
+            }
+            if (result.priceListB.length == 1) {
+              result.priceListB[0].dateStart = self.sizeForm.dateShowFirst
+              result.priceListB[0].dateEnd = self.sizeForm.dateShowOff
+            }
+            if (result.priceListC.length == 1) {
+              result.priceListC[0].dateStart = self.sizeForm.dateShowFirst
+              result.priceListC[0].dateEnd = self.sizeForm.dateShowOff
+            }
+
             if (result.rateList.length == 1) {
               result.rateList[0].dateStart = self.sizeForm.dateShowFirst
               result.rateList[0].dateEnd = self.sizeForm.dateShowOff
@@ -970,6 +1496,31 @@ export default {
               }
               result.priceList.push(item)
             }
+            if (result.priceListA.length == 0) {
+              let item = {
+                dateEnd: self.sizeForm.dateShowOff,
+                dateStart: self.sizeForm.dateShowFirst,
+                minPrice: 0,
+              }
+              result.priceListA.push(item)
+            }
+            if (result.priceListB.length == 0) {
+              let item = {
+                dateEnd: self.sizeForm.dateShowOff,
+                dateStart: self.sizeForm.dateShowFirst,
+                minPrice: 0,
+              }
+              result.priceListB.push(item)
+            }
+            if (result.priceListC.length == 0) {
+              let item = {
+                dateEnd: self.sizeForm.dateShowOff,
+                dateStart: self.sizeForm.dateShowFirst,
+                minPrice: 0,
+              }
+              result.priceListC.push(item)
+            }
+
             if (result.rateList.length == 0) {
               let item = {
                 dateEnd: self.sizeForm.dateShowOff,
@@ -979,6 +1530,9 @@ export default {
               result.rateList.push(item)
             }
             self.priceList = result.priceList;
+            self.priceListA = result.priceListA;
+            self.priceListB = result.priceListB;
+            self.priceListC = result.priceListC;
             self.rateList = result.rateList;
           }
 
@@ -1066,6 +1620,21 @@ export default {
 <style  lang='scss' type="text/css" >
 .film-edit-wrap {
   width: 100%;
+  .f-w-b {
+    font-weight: bold;
+  }
+  .c-s-title {
+    color: #666666;
+  }
+  .cur-p {
+    cursor: pointer;
+  }
+  .label-color {
+    color: #606266;
+  }
+  .valid-color {
+    color: #f56c6c;
+  }
   .more-info{
     color:#3B74FF;
     cursor:pointer;
@@ -1086,11 +1655,11 @@ export default {
   }
   .basic-info {
     // width: 420px;
-    margin-left: 30px;
+    margin-left: 10px;
     .el-form-item--small.el-form-item {
       margin-bottom: 18px;
       // display: inline-block;
-      width: 480px;
+      width: 580px;
       margin-right:48px;
     }
     .el-form-item--small.el-form-item.textarea-item{
@@ -1103,6 +1672,7 @@ export default {
     .el-form-item__label {
       font-size: 12px;
       text-align: right;
+      // text-align: left;
       color: #666666
     }
      .el-select,
@@ -1113,7 +1683,7 @@ export default {
       color: #666666;
     }
     .el-textarea{
-      width:720px;
+      width:360px;
     }
     .input-edit-wrap{
       display: inline-block;
@@ -1136,9 +1706,9 @@ export default {
     }
     .separate-accounts-wrap{
       .el-form-item--small .el-form-item__content{
-      width: 420px;
-      margin-left: 87px;
-      margin-top: -40px;  
+      width: 520px;
+      // margin-left: 87px;
+      // margin-top: -40px;  
     }
     }
     //添加or删除

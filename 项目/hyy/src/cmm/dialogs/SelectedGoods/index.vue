@@ -36,10 +36,20 @@
             <el-row>
               <el-col :span="19">
                 <div class="table-box">
-                  <el-table ref="materialTable" :data="tableData" height="450" v-loading="tableLoding" row-key="merCode" @selection-change="handleSelectionMaterial">
+                  <el-table ref="materialTable" :data="tableData" height="450" v-loading="tableLoding" :row-key="getRowKeys" @selection-change="handleSelectionMaterial">
                     <el-table-column type="selection" width="40" reserve-selection :selectable="isDisabled" disabled="true"></el-table-column>
-                    <el-table-column v-for="item in tableColumn" :key="item.key" :prop="item.key" :label="item.label"
-                                     :formatter="item.formatter"></el-table-column>
+                    <!-- <el-table-column v-for="(item,index) in tableColumn" :key="item.key+index" :prop="item.key" :label="item.label"
+                                     :formatter="item.formatter"></el-table-column> -->
+                    <el-table-column prop="merName" label="商品名称">
+                      <template slot-scope="scope">
+                        {{ scope.row.skuName?scope.row.skuName:scope.row.merName}}
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="merCode" label="商品编码"></el-table-column>
+                    <el-table-column prop="skuCode" label="SKU编码"></el-table-column>
+                    <el-table-column prop="shorthandCode" label="速记代码"></el-table-column>
+                    <el-table-column prop="merSpec" label="商品规格"></el-table-column>
+                    <el-table-column prop="unitName" label="基本单位"></el-table-column>
                   </el-table>
                   <div class="page-wrap">
                     <el-pagination @current-change="handleCurrentChange" :current-page="queryData.currentPage"
@@ -55,7 +65,7 @@
                     <el-button type="text" class="right" @click="handleEmptyMaterials">清 空</el-button>
                   </div>
                   <ul class="empty-content">
-                    <li :key="item.merCode" v-for="(item) in selectedgoods" class="clearfix">
+                    <li :key="item.skuUid?item.skuUid:item.uid" v-for="(item) in selectedgoods" class="clearfix">
                         <span class="left title">{{item.merName || item.name}}</span>
                         <i class="el-icon-close right" @click="deleteSelected(item,false)"></i>
                     </li>
@@ -111,7 +121,12 @@
         default: () => [
           {
             label: "商品名称",
-            key: "merName"
+            key: "merName",
+            // formatter:(scoped)=>{
+            //   if(scoped.row.){
+
+            //   }
+            // }
           },
           {
             label: "商品编码",
@@ -167,6 +182,14 @@
     updated() {
     },
     methods: {
+      //获取row的key值
+      getRowKeys(row){
+        if(row.skuUid){
+          return row.skuUid
+        }else{
+          return row.uid
+        }
+      },
       //弹窗打开回调
       openCallBack() {
         this.queryData.classUid = "";

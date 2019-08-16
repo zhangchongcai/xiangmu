@@ -7,8 +7,11 @@
                 ref="formData" 
                 size="small"
                 inline
-                label-width="300px"
+                label-width="200px"
             >
+            <!-- 1.:rules="[{ required: true, message: '专资比例不能为空',trigger: 'change'}]"
+                 2.:rules="[{ required: true, message: '税率不能为空',trigger: 'change'}]"
+             -->
             <el-collapse v-model="activeNames">
                 <el-collapse-item title="影票" name="ticket">
                     <el-form-item label="影片放映结束："  prop="basicParams.refuse_get_ticket_time" >
@@ -27,7 +30,6 @@
                      <div  v-for="(item,ind) in data.specialCapitalRatioList" :key="ind+100">
                         <el-form-item :label="'专资比例'+item.seq+'：'"
                         :prop="'specialCapitalRatioList.'+ind+'.paramValue'"
-                        :rules="[{ required: true, message: '专资比例不能为空',trigger: 'change'}]"
                         >
                             <el-input size="small" v-model="item.paramValue" ></el-input>
                             <span> % ，</span>
@@ -38,6 +40,7 @@
                                 type="date"
                                 value-format="yyyy-MM-dd"
                                 placeholder="选择日期">
+                                sty
                             </el-date-picker>
                             至
                             <el-date-picker
@@ -53,13 +56,12 @@
                             @click="addSpecialCap()"
                             v-if="ind==data.specialCapitalRatioList.length-1"
                             ><i class="iconfont icon-neiye-tianjia-" ></i>添加</span>
-                            <span v-if="ind==0">（专项资金=票房*转资比例）</span>
+                            <span v-if="ind==0">（专项资金=票房*转资比例,专资比例默认是5%）</span>
                         </el-form-item>
                     </div>
                     <div  v-for="(item,ind) in data.taxRateList" :key="ind" >
                         <el-form-item :label="'税率'+ item.seq +'：'"
                         :prop="'taxRateList.'+ind+'.paramValue'"
-                        :rules="[{ required: true, message: '税率不能为空',trigger: 'change'}]"
                         >
                             <el-input size="small" v-model="item.paramValue" ></el-input>
                             <span> % ，</span>
@@ -85,11 +87,11 @@
                             v-if="ind==data.taxRateList.length-1"
                             >
                             <i class="iconfont icon-neiye-tianjia-"></i>添加</span>
-                            <span v-if="ind==0">（税金及附加=票房*税率）</span>
+                            <span v-if="ind==0">（税金及附加=票房*税率,税率默认是3.3%）</span>
                         </el-form-item>
                     </div>
                 </el-collapse-item>
-                <el-collapse-item title="卖品" name="saleGoods">    
+                <!-- <el-collapse-item title="卖品" name="saleGoods">    
                     <el-form-item label="申购/采购/赠送入库和采购退货中的供应商是否必填："  >
                         <el-radio-group v-model="data.basicParams.merdise_supplier_can_update">
                             <el-radio label="1">是</el-radio>
@@ -118,9 +120,9 @@
                             <el-radio label="1"> 含税入库 </el-radio>
                         </el-radio-group>
                     </el-form-item>
-                </el-collapse-item>
+                </el-collapse-item> -->
                 <el-collapse-item title="交易" name="trade">    
-                    <el-form-item label="零售终端票券交付方式：	"  style="display:inline-block" >
+                    <!-- <el-form-item label="零售终端票券交付方式：	"  style="display:inline-block" >
                         <el-select v-model="data.basicParams.ticket_delivery_ctrl" @change="ticket_delivery_ctrl">
                             <el-option label="指定" value="1"></el-option>
                             <el-option label="前台选择" value="0"></el-option>
@@ -148,7 +150,7 @@
                             <el-option label="打印取餐凭证"  value="2"></el-option>
                             <el-option label="打印备餐凭证"  value="3"></el-option>
                         </el-select>
-                    </el-form-item>
+                    </el-form-item> -->
                     <el-form-item label="是否允许混合支付：" >
                         <el-radio-group v-model="data.basicParams.is_full_pay">
                             {{data.basicParams.is_full_pay}}
@@ -157,14 +159,14 @@
                         </el-radio-group>
                         <p class="description">(控制前台一笔订单是否允许采用多种支付方式进行混合支付)</p>
                     </el-form-item>
-                    <el-form-item label="刷卡后允许其他支付方式支付：" >
+                    <!-- <el-form-item label="刷卡后允许其他支付方式支付：" >
                         <el-select v-model="data.basicParams.is_use_other_pay" placeholder="请选择">
                             <el-option label="不允许" value="0"></el-option>
                             <el-option label="仅积分卡允许" value="2"></el-option>
                             <el-option label="所有卡允许" value="1"></el-option>
                         </el-select>
                         <p class="description">(会员刷卡支付时,是否允许其他支付方式支付)</p>
-                    </el-form-item>
+                    </el-form-item> -->
                     <el-form-item label="是否允许快速结算：" >
                         <el-radio-group v-model="data.basicParams.allow_fast_checkout">
                             <el-radio label="1">是</el-radio>
@@ -197,7 +199,7 @@
                             <el-radio label="0">否</el-radio>
                         </el-radio-group>
                     </el-form-item>
-                    <el-form-item label="不可售商品是否允许积分兑换：" >
+                    <!-- <el-form-item label="不可售商品是否允许积分兑换：" >
                         <el-radio-group v-model="data.basicParams.nosale_integral_exch_yn">
                             <el-radio label="1">是</el-radio>
                             <el-radio label="0">否</el-radio>
@@ -261,7 +263,7 @@
                         <el-checkbox label="jfsj" name="types">积分升级</el-checkbox>
                         <el-checkbox label="ttat" name="types">余额结转</el-checkbox>
                         </el-checkbox-group>
-                    </el-form-item>
+                    </el-form-item> -->
 
                 </el-collapse-item>
             </el-collapse>   
@@ -469,29 +471,43 @@ export default {
             console.log(this.data)
             this.$refs["formData"].validate((valid) => {
                 if(!valid)return
+                let _data =JSON.parse(JSON.stringify(this.data)) 
+                //专资比例
                 let specialCapitalRatioList = this.data.specialCapitalRatioList
                 for(var i=0 ; i<specialCapitalRatioList.length ; i++){
-                    if(specialCapitalRatioList[i].startTime>specialCapitalRatioList[i].endTime){
-                        return this.$message.error('专资比例，结束时间必须大于开始时间');
-                    }
-                    if(!specialCapitalRatioList[i].startTime || !specialCapitalRatioList[i].endTime){
-                        return this.$message.error('专资比例，请填写时间');
+                    if(specialCapitalRatioList[i].paramValue){
+                        if(specialCapitalRatioList[i].startTime>specialCapitalRatioList[i].endTime){
+                            return this.$message.error('专资比例，结束时间必须大于开始时间');
+                        }
+                        if(!specialCapitalRatioList[i].startTime || !specialCapitalRatioList[i].endTime){
+                            return this.$message.error('专资比例，请填写时间');
+                        }
                     }
                 }
+                //税率
                 let taxRateList = this.data.taxRateList
                 for(var i=0 ; i<taxRateList.length ; i++){
-                    if(taxRateList[i].startTime>taxRateList[i].endTime){
-                        return this.$message.error('税率，结束时间必须大于开始时间');
+                    if(taxRateList[i].paramValue){
+                        if(taxRateList[i].startTime>taxRateList[i].endTime){
+                            return this.$message.error('税率，结束时间必须大于开始时间');
+                        }
+                        if(!taxRateList[i].startTime || !taxRateList[i].endTime){
+                            return this.$message.error('税率，请填写时间');
+                        }
                     }
-                    if(!taxRateList[i].startTime || !taxRateList[i].endTime){
-                        return this.$message.error('税率，请填写时间');
-                    }
+                }
+                //如果默认不填写  回传空数组
+                if(specialCapitalRatioList.length==1 && !specialCapitalRatioList[0].paramValue){
+                    _data.specialCapitalRatioList = []
+                }
+                if(taxRateList.length==1 && !taxRateList[0].paramValue){
+                    _data.taxRateList = []
                 }
                 if(this.data.basicParams.ticket_delivery_ctrl=="1"&&!this.data.basicParams.ticket_delivery_mode.length){
                     return this.$message.error('填写指定零售终端票券交付方式');
                 }
                 //保存请求
-                this.$ctmList.systemParamSaveBasic(this.data).then(res => {
+                this.$ctmList.systemParamSaveBasic(_data).then(res => {
                     if(res.code === 200 ){
                         this.$message({
                             message: '修改成功',
@@ -529,8 +545,6 @@ export default {
                 "settingType":1
             }
             this.$ctmList.systemParamLoad(data).then(res => {
-                let type = "success"
-                let message = "查询成功！"
                 if(res.code = 200 ){
                     let {data} = res
                     this.data = data
@@ -566,14 +580,14 @@ export default {
                     console.log("响应参数。。。。。。。。:",this.data)
 
                 }else{
-                    type = "error"
-                    message = res.msg
+                    let type = "error"
+                    let message = res.msg?res.msg:'查询失败'
+                    this.$message({
+                        type,
+                        message,
+                        duration:1000
+                    })
                 }
-                this.$message({
-                    type,
-                    message,
-                    duration:1000
-                })
             })
         }
     },
@@ -585,6 +599,11 @@ export default {
 </script>
 <style lang="scss">
     .basic-params{
+        padding-bottom: 50px;
+        .description{
+            color:#666;
+            font-size: 12px;
+        }
         span{
             color: #666;
             font-size: 12px;
@@ -600,7 +619,14 @@ export default {
             
         }
         .footer{
+            position: fixed;
+            left: 400px;
+            right: 10px;
+            bottom: 0px;
             height: 40px;
+            padding-bottom: 10px;
+            z-index: 99;
+            background: #fff;
         }
         .el-form-item--small .el-form-item__label{
             text-align: right;
@@ -625,6 +651,18 @@ export default {
         }   
         .icon-neiye-tianjia-,.add,.delete{
             color: #3B74FF
+        }
+        .el-input--suffix{
+            width: 130px;
+            font-size: 12px;
+        }
+        .el-collapse-item__header{
+            display: flex;
+            justify-content:flex-end;
+            flex-direction: row-reverse;
+        }
+        .el-collapse-item__header::after{
+            display: none
         }
     }
 </style>

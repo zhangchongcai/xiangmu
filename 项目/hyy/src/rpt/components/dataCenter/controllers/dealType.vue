@@ -2,7 +2,7 @@
   <div>
     <!-- 交易类型(含会员) -->
     <el-select
-      v-model="dealTypeValue"
+      v-model="dealTypeObj.dealTypeValue"
       placeholder="请选择"
       popper-class="rpt-select"
       @focus="getdealType('POS_SALE_BILL_BILL_TYPE_HAS_MEMBER',0)"
@@ -35,17 +35,13 @@
 
 
 <script>
-import mixins from "src/frame_cpm/mixins/cacheMixin.js";
 export default {
-  mixins: [mixins.cacheMixin],
   props: {
-    resetStatus: Boolean
+    resetStatus: Boolean,
+    dealTypeObj: Object
   },
   data() {
     return {
-      cacheField: ["dealTypeValue"],
-      subComName: "dealType",
-      dealTypeValue: "",
       options: [[]]
     };
   },
@@ -61,11 +57,11 @@ export default {
   },
   watch: {
     dealTypeValue(val) {
-      this.$emit("selectDealTypeData", this.dealTypeValue);
+      this.$emit("selectDealTypeData", this.dealTypeObj.dealTypeValue);
     },
     resetStatus(newVal) {
       if (newVal) {
-        this.dealTypeValue = "";
+        this.dealTypeObj.dealTypeValue = "";
       }
     }
   }

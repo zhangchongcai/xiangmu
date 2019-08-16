@@ -1,5 +1,6 @@
 <template>
-  <el-dialog class="purchase-note-dialog" width="600" title="选择采购单" :visible.sync="supplierDialog" @open="openCallBack">
+<div>
+  <el-dialog class="purchase-note-dialog" width="600" title="选择调拨申请单" :visible.sync="supplierDialog" @open="openCallBack">
     <el-form
       :inline="true"
       :model="queryData"
@@ -35,8 +36,14 @@
           :key="item.key"
           :prop="item.key"
           :label="item.label"
+          :width="item.width"
           :formatter="item.formatter"
         ></el-table-column>
+        <el-table-column label="操作" style="width:180px;">
+          <template slot-scope="{row}">
+            <el-button type="text" size="small" @click.stop="seeMore(row)">查看</el-button>
+          </template>
+        </el-table-column>
       </el-table>
       <div class="page-wrap">
         <el-pagination
@@ -53,9 +60,15 @@
       <el-button @click="handleDialog(false)">取 消</el-button>
     </span>
   </el-dialog>
+  <allocation-dialogsee 
+    :dialogVisible.sync="dialogVisibleseecinema"
+    :needData="allUid"
+    ></allocation-dialogsee>
+</div>  
 </template>
 
 <script>
+import allocationDialogsee from "cim/components/allocationDialogsee/allocationDialog.vue";
 export default {
   props: {
     //标题
@@ -64,7 +77,17 @@ export default {
       default: "选择调拨申请单"
     },
     //门店id
-    cinemaUid: {
+    inCinemaUid: {
+      type: [String, Number],
+      default: ""
+    },
+    //门店id
+    outCinemaUid: {
+      type: [String, Number],
+      default: ""
+    },
+    //状态
+    status: {
       type: [String, Number],
       default: ""
     },
@@ -86,34 +109,46 @@ export default {
   },
   data() {
     return {
+      allUid:"",
+      dialogVisibleseecinema:false,
       selectRadio:'',
       supplierDialog: false,
       //采购单弹窗查询数据
       queryData: {
+        status:"",
+        approvalStatus: "",
+        beginTime: "",
         billCode: "",
-        supplierName: "",
-        billTimeTotal: [],
-        beginTime: "", //制单开始时间
-        endTime: "", //制单结束时间
-        approvalStatus: "2", //审核状态
-        conditions: [2,3], //单据状态
+        billTimeTotal: null,
+        endTime: "",
+        inCinemaName: "",
+        inCinemaUid: "",
+        outCinemaName: "",
+        outCinemaUid: "",
         page: 1,
-        pageSize: 10
+        pageSize: 10,
       },
       total: 0,
       tableSelection: [],
       tableColumn: [
         {
-          label: "采购单号",
-          key: "billCode"
+          label: "调拨单号",
+          key: "billCode",
+          width:"170"
+
         },
         {
-          label: "采购单名称",
-          key: "supName"
+          label: "调入门店",
+          key: "inCinemaName"
+        },
+        {
+          label: "调出门店",
+          key: "outCinemaName"
         },
         {
           label: "制单日期",
-          key: "billTime"
+          key: "billTime",
+          width:"150"
         },
         {
           label: "制单员",
@@ -127,6 +162,9 @@ export default {
   mounted() {
 
   },
+  components: {
+    allocationDialogsee
+  },
   methods: {
     // 初始化
     init() {
@@ -138,9 +176,10 @@ export default {
     },
     // 查询
     onQuery() {
-      console.log(this.queryData);
-      this.queryData.cinemaUid = this.cinemaUid;
-      this.queryData.approvalStatus = this.approvalStatus;
+      this.queryData.inCinemaUid = this.inCinemaUid;
+      this.queryData.outCinemaUid = this.outCinemaUid;
+        this.queryData.status = this.status
+        this.queryData.approvalStatus = this.approvalStatus
       if (this.queryData.billTimeTotal) {
         this.queryData.beginTime = this.queryData.billTimeTotal[0];
         this.queryData.endTime = this.queryData.billTimeTotal[1];
@@ -175,6 +214,11 @@ export default {
       }
       this.$emit("onSumit", this.tableSelection);
       this.handleDialog(false);
+    },
+    // 查看调拨单
+    seeMore(row){
+      this.allUid = row.uid
+      this.dialogVisibleseecinema = true
     },
     //选中采购单
     handleSelectionsSupplier(rows) {

@@ -115,88 +115,88 @@ export default {
 </script>
 
 <style lang='scss'>
-.main-container {
-    position: absolute;
-    top: 0px;
-    bottom: 0px;
-    width: 100%;
-    .el-header {
-        height: 54px;
-        padding-top: 16px;
-        padding-left: 24px;
-        box-sizing: border-box;
-        box-shadow: 0 2px 7px 0 rgba(102, 102, 102, 0.1);
-        .head-cinema-info {
-            display: inline-block;
-            height: 38px;
-            width: 140px;
-            color: #999;
-            font-size: 0px;
-            .el-icon-location-outline {
-                margin-right: 6px;
-                font-size: 14px;
-            }
-            .head-cinema-name {
-                font-size: 14px;
-                display: inline-block;
-                height: 100%;
-                line-height: 34px;
-            }
-        }
-    }
-    .el-aside {
-        background: #21376b;
-        color: #fff;
-        overflow: visible;
-        .project-title {
-            font-size: 18px;
-            line-height: 25px;
-            letter-spacing: 3.5px;
-            font-weight: 800;
-            display: block;
-            text-align: center;
-            margin-bottom: 20px;
-            padding: 10px 0;
-        }
-    }
-    .el-main {
-        padding: 0;
-        height: 100vh;
-        .content-wrapper {
-            height: calc(100vh - 56px);
-            overflow: auto;
-            padding: 10px 24px 0 24px;
-            box-sizing: border-box;
-            position: relative;
-        }
-    }
-    // mmodal
-    .el-dialog {
-        border-radius: 5px;
-        overflow: hidden;
-        .el-dialog__header {
-            padding: 0;
-        }
-        .el-dialog__body {
-            padding: 0;
-        }
-    }
+// .main-container {
+//     position: absolute;
+//     top: 0px;
+//     bottom: 0px;
+//     width: 100%;
+//     .el-header {
+//         height: 54px;
+//         padding-top: 16px;
+//         padding-left: 24px;
+//         box-sizing: border-box;
+//         box-shadow: 0 2px 7px 0 rgba(102, 102, 102, 0.1);
+//         .head-cinema-info {
+//             display: inline-block;
+//             height: 38px;
+//             width: 140px;
+//             color: #999;
+//             font-size: 0px;
+//             .el-icon-location-outline {
+//                 margin-right: 6px;
+//                 font-size: 14px;
+//             }
+//             .head-cinema-name {
+//                 font-size: 14px;
+//                 display: inline-block;
+//                 height: 100%;
+//                 line-height: 34px;
+//             }
+//         }
+//     }
+//     .el-aside {
+//         background: #21376b;
+//         color: #fff;
+//         overflow: visible;
+//         .project-title {
+//             font-size: 18px;
+//             line-height: 25px;
+//             letter-spacing: 3.5px;
+//             font-weight: 800;
+//             display: block;
+//             text-align: center;
+//             margin-bottom: 20px;
+//             padding: 10px 0;
+//         }
+//     }
+//     .el-main {
+//         padding: 0;
+//         height: 100vh;
+//         .content-wrapper {
+//             height: calc(100vh - 56px);
+//             overflow: auto;
+//             padding: 10px 24px 0 24px;
+//             box-sizing: border-box;
+//             position: relative;
+//         }
+//     }
+//     // mmodal
+//     .el-dialog {
+//         border-radius: 5px;
+//         overflow: hidden;
+//         .el-dialog__header {
+//             padding: 0;
+//         }
+//         .el-dialog__body {
+//             padding: 0;
+//         }
+//     }
 
-    .el-step.is-center .el-step__main {
-        // text-align:left;
-    }
-    .el-step__icon.is-text {
-        border-color: #303133;
-        color: #303133;
-    }
-    .el-step__head.is-finish .el-step__icon.is-text,
-    .forgot-pwd .content .el-step__head.is-success .el-step__icon.is-text {
-        color: #ffa037;
-        border-color: #ffa037;
-        font-weight: bold;
-    }
-    .el-step__title.is-wait {
-        color: #303133;
-    }
-}
+//     .el-step.is-center .el-step__main {
+//         // text-align:left;
+//     }
+//     .el-step__icon.is-text {
+//         border-color: #303133;
+//         color: #303133;
+//     }
+//     .el-step__head.is-finish .el-step__icon.is-text,
+//     .forgot-pwd .content .el-step__head.is-success .el-step__icon.is-text {
+//         color: #ffa037;
+//         border-color: #ffa037;
+//         font-weight: bold;
+//     }
+//     .el-step__title.is-wait {
+//         color: #303133;
+//     }
+// }
 </style>

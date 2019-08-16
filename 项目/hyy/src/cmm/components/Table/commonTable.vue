@@ -31,7 +31,7 @@ tableOptions:{  label:"操作",
 
 <template>
 <div class="commonTable">
-    <el-table :data="tableData" stripe border style="width: 100%" @selection-change="handleSelectionChange" :height="tableData.length > 10 ? 501 : 46*tableData.length+41">
+    <el-table :data="tableData" stripe border style="width: 100%" @selection-change="handleSelectionChange">
 
         <!-- 多选框 -->
         <el-table-column v-if="selection" type="selection" width="100">
@@ -71,18 +71,20 @@ tableOptions:{  label:"操作",
                     <span v-for="(btn,index) in options" :key="index">
                         <el-button v-if="btn.condition(scope)"  type="text" @click="handleButton(btn.method,scope)">{{btn.text}}</el-button>
                     </span>
-                    <el-dropdown trigger="click" @command="handleCommand" >
-                        <span class="el-dropdown-link">
-                            更多<i class="el-icon-arrow-down el-icon--right"></i>
-                        </span>
-                        <el-dropdown-menu slot="dropdown">
-                            <template v-for="(op,index) in moreOptions">
-                                <el-dropdown-item v-if="op.condition(scope)" :key='index' :command="composeValue(op,scope)">{{op.text}}</el-dropdown-item>
-                            </template>
-                        </el-dropdown-menu>
-                    </el-dropdown>
+                    <!-- 'scope.row.approvalResult != 5'处理迁移数据 -->
+                    <template v-if="scope.row.approvalResult != 5 && (scope.row.activityCode.indexOf('MEB') == -1) && scope.row.activityState != 5">
+                        <el-dropdown trigger="click" @command="handleCommand" >
+                            <span class="el-dropdown-link"  style="font-size:12px;color:#3b74ff;">
+                                更多<i class="el-icon-arrow-down el-icon--right"></i>
+                            </span>
+                            <el-dropdown-menu slot="dropdown">
+                                <template v-for="(op,index) in moreOptions">
+                                    <el-dropdown-item v-if="op.condition(scope)" :key='index' :command="composeValue(op,scope)">{{op.text}}</el-dropdown-item>
+                                </template>
+                            </el-dropdown-menu>
+                        </el-dropdown>
+                    </template>
                 </div>
-
             </template>
         </el-table-column>
     </el-table>
@@ -126,7 +128,6 @@ export default {
         }
     },
     created() {
-        console.log("this.tableOptions.options",this.tableOptions.options)
         this.handleMoreOptions()
     },
     methods: {

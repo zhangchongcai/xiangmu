@@ -1,7 +1,5 @@
 <template>
 <div class="coupon-setRuleItem">
-    <!-- 面包屑 -->
-    <!-- <curmbs :address="address"></curmbs> -->
     <el-collapse v-model="activeNames">
         <el-form :model="ruleChild" ref="ruleChild" label-width="120px">
             <el-collapse-item title="规则基本信息" name="ruleInfo">
@@ -14,7 +12,7 @@
                 <!-- 兑换规则专有 -->
                 <template v-if="model.type == 'exchange'">
                     <el-form-item label="加价金额:">
-                        <span class="addPrice">{{ruleChild.bizPropertyMap.totalAddPrice.toFixed(2)}} 元 (需在兑换商品中设置加价金额)</span>
+                        <span class="addPrice">{{(Number(ruleChild.bizPropertyMap.totalAddPrice)).toFixed(2)}} 元 (需在兑换商品中设置加价金额)</span>
                     </el-form-item>
                 </template>
             </el-collapse-item>
@@ -147,14 +145,14 @@
                                             <template v-if="!item.children.type">
                                                 <el-form-item :prop="`${item.children.prop}.text`" :rules="item.children.rules">
                                                     <el-row>
-                                                        <el-input class="input-type-166" 
+                                                        <el-input class="input-type-166 popup-input" 
                                                         v-model="addConfig.form[`${item.children.prop}`].text" 
                                                         :placeholder="'请选择'+item.children.placeholder"  
                                                         :readonly=true
                                                         >
-                                                            <i slot="suffix" class="el-icon-circle-close" @click="clearInputValue(item.children.prop,'both')" v-show="addConfig.form[`${item.children.prop}`].text"></i>
+                                                            <i slot="suffix" class="el-icon-close popup-close" @click="clearInputValue(item.children.prop,'both')" v-show="addConfig.form[`${item.children.prop}`].text"></i>
                                                         </el-input>
-                                                        <el-button type="primary" plain @click="selectInputValue(item.prop)">选择</el-button>
+                                                        <el-button type="primary" plain @click="selectInputValue(item.children.prop)">选择</el-button>
                                                     </el-row>
                                                 </el-form-item>
                                             </template>
@@ -173,11 +171,11 @@
                             <template v-if="addConfig.form.productType == '0'">
                                 <el-form-item label="商品名称:" prop="merName.text" :rules="addConfig.rules.merName">
                                     <el-row class="flex-base">
-                                        <el-input class="input-type-166" 
+                                        <el-input class="input-type-166 popup-input" 
                                         v-model="addConfig.form.merName.text" 
                                         :readonly=true
                                         >
-                                            <i slot="suffix" class="el-icon-circle-close" 
+                                            <i slot="suffix" class="el-icon-close popup-close" 
                                             @click="clearInputValue('merName','both')" 
                                             v-if="addConfig.form.merName.text"></i>
 
@@ -190,22 +188,22 @@
                             <template v-else-if="addConfig.form.productType == '1'">
                                 <el-form-item label="商品类别:" prop="className.text" :rules="addConfig.rules.className">
                                     <el-row class="flex-base">
-                                        <el-input class="input-type-166" 
+                                        <el-input class="input-type-166 popup-input" 
                                         v-model="addConfig.form.className.text"
                                         :readonly=true  
                                         >
-                                            <i slot="suffix" class="el-icon-circle-close" @click="clearInputValue('className','both')" v-show="addConfig.form.className.text"></i>
+                                            <i slot="suffix" class="el-icon-close popup-close" @click="clearInputValue('className','both')" v-show="addConfig.form.className.text"></i>
                                         </el-input>
                                         <el-button class="margin-left-10" type="primary" plain @click="selectInputValue('className')">选择</el-button>
                                     </el-row>
                                 </el-form-item>
                                 <el-form-item label="品牌:" prop="brandName.text" :rules="addConfig.rules.brandName">
                                     <el-row class="flex-base">
-                                        <el-input class="input-type-166" 
+                                        <el-input class="input-type-166 popup-input" 
                                         v-model="addConfig.form.brandName.text"  
                                         :readonly=true
                                         >
-                                            <i slot="suffix" class="el-icon-circle-close" @click="clearInputValue('brandName','both')" v-show="addConfig.form.brandName.text"></i>
+                                            <i slot="suffix" class="el-icon-close popup-close" @click="clearInputValue('brandName','both')" v-show="addConfig.form.brandName.text"></i>
                                         </el-input>
                                         <el-button class="margin-left-10" type="primary" plain @click="selectInputValue('brandName')">选择</el-button>
                                     </el-row>
@@ -219,11 +217,11 @@
                                 </el-radio-group>
                                 <el-row v-if=" addConfig.form.priceRange == 'BetweenOperator'" class="flex-base margin-left-10">
                                     <el-form-item prop="priceStart">
-                                        <el-input class="input-type-94" v-model="addConfig.form.priceStart"></el-input>
+                                        <el-input class="input-type-94" v-model="addConfig.form.priceStart" @change="changeInput('addConfig','priceEnd')"></el-input>
                                     </el-form-item>
                                     <span class="line">-</span>
                                     <el-form-item prop="priceEnd">
-                                        <el-input class="input-type-94" v-model="addConfig.form.priceEnd"></el-input>
+                                        <el-input class="input-type-94" v-model="addConfig.form.priceEnd" @change="changeInput('addConfig','priceStart')"></el-input>
                                     </el-form-item>
                                 </el-row>
                             </el-row>
@@ -231,7 +229,7 @@
                         <!-- 规则 -->
                         <template>
                             <div class="rule-title">{{model.type == 'exchange' ? '兑换' : '优惠'}}规则：</div>
-                            <el-form-item label="调整零售价为:" prop="priceModifyMethod">
+                            <el-form-item label="调整零售价为:" prop="priceModifyMethod" style="margin-bottom:0px">
                                 <el-row class="flex-base">
                                     <el-select v-model="addConfig.form.priceModifyMethod" placeholder="请选择">
                                         <template v-for="item in addConfig.system.priceModifyMethod">
@@ -246,8 +244,9 @@
                                 </el-row>
                             </el-form-item>
                             <template v-if="model.type == 'exchange'">
-                                <el-form-item label="抵用金额:" prop="moneyMethod">
+                                <el-form-item label="抵用金额:" prop="moneyMethod" style="margin-bottom:0;margin-top:15px;">
                                     <el-row class="flex-base margin-bottom-10">
+                                    
                                         <el-select v-model="addConfig.form.moneyMethod" placeholder="请选择">
                                             <el-option v-for="item in addConfig.system.moneyMethod" :key="item.value" :label="item.label" :value="item.value">
                                             </el-option>
@@ -258,37 +257,46 @@
                                             </el-form-item>
                                         </template>
                                     </el-row>
+                                    <div style="color:#666" v-if="addConfig.type == 'films' ">零售价 - 抵用金额后，仍不足抵消零售价时，采用以下方式处理：</div>                                    
                                     <template v-if="addConfig.form.moneyMethod == 'sale_price'">
-                                        <el-form-item prop="addPriceValue" :rules="addConfig.rules.addPriceValue">
+                                        <span class="second-title margin-right-10" style="vertical-align:middle;display:inline-block;height:55px;">加价金额:</span>
+                                        <el-form-item prop="addPriceValue"  :rules="addConfig.rules.addPriceValue" style="vertical-align:middle;height:55px;display:inline-block">
                                             <el-row class="flex-base">
-                                                <span class="second-title margin-right-10">加价金额:</span>
                                                 <el-input v-model="addConfig.form.addPriceValue" class="input-type-94 margin-right-5"></el-input> 元<span class="tips-font">（设置加价兑换时需设置此金额）</span>
                                             </el-row>
                                         </el-form-item>
                                     </template>
-                                    <template v-if="addConfig.form.moneyMethod == 'fix_price'">
-                                        <el-row class="flex-base" style="padding:5px 0;">
-                                            <span class='margin-right-5 tips-font'>低于零售价时，由</span>
-                                            <el-form-item prop="payer">
-                                                <el-select class="input-type-94" style="width:180px" v-model="addConfig.form.payer" placeholder="请选择">
-                                                    <el-option v-for="item in addConfig.system.payer" :key="item.value" :label="item.label" :value="item.value">
-                                                    </el-option>
-                                                </el-select>
-                                            </el-form-item>
-                                            <!-- <span class="margin-right-5 margin-left-5 tips-font">支付</span> -->
-                                            <template v-if="addConfig.form.payer == 'cinema' || addConfig.form.payer == 'client'">
-                                                <span class="margin-right-5 m-l-5 tips-font">限额</span>
-                                                <el-form-item prop="payerPayAmount">
-                                                    <el-input v-model="addConfig.form.payerPayAmount" style="width:150px;" class="input-type-94 margin-right-5"></el-input> 元后,
-                                                    <span v-if="addConfig.form.payer == 'cinema'">再顾客补齐差额 </span>
-                                                    <span v-if="addConfig.form.payer == 'client'">再影院补贴补足差额</span>
-                                                </el-form-item>
-                                            </template>
-                                        </el-row>
-                                        <el-checkbox class="tips-font" v-model="addConfig.form.couponMoneyAsPriceIn">是否高于零售价时，使用抵用金额作为零售价</el-checkbox>
-                                    </template>
                                 </el-form-item>
                             </template>
+                                <!-- {{addConfig.form.priceModifyMethod}}
+                                {{addConfig.form.moneyMethod}} -->
+                            <template v-if=" addConfig.type == 'films' && (addConfig.form.priceModifyMethod!='lowest_price' || addConfig.form.moneyMethod=='fix_price')">
+                                <el-row class="flex-base" >
+                                    <el-form-item prop="payer" style="margin-bottom:0">
+                                        <div style="color:#666" v-if="model.type =='favourable' && addConfig.form.priceModifyMethod!='lowest_price'">影片最低票价 - 优惠金额（调整后零售价）后，仍不足抵消最低票价时，采用以下方式处理：</div>
+                                        <el-radio-group class="input-type-94" v-model="addConfig.form.payer">
+                                            <el-radio   :label="'cinema'"  style="height:45px;line-height:50px;" >
+                                                使用影院限额补贴
+                                                <el-form-item prop="payerPayAmount" style="display:inline-block" v-if="addConfig.form.payer=='cinema'">
+                                                <el-input v-model="addConfig.form.payerPayAmount" :rules="addConfig.rules.payerPayAmount" style="width:150px;" class="input-type-94 margin-right-5" ></el-input>
+                                                </el-form-item>
+                                                    元后，剩下再顾客支付
+                                            </el-radio>
+                                            <el-radio   :label="'client'" style="height:45px;line-height:50px;">
+                                                使用顾客限额支付
+                                                <el-form-item prop="payerPayAmount" style="display:inline-block" v-if="addConfig.form.payer=='client'">
+                                                <el-input v-model="addConfig.form.payerPayAmount" :rules="addConfig.rules.payerPayAmount" style="width:150px;" class="input-type-94 margin-right-5" ></el-input>
+                                                </el-form-item>
+                                                    元后，剩下再影院补贴
+                                            </el-radio>
+                                            <el-radio   :label="'clientAll'" style="height:45px;line-height:50px;">剩下均顾客支付</el-radio>
+                                        </el-radio-group>
+                                    </el-form-item>
+                                </el-row>
+                            </template>
+                            <el-form-item>
+                                <el-checkbox class="tips-font" v-model="addConfig.form.couponMoneyAsPriceIn"  v-if="addConfig.form.moneyMethod == 'fix_price'&& model.type == 'exchange'">如抵用金额高于零售价时，使用抵用金额作为零售价</el-checkbox>
+                            </el-form-item>
                             <el-form-item label="折扣后取整方式:" prop="decimalRoundMode">
                                 <el-select v-model="addConfig.form.decimalRoundMode" placeholder="请选择">
                                     <el-option v-for="item in addConfig.system.decimalRoundMode" :key="item.value" :label="item.label" :value="item.value"></el-option>
@@ -309,17 +317,14 @@
         </el-row>
     </el-collapse>
     <!-- 弹窗 -->
-    <section v-if="alert.isShow">
-        <!-- <alertWindow :config="alert.config" @alertCallBack="alertCallBack"></alertWindow> -->
-    </section>
     <!-- 影片弹窗 -->
-    <filmDialog :title="filmDialog.title" :dialogTableVisible.sync="filmDialog.filmDialogVisible" ref="movieNameOp" @callBack="handleFilmCallBack"></filmDialog>
+    <filmDialog :title="filmDialog.title" :dialogTableVisible.sync="filmDialog.filmDialogVisible" ref="uniformCode" @callBack="handleFilmCallBack"></filmDialog>
     <!-- 影片类型 -->
-    <filmTypeDialog :title="filmTypeDialog.title" :dialogTableVisible.sync="filmTypeDialog.filmTypeDialogVisible" ref="filmTypeNameOp" @callBack="handleFilmTypeCallBack"></filmTypeDialog>
-    <!-- 影院类型 -->
-    <cinemaTypeDialog title="选择影厅类型" :dialogTableVisible.sync="cinemaTypeDialog.cinemaTypeDialogVisible" ref="hallTypeNameOp" @callBack="handleCinemaTypeCallBack"></cinemaTypeDialog>
+    <filmTypeDialog :title="filmTypeDialog.title" :dialogTableVisible.sync="filmTypeDialog.filmTypeDialogVisible" ref="filmTypeKey" @callBack="handleFilmTypeCallBack"></filmTypeDialog>
+    <!-- 影厅类型 -->
+    <cinemaTypeDialog title="选择影厅类型" :dialogTableVisible.sync="cinemaTypeDialog.cinemaTypeDialogVisible" ref="hallTypeKey" @callBack="handleCinemaTypeCallBack"></cinemaTypeDialog>
     <!-- 影片效果 -->
-    <projectionEffectDialog :title="projectionEffectDialog.title" :dialogTableVisible.sync="projectionEffectDialog.projectionEffectDialogVisible" ref="showEffectOp" @callBack="handleProjectionEffectCallBack"></projectionEffectDialog>
+    <projectionEffectDialog :title="projectionEffectDialog.title" :dialogTableVisible.sync="projectionEffectDialog.projectionEffectDialogVisible" ref="showEffectCode" @callBack="handleProjectionEffectCallBack"></projectionEffectDialog>
     <!-- 商品单选 -->
     <selectedGoodsSingle ref="merName" 
     :merNameId="addConfig.form.merName"  
@@ -347,7 +352,10 @@ export default {
     data() {
         let pointer = this;
         return {
-                /**
+            /* 缓存数据 */
+            // cacheField: ["ruleChild","addConfig","limitName","model"],
+            // subComName:this.$route.query.pageName,
+            /**
              * 弹窗参数
              */
             innerData:'',
@@ -364,44 +372,13 @@ export default {
 
                 }
             },
-            //影片类型弹窗
-            filmTypeDialog: {
-                filmTypeDialogVisible: false,
-                title: "影片类型弹窗",
-            },
-            //影片弹窗
-            filmDialog: {
-                filmDialogVisible: false,
-                title: "影片弹窗",
-            },//影院类型弹窗
-            cinemaTypeDialog: {
-                cinemaTypeDialogVisible: false,
-                title: "影院类型弹窗",
-            },
-            address: [{
-                    name: "票券",
-                    path: ""
-                },
-                {
-                    name: "票券销售单管理",
-                    path: ""
-                },
-                {
-                    name: '设置票劵消费规则',
-                    path: ''
-                },
-                {
-                    name: "",
-                    path: "",
-                    active: true
-                }
-            ],
             activeNames: ['ruleInfo', 'ruleItems'],
             /** 模式 */
             model: {
                 title: '',
                 type: '',
-                familyIdBaseNum: null
+                familyIdBaseNum: null,
+                appyCode:''
             },
             /** 基本信息 */
             baseConfig: {
@@ -569,8 +546,6 @@ export default {
 
                                 if (!reg.test(value)) {
                                     return callBack(new TypeError('请输入正数,且允许两位小数'));
-                                }else if(value == 0){
-                                    return callBack(new TypeError('请输入正数,且允许两位小数'));
                                 }
 
                             }else{
@@ -591,15 +566,11 @@ export default {
                             if (!value) {
                                 return callBack(new Error('请输入金额'));
                             }
-
                             const reg = /(^[1-9]([0-9]+)?(\.[0-9]{1,2})?$)|(^(0){1}$)|(^[0-9]\.[0-9]([0-9])?$)/;
 
                             if (!reg.test(value)) {
                                 return callBack(new TypeError('请输入正数,且允许两位小数'));
-                            }else if(value == 0){
-                                return callBack(new TypeError('请输入正数,且允许两位小数'));
                             }
-
                             return callBack();
                         }
                     },
@@ -624,18 +595,12 @@ export default {
                     payerPayAmount: {
                         required: true,
                         validator: (rules, value, callBack) => {
-                            if (!value) {
-                                return callBack(new Error('请输入金额'));
-                            }
-
                             const reg = /(^[1-9]([0-9]+)?(\.[0-9]{1,2})?$)|(^(0){1}$)|(^[0-9]\.[0-9]([0-9])?$)/;
-
                             if (!reg.test(value)) {
-                                return callBack(new TypeError('请输入正数,且允许两位小数'));
-                            }else if(value == 0){
-                                return callBack(new TypeError('请输入正数,且允许两位小数'));
+                                return callBack(new TypeError('请输入数字,最大4位'));
+                            }else if(value>9999){
+                                return callBack(new TypeError('请输入数字,最大4位'))
                             }
-
                             return callBack();
                         },
                         trigger: 'blur',
@@ -687,9 +652,11 @@ export default {
                                 return callBack(new TypeError('请输入正数,且允许两位小数'));
                             }else if(value == 0){
                                 return callBack(new TypeError('请输入正数,且允许两位小数'));
+                            }else if(value>999){
+                                return callBack(new TypeError('最大三位数字'));
                             }
 
-                            if (priceEnd && value > priceEnd) {
+                            if (priceEnd && Number(value)  > Number(priceEnd) ) {
                                 return callBack(new Error('请输入小于或等于结束值'))
                             }
 
@@ -713,9 +680,11 @@ export default {
                                 return callBack(new TypeError('请输入正数,且允许两位小数'));
                             }else if(value == 0){
                                 return callBack(new TypeError('请输入正数,且允许两位小数'));
+                            }else if(value>999){
+                                return callBack(new TypeError('最大三位数字'));
                             }
 
-                            if (priceStart && value < priceStart) {
+                            if (priceStart && Number(value)  < Number(priceStart) ) {
                                 return callBack(new Error('请输入大于或等于开始值'))
                             }
 
@@ -799,8 +768,8 @@ export default {
                         decimalRoundMode: 'ROUND_UNNECESSARY'
                     },
                     favourable_goods: {
-                        appointAmount: '',
-                        amount: '',
+                        appointAmount: 'appointAmount',
+                        amount: '1',
                         productType: '0',
                         merName: {
                             value: '',
@@ -974,17 +943,6 @@ export default {
                             value: 'fix_price'
                         }
                     ],
-                    payer: [{
-                        label: '影院支付',
-                        value: 'cinema'
-                    }, {
-                        label: '客户支付全部差额',
-                        value: 'clientAll'
-                    },{
-                        label:'客户支付',
-                        value:'client'
-                    }
-                    ],
                     decimalRoundMode: [{
                         label: '四舍五入',
                         value: 'ROUND_HALF_UP'
@@ -1097,72 +1055,6 @@ export default {
                     }
                 }]
             },
-            /* 弹窗属性 */
-            alert: {
-                isShow: false,
-                // 可选项
-                options: {
-                    // 影片效果
-                    showEffectOp: {
-                        src: 'http://192.168.100.148:8080/alertWindow',
-                        param: {
-                            test: '汉字自翼虎'
-                        },
-                        callFnName: 'showEffectCode'
-                    },
-                    // 影片名称
-                    movieNameOp: {
-                        src: 'http://192.168.100.148:8080/alertWindow',
-                        param: {
-                            test: '汉字自翼虎'
-                        },
-                        callFnName: 'uniformCode'
-                    },
-                    // 影片类型
-                    filmTypeNameOp: {
-                        src: 'http://192.168.100.148:8080/alertWindow',
-                        param: {
-                            test: '汉字自翼虎'
-                        },
-                        callFnName: 'filmTypeKey'
-                    },
-                    // 影厅类型
-                    hallTypeNameOp: {
-                        src: 'http://192.168.100.148:8080/alertWindow',
-                        param: {
-                            test: '汉字自翼虎'
-                        },
-                        callFnName: 'hallTypeKey'
-                    },
-                    merName: {
-                        src: 'http://192.168.100.148:8080/alertWindow',
-                        param: {
-                            test: '汉字自翼虎'
-                        },
-                        callFnName: 'merName'
-                    },
-                    // 商品类别
-                    className: {
-                        src: 'http://192.168.100.148:8080/alertWindow',
-                        param: {
-                            test: '汉字自翼虎'
-                        },
-                        callFnName: 'className'
-                    },
-                    // 品牌
-                    brandName: {
-                        src: 'http://192.168.100.148:8080/alertWindow',
-                        param: {
-                            test: '汉字自翼虎'
-                        },
-                        callFnName: 'brandName'
-                    }
-                },
-                // 当前弹窗
-                config: {
-
-                }
-            },
             /**
              * @param ruleChild - 子规则对象
              * 
@@ -1179,7 +1071,7 @@ export default {
                  * 
                  * @param {Number} bizPropertyMap.couponAmount - 所需票券数量
                  * @param {Number}  bizPropertyMap.totalAddPrice - 总加价金额
-                 * @param {String}  bizPropertyMap.containSaleItemType - 包含的商品类型 "0,1"
+                 * @param {String}  bizPropertyMap.containSaleItemType - 包含的商品类型 "0影票,1卖品"
                  */
                 bizPropertyMap: {
                     "couponAmount": '',
@@ -1203,9 +1095,11 @@ export default {
         this.enterQuery = query;
         // 设置当前模式
         this.setModeType(query.type);
-        // 是否为编辑状态
+        // 是否为编辑状态  && this.model.appyCode != query.applyCode
         let isEdition = query.isEdition;
+        console.log(`${this.model.appyCode} != ${query.applyCode}`)
         if (isEdition && isEdition != 'false') {
+            this.model.appyCode = query.applyCode
             this.isEditionRule = true;
             this.editIndex = query.editIndex;
             let params =  JSON.parse(JSON.stringify(this.$store.getters[`saleList/getChildRule`]));
@@ -1245,7 +1139,6 @@ export default {
                 title,
                 type
             }
-            this.address[`${this.address.length-1}`].name = `新建${title}规则`;
 
             // 修改表格模式 兑换 优惠
             this.tableConfig.title = JSON.parse(JSON.stringify(this.tableConfig.options[`${type}`]));
@@ -1330,14 +1223,13 @@ export default {
                 if (validate) {
                     if (formName == 'addConfig') {
                         // 组装子规则
-                        console.log(this.addConfig.form.filmPlanTimeRange_more)
                         this.packageAddConfig(this.addConfig.form, this.addConfig.type, this.model.familyIdBaseNum, (new Date()).getTime());
 
                         // 当前是否为编辑状态，如果是则重置编辑状态
                         if (this.addConfig.isEdition) {
                             this.addConfig.isEdition = false;
                         }
-
+                        console.log('优惠、兑换类型end',this.model)
                         this.$refs[formName].resetFields();
                     } else {
                         if(this.addConfig.isEdition){
@@ -1362,7 +1254,8 @@ export default {
                                     isGetRule: true,
                                     isGetForm: true,
                                     isEditionRule: this.isEditionRule,
-                                    editIndex: this.editIndex
+                                    editIndex: this.editIndex,
+                                    pageName:this.$route.query.pageName
                                 }
                             });
                             
@@ -1417,7 +1310,9 @@ export default {
                     this.$router.push({
                         name: 'createSales',
                         query: {
-                            isGetForm: true
+                            isGetForm: true,
+                            pageName:'edit'
+
                         }
                     })
                 }).catch((msg) => {
@@ -1594,6 +1489,30 @@ export default {
                         ruleConditions.push(obj);
                     }
                 }
+                if(form.priceModifyMethod!='lowest_price' || form.moneyMethod=='fix_price' ){
+                    // 低于零售价时，由谁支付 多少金额 
+                    let payerVal = form[`payer`];
+                    
+                    // 支付限额
+                    if (payerVal == 'cinema' || payerVal == 'client') {
+                        if(form[`payerPayAmount`]){
+                            actions.push({
+                                key: 'payerPayAmount',
+                                value: form[`payerPayAmount`],
+                                familyId
+                            });
+                        }
+                    }
+                    // 低于零售价时，由谁支付
+                    if(payerVal == 'clientAll'){
+                        payerVal = 'client'
+                    }
+                    actions.push({
+                        key: 'payer',
+                        value: payerVal,
+                        familyId
+                    });
+                }    
 
             } else if (type == 'goods') {
                 // 商品规则
@@ -1712,35 +1631,12 @@ export default {
                     this.ruleChild.bizPropertyMap.totalAddPrice += Number(form[`addPriceValue`]);
                 }
                 // 固定金额
-                if (moneyMethodVal == 'fix_price') {
+                if (  moneyMethodVal == 'fix_price') {
                     actions.push({
                         key: 'fixPriceValue',
                         value: form[`fixPriceValue`],
                         familyId
                     });
-
-                     // 低于零售价时，由谁支付 多少金额 
-                    let payerVal = form[`payer`];
-                    
-                    // 支付限额
-                    if (payerVal == 'cinema' || payerVal == 'client') {
-                        actions.push({
-                            key: 'payerPayAmount',
-                            value: form[`payerPayAmount`],
-                            familyId
-                        });
-                    }
-
-                    // 低于零售价时，由谁支付
-                    if(payerVal == 'clientAll'){
-                        payerVal = 'client'
-                    }
-                    actions.push({
-                        key: 'payer',
-                        value: payerVal,
-                        familyId
-                    });
-
                     // 是否高于零售价
                     let couponMoneyAsPriceInVal = form[`couponMoneyAsPriceIn`];
                     if (couponMoneyAsPriceInVal) {
@@ -1751,6 +1647,7 @@ export default {
                         });
                     }
                 }
+               
             }
 
             // 商品数量
@@ -1770,7 +1667,6 @@ export default {
                     familyId
                 });
             }
-
             // 折扣后取整方式
             actions.push({
                 key: 'decimalRoundMode',
@@ -1790,7 +1686,6 @@ export default {
             if (!containTypeVal.includes(_containType)) {
                 this.ruleChild.bizPropertyMap.containSaleItemType += containTypeVal == '' ? _containType : `,${_containType}`;
             }
-
             saleListUtil.setRuleTable(form, type, familyId,this);
 
             this.restForm();
@@ -1890,12 +1785,12 @@ export default {
         removeruleConditionsActions(ruleChild, familyId) {
             // 移除当前table数据
             let tableData = this.tableConfig.data;
-            for (let i = 0; i < tableData.length; i++) {
+             for (let i = 0; i < tableData.length; i++) {
                 let item = tableData[i];
                 if (item.familyId == familyId) {
                     tableData.splice(i, 1);
                 }
-            };
+            }
 
             // 重置包含类型
             let typeArr = [];
@@ -1903,11 +1798,13 @@ export default {
                 let item = tableData[i];
                 if (item.type == 'goods' && !typeArr.includes(1)) {
                     typeArr.push(1);
-                } else if (item.type == 'films' && !typeArr.includes(1)) {
+                } else if (item.type == 'films' && !typeArr.includes(0)) {
                     typeArr.push(0);
                 }
             }
             ruleChild.bizPropertyMap.containSaleItemType = typeArr.join(',');
+
+           ;
 
             let ruleConditions = [];
             let actions = [];
@@ -1942,22 +1839,47 @@ export default {
         },
         /**
          * @function selectInputValue - 选择，调起弹窗
-         * @param {String} formName -  表单名
+         * @param {String} inputName -  调起弹窗名
          */
-        selectInputValue(inputName) {
-            if (typeof inputName != 'string') {
-                return TypeError('select方法只接受string类型，您输入的类型是：', typeof inputName);
-            }
-
-            let options = this.alert.options;
-            if (!options[`${inputName}`]) {
-                return TypeError('alertConfigs对象中不包含：', inputName);
-            }
+        selectInputValue(inputName) {  
             console.log('打开弹窗名：',inputName,'回参：',this.addConfig.form[inputName].value)
-            this.$refs[inputName].openDialog(true)
-            this.innerData = this.addConfig.form[inputName].value
-            // this.alert.config = options[`${inputName}`];
-            // this.alert.isShow = true;
+            let value = this.addConfig.form[inputName].value
+            let text  = this.addConfig.form[inputName].text
+            let reviewList = []
+            switch (inputName) {
+                case 'showEffectCode': //放映效果
+                    if (value && text) {
+                        value.split(',').map((item) => { reviewList.push({ propertyCode: item, propertyName: "", reviewFlag: "review" }) });
+                        text.split(',').map((item, index) => { reviewList[index].propertyName = item });
+                    }
+                    this.$refs[inputName].openDialog(true,reviewList)
+                    break;
+                case 'uniformCode': //影片名称
+                    if (value && text) {
+                        value.split(',').map((item) => { reviewList.push({ code: item, filmName: "", reviewFlag: "review" }) });
+                        text.split(',').map((item, index) => { reviewList[index].filmName = item });
+                    }
+                    this.$refs[inputName].openDialog(true,reviewList)
+                    break;
+                case 'filmTypeKey': //影片类型
+                     if (value && text) {
+                        value.split(',').map((item) => { reviewList.push({ propertyCode: item, propertyName: "", reviewFlag: "review" }) });
+                        text.split(',').map((item, index) => { reviewList[index].propertyName = item });
+                    }
+                    this.$refs[inputName].openDialog(true,reviewList)
+                break;
+                case 'hallTypeKey': //影厅类型
+                    if (value && text) {
+                        value.split(',').map((item) => { reviewList.push({ keyCode: item, keyName: "", reviewFlag: "review" }) });
+                        text.split(',').map((item, index) => { reviewList[index].keyName = item });
+                    }
+                    this.$refs[inputName].openDialog(true,reviewList)
+                break;
+                default:
+                    this.$refs[inputName].openDialog(true,value) //单选弹窗
+                    this.innerData = this.addConfig.form[inputName].value
+                break;
+            }
         },
         /**
          * @function clearInputValue - 清空输入框
@@ -1973,27 +1895,18 @@ export default {
             console.log('清除input框数据',this.addConfig.form[`${inputName}`])
         },
         /**
-         * @function alertCallBack - 弹窗回调
-         */
-        alertCallBack(param) {
-            if (param.callFnName) {
-                this[`changeInput`](param.callFnName, param);
-            }
-            this.alert.isShow = false;
-            this.alert.config = {};
-        },
-        /**
          * @function changeInput - 修改输入框的值
          */
-        changeInput(callFnName, param) {
-            this.addConfig.form[`${callFnName}`].value = param.data;
-            this.addConfig.form[`${callFnName}`].text = param.data;
-        },
+        changeInput(form,prop) {
+            console.log(this.$refs[`${form}`],form,prop)
+            this.$refs[`${form}`].validateField(`${prop}`)
+        }
     }
 }
 </script>
 
 <style lang="scss" scoped>
+@import '../../../assets/css/element-reset.scss' ;
 @each $marginType in left,
 right,
 top,
@@ -2075,11 +1988,12 @@ bottom {
     height: 40px;
 }
 </style>
-<style lang="scss">
+<style lang="scss" scoped>
+@import '../../../assets/css/element-reset.scss' ;
 .coupon-setRuleItem{
     .el-date-editor .el-range-separator{
         width: 8%
     }
 }
-</style>
 
+</style>

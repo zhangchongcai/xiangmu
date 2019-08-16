@@ -1,7 +1,7 @@
 <template>
     <section class="schedule-info-list">
         <el-form :inline="true" :model="formData" class="demo-form-inline search-form" size="small">
-            <el-form-item label="首映年月：">
+            <el-form-item label="公映年月：">
                 <el-date-picker
                         v-model="formData.showMonth"
                         type="month"
@@ -30,7 +30,7 @@
             </el-form-item>
             <el-form-item label="状态：">
                 <el-select v-model="formData.status" placeholder="请选择">
-                    <el-option label="全部" value=""></el-option>
+                    <el-option label="全部" :value="-1"></el-option>
                     <el-option
                             v-for="item in statusOptions"
                             :key="item.keyCode"
@@ -55,7 +55,7 @@
                 style="width: 100%">
             <el-table-column
                     prop="showMonth"
-                    label="首映年月"
+                    label="公映年月"
                     show-overflow-tooltip>
             </el-table-column>
             <el-table-column
@@ -102,8 +102,9 @@
                     label="操作">
                 <template slot-scope="scope">
                     <el-button style="padding: 0" @click="toView(scope.row.showMonth, scope.row.versionNo)" type="text" size="small">查看</el-button>
-                    <el-button v-if="scope.row.status !== 1" style="padding: 0" @click="toEdit(scope.row.showMonth, scope.row.versionNo)" type="text" size="small">编辑</el-button>
+                    <el-button v-if="scope.row.status === 0 || scope.row.status === 4 || (scope.row.status === 3 && scope.row.isMaxVersion)" style="padding: 0" @click="toEdit(scope.row.showMonth, scope.row.versionNo)" type="text" size="small">编辑</el-button>
                     <el-button v-if="scope.row.status === 0 || scope.row.status === 4" style="padding: 0" @click="schGuideInfoDelete(scope.row.showMonth, scope.row.versionNo)" type="text" size="small">删除</el-button>
+                    <el-button v-if="scope.row.status === 1" style="padding: 0" @click="toApprove(scope.row.showMonth, scope.row.versionNo)" type="text" size="small">审批</el-button>
                     <el-button v-if="scope.row.status === 1" style="padding: 0" @click="schGuideInfoRecall(scope.row.uid)" type="text" size="small">撤回</el-button>
                 </template>
             </el-table-column>
@@ -132,7 +133,7 @@
                 formData: {
                     showMonth: '',
                     movieCode: '',
-                    status: '',
+                    status: -1,
                     current: 1,
                     size: 20,
                 },
@@ -173,11 +174,16 @@
 
             },
 
+            toApprove(showMonth, versionNo) {
+                this.$router.push({ path: '/ticket/scheduleInfo/approve', query: { showMonth, versionNo, mode: 'approve' } })
+
+            },
+
             remoteMethod(query) {
                 let data = {
                     movieName: query,
                     current: 1,
-                    size: 10,
+                    size: 20,
                 }
                 this.downloadMovieList(data)
             },
@@ -262,6 +268,19 @@
 
 <style lang="scss">
     .schedule-info-list {
+        .el-row-btns {
+            .el-button {
+                width: 80px;
+                height: 32px;
+                border: 1px solid #3B74FF;
+                border-radius: 4px;
+                padding: 8px;
+                span {
+                    font-size: 12px;
+                    color: #3B74FF;
+                }
+            }
+        }
 
     }
 

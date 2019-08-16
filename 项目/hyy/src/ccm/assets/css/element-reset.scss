@@ -1,0 +1,53 @@
+.el-checkbox__label{
+  color:#666;
+  font-size:12px
+}
+
+/deep/ .el-form-item__label{
+  color: #666;
+  font: 12px;
+}
+/deep/ .el-radio__label{
+  color:#666;
+  font-size: 12px;
+}
+/deep/ .el-input{
+  font-size: 12px
+}
+//下拉
+/deep/ .el-select-dropdown__item span{
+  font-size: 12px;
+}
+/deep/ .el-date-editor{
+  span { font-size: 12px;}
+}
+/deep/ span{
+  font-size: 12px;
+}
+//自定义
+.font-style{
+  font-size: 12px;
+  color:#666;
+}
+
+
+    //弹窗
+  /deep/ .popup-input{
+    input{
+        text-overflow: ellipsis;
+        background:#fff;
+        border: 1px solid #bcbcbc!important;
+    }
+  }
+  .popup-input:hover  .popup-close{
+      display: inline-block;
+  }
+  /deep/ .popup-close{
+      cursor: pointer;
+      color:#3B74FF;
+      font-size: 16px;
+      font-weight: 500;
+      font-weight: 700;
+      margin-top: 13px;
+      display: none;
+  }

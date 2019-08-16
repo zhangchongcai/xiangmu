@@ -74,6 +74,7 @@ export default {
               .diffCommodityTypeedit(data)
               .then(data => {
                 this.$message.success("修改成功");
+                this.$store.commit("tagNav/removeTagNav", this.$route);
                 this.$router.push({
                   path: "/member/otherCommodity/commodityList"
                 });
@@ -86,6 +87,7 @@ export default {
               .diffCommodityTypeAdd(data)
               .then(data => {
                 this.$message.success("添加成功");
+                this.$store.commit("tagNav/removeTagNav", this.$route);
                 this.$router.push({
                   path: "/member/otherCommodity/commodityList"
                 });
@@ -100,7 +102,7 @@ export default {
     },
     // 取消
     resetForm(formName) {
-      this.$refs[formName].resetFields();
+      this.$store.commit("tagNav/removeTagNav", this.$route);
       this.$router.push({ path: "/member/otherCommodity/commodityList" });
     }
   },

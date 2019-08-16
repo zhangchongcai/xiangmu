@@ -3,7 +3,7 @@
         <el-dialog :visible="show" title="选择竞对影院" width="896px"
             :before-close="handleClose"
             :close-on-click-modal="false">
-            <el-row class="search">
+            <el-row class="search-section">
                 <el-col :span="8">
                     <span>竞对范围：</span> 
                     <el-select size="small" v-model="distance"
@@ -23,22 +23,22 @@
                     <el-button  type="primary" size="small" @click="search">搜索</el-button>
                 </el-col>
             </el-row>
-            <div class="select-wrap flex mt10">
+            <div class="select-wrap flex">
                 <div class="select none-border-table">
-                    <el-table  ref="multipleTable" height="380" 
-                    :data="cinemaList" 
-                    :row-key="rowKey" 
-                    @clearSelection="clearSelection"
-                    @selection-change="handleSelectionChange">
+                    <el-table  ref="multipleTable" height="366" 
+                        :data="cinemaList" 
+                        :row-key="rowKey" 
+                        @clearSelection="clearSelection"
+                        @selection-change="handleSelectionChange">
                         <el-table-column type="selection"  :reserve-selection="true" ></el-table-column>
                         <el-table-column prop="competeCinemaName" label="影院名称" min-width="220"></el-table-column>
                         <el-table-column prop="competeCinemaHall" label="影厅数" min-width="60"></el-table-column>
                         <el-table-column prop="competeCinemaSeat" label="座位数" min-width="60"></el-table-column>
                         <!-- <el-table-column prop="adress" label="地址"  min-width="120"></el-table-column> -->
                     </el-table>
-                    <div class="center reset-page " style="margin:0 auto;">  
+                    <div class="center reset-page"  style="padding:11px 0;margin:0">  
                         <el-pagination v-if="total>15"
-                            layout=" prev,pager,next"
+                            layout="total,prev,pager,next"
                             @size-change="handleSizeChange"
                             @current-change="handleCurrentChange"
                             :current-page.sync="page"
@@ -189,26 +189,21 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-    .content{
-        color:#666;
-        font-size:12px;
-        // border-top:1px solid  #E5E5E5;
-        padding-top:10px;
-        font-size:12px;
-        span{
-            font-size:12px
-        }
         .select-wrap{
-            height:460px;
+            box-sizing: border-box;
+            height:416px;
+            width:856px;
             border:1px solid #E5E5E5;
             .select{
-                width:70%;
-                height:460px;
+                box-sizing: border-box;
+                width:512px;
+                height:416px;
                 overflow: auto;
             }
             .selected{
-                width:40%;
-                height:460px;
+                box-sizing: border-box;
+                width:344px;
+                height:416px;
                 overflow: auto;
                 padding:10px;
                 box-sizing: border-box;
@@ -237,62 +232,7 @@ export default {
                     }
                 }
             }
-        }   
-    }
-     .search{
-        margin-top:10px;
-        span{
-            font-size:12px
         }
-     }
-      .select-wrap{
-            height:460px;
-            // border:1px solid #E5E5E5;
-            border-top:1px solid #E5E5E5;
-            border-left:1px solid #E5E5E5;;
-            border-right:1px solid #E5E5E5;
-            .select{
-                width:70%;
-                height:460px;
-                overflow: auto;
-            }
-            .selected{
-                width:40%;
-                height:460px;
-                overflow: auto;
-                padding:10px;
-                box-sizing: border-box;
-                border-left:1px solid #E5E5E5;
-                .title{
-                    padding-left:4px;
-                    padding-bottom:4px;
-                    font-size:12px;
-                    border-bottom:1px solid #F5F5F5;
-                }
-                .item-wrap{
-                    height:360px;
-                    overflow: auto;
-                    .item{
-                        padding:6px;
-                        margin-top:6px;
-                    
-                        font-size:10px;
-                        cursor:pointer;
-                        &:hover{
-                            background:  #F5F5F5
-                        }
-                        .item-name{
-                            font-size:12px;
-                        }
-                    }
-                }
-            }
-        }   
-    .footer{
-        padding-top:12px;
-        padding-bottom:12px;
-        text-align:center
-    }
 </style>
 
 

@@ -36,9 +36,7 @@
                                                   @clear="onCinemalSumit()"
                                                   @focus="handleDialogEvent('refCinemalDialog')">
                                         </el-input>
-                                        <el-button type="primary" plain @click="handleDialogEvent('refCinemalDialog')">
-                                            {{queryData.cinemaName?"编辑":"选择"}}
-                                        </el-button>
+                                        <el-button type="primary" plain @click="handleDialogEvent('refCinemalDialog')">选择</el-button>
                                     </div>
 
                                 </el-form-item>
@@ -54,9 +52,7 @@
                                                   @focus="handlePurchaseStoragDialogEvent()">
 
                                         </el-input>
-                                        <el-button type="primary" plain @click="handlePurchaseStoragDialogEvent()">
-                                            {{queryData.storeinBillCode?"编辑":"选择"}}
-                                        </el-button>
+                                        <el-button type="primary" plain @click="handlePurchaseStoragDialogEvent()">选择</el-button>
                                     </div>
 
                                 </el-form-item>
@@ -71,10 +67,20 @@
                                                   :disabled="queryData.storeinBillCode ? true: false">
                                         </el-input>
                                         <el-button type="primary" plain @click="handleDialogEvent('refSuppliersDialog')"
-                                                   :disabled="queryData.storeinBillCode ? true: false">
-                                            {{queryData.supName?"编辑":"选择"}}
-                                        </el-button>
+                                                   :disabled="queryData.storeinBillCode ? true: false">选择</el-button>
                                     </div>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row >
+                            <el-col :span="10"  v-if="queryData.agreementCode">
+                                <el-form-item label="协议编码" prop="code">
+                                    <span>{{queryData.agreementCode}}</span>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="10"  v-if="queryData.agreementName">
+                                <el-form-item label="协议名称">
+                                    <span>{{queryData.agreementName}}</span>
                                 </el-form-item>
                             </el-col>
                         </el-row>
@@ -84,7 +90,7 @@
                                               :rules="[{ required: routeQuery.type!=3  ? true :false, message: '退货原因不能为空',trigger: 'change' }]">
                                     <span v-if="routeQuery.type==3">{{queryData.returnReason}}</span>
                                     <el-select class="storehouse-name" v-else v-model="queryData.reasonCode" @change="reasonCodeChange">
-                                        <el-option :value="item.value":label="item.label" v-for="item in reasonList" :key="item.value"></el-option>
+                                        <el-option :value="item.value" :label="item.label" v-for="item in reasonList" :key="item.value"></el-option>
                                     </el-select>
                                 </el-form-item>
                             </el-col>
@@ -100,7 +106,7 @@
                                         </el-select>
                                     </span>
                                     <span v-if="routeQuery.type==3">
-                                        {{queryData.storehouseCode}}
+                                        {{queryData.storehouseName}}
                                     </span>
                                     <el-select class="storehouse-name" v-else v-model="queryData.storehouseCode" @change="storehouseListChange"
                                                @click.native="storehouseListClick"
@@ -112,6 +118,30 @@
                                                 v-for="item in  storehouseList"
                                         ></el-option>
                                     </el-select>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row v-if="routeQuery.type!=1">
+                            <el-col :span="10" v-if="queryData.billTime">
+                                <el-form-item label="制单日期">
+                                    <span>{{queryData.billTime}}</span>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="10" v-if="queryData.billUserName">
+                                <el-form-item label="制单员" >
+                                    <span>{{queryData.billUserName}}</span>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row v-if="routeQuery.type!=1">
+                            <el-col :span="10">
+                                <el-form-item label="单据状态">
+                                    <span>{{formatStatus}}</span>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="10">
+                                <el-form-item label="审核状态" >
+                                    <span>{{approvalStart(1)}}</span>
                                 </el-form-item>
                             </el-col>
                         </el-row>
@@ -183,14 +213,14 @@
                         <span>采购退货单审核</span>
                     </el-form-item>
                     <el-steps :space="200" :active="approvalActive" finish-status="success">
-                        <el-step :title="approvalStart"></el-step>
+                        <el-step :title="approvalStart()"></el-step>
                         <el-step :title="item.auditMan" :key="item.auditTime" v-for="item in queryData.reviewRecordList"></el-step>
                         <el-step title="结束" v-if="queryData.approvalStatus==2"></el-step>
                     </el-steps>
                 </el-collapse-item>
 
                 <!--  审批记录-->
-                <el-collapse-item title="审批记录" name="3" v-if="routeQuery.type==3">
+                <el-collapse-item title="审批记录" name="4" v-if="routeQuery.type==3">
                     <div>
                         <el-table :data="queryData.reviewRecordList" stripe>
                             <el-table-column
@@ -207,7 +237,7 @@
             </el-collapse>
 
             <!-- 选择影院弹窗 -->
-            <cinemal-dialog ref="refCinemalDialog" @onSumit="onCinemalSumit"
+            <cinemal-dialog ref="refCinemalDialog" @onSumit="onCinemalSumit" title="选择门店"
                             :dialogFeedbackData="[{cinemaUid:queryData.cinemaUid,cinemaName:queryData.cinemaName}]"></cinemal-dialog>
             <!-- 选择采购入库单弹窗 -->
             <purchase-storage-dialog ref="refPurchaseStoragDialog" :billTypeList="[1]" :cinemaUid="queryData.cinemaUid"
@@ -225,7 +255,7 @@
 
             <div class="submit-box" v-if="routeQuery.type!=3">
                 <el-button type="primary" @click="handleSubmit('2')">保存并提交</el-button>
-                <el-button type="primary" @click="handleSubmit('1')" v-if="queryData.status==1">保存为草稿</el-button>
+                <el-button v-if="queryData.status!=2" type="primary" @click="handleSubmit('1')">保存为草稿</el-button>
                 <el-button @click="handleCancel">取 消</el-button>
             </div>
             <div v-else class="submit-box">
@@ -277,7 +307,7 @@
                 tableColumn: [
                     {
                         label: "商品名称",
-                        key: "merName"
+                        key: "skuName"
                     },
                     {
                         label: "SKU编码",
@@ -289,11 +319,11 @@
                     },
                     {
                         label: "基本单位",
-                        key: "unitUid",
-                        selsect: () => true
+                        key: "unitName",
+                        // selsect: () => true
                     },
                     {
-                        label: "库存数量",
+                        label: "可退数量",
                         key: "storeCount"
                     },
                     {
@@ -309,15 +339,15 @@
                     },
                     {
                         label: "单价(元)",
-                        key: "price",
+                        key: "storeCostPrice",
                         edit: () => {
                             if (this.routeQuery.type == 1) {
-                                return true
+                                return false
                             } else if (this.routeQuery.type == 2) {
                                 if (this.queryData.storeinBillCode) {
                                     return false
                                 } else {
-                                    return true
+                                    return false
                                 }
                             } else {
                                 return false
@@ -401,20 +431,19 @@
         },
         mounted() {
             this.init();
-            console.log(this.routeMerData);
         },
 
         methods: {
             init() {
                 this.onQuery();
-                let lastLevel = this.typeText+'采购退货单';
-                this.$route.meta.title = lastLevel;
-                this.$store.commit('getLevel',lastLevel);
+                // let lastLevel = this.typeText+'采购退货单';
+                // this.$route.meta.title = lastLevel;
+                // this.$store.commit('getLevel',lastLevel);
             },
             // 查询
             onQuery() {
                 if(this.routeQuery.type==1){
-                    this.storeoutBillToPage({});
+                    this.storeoutBillToPage({code:"CT"});
                 }else{
                     this.storeoutBillToPage({uid:this.routeMerData.uid});
 
@@ -426,6 +455,15 @@
                     if (resData.code == 200) {
                         this.queryData.dataList = resData.data.map(item => {
                             item.merUid = item.uid;
+                            if (item.storeoutCount === undefined) {
+                                item.storeoutCount = null;
+                            }
+                            if (item.purCount === undefined) {
+                                item.purCount = null;
+                            }
+                            if (item.price === undefined) {
+                                item.price = null;
+                            }
                             return item;
                         })
                     }
@@ -439,12 +477,9 @@
                             this.queryData.billCode= resData.data.storeoutBill.billCode;
                         }else{
                             this.queryData = resData.data.storeoutBill;
-                            this.queryData.dataLis =  this.queryData.dataList.map(item=>{
-                                if(!item.purPrice){
-                                    item.purPrice = item.price
-                                }
-                                if(!item.baseCount){
-                                    item.baseCount = item.storeCount
+                            this.queryData.dataList =  this.queryData.dataList.map(item=>{
+                                if(!item.storeCostPrice){
+                                    item.storeCostPrice = item.price;
                                 }
                                 return item
                             })
@@ -529,7 +564,6 @@
             },
             // 更新或者删除操作
             purchaseReturnUpdate(param) {
-                console.log(param);
                 this.$cimList.procurement
                     .purchaseReturnUpdate(param)
                     .then(resData => {
@@ -556,7 +590,9 @@
                     .queryStorehouse(param)
                     .then(resData => {
                         if (resData.code === 200) {
-                            this.storehouseList = resData.data.list
+                            this.storehouseList = resData.data.list.filter((item, merIndex) => {
+                                return item.status != 2
+                            })
                         }
                     })
                     .catch(err => {
@@ -569,7 +605,9 @@
                     .findStorageRackList(param)
                     .then(resData => {
                         if (resData.code === 200) {
-                            this.storehouseList = resData.data.list
+                            this.storehouseList = resData.data.list.filter((item, merIndex) => {
+                                return item.status != 2
+                            })
                         }
                     })
                     .catch(err => {
@@ -625,10 +663,8 @@
                     .catch(() => {
                     });
             },
-            //
+            //提交
             handleSubmit(type) {
-                console.log(this.queryData)
-
                 this.$refs["ruleForm"].validate(valid => {
                     if (valid) {
                         if( this.queryData.dataList.length==0){
@@ -636,10 +672,29 @@
                             return;
                         }
                         this.queryData.status = type;
-                        if (this.routeQuery.type == 1) {
-                            this.purchaseReturnSave(this.queryData)
-                        } else if (this.routeQuery.type == 2) {
-                            this.purchaseReturnUpdate(this.queryData)
+                        let flag = true;
+                        for (let item of this.queryData.dataList) {
+                            if (typeof item.storeoutCount == "number") {
+                                item.storeoutCount = item.storeoutCount.toString();
+                            }
+                            if (!item.storeoutCount) {
+                                this.$message("请填写退货数量!");
+                                flag = false;
+                                break;
+                            }else{
+                                if(item.storeoutCount<0){
+                                    this.$message("退货数量不能小于0!");
+                                    flag = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if(flag){
+                            if (this.routeQuery.type == 1) {
+                                this.purchaseReturnSave(this.queryData)
+                            } else if (this.routeQuery.type == 2) {
+                                this.purchaseReturnUpdate(this.queryData)
+                            }
                         }
                     } else {
                         this.$message("带*号的为必填项，请填写");
@@ -691,38 +746,45 @@
                 }
             },
             // 选泽门店回调
-            onCinemalSumit(val = []) {
+            onCinemalSumit(val = [],type) {
+                // console.log(val," 选泽门店回调",type);
                 if (val.length > 0) {
-                    let name = val[0].cinemaName || val[0].name;
-                    let uid = val[0].cinemaUid || val[0].uid;
-                    // if(this.queryData.cinemaUid && this.queryData.storeinBillCode){
-                    //     if(this.queryData.cinemaUid != uid){
-                            this.queryData.storeinBillCode = '';
-                            this.queryData.storeinBillUid = '';
-                            this.queryData.supName = "";
-                            this.queryData.supUid = "";
-                    //         return;
-                    //     }else{
-                    //
-                    //     }
-                    // }
-                    this.queryData.cinemaName = name;
-                    this.queryData.cinemaUid = uid;
+                    if(type=="default"){
+                        if(val.length==1){
+                            this.setCinema(val);
+                            this.storehouseChange(this.queryData.storeType)
+                        }
+                    }else{
+                        this.setCinema(val)
+                        this.storehouseChange(this.queryData.storeType)
+                    }
                 } else {
+                    this.setCinema()
+                }
+            },
+            setCinema(val=[]){
+                if(val.length>0){
+                    this.queryData.cinemaName = val[0].cinemaName || val[0].name;
+                    this.queryData.cinemaUid = val[0].cinemaUid || val[0].uid;
+                    this.queryData.storeinBillCode = '';
+                    this.queryData.storeinBillUid = '';
+                    this.queryData.supName = "";
+                    this.queryData.supUid = "";
+                }else{
                     this.queryData.cinemaName = "";
                     this.queryData.cinemaUid = "";
                 }
-                this.storehouseChange(this.queryData.storeType)
-                console.log(this.queryData);
             },
             // 选泽采购入库单回调
             onPurchasStoragSumit(val = []) {
-                console.log("采购入库单数据", val);
+                // console.log("采购入库单数据", val);
                 if (val.length > 0) {
                     this.queryData.storeinBillCode = val[0].billCode;
                     this.queryData.storeinBillUid = val[0].uid;
                     this.queryData.supName = val[0].supName;
                     this.queryData.supUid = val[0].supUid;
+                    this.queryData.agreementName = val[0].agreementName;
+                    this.queryData.agreementCode = val[0].agreementCode;
                     this.storeBillGetStoreIn({uid: val[0].uid})
                 } else {
                     this.queryData.storehouseCode = "";
@@ -730,10 +792,10 @@
                     this.queryData.storeinBillUid = "";
                     this.queryData.supName = "";
                     this.queryData.supUid = "";
+                    this.queryData.agreementName = "";
+                    this.queryData.agreementCode = "";
                     this.queryData.dataList = [];
                 }
-
-                // console.log(this.queryData.billDetailList);
             },
             // 根据商品uid查基本单位
             queryPurUnitBySpuUid(param,callBack) {
@@ -752,7 +814,7 @@
             storeBillGetStoreIn(param) {
                 this.$cimList.procurement.storeBillGetStoreIn(param).then(resData => {
                     if (resData.code == 200) {
-                        let tempArr = resData.data.billDetailList.filter(item => {
+                        let tempArr = resData.data.detailVoList.filter(item => {
                             return item.inType == 1;
                         })
                         this.queryData.dataList =[];
@@ -763,14 +825,13 @@
                                 this.queryData.dataList.push(item)
                             })
                         })
-                        console.log(this.queryData.dataList)
                         if (resData.data.storehouseCode.indexOf('CK') > -1) {
                             this.queryData.storeType = "1"
                         } else {
                             this.queryData.storeType = "2"
                         }
                         this.queryData.storehouseCode = resData.data.storehouseCode;
-                        console.log(this.queryData.storeType)
+                        this.queryData.storehouseName = resData.data.storehouseName;
                         this.storehouseChange(this.queryData.storeType,false)
                     }
                 });
@@ -782,39 +843,50 @@
                 if (value.btnType == 1) {
                     let param = {flag: 1, purchaseMerVoList: value.data, storehouseCode: this.queryData.storehouseCode}
                     this.purchasePurchaseMer(param);
-                    console.log(value);
                 } else {
                 }
-                console.log(value);
             },
             inputEvent(value, row, key) {
-                console.log(value, row, key)
-                row[key] = value;
+                // console.log(value, row, key)
+                row[key] = value.replace(/^(.*\..{4}).*$/,"$1");
                 //选择了采购入库单
                 if(this.queryData.storeinBillCode){
-                    if (key == "storeoutCount" || key == "purPrice") {
-                        row.amount = row.storeoutCount * row.purPrice
+                    if (key == "storeoutCount" || key == "price") {
+                        row.amount = (row.storeoutCount * row.price).toFixed(4)
                     }
                     if (key == "amount") {
-                        row.purPrice = (row.amount / row.storeoutCount).toFixed(2)
+                        if(row.amount && row.storeoutCount){
+                            row.price = (row.amount / row.storeoutCount).toFixed(4);
+                        }
                     }
                 }else{
-                    if (key == "storeoutCount" || key == "price") {
-                        row.amount = row.storeoutCount * row.price
+                    if (key == "storeoutCount" || key == "storeCostPrice") {
+                        row.amount = (row.storeoutCount * row.storeCostPrice).toFixed(4)
                     }
                     if (key == "amount") {
-                        row.price = (row.amount / row.storeoutCount).toFixed(2)
+                        if(row.amount && row.storeoutCount){
+                            row.storeCostPrice = (row.amount / row.storeoutCount).toFixed(4)
+                        }
                     }
                 }
             },
             //计算成本
             calculateCost(row, item) {
+                if(typeof row.amount === 'number') {
+                    row.amount = row.amount.toFixed(4).toString();
+                }
+                if(typeof row.storeCostPrice === 'number') {
+                    row.storeCostPrice = row.storeCostPrice.toFixed(4).toString();
+                }
+                if(typeof row.taxRate === 'number') {
+                    row.taxRate = row.taxRate.toString();
+                }
                 switch (item.key) {
                     case "excludingTaxAmount":
                         //不含税金额=含税金额-含税金额*税率
                         if (row.amount && row.taxRate) {
                             return row[item.key] =
-                                (row.amount - (row.amount * row.taxRate) / 100).toFixed(2);
+                                (row.amount - (row.amount * row.taxRate) / 100).toFixed(4);
                         } else {
                             return "";
                         }
@@ -822,9 +894,17 @@
                     case "taxAmount":
                         //税额=含税金额-不含税金额
                         if (row.amount && row.excludingTaxAmount) {
-                            return row[item.key] = (row.amount - row.excludingTaxAmount).toFixed(2);
+                            return row[item.key] = (row.amount - row.excludingTaxAmount).toFixed(4);
                         } else {
                             return "";
+                        }
+                        break;
+                    case "price":
+                        //采购单的单价=采购价/转换系数
+                        if (row.purUnitRatio && row.purPrice) {
+                            return row[item.key] = (row.purPrice / row.purUnitRatio).toFixed(4);
+                        } else {
+                            return row[item.key].toFixed(4);
                         }
                         break;
                     default:
@@ -835,25 +915,21 @@
                 var tempTableColumn = lodash.cloneDeep(this.tableColumn);
                 if (this.queryData.storeinBillCode) {
                     tempTableColumn.splice(6, 1, {
-                        label: "采购价(元)",
-                        key:  "purPrice",
+                        label: "单价(元)",
+                        key:  "price",
                         edit: () => {
                             if (this.routeQuery.type == 1) {
-                                return true
+                                return false
                             } else if (this.routeQuery.type == 2) {
                                 if (this.queryData.storeinBillCode) {
                                     return false
                                 } else {
-                                    return true
+                                    return false
                                 }
                             } else {
                                 return false
                             }
                         }
-                    });
-                    tempTableColumn.splice(4, 1, {
-                        label: "库存数量",
-                        key: "baseCount"
                     });
                     if (this.routeQuery.type == 2 || this.routeQuery.type == 3) {
                         tempTableColumn.splice(3, 1, {
@@ -863,10 +939,40 @@
                     }
                     return tempTableColumn;
                 } else {
-
+                    if (this.routeQuery.type == 2 || this.routeQuery.type == 3) {
+                        tempTableColumn.splice(3, 1, {
+                            label: "基本单位",
+                            key: "unitName"
+                        });
+                    }
                     return tempTableColumn;
                 }
-            }
+            },
+            approvalStart(type){
+                let result = "";
+                switch (this.queryData.approvalStatus) {
+                    case 0:
+                        result = "未审核";
+                        break;
+                    case 1:
+                        result = "待审核";
+                        break;
+                    case 2:
+                        if(type==1){
+                            result = "审核通过";
+                        }else{
+                            result = "开始";
+                        }
+                        break;
+                    case 3:
+                        result = "审核不通过";
+                        break;
+                    case 4:
+                        result = "无需审核";
+                        break;
+                }
+                return result;
+            },
         },
         computed: {
             routeQuery() {
@@ -896,23 +1002,20 @@
                         break;
                 }
             },
-            approvalStart(){
+            formatStatus(){
                 let result = "";
-                switch (this.queryData.approvalStatus) {
-                    case 0:
-                        result = "未审核";
-                        break;
+                switch (this.queryData.status) {
                     case 1:
-                        result = "待审核";
+                        result = "未提交";
                         break;
                     case 2:
-                        result = "开始";
+                        result = "已提交";
                         break;
                     case 3:
-                        result = "审核不通过";
+                        result = "待出库";
                         break;
                     case 4:
-                        result = "无需审核";
+                        result = "已出库";
                         break;
                 }
                 return result;

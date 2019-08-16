@@ -10,7 +10,57 @@ let print_voucher = {
 }
 let FormatterData = {}
 
+FormatterData.type1Data = (data) => {
+	let arr_payment = []
+	for (let [k, v] of Object.entries(data.payedMap)) {
+		arr_payment.push({
+			payTypeName : k,
+			payAmount : v,
+		})
+	}
+		return {
+			cinemaName : data.cinemaName || localStorage.getItem('cinemaName'),
+			arr_goods : data.goodsEntityList,
+			totalCount : data.totalNum,
+			totalPrice : data.totalAmount,
+			get_code: data.getCode,
+			arr_payment,
+			tradeNo : data.transactionCode,
+			tradeTime : data.transactionDate,
+			terminalCode : data.terminalCode,
+			cashier : data.cashier,
+			giving_price:data.givingPrice,
+			cinema_price:data.cinemaPrice,
+			payPrice:data.payPrice,
+		}
+}
+//1是销售交易凭证数据格式；
+// let data = {
+// 	cinemaName : 'string',
+// 	arr_goods:[
+// 		{
+// 			goodsName:'string',
+// 			saleNum:'string:number',
+// 			salePrice:'string:number',
 
+// 		}
+// 	],
+// 	totalCount:'string:number',
+// 	totalPrice:'string:number',
+// 	payPrice:'string:number',
+// 	giving_price : 'string:number' || '',
+// 	cinema_price:'string:number' || '',
+// 	arr_payment:[
+// 		{
+// 			payTypeName : 'string',
+// 			payAmount:'number',
+// 		}
+// 	],
+// 	tradeNo:'number', //交易流水号：
+// 	tradeTime:'string',//交易时间：
+// 	terminalCode:'string', //终端：
+// 	cashier:'string'//收银员：
+// }
 
 FormatterData.trade_print = function(type,voucherInfo) { 
 	/**
@@ -38,7 +88,7 @@ FormatterData.trade_print = function(type,voucherInfo) {
 	if(yPos>printInfo.height) {
 		printInfo.height = yPos
 	}
-
+	console.log(printInfo)
 	return printInfo
 }
 
@@ -144,16 +194,16 @@ print_voucher.print_content_info = function(type, voucherInfo, printInfo, yPos, 
 				printInfo.ticket_element.push({elementValue:("  " + name_2), x:print_voucher.ROW_MARGIN_LEFT, y:(yPos += print_voucher.ROW_HEIGHT_SMALL), font_size:fontSize, font_black:fontBlack, show_modle:showModle});
 			}
 			//套餐子商品明细
-			if(print_voucher.isPrintComboItemDetail() && $.isArray(data.arr_combo_item) && data.arr_combo_item.length > 0){
-				$.each(data.arr_combo_item, function(_index, _item){
-					var name_prefix = _item.name.trim().substring(0, print_voucher.ROW_WORD_COUNT), name_suffix = _item.name.trim().substring(print_voucher.ROW_WORD_COUNT);
-					printInfo.ticket_element.push({elementValue:name_prefix, x:(print_voucher.ROW_MARGIN_LEFT + 10), y:(yPos += print_voucher.ROW_HEIGHT_SMALL), font_size:fontSize, font_black:fontBlack, show_modle:showModle});
-					printInfo.ticket_element.push({elementValue:("  x "+_item.count.trim()), x:115, y:yPos, font_size:fontSize, font_black:fontBlack, show_modle:showModle});
-					if(name_suffix != ''){
-						printInfo.ticket_element.push({elementValue:name_suffix, x:(print_voucher.ROW_MARGIN_LEFT + 10), y:(yPos += print_voucher.ROW_HEIGHT_SMALL), font_size:fontSize, font_black:fontBlack, show_modle:showModle});
-					}
-				});
-			}
+			// if(print_voucher.isPrintComboItemDetail() && $.isArray(data.arr_combo_item) && data.arr_combo_item.length > 0){
+			// 	$.each(data.arr_combo_item, function(_index, _item){
+			// 		var name_prefix = _item.name.trim().substring(0, print_voucher.ROW_WORD_COUNT), name_suffix = _item.name.trim().substring(print_voucher.ROW_WORD_COUNT);
+			// 		printInfo.ticket_element.push({elementValue:name_prefix, x:(print_voucher.ROW_MARGIN_LEFT + 10), y:(yPos += print_voucher.ROW_HEIGHT_SMALL), font_size:fontSize, font_black:fontBlack, show_modle:showModle});
+			// 		printInfo.ticket_element.push({elementValue:("  x "+_item.count.trim()), x:115, y:yPos, font_size:fontSize, font_black:fontBlack, show_modle:showModle});
+			// 		if(name_suffix != ''){
+			// 			printInfo.ticket_element.push({elementValue:name_suffix, x:(print_voucher.ROW_MARGIN_LEFT + 10), y:(yPos += print_voucher.ROW_HEIGHT_SMALL), font_size:fontSize, font_black:fontBlack, show_modle:showModle});
+			// 		}
+			// 	});
+			// }
 			index++;
 		}
 		printInfo.ticket_element.push({elementValue:'------------------------------------', x:print_voucher.ROW_MARGIN_LEFT, y:(yPos += (print_voucher.ROW_HEIGHT_SMALL - print_voucher.LINE_HEIGHT_GAP)), font_size:fontSize, font_black:fontBlack, show_modle:showModle});
@@ -181,37 +231,37 @@ print_voucher.print_content_info = function(type, voucherInfo, printInfo, yPos, 
 		for(var t in voucherInfo.arr_goods){
 			var d = voucherInfo.arr_goods[t];
 			var name_ = "";
-			if(d.name.length > print_voucher.ROW_WORD_COUNT){
-				name_ = d.name.substring(0, print_voucher.ROW_WORD_COUNT);
+			if(d.goodsName.length > print_voucher.ROW_WORD_COUNT){
+				name_ = d.goodsName.substring(0, print_voucher.ROW_WORD_COUNT);
 			}else{
-				name_ = d.name;
+				name_ = d.goodsName;
 			}
 			var split_line_height = 0;
 			if(t_index == 1){
 				split_line_height = print_voucher.LINE_HEIGHT_GAP;
 			}
 			printInfo.ticket_element.push({elementValue:(t_index +"." + name_), x:print_voucher.ROW_MARGIN_LEFT, y:(yPos += (print_voucher.ROW_HEIGHT_SMALL - split_line_height)), font_size:fontSize, font_black:fontBlack, show_modle:showModle});
-			printInfo.ticket_element.push({elementValue:(d.count+" x "+parseFloat(d.price).toFixed(2)), x:115, y:yPos, font_size:fontSize, font_black:fontBlack, show_modle:showModle});
-			if(d.name.length > print_voucher.ROW_WORD_COUNT){
-				var name_2 = d.name.substring(print_voucher.ROW_WORD_COUNT,d.name.length);
+			printInfo.ticket_element.push({elementValue:(d.saleNum+" x "+parseFloat(d.salePrice).toFixed(2)), x:115, y:yPos, font_size:fontSize, font_black:fontBlack, show_modle:showModle});
+			if(d.goodsName.length > print_voucher.ROW_WORD_COUNT){
+				var name_2 = d.goodsName.substring(print_voucher.ROW_WORD_COUNT,d.goodsName.length);
 				printInfo.ticket_element.push({elementValue:("  " + name_2), x:print_voucher.ROW_MARGIN_LEFT, y:(yPos += print_voucher.ROW_HEIGHT_SMALL), font_size:fontSize, font_black:fontBlack, show_modle:showModle});
 			}
 			//套餐子商品明细
-			if(print_voucher.isPrintComboItemDetail() && $.isArray(d.arr_combo_item) && d.arr_combo_item.length > 0){
-				$.each(d.arr_combo_item, function(_index, _item){
-					var name_prefix = _item.name.trim().substring(0, print_voucher.ROW_WORD_COUNT), name_suffix = _item.name.trim().substring(print_voucher.ROW_WORD_COUNT);
-					printInfo.ticket_element.push({elementValue:name_prefix, x:(print_voucher.ROW_MARGIN_LEFT + 10), y:(yPos += print_voucher.ROW_HEIGHT_SMALL), font_size:fontSize, font_black:fontBlack, show_modle:showModle});
-					printInfo.ticket_element.push({elementValue:("  x "+_item.count.trim()), x:115, y:yPos, font_size:fontSize, font_black:fontBlack, show_modle:showModle});
-					if(name_suffix != ''){
-						printInfo.ticket_element.push({elementValue:name_suffix, x:(print_voucher.ROW_MARGIN_LEFT + 10), y:(yPos += print_voucher.ROW_HEIGHT_SMALL), font_size:fontSize, font_black:fontBlack, show_modle:showModle});
-					}
-				});
-			}
+			// if(print_voucher.isPrintComboItemDetail() && $.isArray(d.arr_combo_item) && d.arr_combo_item.length > 0){
+			// 	$.each(d.arr_combo_item, function(_index, _item){
+			// 		var name_prefix = _item.name.trim().substring(0, print_voucher.ROW_WORD_COUNT), name_suffix = _item.name.trim().substring(print_voucher.ROW_WORD_COUNT);
+			// 		printInfo.ticket_element.push({elementValue:name_prefix, x:(print_voucher.ROW_MARGIN_LEFT + 10), y:(yPos += print_voucher.ROW_HEIGHT_SMALL), font_size:fontSize, font_black:fontBlack, show_modle:showModle});
+			// 		printInfo.ticket_element.push({elementValue:("  x "+_item.count.trim()), x:115, y:yPos, font_size:fontSize, font_black:fontBlack, show_modle:showModle});
+			// 		if(name_suffix != ''){
+			// 			printInfo.ticket_element.push({elementValue:name_suffix, x:(print_voucher.ROW_MARGIN_LEFT + 10), y:(yPos += print_voucher.ROW_HEIGHT_SMALL), font_size:fontSize, font_black:fontBlack, show_modle:showModle});
+			// 		}
+			// 	});
+			// }
 			t_index++;
 		}
 		printInfo.ticket_element.push({elementValue:'------------------------------------', x:print_voucher.ROW_MARGIN_LEFT, y:(yPos += (print_voucher.ROW_HEIGHT_SMALL - print_voucher.LINE_HEIGHT_GAP)), font_size:fontSize, font_black:fontBlack, show_modle:showModle});
-		printInfo.ticket_element.push({elementValue:("总件数："+voucherInfo.total_count), x:print_voucher.ROW_MARGIN_LEFT, y:(yPos += (print_voucher.ROW_HEIGHT_SMALL - print_voucher.LINE_HEIGHT_GAP)), font_size:fontSize, font_black:fontBlack, show_modle:showModle});
-		printInfo.ticket_element.push({elementValue:("合计： "+parseFloat(voucherInfo.total_price).toFixed(2)), x:100, y:yPos, font_size:fontSize, font_black:fontBlack, show_modle:showModle});
+		printInfo.ticket_element.push({elementValue:("总件数："+voucherInfo.totalCount), x:print_voucher.ROW_MARGIN_LEFT, y:(yPos += (print_voucher.ROW_HEIGHT_SMALL - print_voucher.LINE_HEIGHT_GAP)), font_size:fontSize, font_black:fontBlack, show_modle:showModle});
+		printInfo.ticket_element.push({elementValue:("合计： "+parseFloat(voucherInfo.totalPrice).toFixed(2)), x:100, y:yPos, font_size:fontSize, font_black:fontBlack, show_modle:showModle});
 		
 	}
 	printInfo.ticket_element.push({elementValue:'------------------------------------', x:print_voucher.ROW_MARGIN_LEFT, y:(yPos += (print_voucher.ROW_HEIGHT_SMALL - print_voucher.LINE_HEIGHT_GAP)), font_size:fontSize, font_black:fontBlack,  show_modle:showModle});

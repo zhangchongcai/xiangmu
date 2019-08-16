@@ -1,17 +1,35 @@
 <template>
   <div>
-    <dialogWarp :dialogVisible="dialogVisible" name="会员卡类型" @crmDialogOutputFlag="handleCrmDialogFlag">
-      <div class="_crm-card-type-dialog-wrap">
-        <div class="_m-member-table-custom">
-          <el-table ref="multipleTable" :data="tableData" stripe style="width: 100%" @select="handleSelect" @select-all="handleSelect"
-            :row-key="getRowKeys">
-            <el-table-column type="selection" width="55" :reserve-selection="true">
-            </el-table-column>
-            <el-table-column prop="cardType" :formatter="emptyShow" label="会员卡类型名称" min-width="120"
-              show-overflow-tooltip></el-table-column>
-            <el-table-column prop="cardTypeCode" :formatter="emptyShow" label="会员卡类型编号" min-width="120"
-              show-overflow-tooltip></el-table-column>
-          </el-table>
+    <dialogWarp :dialogVisible="dialogVisible" :name="customTitle" @crmDialogOutputFlag="handleCrmDialogFlag">
+      <div class="__crm-available-coupon-wrap">
+        <div class="__crm-available-coupon-dialog-content-wrap _crm-card-type-dialog-wrap">
+          <div class="__crm-available-coupon-dialog-content-left">
+            <div class="__crm-available-coupon-dialog-table _m-member-table-custom">
+              <el-table ref="multipleTable" :data="tableData" stripe style="width: 100%" @select="handleSelect"
+                @select-all="handleSelect" :row-key="getRowKeys">
+                <el-table-column type="selection" width="55" :reserve-selection="true">
+                </el-table-column>
+                <el-table-column prop="cardType" :formatter="emptyShow" label="会员卡类型名称" min-width="120"
+                  show-overflow-tooltip></el-table-column>
+                <el-table-column prop="cardTypeCode" :formatter="emptyShow" label="会员卡类型编号" min-width="120"
+                  show-overflow-tooltip></el-table-column>
+              </el-table>
+            </div>
+          </div>
+          <div class="__crm-available-coupon-dialog-content-right">
+            <div class="__content-right-wrap">
+              <div class="__content-right-title">
+                已选卡类型
+              </div>
+              <div class="__clear-btn" @click="handleEmpty">清空</div>
+            </div>
+            <ul class="__selected-equity-wrap _custom-selected-equity-height">
+              <li class="__selected-equity-item-inner" v-for="(item, index) of multipleSelectionItem" :key="index">
+                <div class="__selected-equity-name-desc">{{item.cardType}}</div>
+                <i class="el-icon-close __dialog-icon-delete" @click="dialogDeleteEquity(index)"></i>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </dialogWarp>
@@ -26,21 +44,6 @@ export default {
       multipleSelectionItem: [], //临时选择的自有权益
       callBackData: [], //暴露出去的已选数据
       tableData: [] //table表格数据
-      // tableData: [
-      //   //table表格数据
-      //   {
-      //     cardTypeCode: "stored_card",
-      //     cardType: "储值卡"
-      //   },
-      //   {
-      //     cardTypeCode: "equity_card",
-      //     cardType: "权益卡"
-      //   },
-      //   {
-      //     cardTypeCode: "cobranded_card",
-      //     cardType: "联名卡"
-      //   }
-      // ]
     };
   },
   components: {
@@ -70,6 +73,11 @@ export default {
       // 调用弹窗的识别参数
       type: String,
       default: "mainPageUnique"
+    },
+    customTitle: {
+      // 自定义弹窗title
+      type: String,
+      default: "会员卡类型"
     }
   },
   mounted() {
@@ -88,6 +96,17 @@ export default {
     immediate: true
   },
   methods: {
+    // dialog内删除已选权益
+    dialogDeleteEquity(index) {
+      this.multipleSelectionItem.splice(index, 1);
+      this.$refs.multipleTable.clearSelection();
+      this.rowMultipleChecked(this.multipleSelectionItem);
+    },
+    // 清空dialog内已选权益
+    handleEmpty() {
+      this.multipleSelectionItem = [];
+      this.$refs.multipleTable.clearSelection();
+    },
     // 查询卡类型
     search() {
       this.tipMessage = "数据加载中...";
@@ -206,5 +225,12 @@ export default {
 </script>
 <style lang="scss">
 ._crm-card-type-dialog-wrap {
+  margin-top: -5px;
+  ._custom-selected-equity-height {
+    height: 428px;
+  }
+  .el-table__body-wrapper {
+    height: 449px !important;
+  }
 }
 </style>

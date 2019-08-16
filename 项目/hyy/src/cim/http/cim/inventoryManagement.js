@@ -462,7 +462,28 @@ export default {
                 data
             })
         },
+        // 库存出入库调拨单接口
+        allotBillGetList: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/allotBill/getList',
+                method: 'post',
+                data
+            })
+        },
         
+    },
+    // 门店商品库存分析
+    storeInventoryAnalysis: {
+        // 门店商品库存分析
+        cinemaMerStockQueryStock: data => {
+            return axios({
+                baseURL:config.baseURL,
+                url: '/cinemaMerStockType/queryStockTypeList',
+                method: 'post',
+                data
+            })
+        }
     },
 
 }

@@ -35,7 +35,7 @@
       </div>
       <div style="float:right;margin-top:8px;" v-if="!isJustSee">
         <!-- <el-button type="primary" size="mini">查询</el-button> -->
-        <el-button type="primary" size="mini" @click="plusItems" style="margin-bottom:10px;">增加</el-button>
+        <el-button type="primary" size="mini"  @click="plusItems" style="margin-bottom:10px;">增加</el-button>
       </div>
     </div>
     <div class="customer-list">
@@ -78,9 +78,9 @@
         </el-table-column>
         <el-table-column label="操作" align="center" v-if="!isJustSee">
           <template slot-scope="scope">
-            <span class="table-btn-mini" @click="modifyInlineData(scope.row,scope.$index)">修改</span>
-            <span class="table-btn-mini" v-if="scope.row.status == -1" @click="enableBtn(scope.row)">启用</span>
-            <span class="table-btn-mini" v-if="scope.row.status == 1" @click="disableBtn(scope.row)">禁用</span>
+            <span class="table-btn-mini" v-auth="'system_dictionary_update'"  @click="modifyInlineData(scope.row,scope.$index)">修改</span>
+            <span class="table-btn-mini" v-auth="'system_dictionary_enableDisabling'"  v-if="scope.row.status == -1" @click="enableBtn(scope.row)">启用</span>
+            <span class="table-btn-mini" v-auth="'system_dictionary_enableDisabling'"  v-if="scope.row.status == 1" @click="disableBtn(scope.row)">禁用</span>
             <!-- <span class="table-btn-mini" @click="removePlanData(scope.$index)">删除</span> -->
           </template>
         </el-table-column>
@@ -137,14 +137,13 @@
   </div>
 </template>
 <script>
-import {queryDictList,saveDict,queryDictPropertyList,updateDictProperty} from 'frame_cpm/http/interface.js'
+import {queryDictList,saveDict,queryDictPropertyList,updateDictProperty,updateDictPropertyStatus} from 'frame_cpm/http/interface.js'
 export default {
   name: "dictDetail",
   data() {
      let propertyUnique =(rule,value,callback)=> {
        let alphaNum = /^[a-zA-Z0-9]*$/
           // if (this.propertyCodeSet.length && this.propertyCodeSet.includes(value)) {
-          //   debugger
           //   callback(new Error('属性编码重复'));
           // } else 
           if(!alphaNum.test(value)){
@@ -185,9 +184,17 @@ export default {
           }
         };
         let especialCode = (rule,value,callback)=> {
-          let regEn = /[`~!@#$%^&*()_+<>?:"{},.\/;'[\]]/g,
+          let regEn = /[`~!@#$%^&*()_+\+<>?:"{},.\/;'[\]]/g,
           regCn = /[·！#￥（——）：；“”‘、，|《。》？、【】[\]]/g;
           if(regEn.test(value) || regCn.test(value)){
+            callback(new Error('名称不能包含特殊字符'));
+          }else{
+            callback();
+          }
+        }
+        let isNormalNameCheck = (rule,value,callback)=> {
+          var reg = /^[\u4e00-\u9fa50-9a-zA-Z\s\~\`\·\！\!\@\#\￥\%\^\……\&\*\（\）\——\-\+\=\【\】\{\}\|\、\\\：\；\:\;\“\”\‘\’\'\"\[\]\{\}\<\,\>\.\《\》\，\。\？\、\?\/\(\)\_]+$/;
+          if(!reg.test(value)){
              callback(new Error('名称不能包含特殊字符'));
           }else{
             callback();
@@ -225,7 +232,7 @@ export default {
         ],
         propertyName: [
           {required: true,message: "请输入属性名称",trigger: "blur"},
-          {validator:especialCode,trigger:"blur"},
+          {validator:isNormalNameCheck,trigger:"blur"},
           {validator:maxLength20,trigger:"blur"}
         ],
         seq:[
@@ -312,7 +319,7 @@ export default {
     enableBtn(obj){
         let operObj = obj
         operObj.status = 1;
-        updateDictProperty(operObj)
+        updateDictPropertyStatus(operObj)
         .then((ret) => {
          if(ret && ret.code == 200){
             this.getList()
@@ -341,7 +348,7 @@ export default {
         ).then(() => {         
          
           operObj.status = -1;
-          updateDictProperty(operObj)
+          updateDictPropertyStatus(operObj)
             .then((ret) => {
               if(ret && ret.code == 200){
                   this.getList()
@@ -427,7 +434,8 @@ export default {
       
     // },
     quxiao(){
-        this.$router.push('index')
+      this.$store.commit("tagNav/removeTagNav", this.$route)
+      this.$router.push('index')
     },
     saveDict(formName,type) {
       let _this = this
@@ -449,8 +457,9 @@ export default {
           postForm.name = this.dictForm.dictName
           saveDict(this.dictForm).then(ret => {
             if(ret.result){
-                this.$router.push('index')
-                this.success('修改成功')
+              this.$store.commit("tagNav/removeTagNav", this.$route)
+              this.$router.push('index')
+              this.success('修改成功')
             }else{
               this.error(ret.msg)
             }

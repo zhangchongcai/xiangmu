@@ -79,7 +79,7 @@
           code: "",
           placeName: "",
         },
-        status:1,
+        status: 1,
         gridData: [],
         terminaltableColumn: [{
             label: "终端名称",
@@ -100,62 +100,91 @@
           {
             label: "状态",
             key: "status",
-            formatter(row, column, cellValue) {
-              let result = "";
-              switch (row.status) {
-                case 0:
-                  result = "停用";
-                  break;
-                case 1:
-                  result = "启用";
-                  break;
-              }
-              return result;
-            }
+            // formatter(row, column, cellValue) {
+            //   let result = "";
+            //   switch (row.status) {
+            //     case 0:
+            //       result = "停用";
+            //       break;
+            //     case 1:
+            //       result = "启用";
+            //       break;
+            //   }
+            //   return result;
+            // }
           }
         ],
       }
     },
     methods: {
-      openTerminal(event) {  // 打开填加终端
+      openTerminal(event) { // 打开填加终端
         event.srcElement.blur()
-          this.$refs.searchDialog.dialogTableVisible = true;
-          this.$refs.searchDialog.title = "添加终端";
-          this.$refs.searchDialog.showWhich = "terminal";
+
+        this.getGridData("", "", this.$route.query.cinemaUid)
       },
-      chooseWorker(obj) {  //  返回值
-        let whichOne = this.$refs.searchDialog.showWhich;
-        console.log(obj, whichOne)
-      },
-      terminalHandleeDlete(index){  // 删除终端
-        this.gridData.splice(index,1)
-      }, 
-      changeThing() {  // 添加 
-        this.$csmList.addressChange({
-          cinemaUid:this.showData.cinemaUid,
-          id:this.showData.id,
-          placeName:this.showData.placeName,
-          status:this.showData.status,
-          uid:this.showData.uid,
-          terminals:this.gridData
+      getGridData(code, status, cinemaUid) { // 获取列表数据
+        this.$csmList.terminalList2(code, status, cinemaUid).then(data => {
+          if (data && data.code === 200) {
+            if (data.data && data.data.length > 0) {
+              data.data.forEach(item => {
+                item.status = item.status ? "启用" : "停用"
+              })
+              this.$refs.searchDialog.dialogTableVisible = true;
+              this.$refs.searchDialog.title = "添加终端";
+              this.$refs.searchDialog.showWhich = "terminal";
+              this.$refs.searchDialog.gridData = data.data
+            } else {
+              this.$message('暂无未绑定销售地点的终端，请核实终端是否已绑定了其他销售地点。')
+            }
+          }
         })
+      },
+      chooseWorker(obj) { //  返回值
+        let whichOne = this.$refs.searchDialog.showWhich;
+        this.gridData = obj
+      },
+      terminalHandleeDlete(index) { // 删除终端
+        this.gridData.splice(index, 1)
+      },
+      changeThing() { // 修改
+        let gridData = JSON.parse(JSON.stringify(this.gridData))
+        let terminals = []
+        gridData.length && gridData.forEach(item => {
+          item.status = item.status == "停用" ? "0" : "1"
+        })
+        terminals = gridData.length ? gridData : []
+        this.$csmList.addressChange({
+            cinemaUid: this.showData.cinemaUid,
+            id: this.showData.id,
+            placeName: this.showData.placeName,
+            status: this.showData.status,
+            uid: this.showData.uid,
+            terminals: terminals,
+            code: this.showData.code
+          })
           .then(data => {
-            this.$confirm('修改成功, 是否继续?', '提示', {
-              confirmButtonText: '确定',
-              cancelButtonText: '取消',
-              type: 'success'
-            }).then(() => {
-              this.searchAdition = {}
-              cinemaName = ""
-            }).catch(() => {
+            console.log(data)
+            this.$message(data.msg)
+            if (data.code == 200 && data) {
+              this.$message('修改成功')
               this.$router.push("list")
-            });
+            }
+            // this.$confirm('修改成功, 是否继续?', '提示', {
+            //   confirmButtonText: '确定',
+            //   cancelButtonText: '取消',
+            //   type: 'success'
+            // }).then(() => {
+            //   this.searchAdition = {}
+            //   cinemaName = ""
+            // }).catch(() => {
+            //   this.$router.push("list")
+            // });
           })
           .catch(msg => {
             console.log(msg);
           });
       },
-      addressDetail() {  // 详情 
+      addressDetail() { // 详情 
         this.$csmList.addressDetail(this.$route.query.uid).then(data => {
           if (data && data.code === 200) {
             console.log(data)
@@ -163,11 +192,14 @@
             this.showData = data.data
             this.status = data.data.status
             this.gridData = data.data.terminals
+            this.gridData.forEach(item => {
+              item.status = item.status ? "启用" : "停用"
+            })
           }
         })
       },
-       searchWorker(current,userName,userAccount){
-        this.getWorker(current,userName,userAccount)
+      searchWorker(current, userName, userAccount) {
+        this.getWorker(current, userName, userAccount)
       },
     },
     mounted() {
@@ -179,7 +211,9 @@
   .el-tree-node__label {
     font-size: 12px;
   }
-  .el-form {  //  提示信息
+
+  .el-form {
+    //  提示信息
     box-sizing: border-box;
     overflow: hidden;
 
@@ -365,8 +399,8 @@
     z-index: 999;
     bottom: 0;
     right: 0;
-    background-color: #f5f5f5;
 
+    // background-color: #f5f5f5;
     .btn-area {
       width: 500px;
       margin: 0 auto;
@@ -396,8 +430,8 @@
     }
 
     .el-dialog__body {
-      height: 460px;
-      overflow-y: scroll;
+      // height: 460px;
+      // overflow-y: scroll;
 
       .el-tree-node__label {
         font-size: 12px;

@@ -6,7 +6,8 @@
         <el-input v-model="ruleForm.name" maxlength="10" placeholder="请输入实体卡批次名称"></el-input>
       </el-form-item>
       <el-form-item label="适用政策：" prop="cardTypeId">
-        <el-select v-model="ruleForm.cardTypeId" placeholder="请选择适用政策" @change='handleSelectCardType'>
+        <el-select v-model="ruleForm.cardTypeId" placeholder="请选择适用政策" @change='handleSelectCardType' filterable
+          clearable>
           <el-option v-for="item in cardList" :key="item.id" :label="item.cardName" :value="item.id"></el-option>
         </el-select>
       </el-form-item>
@@ -90,7 +91,7 @@ export default {
       cardTypeId: "",
       options: [],
       current: 1,
-      size: 25,
+      size: 1000,
       tenantId: this.$store.state.loginUser.consumerId,
       cardList: [],
       cardTypeObject: {},
@@ -112,6 +113,7 @@ export default {
     },
     // 取消
     handleCancelAdd() {
+      this.$store.commit("tagNav/removeTagNav", this.$route);
       this.$router.push({
         path: "/member/membershipCard/entityCardList"
       });
@@ -167,6 +169,7 @@ export default {
             .cardbatchAdd(params)
             .then(ret => {
               this.$message.success("保存成功");
+              this.$store.commit("tagNav/removeTagNav", this.$route);
               this.$router.push({
                 path: "/member/membershipCard/entityCardList"
               });

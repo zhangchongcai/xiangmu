@@ -1,17 +1,21 @@
 <template>
     <div class="contentCenter message-record">
         <div class="list-wrapper">
-            <el-form :inline="true" :model="listQuery"  size="mini" label-position="right" label-width="100px" class="demo-form-inline search-box" style="margin: 15px 0 10px 0">
-                <el-form-item label="场景名称：">
-                    <el-input v-model="listQuery.sceneName"  style="width:240px;" placeholder="请输入你要查询的名称"></el-input>
+            <el-form :inline="true" :model="listQuery" label-position="right" label-width="86px" class="demo-form-inline search-box" style="margin: 0 0 10px 0">
+                <el-form-item label="手机号：">
+                    <el-input v-model="listQuery.mobile"  class="wid192" placeholder="请输入你要查询的名称"></el-input>
                 </el-form-item>
-                <el-form-item label="发送时间：">
-                  <el-date-picker
-                    style="width:280px;"
-                    v-model="listQuery.value7"
+                <el-form-item label="发送批次：">
+                    <el-input v-model="listQuery.batchNumber"  class="wid192" placeholder="请输入你要查询的批次"></el-input>
+                </el-form-item>
+                <el-form-item label="发送时间：" >
+                   <el-date-picker
+                    v-model="dateRange"
                     type="daterange"
                     align="right"
                     unlink-panels
+                   :picker-options="pickerOptions"
+                   class="wid256"
                     range-separator="至"
                     start-placeholder="开始日期"
                     end-placeholder="结束日期"
@@ -19,19 +23,16 @@
                   >
                   </el-date-picker>
                 </el-form-item>
-                 <el-form-item label="短信场景：" prop="type">
-                    <el-select v-model="listQuery.secne" style="width:240px;" filterable placeholder="请选择">
-                       <el-option label="全部" value=''></el-option>
-                        <el-option
-                                v-for="item in msgsSecne"
-                                :key="item.code"
-                                :label="item.name"
-                                :value="item.code">
-                        </el-option>
-                    </el-select>
-                  </el-form-item>
-                   <el-form-item label="发送方：" prop="type">
-                    <el-select v-model="listQuery.sender" style="width:240px;" filterable placeholder="请选择">
+                <el-form-item label="短信场景：" prop="sceneName">
+                  <el-select v-model="listQuery.sceneCode" class="wid192" filterable placeholder="请选择">
+                      <el-option label="全部" value=''></el-option>
+                      <el-option v-for="item in msgsSecne" :key="item.sceneCode" :label="item.sceneName" :value="item.sceneCode">
+                        {{item.sceneName}}
+                      </el-option>
+                  </el-select>
+                </el-form-item>
+                   <!-- <el-form-item label="发送方：" prop="type">
+                    <el-select v-model="listQuery.sender" style="width:264px;" filterable placeholder="请选择">
                        <el-option label="全部" value=''></el-option>
                        <el-option
                           v-for="item in msgsSecne"
@@ -40,48 +41,56 @@
                           :value="item.code">
                         </el-option>
                     </el-select>
-                  </el-form-item>
+                  </el-form-item> -->
                 <el-form-item label="发送状态：">
-                  <el-select v-model="listQuery.status" style="width:240px;" filterable  placeholder="发送状态：">
+                  <el-select v-model="listQuery.status" class="wid192" filterable  placeholder="发送状态：">
                     <el-option label="全部" value=''></el-option>
-                    <el-option label="启用" value='1'></el-option>
-                    <el-option label="禁用" value='2'></el-option>
+                    <!-- <el-option label="发送成功" value='1'></el-option>
+                    <el-option label="发送失败" value='0'></el-option>
+                    <el-option label="未发送" value='2'></el-option>
+                    <el-option label="已送达" value='3'></el-option> -->
+                    <el-option v-for="item in sendStatuses" :key="item.status" :label="item.name" :value="item.status">
+                      {{item.name}}
+                    </el-option>
                   </el-select>  
                 </el-form-item>
                 <el-form-item>
-                    <el-button type="primary" @click="onSearch">查询</el-button>
+                    <el-button type="primary" class="searchBtn" @click="getList">查询</el-button>
                 </el-form-item>
             </el-form>
             <div class="content-line"></div>
-            <div class="create-wrapper">
+            <!-- <div class="create-wrapper">
                 <el-button type="primary" @click="tocreate">新建</el-button>
-            </div>
-            <el-table :data="recordlist" stripe style="margin-bottom:16px;" class="diy-header">
+            </div> -->
+            <el-table :data="recordlist" :empty-text="tipMessage" stripe  v-loading="tableLoding" style="margin-bottom:16px;" class="diy-header">
                 <el-table-column prop="mobile" label="手机号"></el-table-column>
                 <el-table-column prop="sceneName" label="场景名称"></el-table-column>
                 <el-table-column prop="sender" label="发送方"></el-table-column>
+                 <el-table-column prop="batchNumber" label="发送批次"></el-table-column>
                  <el-table-column prop="content" label="短信内容">
                     <template slot-scope="scope">
                         <span>{{scope.row.content}}</span>
                     </template>
                 </el-table-column>
                 <el-table-column prop="createTime" label="操作时间"></el-table-column>
-                <el-table-column prop="status" label="状态">
+                <el-table-column prop="status" label="发送状态">
                     <template slot-scope="scope">
                         <span>{{scope.row.status | stateFormat}}</span>
                     </template>
                 </el-table-column>
-                <!-- <el-table-column label="操作">
+                <el-table-column prop="status" label="备注">
+                  <template slot-scope="scope">
+                    <span>{{scope.row.msg}}</span>
+                  </template>
+                </el-table-column>
+                <el-table-column label="操作">
                     <template slot-scope="scope">
-                        <span class="table-btn-mini" @click="handleClick(scope.row)">查看</span>
-                        <span class="table-btn-mini" @click="handleEdit(scope.row)">编辑</span>
-                        <span class="table-btn-mini" v-if="scope.row.status == 1" @click="disableBtn(scope.row)">禁用</span>
-                        <span class="table-btn-mini" v-if="scope.row.status == 0" @click="enableBtn(scope.row)">启用</span>
+                      <el-button type="text" v-if="scope.row.sceneCode != 'CMC_001' && scope.row.sceneCode != 'HY_015'" class="table-btn-mini" v-auth="'system_messageRecord_retransmission'" @click="reSend(scope.row)">重发</el-button>
                     </template>
-                </el-table-column> -->
+                </el-table-column>
             </el-table>
             <!-- footer 分页条 -->
-            <!-- <div class="page-wrap">
+            <div class="page-wrap">
                 <el-pagination
                         background
                         @size-change="handleSizeChange"
@@ -92,7 +101,7 @@
                         layout="total, sizes, prev, pager, next, jumper"
                         :total="total">
                 </el-pagination>
-            </div> -->
+            </div>
         </div>
         <!-- <resoucedialog :dialogVisible="editManagerDialogFormVisible" :bitianxiang="bitianxiangObj" :isListprop="true" @introduce="introduceSelf" ref='newResouceRef' roleTitle="添加管理人">
             <div slot="footerId">
@@ -105,7 +114,7 @@
 
 <script>
     // import resouceDialog from './resouceDialog'
-    import {querySmsRecord,querySmsTemplate,deletSmsTemplate,updateSmsTemplate} from 'frame_cpm/http/interface.js'
+    import {querySmsRecord,querySmsTemplate,deletSmsTemplate,updateSmsTemplate,querySmsScene,resendSmsMsg} from 'frame_cpm/http/interface.js'
   export default {
     name: "messageTemplateList",
       // components:{
@@ -113,18 +122,49 @@
       // },
       data() {
         return {
+          pickerOptions:{
+            //日期选择问题
+            onPick: ({ maxDate, minDate }) => {
+     
+              this.pickerMinDate = minDate.getTime();
+             
+              if (maxDate) {
+                this.pickerMinDate = "";
+              }
+            },
+            disabledDate: time => {
+              const day30 = (30 - 1) * 24 * 3600 * 1000;
+              if (this.pickerMinDate !== "") {
+                
+                let maxTime = this.pickerMinDate + day30;
+                 let minTime = this.pickerMaxDate;
+                if (maxTime > new Date()) {
+                  maxTime = new Date();
+                }
+                return time.getTime() > maxTime;
+              }
+              return time.getTime() > Date.now();
+            }
+          },
+          pickerMinDate: "",
+          pickerMaxDate: "",
             listQuery: {
                 pageNum: 1,
                 pageSize: 10,
-                value7:'',
-                sceneName: ''
+                mobile:'',
+                batchNumber:'',
+                startDate:'',
+                status:null,
+                endDate:''
             },
+            tipMessage: "",
+            dateRange:'',
             bitianxiangObj:{
               menuId:null
             },
             editManagerDialogFormVisible:false,
             total: 1,
-            listLoading: true,
+            tableLoding: false,
             tableKey: 0,
             msgsSecne:[],
             form: {
@@ -147,31 +187,57 @@
             fullName: '',
             status: '',
             orgUid: '',
-            start: 1,
-            limit: 10,
-            treeData: [],
-            defaultProps: {
-              children: 'children',
-              label: 'text'
-            }
+            sendStatuses:[
+                {status:0,name:'发送失败'},
+                {status:1,name:'发送成功'},
+                {status:2,name:'未发送'},
+                {status:3,name:'已送达'}
+            ]
         }
     },
       created() {
           this.getList()
+          this.querySmsScene()
+          this.startTime();
           // localStorage.removeItem('templatedetail')
       },
       methods: {
-        enableBtn(obj){
-       let operObj = obj
-          operObj.status = 1;
-          delete operObj.propertyList
-          updateSmsTemplate(operObj)
+        startTime() {
+          //默认开始时间：31天前，结束时间: 当天！
+          let now = new Date();
+          let startDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate() -31)).toISOString().slice(0, 10);
+          let endDate = new Date( Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())).toISOString().slice(0, 10);
+          this.dateRange = [];
+          this.dateRange.push(startDate);
+          this.dateRange.push(endDate);
+        },
+         querySmsScene() {
+          // this.listQuery.sortName = 'id'
+          // this.listQuery.sort = false
+          let postObj = {};
+          querySmsScene().then(ret => {
+            this.msgsSecne = ret.data.data;
+
+          });
+        },
+        reSend(obj){
+          let operObj = {}
+          obj.debouceSend = true
+          operObj.globalId = obj.globalId;
+          operObj.msgRequestStr = obj.msgRequest;
+          resendSmsMsg(operObj)
           .then((ret) => {
              if(ret.result){
                 this.getList()
-                this.success('启用成功')
+                this.success('重发成功')
+                setTimeout(()=>{
+                  obj.debouceSend = false
+                },1000*60)
               }else{
                 this.error(ret.msg) // '禁用失败'
+                setTimeout(()=>{
+                  obj.debouceSend = false
+                },1000*60)
               }
           })
           .catch(() => {
@@ -258,14 +324,25 @@
         getList(){
             let _this = this;
             let queryObj = this.listQuery
+            queryObj.startDate=_this.dateRange?_this.dateRange[0] : ''
+            queryObj.endDate=_this.dateRange?_this.dateRange[1]:''
+            this.tipMessage = "数据加载中...";
+             this.tableLoding = true;
             querySmsRecord(queryObj)
               .then(ret => {
+                 this.tableLoding = false;
                 if(ret&&ret.code==200){
-                  debugger
                   // _this.pageNum = ret.data.pageNum
                   // _this.pageSize = ret.data.pageSize
-                  // _this.total = ret.data.total
+                  _this.total = ret.data.total
+                  if (ret.data.total == 0) {
+                    this.tipMessage = "暂无数据";
+                  }
+                  ret.data.rows.map(item=>{
+                    item.debouceSend = false
+                  })
                   _this.recordlist = ret.data.rows
+                  
                   
                 }else{
                   _this.$message({
@@ -286,16 +363,20 @@
           this.listQuery.pageNum = val
           this.getList()
         },
-        onSearch() {
-            this.getList()
-        },
+        // onSearch() {
+        //     this.getList()
+        // },
       },
       filters:{
-          stateFormat(status) {
-              if (status == 0) {
-                    return '禁用'
+           stateFormat(status) {
+              if (status == 2) {
+                    return '未发送'
               }else if (status == 1) {
-                    return '启用'
+                    return '发送成功'
+              }else if (status == 0) {
+                    return '发送失败'
+              }else if (status == 3) {
+                    return '已送达'
               }
           }
       }
@@ -304,6 +385,9 @@
 
 <style  lang="scss">
 .message-record{
+  .search-box .el-date-editor--daterange.el-input__inner {
+    width: 256px;
+  }
   .el-date-editor .el-range-separator {
     display: inline-block;
     height: 100%;
@@ -315,13 +399,56 @@
     height: 32px;
     width: 5%;
     color: #303133;
-}
-.el-form--inline .el-form-item{
-  margin-bottom:12px;
-}
+  }
+  .el-form--inline .el-form-item{
+    margin-bottom:0;
+  }
+  .el-input__inner{
+    font-size: 12px;
+  }
+  .el-select .el-input .el-input__inner{
+    font-size: 12px;
+  }
+  .el-range-editor .el-range-input{
+    font-size: 12px;
+  }
+  .el-date-editor .el-range__icon {
+    line-height: 24px;
+  }
 }
 </style>
 <style  lang="scss" scoped>
+.wid192{
+  width:192px;
+}
+.wid256{
+  width:256px;
+}
+.addBtn{
+  width: 80px;
+  padding-left: 0;
+  padding-right: 0;
+  height: 32px;
+  font-size: 12px;
+  border-color: #3B74FF;
+  color: #3B74FF;
+}
+.searchBtn{
+  width: 80px;
+  margin-left:12px;
+  height: 32px;
+  font-size: 12px;
+}
+.addBtn{
+  width: 80px;
+  padding-left: 0;
+  padding-right: 0;
+  height: 32px;
+  font-size: 12px;
+  border-color: #3B74FF;
+  color: #3B74FF;
+}
+
 .contentCenter{
     height: 100%;
     .breadcrumb{
@@ -333,8 +460,7 @@
         }
     }
     .search-box{
-      padding: 24px;
-      padding-bottom: 6px;
+      padding: 20px 24px;
       background: #f5f5f5;
     }
     .bread-crumb{
@@ -343,7 +469,6 @@
     }
     .list-wrapper{
       width: 100%;
-      margin-top: 10px;
       margin-bottom: 8px;
       // border: 1px solid #ccc;
         height:100%;

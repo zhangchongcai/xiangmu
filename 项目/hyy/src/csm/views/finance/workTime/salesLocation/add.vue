@@ -1,20 +1,18 @@
 <template>
   <div class="cinemaList">
-    <!-- 面包屑 -->
-    <!-- <el-breadcrumb separator-class="el-icon-arrow-right">
-      <el-breadcrumb-item>首页</el-breadcrumb-item>
-      <el-breadcrumb-item>领用物品管理</el-breadcrumb-item>
-      <el-breadcrumb-item :to="{ path: 'list' }">领用物品管理</el-breadcrumb-item>
-      <el-breadcrumb-item :to="{ path: 'add' }">添加物品</el-breadcrumb-item>
-    </el-breadcrumb> -->
     <div class="searchAdition">
       <p class="div_title"><i class="el-icon-arrow-down">新增销售地点</i></p>
       <el-form :inline="true" size="small" label-width="120px">
         <el-row :gutter="24">
           <el-col :span="12">
-            <el-form-item label="门店名称:" required>
+            <!-- <el-form-item label="门店名称:" required>
               <el-input v-model="cinemaName" @focus="openCinema"></el-input>
-            </el-form-item>
+            </el-form-item> -->
+             <el-form-item label="影院名称：">
+                {{cinemaName}}
+            <!-- <el-button @click="singleCinemaVisible = true, $refs.frameSingleCinema.listAuthCommCinemas()" style="width:176px;height:32px;">
+                {{ cinemaName }}</el-button> -->
+          </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="销售地点编码:" required>
@@ -65,17 +63,31 @@
       </div>
     </div>
     <mydialog ref="searchDialog" @callback="chooseWorker" @searchWorker="searchWorker"></mydialog>
-    <singeCinema ref="singeCinema" @callback="callback"></singeCinema>
+    <!-- <singeCinema ref="singeCinema" @callback="callback"></singeCinema> -->
+    <singleCinema ref="frameSingleCinema" :framedialogVisible.sync="singleCinemaVisible" :type="singleCinemaType"
+      :innerData="innerData" @callBackSingle="callBackSingle">
+      <div slot="footerId">
+        <el-button @click="singleCinemaVisible = false">取 消</el-button>
+        <el-button type="primary" @click="$refs.frameSingleCinema.confirmData(), singleCinemaVisible = false">确
+          定</el-button>
+      </div>
+    </singleCinema>
   </div>
   <!-- </div> -->
 </template>
 <script type="text/javascript">
   import mydialog from "../public/searchDialog"
-  import singeCinema from '../publicModule/singeCinema'
+  import singleCinema from "frame_cpm/dialogs/cinemaDialog/singleCinema"
+  // import singeCinema from '../publicModule/singeCinema'
   export default {
-    components: {mydialog,singeCinema},
+    components: {mydialog,singleCinema},
     data() {
       return {
+        singleCinemaVisible: false,
+        singleCinemaType: 2,
+        innerData: {
+            id: '',
+        },
         cinemaName: "",
         searchAdition: {
           status:"1"
@@ -110,18 +122,18 @@
           {
             label: "状态",
             key: "status",
-            formatter(row, column, cellValue) {
-              let result = "";
-              switch (row.status) {
-                case 0:
-                  result = "停用";
-                  break;
-                case 1:
-                  result = "启用";
-                  break;
-              }
-              return result;
-            }
+            // formatter(row, column, cellValue) {
+            //   let result = "";
+            //   switch (row.status) {
+            //     case 0:
+            //       result = "停用";
+            //       break;
+            //     case 1:
+            //       result = "启用";
+            //       break;
+            //   }
+            //   return result;
+            // }
           }
         ],
       }
@@ -136,23 +148,25 @@
       openTerminal(event){
         event.srcElement.blur()
         if(!this.cinemaName){
-          this.$alert('请先选择影院', '提示', {
-            confirmButtonText: '确定',
-            callback:()=>{}
-          })
+          this.$message("请先选择影院")
         }else{
           // this.getWorker()
           
-          this.$refs.searchDialog.dialogTableVisible = true;
-          this.$refs.searchDialog.title = "添加终端";
-          this.$refs.searchDialog.showWhich = "terminal";
+          // this.$refs.searchDialog.dialogTableVisible = true;
+          // this.$refs.searchDialog.title = "添加终端";
+          // this.$refs.searchDialog.showWhich = "terminal";
           this.getGridData("","",this.searchAdition.cinemaUid)
         }
       },
       //  获取到后台的code
       getCode(){
-        this.$csmList.getAddressCode().then(data =>{
+        let httpObj = {
+          cinemaUid:this.searchAdition.cinemaUid
+        }
+        console.log(httpObj)
+        this.$csmList.getAddressCode(httpObj).then(data =>{
            if (data && data.code === 200) {
+             console.log(data)
             this.$set(this.searchAdition,"code",data.data)
            }
         })
@@ -161,13 +175,18 @@
        getGridData(code,status,cinemaUid){
         this.$csmList.terminalList2(code,status,cinemaUid).then(data =>{
            if (data && data.code === 200) {
-              data.data.forEach(item =>{
-               item.status = item?"启用":"停用"
+            if (data.data && data.data.length > 0) {
+              data.data.forEach(item => {
+                item.status = item.status ? "启用" : "停用"
               })
-             this.$refs.searchDialog.gridData = data.data
-            
-            // this.$set(this.searchAdition,"code",data.data)
-           }
+              this.$refs.searchDialog.dialogTableVisible = true;
+              this.$refs.searchDialog.title = "添加终端";
+              this.$refs.searchDialog.showWhich = "terminal";
+              this.$refs.searchDialog.gridData = data.data
+            } else {
+              this.$message('暂无未绑定销售地点的终端，请核实终端是否已绑定了其他销售地点。')
+            }
+          }
         })
       },
       //  返回值
@@ -176,6 +195,7 @@
         console.log(arr,whichOne)
         // this.searchAdition.terminals = arr
         this.gridData = arr
+        console.log(this.gridData)
       },
       // 删除
       delateSpan(item) {
@@ -185,64 +205,73 @@
         }
       },
        // 打开影院
-      openCinema(){
-        this.$refs.singeCinema.opendialog = true;
+      callBackSingle(data) {
+          console.log(data, '-----> data')
+          this.searchAdition.cinemaUid = data.data.id
+          this.cinemaName = data.data.name
+           this.cinemaName = this.cinemaName.length> 10?this.cinemaName.substring(0,9)+"...": this.cinemaName
+          this.innerData.id = data.data.id
+          this.singleCinemaVisible = data.framedialogVisible
+          this.getCode()
+          // this.search() 
+      },
+      getUserInfo() {
+          this.$ctmList.getUserInfo().then(res => {
+              console.log(res)
+              if (res.code === 200) {
+                  this.cinemaName = res.data.cinemaName
+                  this.searchAdition.cinemaUid = res.data.cinemaUid
+                  this.innerData.id = Number(res.data.cinemaUid)
+                  this.getCode();
+                  // this.search()
+              } else {
+                  this.error(res.msg)
+              }
+          })
       },
       callback(val){
         console.log(val)
         this.cinemaName = val.orgName
         this.searchAdition.cinemaUid = val.cinemaUID
+        
       },
       searchWorker(userName,userAccount){
         this.getGridData(userName,userAccount,this.searchAdition.cinemaUid)
       },
       // 添加 
       addOtherthing() {
-        this.searchAdition.terminals = 
-        this.gridData.length?this.gridData:[]
+        let gridData = JSON.parse(JSON.stringify(this.gridData))
+        gridData.length && gridData.forEach(item =>{
+          item.status =  item.status == "停用"?"0":"1"
+        })
+        this.searchAdition.terminals = gridData.length?gridData:[]
         this.$csmList.addressAdd(Object.assign({}, this.searchAdition))
           .then(data => {
-            this.$confirm('添加成功, 是否继续?', '提示', {
-              confirmButtonText: '确定',
-              cancelButtonText: '取消',
-              type: 'success'
-            }).then(() => {
-              this.searchAdition = {}
-              cinemaName = ""
-            }).catch(() => {
-              this.$router.push("list")
-            });
+            // this.$confirm('添加成功, 是否继续?', '提示', {
+            //   confirmButtonText: '确定',
+            //   cancelButtonText: '取消',
+            //   type: 'success'
+            // }).then(() => {
+            //   this.searchAdition = {}
+            //   cinemaName = ""
+            // }).catch(() => {
+            //   this.$router.push("list")
+            // });
+            this.$message(data.msg)
+            this.$router.push("list")
           })
           .catch(msg => {
-            console.log(msg);
+            this.$message(data.msg)
           });
       }
     },
     mounted(){
-      this.getCode();
+     this.searchAdition.cinemaUid = this.$route.query.cinemaUid
+     this.cinemaName = this.$route.query.cinemaName,
+      this.getUserInfo()
     }
     
   };
-  //转换后台json结构为element可用的结构
-  function changeTreeJson(valArr) {
-    let newValArr = [];
-    valArr.forEach(function (val) {
-      let treeNode = {};
-      treeNode.cinemaUID = val.cinemaUID;
-      treeNode.orgName =
-        val.children != null ?
-        val.orgName :
-        val.cinemaName != null ?
-        val.cinemaName :
-        val.orgName;
-      if (val.children != null) {
-        let childrenArr = changeTreeJson(val.children);
-        treeNode.children = childrenArr;
-      }
-      newValArr.push(treeNode);
-    });
-    return newValArr;
-  }
 </script>
 <style lang="scss" scoped>
   .el-tree-node__label {
@@ -436,7 +465,7 @@
     z-index: 999;
     bottom: 0;
     right: 0;
-    background-color: #f5f5f5;
+    // background-color: #f5f5f5;
 
     .btn-area {
       width: 500px;
@@ -467,8 +496,6 @@
     }
 
     .el-dialog__body {
-      // height: 460px;
-      // overflow-y: scroll;
       .el-tree-node__label {
         font-size: 12px;
         color: #666666;

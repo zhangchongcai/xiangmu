@@ -150,7 +150,12 @@ import {organizationList} from "frame_cpm/http/interface.js"
             // organizationList(params).then(data => {
                 if (data && data.code === 200) {
                     this.treeData=data.data
-                    this.resetTreeData(this.treeData,list)
+                    if(this.showType=="edit"){
+                        this.editResetTreeData(this.treeData,list)
+                    }
+                    if(this.showType=="add"){
+                        this.addResetTreeData(this.treeData,list)
+                    }
                     this.treeArr.push(this.treeData)
                     // this.treeArr=data.data
                     console.log("treeArr",this.treeArr)
@@ -178,7 +183,7 @@ import {organizationList} from "frame_cpm/http/interface.js"
             },100)
         },
         //重组组织结构树数据
-        resetTreeData(obj,list){
+        addResetTreeData(obj,list){
             if(obj.subtree){
                 if(obj.cinemaInfos){
                     for(let i = 0; i < obj.cinemaInfos.length; i++){
@@ -199,35 +204,34 @@ import {organizationList} from "frame_cpm/http/interface.js"
                         }
                     })
                     if(item.subtree){
-                        this.resetTreeData(item,list)
+                        this.addResetTreeData(item,list)
+                    }
+                }
+            }
+        },
+        //重组组织结构树数据
+        editResetTreeData(obj){
+            if(obj.subtree){
+                if(obj.cinemaInfos){
+                    for(let i = 0; i < obj.cinemaInfos.length; i++){
+                        let items = obj.cinemaInfos[i];
+                        let data = {
+                            id:items.id,
+                            menuName:items.name,
+                            subtree:[]
+                        }
+                        obj.subtree.push(data)
+                    }
+                }
+                for(let j = 0; j < obj.subtree.length; j++){
+                    let item = obj.subtree[j];
+                    if(item.subtree){
+                        this.editResetTreeData(item)
                     }
                 }
             }
            
         },
-        //重组组织结构树数据
-        // resetTreeData(obj){
-        //     if(obj.subtree){
-        //         if(obj.cinemas){
-        //             for(let i = 0; i < obj.cinemas.length; i++){
-        //                 let items = obj.cinemas[i];
-        //                 let data = {
-        //                     // id:items,
-        //                     menuName:items,
-        //                     subtree:[]
-        //                 }
-        //                 obj.subtree.push(data)
-        //             }
-        //         }
-        //         for(let j = 0; j < obj.subtree.length; j++){
-        //             let item = obj.subtree[j];
-        //             if(item.subtree){
-        //                 this.resetTreeData(item)
-        //             }
-        //         }
-        //     }
-           
-        // },
         //获取通用单据设置
         getBillNormalSetting(){
             let params={

@@ -1,6 +1,6 @@
 <template>
   <div class="_edit-membership-level">
-    <el-form :model="ruleForm" :rules="rules" ref="ruleForm" size="medium" label-width="120px" label-position="right">
+    <el-form :model="ruleForm" :rules="rules" ref="ruleForm" size="medium" label-width="120px" label-position="left">
       <el-form-item label="等级定级周期：" prop="rankCycle" class="_edit-membership-level-head">
         <div class="level-cycle">
           <el-input v-model="ruleForm.rankCycle" placeholder="请输入"></el-input>
@@ -13,55 +13,59 @@
       <el-collapse v-model="activeNames" class="_edit-membership-level-content">
         <!-- 会员等级 -->
         <el-collapse-item title="会员等级" name="0">
-          <div class="member-level-title">
-            <div class="level-explain">等级编号数字越大级别越高</div>
-            <div class="add-btn" @click="handleAddLevel"><i class="el-icon-circle-plus-outline"></i> 添加会员等级</div>
-          </div>
-          <div class="_m-member-table-custom _membership-level-table">
-            <el-table :data="ruleForm.memberLevelRuleVOList" stripe border style="width: 100%">
-              <el-table-column prop="levelNo" label="会员等级编号" min-width="100">
-                <template slot-scope="scope">
-                  <span class="index-wrap">{{scope.$index + 1}}</span>
-                </template>
-              </el-table-column>
-              <el-table-column label="会员等级名称" min-width="120">
-                <template slot-scope="scope">
-                  <el-form-item :prop="'memberLevelRuleVOList.'+ scope.$index" :rules="rules.levelName"
-                    class="_custom-el-item">
-                    <el-input v-model="scope.row.levelName" class="level-name"></el-input>
-                  </el-form-item>
-                </template>
-              </el-table-column>
-              <el-table-column label="保级升级规则" min-width="550">
-                <template slot-scope="scope">
-                  <span v-if="scope.$index + 1 == '1'" class="ordinary">
-                    当前等级为最低，无法添加升级规则
-                  </span>
-                  <el-form-item v-else :prop="'memberLevelRuleVOList.'+ scope.$index" :rules="rules.growth"
-                    class="_custom-el-item">
-                    <span class="no-ordinary">
-                      升级标准：定级周期内成长值达到
-                      <el-input v-model="scope.row.levelupGrowth" class="levelup-growth"></el-input>点;
-                      保级标准：定级周期内成长值达到
-                      <el-input v-model="scope.row.saveGrowth" class="save-growth"></el-input>点
+          <div style="padding-left:20px;">
+            <div class="member-level-title">
+              <div class="level-explain">等级编号数字越大级别越高</div>
+              <div class="add-btn" @click="handleAddLevel"><i class="el-icon-circle-plus-outline"></i> 添加会员等级</div>
+            </div>
+            <div class="_m-member-table-custom _membership-level-table">
+              <el-table :data="ruleForm.memberLevelRuleVOList" stripe border style="width: 100%">
+                <el-table-column prop="levelNo" label="会员等级编号" min-width="100">
+                  <template slot-scope="scope">
+                    <span class="index-wrap">{{scope.$index + 1}}</span>
+                  </template>
+                </el-table-column>
+                <el-table-column label="会员等级名称" min-width="120">
+                  <template slot-scope="scope">
+                    <el-form-item :prop="'memberLevelRuleVOList.'+ scope.$index" :rules="rules.levelName"
+                      class="_custom-el-item">
+                      <el-input v-model="scope.row.levelName" class="level-name"></el-input>
+                    </el-form-item>
+                  </template>
+                </el-table-column>
+                <el-table-column label="保级升级规则" min-width="550">
+                  <template slot-scope="scope">
+                    <span v-if="scope.$index + 1 == '1'" class="ordinary">
+                      当前等级为最低，无法添加升级规则
                     </span>
-                  </el-form-item>
-                </template>
-              </el-table-column>
-              <el-table-column label="操作" min-width="50" fixed="right">
-                <template slot-scope="scope">
-                  <el-button @click="handleDelete(scope)" v-if="scope.$index != 0" type="text" size="small"
-                    class="delete-btn">删除</el-button>
-                </template>
-              </el-table-column>
-            </el-table>
+                    <el-form-item v-else :prop="'memberLevelRuleVOList.'+ scope.$index" :rules="rules.growth"
+                      class="_custom-el-item">
+                      <span class="no-ordinary">
+                        升级标准：定级周期内成长值达到
+                        <el-input v-model="scope.row.levelupGrowth" class="levelup-growth"></el-input>点;
+                        保级标准：定级周期内成长值达到
+                        <el-input v-model="scope.row.saveGrowth" class="save-growth"></el-input>点
+                      </span>
+                    </el-form-item>
+                  </template>
+                </el-table-column>
+                <el-table-column label="操作" min-width="50" fixed="right">
+                  <template slot-scope="scope">
+                    <el-button @click="handleDelete(scope)" v-if="scope.$index != 0" type="text" size="small"
+                      class="delete-btn">删除</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
           </div>
         </el-collapse-item>
         <!-- 基础信息 -->
         <el-collapse-item title="基础信息" name="1" class="basic-info">
-          <el-form-item label="成长值名称：" prop="growthName">
-            <el-input v-model="ruleForm.growthName" placeholder="请输入" class="growth-name"></el-input>
-          </el-form-item>
+          <div style="padding-left:20px;">
+            <el-form-item label="成长值名称：" prop="growthName">
+              <el-input v-model="ruleForm.growthName" placeholder="请输入" class="growth-name"></el-input>
+            </el-form-item>
+          </div>
         </el-collapse-item>
         <!-- 成长值获取规则 -->
         <el-collapse-item title="成长值获取规则" name="2" class="get-rules">
@@ -152,7 +156,7 @@
       class="_member-tip-dialog-custom-style">
       <i class="iconfont icon-danchuang-tishi _member-tip-dialog-icon"></i>
       <span class="_member-tip-dialog-desc">
-        是否删除"{{deleteInfo.levelName}}"等级？<br />删除操作不可恢复，该等级会员将会降级，相关权益将被删除，请谨慎操作
+        是否删除"{{deleteInfo.row.levelName}}"等级？<br />删除操作不可恢复，该等级会员将会降级，相关权益将被删除，请谨慎操作
       </span>
       <span slot="footer" class="dialog-footer">
         <el-button type="primary" @click="handleSureDelete" class="_el-btn-custom _member-add-edit-save-btn">确定
@@ -212,7 +216,7 @@ export default {
         for (var i = 0; i < arr.length; i++) {
           if (val.levelNo == arr[i].levelNo) {
             // 有低一级保级标准
-            if (arr[i - 1].saveGrowth != "") {
+            if (arr[i - 1].saveGrowth) {
               if (
                 val.levelupGrowth.toString().trim() * 1 <=
                 arr[i - 1].saveGrowth
@@ -235,7 +239,7 @@ export default {
               }
             }
             // 有高一级保级标准
-            if (arr[i + 1] && arr[i + 1].saveGrowth != "") {
+            if (arr[i + 1] && arr[i + 1].saveGrowth) {
               if (
                 val.levelupGrowth.toString().trim() * 1 >=
                 arr[i + 1].saveGrowth
@@ -250,7 +254,7 @@ export default {
               }
             }
             // 有高一级升级标准
-            if (arr[i + 1] && arr[i + 1].levelupGrowth != "") {
+            if (arr[i + 1] && arr[i + 1].levelupGrowth) {
               if (
                 val.levelupGrowth.toString().trim() * 1 >=
                 arr[i + 1].levelupGrowth
@@ -390,7 +394,11 @@ export default {
 
     return {
       deleteDialog: false, //删除的dialog
-      deleteInfo: "", //将要删除等级的信息
+      deleteInfo: {
+        row: {
+          levelName: ""
+        }
+      }, //将要删除等级的信息
       sameCategoryDialog: false, // 相同的可售渠道的dialog显示/隐藏
       sameChannel: "", //相同的可售渠道
       id: "",
@@ -721,26 +729,7 @@ export default {
     // 删除会员等级
     handleDelete(scope) {
       this.deleteDialog = true;
-      this.deleteInfo = scope.row;
-
-      // this.$confirm(
-      //   `是否删除"${
-      //     scope.row.levelName
-      //   }"等级？<br/>删除操作不可恢复，该等级会员将会降级，<br/>相关权益将被删除，请谨慎操作`,
-      //   "提示",
-      //   {
-      //     confirmButtonText: "确定",
-      //     cancelButtonText: "取消",
-      //     type: "warning",
-      //     dangerouslyUseHTMLString: true
-      //   }
-      // )
-      //   .then(() => {
-      //     this.ruleForm.memberLevelRuleVOList.splice(scope.$index, 1);
-      //   })
-      //   .catch(() => {
-      //     return false;
-      //   });
+      this.deleteInfo = scope;
     },
     // 确认删除等级
     handleSureDelete() {
@@ -874,6 +863,7 @@ export default {
           .then(data => {
             if (data) {
               this.$message.success("保存成功");
+              this.$store.commit("tagNav/removeTagNav", this.$route);
               this.$router.push({ path: "/member/membershipLevel/detail" });
             }
           })
@@ -895,6 +885,7 @@ export default {
     },
     // 取消提交
     handleCancle() {
+      this.$store.commit("tagNav/removeTagNav", this.$route);
       this.$router.push({ path: "/member/membershipLevel/detail" });
     }
   }
@@ -913,6 +904,7 @@ export default {
     .el-form-item__label,
     .el-form-item__content {
       line-height: 64px;
+      margin-top: 0;
     }
     .level-cycle {
       display: flex;
@@ -947,6 +939,7 @@ export default {
     border: 0;
     .el-form-item__label {
       font-size: 12px;
+      text-indent: 0;
     }
     .member-level-title {
       display: flex;
@@ -973,6 +966,7 @@ export default {
               overflow: visible;
               white-space: nowrap;
               min-width: 50px;
+              padding-right: 8px;
               .el-form-item__error {
                 background: rgba(51, 51, 51, 0.8);
                 border-radius: 4px;
@@ -983,7 +977,7 @@ export default {
                 padding: 4px 6px;
                 z-index: 1;
                 top: 7px;
-                left: 120px;
+                left: 110%;
               }
               .el-form-item__error:before {
                 content: "";
@@ -1089,8 +1083,9 @@ export default {
       .growth-value-options {
         background: #f5f5f5;
         border-radius: 4px;
-        padding: 5px 0 20px 0;
+        padding: 5px 0 20px 5px;
         margin-bottom: 15px;
+        margin-left: 20px;
         .el-form-item__label {
           width: 108px !important;
         }
@@ -1161,6 +1156,7 @@ export default {
         color: #3b74ff;
         letter-spacing: 0;
         cursor: pointer;
+        padding-left: 20px;
       }
     }
   }

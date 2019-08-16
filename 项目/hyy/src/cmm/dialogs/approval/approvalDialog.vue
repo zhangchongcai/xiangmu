@@ -73,7 +73,7 @@
                 </el-table>
             </el-card>
             <div slot="footer" class="dialog-footer">
-                <el-button @click="closeBack" >关 闭</el-button>
+                <el-button class="footerBtn" @click="closeBack" >关 闭</el-button>
             </div>
         </el-dialog>
     </div>
@@ -192,6 +192,14 @@ import {getApprovalrecord,searchApproval,findspAuditBill} from "cwf/http/interfa
 }
 .el-row{
     margin-bottom: 20px;
+}
+.footerBtn{
+    width: 80px;
+    height: 32px;
+    line-height: 32px;
+    text-align: center;
+    vertical-align: middle;
+    padding: 0;
 }
 
 

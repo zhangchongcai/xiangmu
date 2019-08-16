@@ -139,12 +139,15 @@
         <!-- ********************************************************************************************* -->
         <el-collapse-item title="分账信息" name="3">
           <div class="basic-info account-fenge">
-            <el-form ref="form" :model="sizeForm" label-width="85px" size="small" inline>
+            <el-form ref="form" :model="sizeForm" label-width="95px" size="small" inline>
               <div>
                 <el-form-item label="最低票价：">
                   <div class="cinema-stock-scan-table">
                     <el-table :data="priceList" border>
                       <el-table-column prop="minPrice" label="最低票价" width="199">
+                        <template slot-scope="scope">
+                          <span>{{scope.row.minPrice}}元</span>
+                        </template>
                       </el-table-column>
                       <el-table-column prop="dateStart" label="有效期" width="199">
                         <template slot-scope="scope">
@@ -155,10 +158,13 @@
                   </div>
 
                 </el-form-item>
-                <el-form-item label="院方分账：">
+                <el-form-item label="发行方分账：">
                   <div class="cinema-stock-scan-table">
                     <el-table :data="rateList" stripe border style="width: 100%">
                       <el-table-column prop="rate" label="比例" width="199">
+                        <template slot-scope="scope">
+                          <span>{{scope.row.rate}}%</span>
+                        </template>
                       </el-table-column>
                       <el-table-column prop="dateStart" label="有效期" width="199">
                         <template slot-scope="scope">

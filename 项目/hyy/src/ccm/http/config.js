@@ -15,6 +15,7 @@ console.log(domain)
 switch (domain) {
     case "127.0.0.1":
         config.baseURL = "http://apidev.oristarcloud.com";
+        // config.baseURL = "http://apitest.oristarcloud.com";
         // config.baseURL = 'http://apidevzynf.oristarcloud.com/'
         // config.baseURL = 'http://172.17.10.43:9090';
         // config.baseURL = 'http://172.99.100.8:9090';

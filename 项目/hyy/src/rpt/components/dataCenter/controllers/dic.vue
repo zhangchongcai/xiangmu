@@ -2,12 +2,24 @@
   <div>
     <el-select
       popper-class="rpt-select"
-      v-model="dicValue"
-      placeholder="请选择"
+      v-model="queryData.queryColValue"
       @change="getData"
-      @focus="focusBTn"
+      v-if="showAll"
     >
-      <el-option label="全部" value></el-option>
+     <el-option label="全部" value></el-option>
+      <el-option
+        v-for="item in options"
+        :key="`dic_${item.id}`"
+        :label="item.dicName"
+        :value="item.dicVal"
+      ></el-option>
+    </el-select>
+    <el-select
+      popper-class="rpt-select"
+      v-model="queryData.queryColValue"
+      @change="getData"
+      v-if="!showAll"
+    >
       <el-option
         v-for="item in options"
         :key="`dic_${item.id}`"
@@ -18,38 +30,41 @@
   </div>
 </template>
 <script>
-import mixins from "src/frame_cpm/mixins/cacheMixin.js";
 export default {
-  mixins: [mixins.cacheMixin],
   props: {
     resetStatus: Boolean,
-    dicTag: String,
-    queryColKey: String
+    queryData: Object,
   },
   data() {
     return {
-      cacheField: ["dicValue"],
-      subComName: "dic",
       options: [],
-      dicValue: ""
+      showAll: false
     };
   },
   methods: {
     //选择触发事件
     getData(selVal) {
-      this.$emit("selectDicData", this.dicValue, this.queryColKey);
+      this.queryData.queryColValue = selVal;
     },
-    focusBTn() {
-      this.$rptList.gitDicData(this.dicTag).then(res => {
-        console.log(res);
-        this.options = res;
-      });
-    }
+  },
+  mounted() {
+    this.$rptList.gitDicData(this.queryData.dicTag).then(res => {
+      this.options = res;
+      this.showAll = true;
+      if (res[0].dicTag == 'status') {
+        this.showAll = false;
+        this.queryData.queryColValue = res[1].dicVal;
+      }
+      if (res[0].dicTag == 's04_type') {
+        this.showAll = false;
+        this.queryData.queryColValue = res[0].dicVal;
+      }
+    });
   },
   watch: {
     resetStatus(newVal) {
       if (newVal) {
-        this.dicValue = "";
+        this.queryData.queryColValue = "";
       }
     }
   }

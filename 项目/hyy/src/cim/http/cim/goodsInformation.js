@@ -1,6 +1,82 @@
 import axios from 'frame_cpm/http/api';
 import config from '../config';
+
 export default {
+    priceBill: {
+        // 生成调价单编码
+        adjBillCinMerCode: data => {
+            return axios({
+                baseURL: config.baseURL,
+                url: '/adjBillCinMer/code',
+                method: 'post',
+                data
+            })
+        },
+        //新增调价单(按商品)
+        adjBillCinMerSave: data => {
+            return axios({
+                baseURL: config.baseURL,
+                url: '/adjBillCinMer/save',
+                method: 'post',
+                data
+            })
+        },
+        //修改调价单(按商品)
+        adjBillCinMerUpdate: data => {
+            return axios({
+                baseURL: config.baseURL,
+                url: '/adjBillCinMer/update',
+                method: 'post',
+                data
+            })
+        },
+        //查看调价单(按商品)
+        adjBillCinMerGet: data => {
+            return axios({
+                baseURL: config.baseURL,
+                url: '/adjBillCinMer/get',
+                method: 'post',
+                data
+            })
+        },
+        //新增调价单(按门店)
+        adjustBillSave: data => {
+            return axios({
+                baseURL: config.baseURL,
+                url: '/adjustBill/save',
+                method: 'post',
+                data
+            })
+        },
+        //修改调价单(按门店)
+        adjustBillUpdate: data => {
+            return axios({
+                baseURL: config.baseURL,
+                url: '/adjustBill/update',
+                method: 'post',
+                data
+            })
+        },
+        // 调价单首页查询adjustBill/queryAdjustInfo
+        adjustBillQuery: data => {
+            return axios({
+                baseURL: config.baseURL,
+                url: '/adjustBill/query',
+                method: 'post',
+                data
+            })
+        },
+        // 调价单详情页(按门店)
+        adjustBillQueryAdjustInfo: data => {
+            return axios({
+                baseURL: config.baseURL,
+                url: '/adjustBill/queryAdjustInfo',
+                method: 'post',
+                data
+            })
+        },
+
+    },
     // 总部商品
     headquartersGoods: {
         // 总部查询接口

@@ -9,19 +9,17 @@
           <authority-name :orgType="orgType" :orgName="orgName"></authority-name>
         </div>
         <div class="time-item">
-            <label class="label-title">时间选择：
-                <calendar-view size="mini"  v-model="time"
-                :dateType="dateType"
-                :dateTypeActive="timeType"
-                @emitCalendarType="getTimeType"
-                @change="changeTime"
-                ></calendar-view>
-            </label>
+            <span class="label-title">时间选择:</span>
+            <calendar-view size="mini"  v-model="time"
+            :dateType="dateType"
+            :dateTypeActive="timeType"
+            @emitCalendarType="getTimeType"
+            @change="changeTime"
+            ></calendar-view>
         </div>
-        <!--  影院品牌 集团版本有/区域、影院没有 -->
+        <!--  影院品牌 集团版本有/ 区域、影院没有 -->
         <div class="time-item">
-          <label>
-            <span class="label-title">影院品牌：</span>
+            <span class="label-title">影院品牌:</span>
             <el-select v-model="brandId" clearable>
               <el-option
                 v-for="(item,index) in cinemaBrand"
@@ -30,10 +28,11 @@
                 :value="item.brandCode"
               ></el-option>
             </el-select>
-          </label>
-          <el-button type="primary" size="mini" style="margin-left:30px" @click="search">查询</el-button>
         </div>
         <!-- 影院品牌 -->
+        <div class="time-item">
+          <el-button type="primary" size="mini"  @click="search">查询</el-button>
+        </div>
       </div>
     </div>
     <!-- 指标 -->
@@ -74,7 +73,7 @@
             <el-pagination size="mini" v-if="total>15"
                 @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"
-                layout="sizes,total,prev, pager, next, jumper"
+                layout="total,sizes,prev, pager, next, jumper"
                 :current-page="page"
                 :page-size="size"
                 :page-sizes="sizes"
@@ -82,7 +81,6 @@
             </el-pagination>
             <span class="page-else" v-else-if="total>0">共{{total}}条</span>
             <span class="page-else" v-else></span>
-
         </div>
     </section-detail>
     <!-- 指标设置弹窗 -->

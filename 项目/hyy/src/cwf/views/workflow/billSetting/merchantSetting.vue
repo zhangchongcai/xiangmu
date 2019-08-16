@@ -1,69 +1,71 @@
 <template>
-<div>
-    <div>
-        <!-- 搜索栏 -->
-        <section>
-            <searchLan :modelName="modelName" :config="searchConfig" @pressSearch="search" @searchValueChange="setSearch"></searchLan>
-        </section>
-        <!-- 按钮组 -->
-        <section class="flex-base flex-end">
-            <el-row>
-                <el-button class="fr" type="primary" @click="addDetail">新建</el-button>
-            </el-row>
-        </section>
-        <!-- 表格 -->
-        <section>
-            <commonTable :tableData="tableData" :tableLabels="tableLabels" :tableOptions="tableOptions" @handleButton="handleButton"></commonTable>
-        </section>
-        <!-- 分页 -->
-        <section class="flex-base flex-center" v-if="tableData.length != 0">
-            <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="pageConfig.currentPage" :page-sizes="pageConfig.pageSizes" :page-size="pageConfig.pageSize" layout="total, sizes, prev, pager, next, jumper" :total="pageConfig.total">
-            </el-pagination>
-        </section>
-
+    <div class="cwf_merchantSetting">
+        <div>
+            <!-- 搜索栏 -->
+            <section>
+                <el-form :inline="true" :model="searchFormData" ref="searchFormData" class="cwf_search">
+                    <el-form-item label="适用组织名称：" label-width="96px">
+                        <el-input v-model="searchFormData.orginizationName" @blur="()=>{searchFormData.orginizationName = searchFormData.orginizationName.trim();}" placeholder="适用组织名称" clearable></el-input>
+                    </el-form-item>
+                    <el-form-item class="btn-wrap">
+                        <el-button type="primary" @click="handleSearch">搜索</el-button>
+                        <el-button @click="resetForm()" plain >重置</el-button>
+                    </el-form-item>
+                </el-form>
+            </section>
+            <!-- 按钮组 -->
+            <section class="flex-base flex-end">
+                <el-row>
+                    <el-button class="fr addBtn" type="primary" plain @click="addDetail">新建</el-button>
+                </el-row>
+            </section>
+            <!-- 表格 -->
+            <section>
+                <commonTable :tableData="tableData" :tableLabels="tableLabels" :tableOptions="tableOptions" @handleButton="handleButton"></commonTable>
+            </section>
+            <!-- 分页 -->
+            <section class="flex-base flex-center pageStyle" v-if="tableData.length != 0">
+                <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" background :current-page="pageConfig.currentPage" :page-sizes="pageConfig.pageSizes" :page-size="pageConfig.pageSize" layout="total, prev, pager, next, jumper, sizes" :total="pageConfig.total">
+                </el-pagination>
+            </section>
+        </div>
+        <!-- 删除弹窗 -->
+        <el-dialog :visible.sync="deleteDialogTableVisible" class="delete-dialog" width="25%">
+            <div class="dialog-content">
+                <p><i class="el-icon-warning"></i>当前操作不可逆？您确定</p>
+                <p style="padding-left:73px;">要继续吗？</p>
+            </div>
+            <div class="dialog-btn">
+                <el-button type="primary" @click="deleteCommit" style="margin-right:29px;">继续</el-button>
+                <el-button @click="deleteDialogTableVisible = false" style="margin-left:0px;">取消</el-button>
+            </div>
+        </el-dialog>
     </div>
-    <!-- 弹窗 -->
-    <edit v-if="showDetail" :dialogFormVisible="showDetail" @close="closeDetail" :dataInfo="dataInfo" :showType="showType"></edit>
-    
-</div>
 </template>
 
 <script>
-import '../../../assets/common.scss';
-import searchLan from '../../../components/search/index.vue';
 import commonTable from '../../../components/Table/commonTable.vue';
-import edit from './edit'
 import minxins from 'frame_cpm/mixins/cacheMixin.js'
 
 export default {
     components: {
-        searchLan,
         commonTable,
-        edit
     },
     mixins: [minxins.cacheMixin],
     data() {
         return {
-            /* 缓存数据 */
-            // cacheField: ["pageConfig","tableLabels","tableData"],
-            // subComName:"billSetting",
-            dataInfo:{},//弹窗传入数据
-            showDetail:false,//弹窗是否显示
-            showType:"",//弹窗类型
-            dialogFormVisible: false,//弹窗开启状态
+            cacheField: ["pageConfig","searchFormData"],//缓存对象数据
+            subComName:"billSetting",//缓存数据唯一标识
+            deleteDialogTableVisible:false,//删除弹窗显示
+            commitDeteleData:{},//删除对象
             tenantId: JSON.parse(localStorage.getItem('user')).consumerId, //商户id
-            modelName: "billSettingManagement",//查询模块名字
-            //查询配置
-            searchConfig: [
-                {
-                    keyName: 'orginizationName',
-                    name: '适用组织名称',
-                    type: 'input',
-                    value: ''
-                }
-            ],
-            //查询的参数
-            searchParam: {},
+            //查询头
+            searchFormData:{
+                pageNo:1,
+                pageSize:10,
+                orginizationName:"",
+                tenantId:this.tenantId
+            },
             //分页配置
             pageConfig: {
                 start: 0,
@@ -78,12 +80,12 @@ export default {
             tableLabels: [{
                     prop: 'businessName',
                     label: '适用组织名称',
-                    width: '500'
+                    // width: '800'
                 },
                 {
                     prop: 'createTime',
                     label: '更新时间',
-                    width: '300',
+                    // width: '430',
                 },
               
             ],
@@ -91,7 +93,7 @@ export default {
             tableOptions: {
                 label: "操作",
                 fixed: "right",
-                width: '150',
+                width: '200',
                 options: [{
                         text: "编辑",
                         method: "editDetail",
@@ -108,70 +110,43 @@ export default {
                     }
                 ]
             },
-
         }
     },
-     created() {
-         this.search();
+    created() {
+        console.log("aaaaa")
+        this.handleSearch();
     },
     methods: {
-       
-        //重置数据
-        init(){
-            this.pageConfig={
-                start: 0,
-                pageSize: 10,
-                pageSizes: [10, 20, 30, 40],
-                currentPage: 1,
-                total: 0
-            }
-            //列表渲染配置
-            this.tableLabels=[{
-                    prop: 'businessName',
-                    label: '适用组织名称',
-                    width: '500'
-                },
-                {
-                    prop: 'createTime',
-                    label: '更新时间',
-                    width: '300',
-                },
-              
-            ],
-            this.tableData= []
-        },
-        //查询列表
+        //查询
         search() {
-            let _param = this.setParam();
-            this.getBillSettingList(_param);
+            this.pageConfig.currentPage=1
+            this.handleSearch();
         },
-        setParam() {
-            let exitsSearhParam = JSON.stringify(this.searchParam) != '{}' ? true : false;
-            let params = {};
-            console.log(this.searchParam)
-            //查询
-            if (exitsSearhParam) {
-                let dataParams = {
-                    pageNo:this.pageConfig.currentPage,
-                    pageSize:this.pageConfig.pageSize,
-                    orginizationName:this.searchParam.orginizationName,
-                    tenantId:this.tenantId
-                };
-                //过滤空的值
-                for (let key in dataParams) {
-                    if(dataParams[key]){
-                        params[key]=dataParams[key]
-                    }
-                }
-
-            } else {
-                params = {
-                    pageNo:this.pageConfig.currentPage,
-                    pageSize:this.pageConfig.pageSize,
-                    tenantId:this.tenantId
-                };
+        //重置
+        resetForm() {
+            this.searchFormData={
+                pageNo:1,
+                pageSize:10,
+                orginizationName:"",
+                tenantId:this.tenantId
             }
-            return params;
+        },
+        //获取数据
+        handleSearch() {
+            let params = {};
+
+            this.searchFormData.pageSize=this.pageConfig.pageSize
+            this.searchFormData.pageNo=this.pageConfig.currentPage
+            this.searchFormData.tenantId=this.tenantId
+
+            //过滤空值
+            for (const key in this.searchFormData) {
+                if(this.searchFormData[key]){
+                    params[key] =  this.searchFormData[key];
+                }
+            }
+
+            this.getBillSettingList(params)
         },
         //获取单据设置列表
         getBillSettingList(params){
@@ -190,140 +165,170 @@ export default {
                 console.log(err)
             })
         },
-       
         //操作列回调
         handleButton(data) {
             this[`${data.method}`](data.scope);
         },
         //编辑
         editDetail(scope){
-            this.showType="edit"
-            this.openDetail(scope)
+            this.$router.push({
+                path:"/workflow/editBillSetting",
+                query:{
+                    businessId:scope.row.businessId,
+                    type:"edit"
+                }
+            })
         },
         //新增
         addDetail(){
-            this.showType="add"
-            this.openDetail()
-        },
-        //确认删除
-        delDetail(scope){
-            this.$confirm('确定删除？', '提示', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
-                type: 'warning'
-            }).then(() => {
-               this.delItem(scope)
-            }).catch((msg) => {
-                console.log(msg)
+             this.$router.push({
+                path:"/workflow/editBillSetting",
+                query:{
+                    type:"add"
+                }
             })
+        },
+        //点击删除按钮
+        delDetail(scope){
+           this.openDeleteDialog(scope)
+        },
+        //打开删除弹窗
+        openDeleteDialog(scope){
+            if(scope){
+                this.commitDeteleData=scope.row
+            }else{
+                this.commitDeteleData={}
+            }
+            console.log(this.commitDeteleData)
+            this.deleteDialogTableVisible=true
         },
         //删除
-        delItem(scope){
-            let params= {
-                merchantId:scope.row.merchantId,
-                tenantId:this.tenantId
-            }
-            this.$cwfList.deleteBillSetting(params).then(data => {
-            if (data && data.code === 200&&data.flag==1) {
-                this.search()
-                this.$message({
-                    message: "删除成功",
-                    type: "success",
-                    duration: 1000
-                });
-            } else {
-                this.tableData = [];
-                this.pageConfig.total = 0;
-                this.$message({
-                    message: data.msg,
-                    type: "warning",
-                    duration: 1000
-                });
-            }
-            }).catch(err => {
-                console.log(err)
-            })
-        },
-        //打开弹窗并且传入数据
-        openDetail(scope){
-            if(scope){
-                this.dataInfo=scope.row
-            }else{
-                this.dataInfo={
-                                 
+        deleteCommit(){
+            if(this.deleteDialogTableVisible && JSON.stringify(this.commitDeteleData) != "{}"){
+                let params= {
+                    merchantId:this.commitDeteleData.merchantId,
+                    tenantId:this.tenantId
                 }
+                this.$cwfList.deleteBillSetting(params).then(data => {
+                if (data && data.code === 200&&data.flag==1) {
+                    this.deleteDialogTableVisible=false
+                    this.commitDeteleData={}
+                    this.search()
+                    this.$message({
+                        message: "删除成功",
+                        type: "success",
+                        duration: 1000
+                    });
+                } else {
+                    this.deleteDialogTableVisible=false
+                    this.commitDeteleData={}
+                    this.tableData = [];
+                    this.pageConfig.total = 0;
+                    this.$message({
+                        message: data.msg,
+                        type: "warning",
+                        duration: 1000
+                    });
+                }
+                }).catch(err => {
+                    this.deleteDialogTableVisible=false
+                    this.commitDeteleData={}
+                    console.log(err)
+                })
             }
-            this.showDetail=true
-            
         },
-        closeDetail(update){
-            this.showDetail=false
-            if(update){
-                this.init()
-                this.search()
-            }
-        },
-         //修改搜索栏数据
-        setSearch(param) {
-            this.searchParam = param;
-            this.pageConfig.currentPage = 1; //改变搜索条件，从第一页开始查询
-        },
-        /**
-         * @function handleSizeChange - 修改分页大小
-         */
+        //修改分页大小
         handleSizeChange(pageSize) {
             this.pageConfig.pageSize = pageSize;
             this.pageConfig.currentPage = 1;
-            this.search();
+            this.handleSearch();
         },
-        /**
-         * @function handleCurrentChange - 修改当前显示页
-         */
+        //修改当前显示页
         handleCurrentChange(currentPage) {
             this.pageConfig.currentPage = currentPage;
-            this.search();
+            this.handleSearch();
         },
-        // //获取单据设置列表
-        // getBillSettingList(){
-        //     let params={
-        //         pageNo:this.pageConfig.currentPage,
-        //         pageSize:this.pageConfig.pageSize,
-        //         tenantId:this.tenantId
-        //     }
-        //     this.$cwfList.getBillSettingList(params).then(data => {
-        //         if (data && data.code === 200) {
-        //             this.tableData=data.data.workflowBusinessList.list
-        //             this.$message({
-        //                 message: "查询成功",
-        //                 type: "success",
-        //                 duration: 1000
-        //             });
-        //         } else {
-        //             this.$message({
-        //                 message: data.msg,
-        //                 type: "warning",
-        //                 duration: 1000
-        //             });
-        //         }
-        //     }).catch(err => {
-        //         console.log(err)
-        //     })
-        // }
-
-        
-        
     }
 }
 </script>
 
 <style lang="scss" scoped>
-section {
-    margin-bottom: 15px;
+@import "../../../assets/comList.scss";
+.cwf_merchantSetting{
+    //查询头样式
+    .cwf_search{
+        padding: 24px;
+        background-color: #F3F3F3;
+        .el-form-item{
+            margin: 0;
+            margin-right: 32px;
+            /deep/ .el-form-item__label{
+                color:#666666;
+            }
+            .el-input{
+                width: 192px;
+                font-size: 12px!important;
+                color:#666666;
+            }
+            /deep/ .el-select{
+                width: 192px;
+                .el-input__inner{
+                    font-size: 12px!important;
+                }
+            }
+        }
+        .el-button{
+            width: 80px;
+        }
+    }
+    section {
+        margin-bottom: 15px;
+    }
+    .fr{
+        float: right;
+    }
+    .el-pagination{
+        text-align: center;
+    }
+    .addBtn{
+        width: 80px;
+        height: 32px;
+        line-height: 32px;
+        font-size: 12px;
+        text-align: center;
+        padding: 0;
+    }
+    //删除弹窗样式
+    .delete-dialog{
+        .dialog-content{
+            padding: 0 20px 20px 20px;
+            p{
+                padding: 0 40px;
+                text-align: left;
+                font-size: 14px;
+                color: #666666;
+            }
+            .el-icon-warning{
+                font-size: 18px;
+                color: #FF8900;
+                margin-right: 15px;
+            }
+        }
+        .dialog-btn{
+            text-align: center;
+            .el-button{
+                width: 80px;
+                height: 32px;
+                line-height: 32px;
+                text-align: center;
+                vertical-align: middle;
+                padding: 0;
+            }
+        }
+        /deep/ .el-dialog__body{
+            padding: 20px;
+        }
+    }
 }
-.fr{
-    float: right;
-}
-.el-pagination{
-    text-align: center;
-}
+
 </style>

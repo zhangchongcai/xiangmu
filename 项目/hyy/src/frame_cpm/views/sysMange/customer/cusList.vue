@@ -4,10 +4,10 @@
             <div class="form">
                 <el-form :inline="true" :model="formInline" size="mini" label-width="100px">
                     <el-form-item label="客户编码：" prop="code">
-                        <el-input v-model="formInline.code"></el-input>
+                        <el-input v-model.trim="formInline.code"></el-input>
                     </el-form-item>
-                    <el-form-item label="客户简称："  prop="name">
-                        <el-input v-model="formInline.name"></el-input>
+                    <el-form-item label="客户全称："  prop="name">
+                        <el-input v-model.trim="formInline.name"></el-input>
                     </el-form-item>
                     <el-form-item label="客户类型：" prop="type">
                         <el-select v-model="formInline.type" placeholder="请选择">
@@ -37,7 +37,7 @@
                 </el-form>
             </div>
             <div class="create-wrapper">
-                <el-button  type="primary" @click="toCreate">新建</el-button>
+                <el-button type="primary" @click="toCreate" v-auth="'system_buyer_add'">新建</el-button>
             </div>
             <div class="table">
                 <el-table
@@ -50,8 +50,8 @@
                     >
                     </el-table-column>
                     <el-table-column
-                            prop="name"
-                            label="客户简称"
+                            prop="fullName"
+                            label="客户全称"
                             show-overflow-tooltip
 
                     >
@@ -59,7 +59,7 @@
                     <el-table-column
                             prop="type"
                             label="客户类型"
-
+                            show-overflow-tooltip
                     >
                         <template slot-scope="scope">{{scope.row.type | typeFilter}}</template>
                     </el-table-column>
@@ -80,17 +80,32 @@
                             prop="updateTime"
                             label="操作时间"
                             width="150"
-
+                            show-overflow-tooltip
                     >
                         <template slot-scope="scope">
                             <span>{{scope.row.updateTime | renderTime}}</span>
                         </template>
                     </el-table-column>
-                    <el-table-column label="操作" width="200">
+                    <el-table-column label="操作" width="200" fixed="right">
                         <template slot-scope="scope">
-                            <span class="table-btn-mini" @click="toDetail(scope.row)" >查看</span>
-                            <span class="table-btn-mini" @click="editCus(scope.row)">编辑</span>
-                            <span class="table-btn-mini" @click="changeStatus(scope.row)">{{scope.row.status==1?'禁用':'启用'}}</span>
+                            <el-button
+                                    v-auth="'system_buyer_see'"
+                                    class="table-btn-mini"
+                                    @click="toDetail(scope.row)"
+                                    type="text"
+                            >查看</el-button>
+                            <el-button
+                                    v-auth="'system_buyer_update'"
+                                    class="table-btn-mini"
+                                    @click="editCus(scope.row)"
+                                    type="text"
+                            >编辑</el-button>
+                            <el-button
+                                    v-auth="'system_buyer_enableDisabling'"
+                                    class="table-btn-mini"
+                                    @click="changeStatus(scope.row)"
+                                    type="text"
+                            >{{scope.row.status==1?'禁用':'启用'}}</el-button>
                         </template>
                     </el-table-column>
                 </el-table>
@@ -307,6 +322,12 @@
             .form{
                 background: #f5f5f5;
                 padding: 20px 0 0;
+                .el-input{
+                    width:192px;
+                }
+                .el-select{
+                    width:192px;
+                }
             }
             .create-wrapper {
                 width: 100%;

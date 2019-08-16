@@ -55,6 +55,7 @@ export default {
             type: "success",
             message: "已启用!"
           });
+          this.$store.commit("tagNav/removeTagNav", this.$route);
           this.$router.push({ path: "/member/ownRights/ownRightsList" });
         })
         .catch(err => console.log(err));
@@ -63,6 +64,7 @@ export default {
       this.stopStartDialog = true;
     },
     handleCancle() {
+      this.$store.commit("tagNav/removeTagNav", this.$route);
       this.$router.push({ path: "/member/ownRights/ownRightsList" });
     }
   }

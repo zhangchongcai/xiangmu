@@ -4,8 +4,7 @@
       <el-form
         :inline="true"
         :model="queryData"
-        label-position="right"
-        label-width="80px"
+        label-position="left"
         label-suffix="："
       >
         <el-form-item label="单位编码">
@@ -122,7 +121,7 @@ export default {
         unitCode: "",
         unitName: "",
         page: 1,
-        pageSize: 10
+        pageSize: 15
       },
       tableColumn: [
         {

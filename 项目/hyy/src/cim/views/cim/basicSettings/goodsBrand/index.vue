@@ -11,8 +11,7 @@
       <el-form
         :inline="true"
         :model="queryData"
-        label-position="right"
-        label-width="80px"
+        label-position="left"
         label-suffix="："
       >
         <el-form-item label="品牌编码">
@@ -111,7 +110,7 @@
         code: "",
         name: "",
         page: 1,
-        pageSize: 10
+        pageSize: 15
       },
       total: 0,
       tableColumn: [

@@ -13,9 +13,9 @@
 
     <!-- 表格内容 -->
     <section class="table-section">
-        <el-table ref="multipleTable" :data="table.data" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
+        <el-table ref="iTable" :data="table.data" tooltip-effect="dark" style="width: 100%" :row-key="getRowKeys" @selection-change="handleSelectionChange">
             <template v-for="(item,index) in table.title">
-                <el-table-column :key="index" v-if="item.type" :type="item.type" :width="item.width"></el-table-column>
+                <el-table-column :key="index" v-if="item.type" :type="item.type" :width="item.width" :reserve-selection="true"></el-table-column>
                 <el-table-column :key="index" v-else-if="!item.type && !item.hasTemeplate" :prop="item.prop" :label="item.label" :width="item.width" show-overflow-tooltip></el-table-column>
                 <el-table-column :key="index" v-else-if="!item.type && item.hasTemeplate" :prop="item.prop" :label="item.label" :width="item.width" :fixed="item.fiexd" show-overflow-tooltip>
                     <template slot-scope="scope">
@@ -33,8 +33,15 @@
     </section>
 
     <!-- 分页 -->
-    <section v-if="table.data.length != 0" class="pagination-section flex-base flex-center">
-        <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page.sync="pageConfig.currentPage" :page-sizes="pageConfig.pageSizes" :page-size="pageConfig.pageSize" layout="total, sizes, prev, pager, next, jumper" :total="pageConfig.total">
+    <section v-if="table.data.length != 0" class="pagination-section flex-base flex-center pageStyle">
+        <el-pagination 
+        @size-change="handleSizeChange" 
+        @current-change="handleCurrentChange" 
+        :current-page.sync="pageConfig.currentPage" 
+        :page-sizes="pageConfig.pageSizes" 
+        :page-size="pageConfig.pageSize" 
+        background layout="total, prev, pager, next, jumper, sizes" 
+        :total="pageConfig.total">
         </el-pagination>
     </section>
     <!-- 弹窗 -->
@@ -192,6 +199,10 @@ export default {
         }
     },
     methods: {
+        getRowKeys(row){
+            return row.id
+        },
+
         /**
          * @function setSearch - 实时返回搜索栏数据
          */
@@ -204,6 +215,9 @@ export default {
          * @param {Object} pointer - 当前执行对象指针
          */
         search(param, pointer,backFirstpage) {
+            if(param){
+                this.$refs.iTable.clearSelection()
+            }
             if(param){
                 let reg = /[^\-?\d.]/g
                 if(reg.test(param.endId)){
@@ -394,24 +408,31 @@ export default {
                 this.sendIssueData = param
                 
             } else {
-                pointer.$ccmList.reimburseCoupon(param).then(data => {
-                    console.log(data);
-                    let type = 'warning';
-                    if (data.flag == 5) {
-                        type = 'success';
-                    }
-                    pointer.$message({
-                        type,
-                        message: data.msg
-                    });
+                this.$confirm('确认操作报损！', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    pointer.$ccmList.reimburseCoupon(param).then(data => {
+                        let type = 'warning';
+                        if (data.flag == 5) {
+                            type = 'success';
+                        }
+                        pointer.$message({
+                            type,
+                            message: data.msg
+                        });
 
-                    if (type == 'success') {
-                        let _param = pointer.setParam();
-                        pointer.getData(_param);
-                    }
-                }).catch(msg => {
-                    console.log(msg);
+                        if (type == 'success') {
+                            let _param = pointer.setParam();
+                            pointer.getData(_param);
+                            this.$refs.iTable.clearSelection()
+                        }
+                    }).catch(msg => {
+                        console.log(msg);
+                    })
                 })
+                
             }
         },
         /**
@@ -435,6 +456,7 @@ export default {
                 if (type == 'success') {
                     let _param = pointer.setParam();
                     pointer.getData(_param);
+                    this.$refs.iTable.clearSelection()
                 }
             }).catch(msg => {
                 console.log(msg);
@@ -444,6 +466,7 @@ export default {
          * @function handleSelectionChange - 表格选中
          */
         handleSelectionChange(val) {
+            console.log(val)
             this.select = val;
         },
         /**
@@ -461,12 +484,11 @@ export default {
             this.search(null, this,'backFirstpage');
         }
     },
-    created() {
-        // this.search();
-    }
+    created() {}
 }
 </script>
 
 <style lang="scss" scoped>
+@import "../../../assets/css/comList.scss";   
 
 </style>

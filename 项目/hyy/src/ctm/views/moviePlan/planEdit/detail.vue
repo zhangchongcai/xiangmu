@@ -182,14 +182,14 @@
                                                 label="票类价格"
                                                 width="210">
                                                 <template slot-scope="scope">
-                                                    <span class="input-con"><el-input type="number" maxlength="9" max="999999" @blur="tableFixed(scope)" v-model="scope.row.price"></el-input><i class="rmb-hover">¥</i></span>
+                                                    <span class="input-con"><el-input type="number" :disabled="scope.row.switchStatus?false:true" maxlength="9" max="999999" @change="priceChange1(scope.row.price,scope.$index)" v-model="scope.row.price"></el-input><i class="rmb-hover">¥</i></span>
                                                 </template>
                                             </el-table-column>
                                             <el-table-column
                                                 prop="addFee"
                                                 label="增值服务费">
                                                 <template slot-scope="scope">
-                                                    <span class="input-con">¥&nbsp;{{scope.row.addFee}}</span>
+                                                    <span class="input-con"><el-input type="number" :disabled="scope.row.switchStatus?false:true" maxlength="9" max="999999" @blur="tableFixed(scope)" v-model="scope.row.addFee"></el-input><i class="rmb-hover">¥</i></span>
                                                 </template>
                                             </el-table-column>
                                             <el-table-column
@@ -254,14 +254,14 @@
                                                             :label="item.label">
                                                         </el-option>
                                                     </el-select> -->
-                                                    <span class="input-con"><el-input type="number" maxlength="9" max="999999" @blur="cichannelToFixed(scope)" v-model="scope.row.price"></el-input><i class="rmb-hover">¥</i></span>
+                                                    <span class="input-con"><el-input type="number" maxlength="9" :disabled="scope.row.switchStatus?false:true" max="999999" @change="priceChange2(scope.row.price,scope.$index)" v-model="scope.row.price"></el-input><i class="rmb-hover">¥</i></span>
                                                 </template>
                                             </el-table-column>
                                             <el-table-column
                                                 prop="addFee"
                                                 label="增值服务费">
                                                 <template slot-scope="scope">
-                                                    <span class="input-con">¥&nbsp;{{scope.row.addFee}}</span>
+                                                    <span class="input-con"><el-input type="number" maxlength="9" :disabled="scope.row.switchStatus?false:true" max="999999" @blur="cichannelToFixed(scope)" v-model="scope.row.addFee"></el-input><i class="rmb-hover">¥</i></span>
                                                 </template>
                                             </el-table-column>
                                             <!-- <el-table-column
@@ -394,12 +394,131 @@
                                 v-model="permitDiscount"
                             >允许营销活动折扣、会员折扣</el-checkbox>
                         </div>
-                        <div class="prcie-promise" v-if="selectPlanData.isShow">
-                           <p>已匹配的价格方案: {{selectPlanData.programName}}</p>
+                        <div class="prcie-promise">
+                           <p>已匹配的价格方案: {{this.movieData.priceProgramName}}</p>
                         </div>
                         <!-- <div class="canal-pirce-input">
                             <span>渠道代收费</span><em>¥</em><el-input>0.10</el-input>
                         </div> -->
+                    </div>
+                    <div class="table-bottom-menu" v-if="isEditMode">
+                        <el-form label-width="130px" size="small" class="demo-ruleForm" style="width:100%">
+                        <el-form-item label="分区定价：" class="m-t-10">
+                            <el-select @change="zoningPricing" v-model="pricing" placeholder="请选择">
+                            <el-option
+                                v-for="(item,index) in options"
+                                :key="index"
+                                :label="item.label"
+                                :value="item.value"
+                            ></el-option>
+                            </el-select>
+                            <el-table :data="tableData" style="margin-top:10px" v-if="pricing == 1">
+                            <el-table-column prop="name" label="分区" width="80">
+                                <template slot-scope="scope">
+                                <i :style="{background:scope.row.color}">&nbsp;&nbsp;&nbsp;&nbsp;</i>
+                                <span>{{scope.row.name}}</span>
+                                </template>
+                            </el-table-column>
+                            <el-table-column prop="price" label="加减价（正数为加，负数为减）" width="200">
+                                <template slot-scope="scope">
+                                <span class="input-con">
+                                    <el-input
+                                    type="number"
+                                    maxlength="9"
+                                    placeholder="0"
+                                    v-model="scope.row.price"
+                                    @change="priceChang(scope.row.price,scope.$index)"
+                                    ></el-input>
+                                    <i class="rmb-hover">¥</i>
+                                </span>
+                                </template>
+                            </el-table-column>
+                            </el-table>
+                        </el-form-item>
+                        <el-form-item label="执行动态调价：" class="m-t-10">
+                            <el-select @change="dynamicPrice" v-model="pricing1" placeholder="请选择">
+                            <el-option
+                                v-for="(item,index) in options1"
+                                :key="index"
+                                :label="item.label"
+                                :value="item.value"
+                            ></el-option>
+                            </el-select>
+                            <div v-if="pricing1==1" class="show">
+                            <el-checkbox-group
+                                v-model="checkList"
+                                @change="checklist"
+                                class="m-t-15"
+                                style="width:300px;"
+                            >
+                                <el-checkbox
+                                v-for="(item,index) in disVersionList2"
+                                :key="index"
+                                :label="item.idx"
+                                >{{item.label}}</el-checkbox>
+                            </el-checkbox-group>
+                            <div>
+                                <p
+                                style="width:800px;margin-top:10px;"
+                                v-for="(item,index) in activeList"
+                                :key="index"
+                                >
+                                <el-input
+                                    v-if="ifCheck[0]==0"
+                                    type="number"
+                                    style="width: 80px;"
+                                    v-model="item.occupancyMin"
+                                    placeholder="0"
+                                    @change="changeNumer(item.occupancyMin,index)"
+                                ></el-input>
+                                <span v-if="ifCheck[0]==0">%&nbsp;≤&nbsp;上座率&nbsp;＜&nbsp;</span>
+                                <el-input
+                                    v-if="ifCheck[0]==0"
+                                    type="number"
+                                    style="width: 80px;"
+                                    v-model="item.occupancyMax"
+                                    placeholder="0"
+                                    @change="changeNumer1(item.occupancyMax,index)"
+                                ></el-input>
+                                <span v-if="ifCheck[0]==0">%&nbsp;&nbsp;</span>
+                                <span v-if="ifCheck[0]==0&&ifCheck[1]">且</span>
+                                <span v-if="ifCheck[0]==1||ifCheck[1]==1">&nbsp;&nbsp;开映前&nbsp;</span>
+                                <el-input
+                                    v-if="ifCheck[0]==1||ifCheck[1]==1"
+                                    type="number"
+                                    style="width: 80px;"
+                                    v-model="item.time"
+                                    placeholder="0"
+                                    @change="changeTime(item.time,index)"
+                                ></el-input>
+                                <span v-if="ifCheck[0]==1||ifCheck[1]==1">小时；</span>
+                                <el-select
+                                    v-if="ifCheck[0]==0||ifCheck[0]==1"
+                                    v-model="item.type"
+                                    placeholder="请选择"
+                                >
+                                    <el-option
+                                    v-for="(item,index) in opt1"
+                                    :key="index"
+                                    :label="item.label"
+                                    :value="item.value"
+                                    ></el-option>
+                                </el-select>
+                                <el-input
+                                    v-if="ifCheck[0]==0||ifCheck[0]==1"
+                                    type="number"
+                                    style="width: 80px;"
+                                    v-model="item.price"
+                                    placeholder="0"
+                                    @change="changeNumer2(item.price,index)"
+                                ></el-input>
+                                <a v-if="ifCheck[0]==0||ifCheck[0]==1" @click="delRuler(index)">删除</a>
+                                </p>
+                                <a v-if="ifCheck[0]==0||ifCheck[0]==1" @click="addRuler">添加规则</a>
+                            </div>
+                            </div>
+                        </el-form-item>
+                        </el-form>
                     </div>
                 </div>   
             </el-collapse-item>
@@ -596,9 +715,42 @@
                         <div class="prcie-promise">
                             允许营销活动折扣、会员折扣: <span>{{permitDiscount ? '是' : '否'}}</span>
                         </div>
+                        <div class="prcie-promise">
+                           <p>已匹配的价格方案: {{this.movieData.priceProgramName}}</p>
+                        </div>
                         <!-- <div class="prcie-promise">
                             <span>渠道代收费</span><em>¥</em><span>0.10</span>
                         </div> -->
+                    </div>
+                    <div class="table-bottom-menu">
+                        <el-form label-width="80px">
+                            <el-form-item label="分区定价：">
+                                <div class="cinema-stock-scan-text" v-if="this.movieData.useRegionPrice == 1">
+                                <span v-for="(item,index) in tableData" :key="index" class="m-r-10">
+                                    <span v-if="item.price">{{item.name}} : {{item.price}}元</span>
+                                </span>
+                                </div>
+                                <span class="cinema-stock-scan-text" v-else>否</span>
+                            </el-form-item>
+                            <el-form-item label="动态调价：">
+                                <div class="cinema-stock-scan-text" v-if="this.movieData.useAdjustmentPrice == 1">
+                                <span v-for="(item,index) in activeList" :key="index">
+                                    <span
+                                    v-if="item.occupancyMin||item.occupancyMax"
+                                    >{{item.occupancyMin}}% ≤ 上座率 ≤ {{item.occupancyMax}}%</span>
+                                    <span v-if="item.startTime">放映前 {{item.time}} 小时</span>
+                                    出票价
+                                    <span v-if="item.adjustmentType==1">
+                                        <span v-if="item.price >0">+{{item.price}}元</span>
+                                        <span v-if="item.price <0">{{item.price}}元</span>
+                                    </span>
+                                    <span v-if="item.adjustmentType==2">打折 {{item.percentage}}%</span>
+                                    <br />
+                                </span>
+                                </div>
+                                <span class="cinema-stock-scan-text" v-else>否</span>
+                            </el-form-item>
+                        </el-form>
                     </div>
                 </div>   
             </el-collapse-item>
@@ -626,7 +778,7 @@
                             </div>
                         </el-form-item>
 
-                        <el-form-item class="other-percent" prop="rate" label="院方分账比例：">
+                        <el-form-item class="other-percent" prop="rate" label-width="110px" label="发行方分账比例：">
                             <div class="separate-accounts-price">
                                 <el-input
                                     v-model="ruleForm.rate"
@@ -653,7 +805,7 @@
                             </div>
                         </el-form-item>
 
-                        <el-form-item class="other-percent" label="院方分账比例：">
+                        <el-form-item class="other-percent" label-width="110px" label="发行方分账比例：">
                             <div class="separate-accounts-price">
                                 <span>{{ruleForm.rate}}</span>
                                 <span>%</span>
@@ -861,7 +1013,7 @@
                             width="80"
                             label="操作">
                             <template slot-scope="scope">
-                                <el-button @click="toPricePlanDetail(scope.row.id)" type="text">查看</el-button>
+                                <el-button @click="toPricePlanDetail(scope.row.uid)" type="text">查看</el-button>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -884,7 +1036,7 @@
 
 		<div class="bottom-handler-tool" :style="{width: fixedWidth + 'px'}">
 			<div class="btn-area" v-if="isEditMode">
-				<el-button type="primary" @click="savePlan">保存</el-button>
+				<el-button type="primary" @click="savePlan" :disabled="pd">保存</el-button>
 				<el-button @click="cancelHandle">取消</el-button>
 			</div>
 			<div class="btn-area" v-else>
@@ -901,14 +1053,14 @@
 <script>
 import FixStepTool from "ctm/components/fix-step-tool/fix-step-tool"
 import fixStepMixin from "ctm/mixins/fixStepTool"
-import { getSchPlanLang, updateMoviePlan, importPricePlan, hallTypeList, priceprogramScan, getmoviePlanDetail, initTimeLine, datePlanList, getRefCinema } from 'ctm/http/interface'
+import { getSchPlanLang, updateMoviePlan1, importPricePlan, hallTypeList, priceprogramScan1, getmoviePlanDetail1, initTimeLine, datePlanList, getRefCinema } from 'ctm/http/interface'
 export default {
     data() {
 
         var validatePrice = (rule, value, callback) => {
            setTimeout(() => {
-                if (value <= 0 || value > 1000000 || !/^(([1-9][0-9]*)|(([0]\.\d{1,2}|[1-9][0-9]*\.\d{1,2})))$/.test(value)) {
-                return callback(new Error('最低票价必须大于0且整数位小于7位的数字，且小数位不能超过2位!'))
+                if (value <= 0 || value > 999.99 || !/^(([1-9][0-9]*)|(([0]\.\d{1,2}|[1-9][0-9]*\.\d{1,2})))$/.test(value)) {
+                return callback(new Error('最低票价必须大于0小于1000的数字，且小数位不能超过2位!'))
             } else {
                 callback()
             }
@@ -923,6 +1075,62 @@ export default {
         }
 
         return {
+            pd:false,
+            checkList: [],
+            ifCheck: [],
+            hidden: "hide",
+            tableData: [],
+            rulers: 0,
+            pricing: 0,
+            pricing1: 0,
+            activeList: [
+              {
+                idx: 0,
+                occupancyMax: null,
+                occupancyMin: null,
+                time: null,
+                price: null,
+                type:0
+              }
+            ],
+            options: [
+              {
+                value: 0,
+                label: "不执行分区定价"
+              },
+              {
+                value: 1,
+                label: "执行分区定价"
+              }
+            ],
+            options1: [
+              {
+                value: 0,
+                label: "不执行动态调价"
+              },
+              {
+                value: 1,
+                label: "执行动态调价"
+              }
+            ],
+            opt1: [
+              {
+                value: 0,
+                label: "出票价+N元"
+              },
+              {
+                value: 1,
+                label: "出票价-N元"
+              },
+              {
+                value: 2,
+                label: "出票价打折%"
+              }
+            ],
+            disVersionList2: [
+              { idx: 0, label: "上座率动态调价" },
+              { idx: 1, label: "开映前多少小时动态调价" }
+            ],
             planUid: '',
             referer: '',
             curPlanDate: '',
@@ -1047,12 +1255,776 @@ export default {
     },
     mixins: [fixStepMixin],
     created() {
+      this.getRegionTypeList()
     },
     mounted() {
         this.fixedWidth = document.querySelector('.content-wrapper').offsetWidth
         this.dataInit()
     },
     methods: {
+        priceChange1(val, index) {
+            let newVal = parseFloat(val);
+            if (newVal < 0) {
+                this.ticketData[index].price = this.ruleForm.price;
+                this.$message({
+                    message: "不得小于0",
+                    type: "warning"
+                });
+            }
+            if (newVal > 999.99) {
+                this.ticketData[index].price = this.ruleForm.price;
+                this.$message({
+                    message: "不得高于999.99",
+                    type: "warning"
+                });
+            }
+            if(this.pricing== 1 && this.pricing1==1){
+                var a = true;
+                this.activeList.forEach(item =>{
+                    this.tableData.forEach(i =>{
+                        if(a){
+                            if(i.price != null){
+                                if(item.type == 0){
+                                    var p =val*1 + item.price*1+i.price*1;
+                                    if(p<this.ruleForm.price){
+                                        this.ticketData[index].price = this.ruleForm.price;
+                                        this.$message({
+                                            message: "总和不得小于最低票价",
+                                            type: "warning"
+                                        });
+                                        a =false;
+                                    }else if (p>999.99){
+                                        this.ticketData[index].price = this.ruleForm.price;
+                                        this.$message({
+                                            message: "总和不得高于999.99",
+                                            type: "warning"
+                                        });
+                                        a=false;
+                                    }else if(p<=999.99&&p>=this.ruleForm.price){
+                                        this.ticketData[index].price = newVal.toFixed(2);
+                                    }
+                                }else if(item.type == 0){
+                                    var p =val*1 + item.price*1+i.price*-1;
+                                    if(p<this.ruleForm.price){
+                                        this.ticketData[index].price = this.ruleForm.price;
+                                        this.$message({
+                                            message: "总和不得小于最低票价",
+                                            type: "warning"
+                                        });
+                                        a =false;
+                                    }else if (p>999.99){
+                                        this.ticketData[index].price = this.ruleForm.price;
+                                        this.$message({
+                                            message: "总和不得高于999.99",
+                                            type: "warning"
+                                        });
+                                        a=false;
+                                    }else if(p<=999.99&&p>=this.ruleForm.price){
+                                        this.ticketData[index].price = newVal.toFixed(2);
+                                    }
+                                }
+                            }
+                        }
+                    })
+                })
+            }else if(this.pricing==1){
+                this.tableData.forEach(item =>{
+                    if(item.price != null){
+                        var p = val*1 + item.price*1;
+                        if(p<this.ruleForm.price){
+                            this.ticketData[index].price = this.ruleForm.price;
+                            this.$message({
+                                message: "总和不得小于最低票价",
+                                type: "warning"
+                            });
+                        }else if(p>999.99){
+                            this.ticketData[index].price = this.ruleForm.price;
+                            this.$message({
+                                message: "总和不得高于999.99",
+                                type: "warning"
+                            });
+                        }else if(p<=999.99&&p>=this.ruleForm.price){
+                            this.ticketData[index].price = newVal.toFixed(2);
+                        }
+                    }
+                })
+            }else if(this.pricing1==1){
+                var a = true;
+                this.activeList.forEach(item =>{
+                    if(item.type == 0){
+                        if(a){
+                            var p = val*1 + item.price*1;
+                            if(p <this.ruleForm.price){
+                                this.ticketData[index].price = this.ruleForm.price;
+                                this.$message({
+                                    message: "总和不得小于最低票价",
+                                    type: "warning"
+                                });
+                                a =false;
+                            }else if (p>999.99) {
+                                this.ticketData[index].price = this.ruleForm.price;
+                                this.$message({
+                                    message: "总和不得高于999.99",
+                                    type: "warning"
+                                });
+                                a=false;
+                            }else if(p<=999.99&&p>=this.ruleForm.price){
+                                this.ticketData[index].price = newVal.toFixed(2);
+                            }
+                        }
+                    }else if(item.type == 1){
+                        if(a){
+                            var p = val*1 + item.price*-1;
+                            if(p <this.ruleForm.price){
+                                this.ticketData[index].price = this.ruleForm.price;
+                                this.$message({
+                                    message: "总和不得小于最低票价",
+                                    type: "warning"
+                                });
+                                a =false;
+                            }else if (p>999.99) {
+                                this.ticketData[index].price = this.ruleForm.price;
+                                this.$message({
+                                    message: "总和不得高于999.99",
+                                    type: "warning"
+                                });
+                                a=false;
+                            }else if(p<=999.99&&p>=this.ruleForm.price){
+                                this.ticketData[index].price = newVal.toFixed(2);
+                            }
+                        }
+                    }
+                })
+            }else{
+                if(val*1<this.ruleForm.price){
+                    this.ticketData[index].price = this.ruleForm.price;
+                    this.$message({
+                        message: "票价不得小于最低票价",
+                        type: "warning"
+                    });
+                }else{
+                    this.ticketData[index].price = newVal.toFixed(2);
+                }
+            }
+        },
+        priceChange2(val, index) {
+            let newVal = parseFloat(val);
+            if (newVal < 0) {
+                this.channelData[index].price = this.ruleForm.price;
+                this.$message({
+                    message: "不得小于0",
+                    type: "warning"
+                });
+            }
+            if (newVal > 999.99) {
+                this.channelData[index].price = this.ruleForm.price;
+                this.$message({
+                    message: "不得高于999.99",
+                    type: "warning"
+                });
+            }
+            if(this.pricing==1 && this.pricing1==1){
+                var a = true;
+                this.activeList.forEach(item =>{
+                    this.tableData.forEach(i =>{
+                        if(a){
+                            if(i.price != null){
+                                if(item.type == 0){
+                                    var p =val*1 + item.price*1+i.price*1;
+                                    if(p<this.ruleForm.price){
+                                        this.channelData[index].price = this.ruleForm.price;
+                                        this.$message({
+                                            message: "总和不得小于最低票价",
+                                            type: "warning"
+                                        });
+                                        a =false;
+                                    }else if (p>999.99){
+                                        this.channelData[index].price = this.ruleForm.price;
+                                        this.$message({
+                                            message: "总和不得高于999.99",
+                                            type: "warning"
+                                        });
+                                        a=false;
+                                    }else if(p<=999.99&&p>=this.ruleForm.price){
+                                        this.channelData[index].price = newVal.toFixed(2);
+                                    }
+                                }else if(item.type == 0){
+                                    var p =val*1 + item.price*1+i.price*-1;
+                                    if(p<this.ruleForm.price){
+                                        this.channelData[index].price = this.ruleForm.price;
+                                        this.$message({
+                                            message: "总和不得小于最低票价",
+                                            type: "warning"
+                                        });
+                                        a =false;
+                                    }else if (p>999.99){
+                                        this.channelData[index].price = this.ruleForm.price;
+                                        this.$message({
+                                            message: "总和不得高于999.99",
+                                            type: "warning"
+                                        });
+                                        a=false;
+                                    }else if(p<=999.99&&p>=this.ruleForm.price){
+                                        this.channelData[index].price = newVal.toFixed(2);
+                                    }
+                                }
+                            }
+                        }
+                    })
+                })
+            }else if(this.pricing==1){
+                this.tableData.forEach(item =>{
+                    if(item.price != null){
+                        var p = val*1 + item.price*1;
+                        if(p<this.ruleForm.price){
+                            this.channelData[index].price = this.ruleForm.price;
+                            this.$message({
+                                message: "总和不得小于最低票价",
+                                type: "warning"
+                            });
+                        }else if(p>999.99){
+                            this.channelData[index].price = this.ruleForm.price;
+                            this.$message({
+                                message: "总和不得高于999.99",
+                                type: "warning"
+                            });
+                        }else if(p<=999.99&&p>=this.ruleForm.price){
+                            this.channelData[index].price = newVal.toFixed(2);
+                        }
+                    }
+                })
+            }else if(this.pricing1==1){
+                var a = true;
+                this.activeList.forEach(item =>{
+                    if(item.type == 0){
+                        if(a){
+                            var p = val*1 + item.price*1;
+                            if(p <this.ruleForm.price){
+                                this.channelData[index].price = this.ruleForm.price;
+                                this.$message({
+                                    message: "总和不得小于最低票价",
+                                    type: "warning"
+                                });
+                                a =false;
+                            }else if (p>999.99) {
+                                this.channelData[index].price = this.ruleForm.price;
+                                this.$message({
+                                    message: "总和不得高于999.99",
+                                    type: "warning"
+                                });
+                                a=false;
+                            }else if(p<=999.99&&p>=this.ruleForm.price){
+                                this.channelData[index].price = newVal.toFixed(2);
+                            }
+                        }
+                    }else if(item.type == 1){
+                        if(a){
+                            var p = val*1 + item.price*-1;
+                            if(p <this.ruleForm.price){
+                                this.channelData[index].price = this.ruleForm.price;
+                                this.$message({
+                                    message: "总和不得小于最低票价",
+                                    type: "warning"
+                                });
+                                a =false;
+                            }else if (p>999.99) {
+                                this.channelData[index].price = this.ruleForm.price;
+                                this.$message({
+                                    message: "总和不得高于999.99",
+                                    type: "warning"
+                                });
+                                a=false;
+                            }else if(p<=999.99&&p>=this.ruleForm.price){
+                                this.channelData[index].price = newVal.toFixed(2);
+                            }
+                        }
+                    }
+                })
+            }else{
+                if(val*1<this.ruleForm.price){
+                    this.channelData[index].price = this.ruleForm.price;
+                    this.$message({
+                        message: "票价不得小于最低票价",
+                        type: "warning"
+                    });
+                }else{
+                    this.channelData[index].price = newVal.toFixed(2);
+                }
+            }
+        },
+        del(idx) {
+          this.$delete(this.disVersionList1, idx);
+        },
+        delRuler(idx) {
+          this.$delete(this.activeList, idx);
+        },
+        add() {
+          var a = this.disVersionList1.length;
+          var b = a + 1;
+          this.$set(this.disVersionList1, a, {
+            idx: a,
+            label: "第" + b + "周"
+          });
+        },
+        addRuler() {
+          var a = this.activeList.length ? this.activeList.length : 0;
+          this.$set(this.activeList, a, {
+            idx: a,
+            occupancyMax: null,
+            occupancyMin: null,
+            type:0,
+            time: null
+          });
+        },
+        checklist(value) {
+          let channelArr = [];
+          let resulValue = value;
+          this.disVersionList2.forEach((item, index) => {
+            resulValue.forEach((value, i) => {
+              if (item.idx == value) {
+                channelArr.push(item.idx);
+              }
+            });
+          });
+          this.ifCheck = channelArr;
+        },
+        //调价规则输入信息转换 且不可为0
+        changeNumer(val, idx) {
+          if(this.activeList[idx].occupancyMax){
+            if(val*1 > this.activeList[idx].occupancyMax*1){
+                this.activeList[idx].occupancyMin = null;
+                this.$message({
+                message: "最小上座率需小于最大上座率",
+                type: "warning"
+                });
+                return;
+            }
+          }
+          let newVal = parseFloat(val);
+          if (newVal < 0) {
+            this.activeList[idx].occupancyMin = null;
+            return;
+          }
+          this.activeList[idx].occupancyMin = newVal.toFixed(1);
+        },
+        changeNumer1(val, idx) {
+          if(this.activeList[idx].occupancyMin){
+              if(val*1 < this.activeList[idx].occupancyMin*1){
+                  this.activeList[idx].occupancyMax = null;
+                  this.$message({
+                    message: "最大上座率需大于最小上座率",
+                    type: "warning"
+                  });
+                  return;
+              }
+          }
+          let newVal = parseFloat(val);
+          if (newVal < 0) {
+            this.activeList[idx].occupancyMax = null;
+            return;
+          }
+          this.activeList[idx].occupancyMax = newVal.toFixed(1);
+        },
+        changeNumer2(val, idx) {
+            let newVal = parseFloat(val);
+            if (newVal < 0) {
+                this.activeList[idx].price = null;
+                this.$message({
+                message: "不得小于0",
+                type: "warning"
+                });
+                return;
+            }else if(newVal > 999.99){
+                this.activeList[idx].price = null;
+                this.$message({
+                message: "不得高于999.99",
+                type: "warning"
+                });
+                return;
+            }
+            if(this.ticketData.length>0){
+                var z = true;
+                this.ticketData.forEach(item =>{
+                    if(item.switchStatus){
+                        if(this.pricing==1){
+                            var a = true;
+                            this.tableData.forEach(i =>{
+                                if(a){
+                                    if(this.activeList[idx].type==0){
+                                        var p = val*1 + item.price*1 +i.price*1;
+                                        if(p<this.ruleForm.price){
+                                            this.$message({
+                                                message: "总和不得小于最低票价",
+                                                type: "warning"
+                                            })
+                                            a =false;
+                                            z =false;
+                                            this.activeList[idx].price = null;
+                                        }
+                                        if(p >999.99){
+                                            this.$message({
+                                                message: "总和不得超过999.99",
+                                                type: "warning"
+                                            })
+                                            a =false;
+                                            z =false;
+                                            this.activeList[idx].price = null;
+                                        }else if(this.ruleForm.price<=p&&p<=999.99){
+                                            this.activeList[idx].price = newVal.toFixed(2);
+                                        }
+                                    }else if(this.activeList[idx].type==1){
+                                        var p = val*-1 + item.price*1 +i.price*1;
+                                        if(p<this.ruleForm.price){
+                                            this.$message({
+                                                message: "总和不得小于最低票价",
+                                                type: "warning"
+                                            })
+                                            a =false;
+                                            z =false;
+                                            this.activeList[idx].price = null;
+                                        }
+                                        if(p >999.99){
+                                            this.$message({
+                                                message: "总和不得超过999.99",
+                                                type: "warning"
+                                            })
+                                            a =false;
+                                            z =false;
+                                            this.activeList[idx].price = null;
+                                        }else if(p>=this.ruleForm.price&&p<=999.99){
+                                            this.activeList[idx].price = newVal.toFixed(2);
+                                        }
+                                    }
+                                }
+                            })
+                        }else if(this.activeList[idx].type==0){
+                            var p = val*1 + item.price*1 ;
+                            if(p <this.ruleForm.price){
+                                this.$message({
+                                    message: "总和不得小于最低票价",
+                                    type: "warning"
+                                })
+                                z =false;
+                                this.activeList[idx].price = null;
+                            }
+                            if(p >999.99){
+                                this.$message({
+                                    message: "总和不得超过999.99",
+                                    type: "warning"
+                                })
+                                z =false;
+                                this.activeList[idx].price = null;
+                            }else if(p>=this.ruleForm.price&&p<=999.99){
+                                z =false;
+                                this.activeList[idx].price = newVal.toFixed(2);
+                            }
+                        }else if(this.activeList[idx].type==1){
+                            var p = val*-1 + item.price*1 
+                            if(p <this.ruleForm.price){
+                                this.$message({
+                                    message: "总和不得小于最低票价",
+                                    type: "warning"
+                                })
+                                z =false;
+                                this.activeList[idx].price = null;
+                            }
+                            if(p >999.99){
+                                this.$message({
+                                    message: "总和不得超过999.99",
+                                    type: "warning"
+                                })
+                                z =false;
+                                this.activeList[idx].price = null;
+                            }else if(p<=999.99&&p>=this.ruleForm.price){
+                                console.log(1)
+                                this.activeList[idx].price = newVal.toFixed(2);
+                            }
+                        }else{
+                            this.activeList[idx].price = newVal.toFixed(2);
+                        }
+                    }
+                })
+            }else{
+                this.activeList[idx].price = newVal.toFixed(2);
+            }
+            if(this.channelData.length>0){
+                var z = true;
+                this.channelData.forEach(item =>{
+                    if(item.switchStatus){
+                        if(this.pricing==1){
+                            var a = true;
+                            this.tableData.forEach(i =>{
+                                if(a){
+                                    if(this.activeList[idx].type==0){
+                                        var p = val*1 + item.price*1 +i.price*1;
+                                        if(p<this.ruleForm.price){
+                                            this.$message({
+                                                message: "总和不得小于最低票价",
+                                                type: "warning"
+                                            })
+                                            a =false;
+                                            z =false;
+                                            this.activeList[idx].price = null;
+                                        }
+                                        if(p >999.99){
+                                            this.$message({
+                                                message: "总和不得超过999.99",
+                                                type: "warning"
+                                            })
+                                            a =false;
+                                            z =false;
+                                            this.activeList[idx].price = null;
+                                        }else if(this.ruleForm.price<=p&&p<=999.99){
+                                            this.activeList[idx].price = newVal.toFixed(2);
+                                        }
+                                    }else if(this.activeList[idx].type==1){
+                                        var p = val*-1 + item.price*1 +i.price*1;
+                                        if(p<this.ruleForm.price){
+                                            this.$message({
+                                                message: "总和不得小于最低票价",
+                                                type: "warning"
+                                            })
+                                            a =false;
+                                            z =false;
+                                            this.activeList[idx].price = null;
+                                        }
+                                        if(p >999.99){
+                                            this.$message({
+                                                message: "总和不得超过999.99",
+                                                type: "warning"
+                                            })
+                                            a =false;
+                                            z =false;
+                                            this.activeList[idx].price = null;
+                                        }else if(p>=this.ruleForm.price&&p<=999.99){
+                                            this.activeList[idx].price = newVal.toFixed(2);
+                                        }
+                                    }
+                                }
+                            })
+                        }else if(this.activeList[idx].type==0){
+                            var p = val*1 + item.price*1 ;
+                            if(p <this.ruleForm.price){
+                                this.$message({
+                                    message: "总和不得小于最低票价",
+                                    type: "warning"
+                                })
+                                z =false;
+                                this.activeList[idx].price = null;
+                            }
+                            if(p >999.99){
+                                this.$message({
+                                    message: "总和不得超过999.99",
+                                    type: "warning"
+                                })
+                                z =false;
+                                this.activeList[idx].price = null;
+                            }else if(p>=this.ruleForm.price&&p<=999.99){
+                                z =false;
+                                this.activeList[idx].price = newVal.toFixed(2);
+                            }
+                        }else if(this.activeList[idx].type==1){
+                            var p = val*-1 + item.price*1 
+                            if(p <this.ruleForm.price){
+                                this.$message({
+                                    message: "总和不得小于最低票价",
+                                    type: "warning"
+                                })
+                                z =false;
+                                this.activeList[idx].price = null;
+                            }
+                            if(p >999.99){
+                                this.$message({
+                                    message: "总和不得超过999.99",
+                                    type: "warning"
+                                })
+                                z =false;
+                                this.activeList[idx].price = null;
+                            }else if(p<=999.99&&p>=this.ruleForm.price){
+                                console.log(1)
+                                this.activeList[idx].price = newVal.toFixed(2);
+                            }
+                        }else{
+                            this.activeList[idx].price = newVal.toFixed(2);
+                        }
+                    }
+                })
+            }else{
+                this.activeList[idx].price = newVal.toFixed(2);
+            }
+        },
+        changeTime(val, idx) {
+          let newVal = parseFloat(val);
+          if (newVal < 0) {
+            this.activeList[idx].time = null;
+            return;
+          }
+          this.activeList[idx].time = newVal.toFixed(1);
+        },
+        dynamicPrice(val) {
+          this.pricing1 =val;
+          if (val == 1) {
+            this.hidde = "show";
+          } else if (val == 0) {
+            this.hidde = "hide";
+            this.activeList= [
+              {
+                idx: 0,
+                occupancyMax: null,
+                occupancyMin: null,
+                time: null,
+                price: null,
+                type:0
+              }
+            ]
+          }
+        },
+        zoningPricing(val) {
+          if (val == 1) {
+            this.hidden = "show";
+            this.pricing = val;
+          } else if (val == 0) {
+            this.hidden = "hide";
+            this.pricing = val;
+          }
+        },
+        getRegionTypeList() {
+          this.$ctmList
+            .getRegionTypeList()
+            .then(ret => {
+              if (ret.code == 200) {
+                this.tableData = ret.data;
+                this.tableData.forEach(item => {
+                  this.$set(item, "price", null);
+                  this.$set(item,'regionTypeUid',item.uid)
+                  this.$delete(item,'uid')
+                });
+              }
+            })
+            .catch(() => {
+              console.log("哪里出错了，检擦一下哥哥");
+            });
+        },
+        priceChang(val, index) {
+            let newVal = parseFloat(val);
+            if(val >= 999.99){
+                this.$message({
+                message: "最高不得超过999.99",
+                type: "warning"
+                });
+                this.tableData[index].price = null;
+            }
+            if(this.ticketData.length>0){
+                this.ticketData.forEach(item =>{
+                    if(item.switchStatus){
+                        if(this.pricing1==1){
+                            this.activeList.forEach(i =>{
+                                if(i.price != null){
+                                    if(i.type == 0){
+                                        if(i.price*1 +item.price*1 + val*1> 999.99){
+                                            this.$message({
+                                                message: "最高不得超过999.99",
+                                                type: "warning"
+                                            });
+                                            this.tableData[index].price = null;
+                                        }else if(i.price*1 +item.price*1 + val*1<this.ruleForm.price){
+                                            this.$message({
+                                                message: "总和不得低于最低票价",
+                                                type: "warning"
+                                            });
+                                            this.tableData[index].price = null;
+                                        }else{
+                                            this.tableData[index].price = newVal.toFixed(2);
+                                        }
+                                    }else if(i.type == 1){
+                                        if(i.price*-1 +item.price*1 + val*1<this.ruleForm.price){
+                                            this.$message({
+                                                message: "总和不得低于最低票价",
+                                                type: "warning"
+                                            });
+                                            this.tableData[index].price = null;
+                                        }
+                                    }else{
+                                        this.tableData[index].price = newVal.toFixed(2);
+                                    }
+                                }
+                            })
+                        }else if(item.price*1 + val*1 > 999.99){
+                            this.$message({
+                                message: "最高不得超过999.99",
+                                type: "warning"
+                            });
+                            this.tableData[index].price = null;
+                        }else if(item.price*1 + val*1 <this.ruleForm.price){
+                            this.$message({
+                                message: "总和不得低于最低票价",
+                                type: "warning"
+                            });
+                            this.tableData[index].price = null;
+                        }else{
+                            this.tableData[index].price = newVal.toFixed(2);
+                        }
+                    }
+                })
+            }else{
+                this.tableData[index].price = newVal.toFixed(2);
+            }
+            if(this.channelData.length>0){
+                this.channelData.forEach(item =>{
+                    if(item.switchStatus){
+                        if(this.pricing1==1){
+                            this.activeList.forEach(i =>{
+                                if(i.price != null){
+                                    if(i.type == 0){
+                                        if(i.price*1 +item.price*1 + val*1> 999.99){
+                                            this.$message({
+                                                message: "最高不得超过999.99",
+                                                type: "warning"
+                                            });
+                                            this.tableData[index].price = null;
+                                        }else if(i.price*1 +item.price*1 + val*1<this.ruleForm.price){
+                                            this.$message({
+                                                message: "总和不得低于最低票价",
+                                                type: "warning"
+                                            });
+                                            this.tableData[index].price = null;
+                                        }else{
+                                            this.tableData[index].price = newVal.toFixed(2);
+                                        }
+                                    }else if(i.type == 1){
+                                        if(i.price*-1 +item.price*1 + val*1<this.ruleForm.price){
+                                            this.$message({
+                                                message: "总和不得低于最低票价",
+                                                type: "warning"
+                                            });
+                                            this.tableData[index].price = null;
+                                        }
+                                    }else{
+                                        this.tableData[index].price = newVal.toFixed(2);
+                                    }
+                                }
+                            })
+                        }else if(item.price*1 + val*1 > 999.99){
+                            this.$message({
+                                message: "最高不得超过999.99",
+                                type: "warning"
+                            });
+                            this.tableData[index].price = null;
+                        }else if(item.price*1 + val*1 <this.ruleForm.price){
+                            this.$message({
+                                message: "总和不得低于最低票价",
+                                type: "warning"
+                            });
+                            this.tableData[index].price = null;
+                        }else{
+                            this.tableData[index].price = newVal.toFixed(2);
+                        }
+                    }
+                })
+            }else{
+                this.tableData[index].price = newVal.toFixed(2);
+            }
+        },
         dataInit() {
             this.isEditMode = this.$route.query.mode ? this.$route.query.mode == 'edit' ? true : false : false
             this.planUid = this.$route.query.uid ? this.$route.query.uid : ''
@@ -1075,16 +2047,85 @@ export default {
             })
         },
         getmoviePlanDetail() {
-            getmoviePlanDetail({
-                'id': this.planUid
+            getmoviePlanDetail1({
+                'planUid': this.planUid
             }).then(res => {
                 if (res.code != 200) return this.error(res.msg)
                 if (res.code == 200 && res.data) {
-                    
-                    let {dateShowFirst, dateShowOff, disVersion, hallName, minPrice, movieLanguage, movieName, mustRightSeat, planTime, priceProgramName, publisherRate, timeLong, approveStatus, permitDiscount, permitSaleBox, movieUid, cinemaUid, hallUid, joinFlag, movieCode, priceProgramUid, planTimeEnd, hallTypeCode, disVersionCode, saleStatus, soldSeatCount} = res.data
-                    this.movieData = {dateShowFirst, dateShowOff, disVersion, hallName, minPrice, movieLanguage, movieName, mustRightSeat, planTime, priceProgramName, publisherRate, timeLong, approveStatus, permitDiscount, permitSaleBox, movieUid, priceProgramUid, planTimeEnd, cinemaUid, hallUid, joinFlag, movieCode, hallTypeCode, disVersionCode, saleStatus, soldSeatCount}
-                    
-                    this.notAllowChangeTime == soldSeatCount != 0
+                    this.pricing = res.data.useRegionPrice;
+                    this.pricing1 = res.data.useAdjustmentPrice;
+                    if (res.data.priceAdjustmentList.length>0) {
+                        if (
+                            res.data.priceAdjustmentList[0].useOccupancyFlag == 1 &&
+                            res.data.priceAdjustmentList[0].useStartTimeFlag == 0
+                        ) {
+                            this.ifCheck = ["0"];
+                            this.checkList = [0];
+                        } else if (
+                            res.data.priceAdjustmentList[0].useStartTimeFlag == 1 &&
+                            res.data.priceAdjustmentList[0].useOccupancyFlag == 0
+                        ) {
+                            this.ifCheck = ["1"];
+                            this.checkList = [1];
+                        } else if (
+                            res.data.priceAdjustmentList[0].useOccupancyFlag == 1 &&
+                            res.data.priceAdjustmentList[0].useStartTimeFlag == 1
+                        ) {
+                            this.ifCheck = ["0", "1"];
+                            this.checkList = [0, 1];
+                        }
+                        this.activeList = res.data.priceAdjustmentList;
+                        this.activeList.forEach(item => {
+                            if (item.adjustmentType == 1) {
+                                if (item.price > 0) {
+                                    this.$set(item,'type',0)
+                                } else if (item.price < 0) {
+                                    this.$set(item,'type',1)
+                                    this.$set(item,'price',item.price*-1)
+                                }
+                            } else if (item.adjustmentType == 2) {
+                                this.$set(item,'type',2)
+                            }
+                            if (item.percentage != null) {
+                                this.$set(item, "price", item.percentage);
+                            }
+                            if (item.price != null) {
+                                this.$set(item, "price", item.price);
+                                item.price = item.price.toFixed(2)
+                            }
+                            if(item.occupancyMin || item.occupancyMin==0){
+                                item.occupancyMin = item.occupancyMin.toFixed(2)
+                            }
+                            if(item.occupancyMax){
+                                item.occupancyMax = item.occupancyMax.toFixed(2)
+                            }
+                            if(item.time){
+                                item.time = item.time.toFixed(1)
+                            }
+                        });
+                    }
+                    if(res.data.priceRegionList.length>0){
+                        this.pricing=1; 
+                        var data = res.data.priceRegionList;
+                        console.log(data)
+                        this.tableData.forEach(item=>{
+                            data.forEach(i=>{
+                                if(item.regionTypeUid == i.regionTypeUid){
+                                    this.$set(i,'color',item.color);
+                                    this.$set(i,'name',item.name);
+                                    if(i.price){
+                                        var a = i.price.toFixed(2)
+                                    }
+                                    this.$set(i,'price',a||null);
+                                }
+                            })
+                        })
+                        this.tableData = data;
+                    }
+                    let {dateShowFirst, dateShowOff, disVersion, hallName, minPrice, movieLanguage, movieName, mustRightSeat, planTime, priceProgramName, publisherRate, timeLong, approveStatus, permitDiscount, permitSaleBox, movieUid, cinemaUid, hallUid, joinFlag, movieCode, priceProgramUid, planTimeEnd, hallTypeCode, disVersionCode, saleStatus, soldSeatCount, planInfoMovieTimeVoList, useAdjustmentPrice, useRegionPrice, priceAdjustmentList, priceRegionList} = res.data
+                    this.movieData = {dateShowFirst, dateShowOff, disVersion, hallName, minPrice, movieLanguage, movieName, mustRightSeat, planTime, priceProgramName, publisherRate, timeLong, approveStatus, permitDiscount, permitSaleBox, movieUid, priceProgramUid, planTimeEnd, cinemaUid, hallUid, joinFlag, movieCode, hallTypeCode, disVersionCode, saleStatus, soldSeatCount, planInfoMovieTimeVoList, useAdjustmentPrice, useRegionPrice, priceAdjustmentList, priceRegionList}
+                    // console.log(this.tableData)
+                    this.notAllowChangeTime = (soldSeatCount != 0)
                     
                     // hallTypeList({name: 'SCH_MOVIE_DIS_VERSION'}).then(res => {
                     //     if (res.code == 200 && res.data) {
@@ -1147,13 +2188,21 @@ export default {
                             relatedArr.some(citem => {
                                 if (citem.uidBaseClass == item.uid) {
                                     item.price = citem.price
+                                    if(citem.price<this.ruleForm.price){
+                                        item.price = this.ruleForm.price
+                                    }
                                     item.addFee = citem.addFee
                                     item.switchStatus = citem.saleStatus == 'SALE'
                                     return true
                                 }
                             })
                             if (!item.addFee) item.addFee = 0
-                            if (!item.price) item.price = 0
+                            if(!this.isEditMode){
+                                if (!item.price) item.price = 0
+                            }else{
+                                if (!item.price) item.price = this.ruleForm.price
+                            }
+                            
                             item.addFee = parseFloat(item.addFee).toFixed(2)
                             item.price = parseFloat(item.price).toFixed(2)
                             if (!item.name) item.name = item.ticketName
@@ -1164,7 +2213,7 @@ export default {
                             // 原因为 ticketList 里 可能出现 base 里不存在的 票类
                             item.saveUid = item.uid ? item.uid : item.uidBaseClass
                         })
-                        if (!this.isEditMode) ticketData = ticketData.filter(item => item.price != 0)
+                        // if (!this.isEditMode) ticketData = ticketData.filter(item => item.price != 0)
 
                         this.ticketData = ticketData
 
@@ -1183,14 +2232,22 @@ export default {
                         channelData.forEach(item => {
                             relatedChannelArr.some(citem => {
                                 if (citem.uidChannel == item.uid) {
+                                    item.addFee = citem.addFee
                                     item.price = citem.price
+                                    if(citem.price<this.ruleForm.price){
+                                        item.price = this.ruleForm.price
+                                    }
                                     item.cinemaFee = citem.cinemaFee
                                     item.feeFg = citem.feeFg
                                     item.switchStatus = citem.saleStatus == 'SALE'
                                     return true
                                 }
                             })
-                            if (!item.price) item.price = 0
+                            if(!this.isEditMode){
+                                if (!item.price) item.price = 0
+                            }else{
+                                if (!item.price) item.price = this.ruleForm.price
+                            }
                             if (!item.addFee) item.addFee = 0
                             if (!item.cinemaFee) item.cinemaFee = 0
                             if (!item.feeFg) item.feeFg = 0
@@ -1207,9 +2264,9 @@ export default {
                             // 原因为 channelList 里 可能出现 base 里不存在的 票类
                             item.saveUid = item.uidChannel ? item.uidChannel : item.uid
                         })
-                        if (!this.isEditMode) channelData = channelData.filter(item => item.price != 0)
+                        // if (!this.isEditMode) channelData = channelData.filter(item => item.price != 0)
                         this.channelData = channelData
-
+                        
                     // } else {
 
 
@@ -1238,7 +2295,22 @@ export default {
                     // 票价参考
 
                     this.vieCinemaList = res.data.nearestMovieList.length ? res.data.nearestMovieList[0].movieTickets : []
-                     res.data.nearestMovieList.forEach(item => {
+                    if (!res.data.nearestMovieList || !res.data.nearestMovieList.length) {
+                        res.data.nearestMovieList = [{
+                            avgPrice: 0,
+                            channelCode: "maoyan_movie_schedule",
+                            channelName: "猫眼",
+                            ctmChannelCode: "MTUSER", 
+                            movieTickets: []
+                        }, {
+                            avgPrice: 0,
+                            channelCode: "nuomi_movie_schedule",
+                            channelName: "糯米",
+                            ctmChannelCode: "BDUSER",
+                            movieTickets: []
+                        }]
+                    }
+                    res.data.nearestMovieList.forEach(item => {
                          this.channelData.some(channel => {
                             if (channel.saveUid == item.ctmChannelCode) {
                                 item.myPrice = channel.price
@@ -1272,6 +2344,9 @@ export default {
                         }
                     })
                     this.priceContrast = res.data.nearestMovieList
+                    if (!this.priceContrast.lenth) {
+
+                    }
                     
                         
                 
@@ -1337,6 +2412,17 @@ export default {
                 this.planMinute = this.copyMinute
                 return this.error('放映结束时间不能超过次日早上6点!')
             }
+            let timeRight = this.checkTimeRight(tmpTimeStart)
+            if (timeRight.planError) {
+                this.planMinute = this.copyMinute
+                return this.error('放映时间不在上下映时间内!')
+            }
+            let timeInfoCheck = this.checkTimeInfoRight(tmpTimeStart)
+            if (timeInfoCheck.planError) {
+                this.planMinute = this.copyMinute
+                return this.error('放映时间不在允许的时间内!')
+            }
+
             this.movieData.planTime = this.formatDateTime(tmpTimeStart, 0)
             this.movieData.planTimeEnd = this.formatDateTime(tmpTimeEnd, 0)
             this.planMinute = val < 10 ? `0${val}` : `${val}`
@@ -1409,6 +2495,8 @@ export default {
             let tmp = this.ruleForm.price
             if (!Number(tmp)) return
             this.ruleForm.price = Number(tmp).toFixed(2)
+            // 同步价格方案里 有对应的 最低票价加价的 方案价格
+
         },
         tableFixed(scope) {
             let tmp1 = this.ticketData[scope.$index].price, tmp2 = this.ticketData[scope.$index].addFee
@@ -1433,18 +2521,20 @@ export default {
         selectSinglePlan() {
             if (!this.currentRow) return this.pricePlanDialog = false
             this.selectPlanData.data = this.currentRow
-            priceprogramScan({id: this.selectPlanData.data.id}).then(res => {
+            priceprogramScan1({uid: this.selectPlanData.data.uid}).then(res => {
                 if (res.code != 200) return this.error(res.msg)
                 if (res.code == 200 && res.data) {
                     if (!this.selectPlanData.isShow) this.selectPlanData.isShow = true
+                    this.movieData.priceProgramName = res.data.ciPriceProgram.name;
                     this.selectPlanData.programName = res.data.ciPriceProgram.name
                     this.selectPlanData.programUid = res.data.ciPriceProgram.uid
                     this.ticketData.forEach(item => {
                         if (res.data.ttVoList && res.data.ttVoList.length) {
                             res.data.ttVoList.forEach(type => {
+                                console.log(type.feeFlag, type.price)
                                 if (item.saveUid == type.ttUid && type.movieVersionName == this.movieData.disVersion) {
-                                    item.price = type.price
-                                    item.addFee = type.addFee
+                                    item.price = type.feeFlag ? type.price + Number(this.ruleForm.price) : type.price
+                                    // item.addFee = type.addFee
                                     item.switchStatus = true
                                 }
                             })
@@ -1464,7 +2554,8 @@ export default {
                         if (res.data.priceNetSale && res.data.priceNetSale.length) {
                             res.data.priceNetSale.forEach(channel => {
                                 if (channel.movieVersionName == this.movieData.disVersion && item.switchStatus) {
-                                    item.price = channel.price
+                                    console.log(channel.feeFlag, channel.price)
+                                    item.price = channel.feeFlag ? channel.price + Number(this.ruleForm.price) : channel.price
                                 }
                             })
                         }
@@ -1474,6 +2565,76 @@ export default {
                     this.permitDiscount = !!res.data.ciPriceProgram.permitDiscount
                     this.permitSaleBox = !!res.data.ciPriceProgram.permitSaleBox
                     this.pricePlanDialog = false
+                    this.pricing = res.data.useRegionPrice;
+                    this.pricing1 = res.data.useAdjustmentPrice;
+                    if (res.data.priceAdjustmentList.length>0) {
+                        if (
+                            res.data.priceAdjustmentList[0].useOccupancyFlag == 1 &&
+                            res.data.priceAdjustmentList[0].useStartTimeFlag == 0
+                        ) {
+                            this.ifCheck = ["0"];
+                            this.checkList = [0];
+                        } else if (
+                            res.data.priceAdjustmentList[0].useStartTimeFlag == 1 &&
+                            res.data.priceAdjustmentList[0].useOccupancyFlag == 0
+                        ) {
+                            this.ifCheck = ["1"];
+                            this.checkList = [1];
+                        } else if (
+                            res.data.priceAdjustmentList[0].useOccupancyFlag == 1 &&
+                            res.data.priceAdjustmentList[0].useStartTimeFlag == 1
+                        ) {
+                            this.ifCheck = ["0", "1"];
+                            this.checkList = [0, 1];
+                        }
+                        this.activeList = res.data.priceAdjustmentList;
+                        this.activeList.forEach(item => {
+                            if(item.uid){
+                                this.$delete(item,'uid')
+                            }
+                            if (item.adjustmentType == 1) {
+                                if (item.price > 0) {
+                                    this.$set(item,'type',0)
+                                } else if (item.price < 0) {
+                                    this.$set(item,'type',1)
+                                    this.$set(item,'price',item.price*-1)
+                                }
+                            } else if (item.adjustmentType == 2) {
+                                this.$set(item,'type',2)
+                            }
+                            if (item.percentage != null) {
+                                this.$set(item, "price", item.percentage);
+                            }
+                            if (item.price != null) {
+                                this.$set(item, "price", item.price);
+                                item.price = item.price.toFixed(2)
+                            }
+                            if(item.time){
+                                item.time = item.time.toFixed(1)
+                            }
+                            if(item.occupancyMin || item.occupancyMin==0){
+                                item.occupancyMin = item.occupancyMin.toFixed(2)
+                            }
+                            if(item.occupancyMax){
+                                item.occupancyMax = item.occupancyMax.toFixed(2)
+                            }
+                        });
+                        }
+                        if(res.data.priceRegionList.length>0){
+                        this.pricing=1; 
+                        var data = res.data.priceRegionList;
+                        this.tableData.forEach(item=>{
+                            this.$delete(item,'uid')
+                            data.forEach(i=>{
+                                if(item.regionTypeUid == i.regionTypeUid){
+                                    if(i.price){
+                                        var a = i.price.toFixed(2)
+                                    }
+                                    this.$set(item,'price',a||null);
+                                }
+                            })
+                        })
+                    }
                 }
             })
         },
@@ -1510,8 +2671,8 @@ export default {
         savePlan() {
             
             var p1 = new Promise((resolve, reject) => {
-                if (this.ruleForm.price <= 0 || this.ruleForm.price > 1000000 || !/^(([1-9][0-9]*)|(([0]\.\d{1,2}|[1-9][0-9]*\.\d{1,2})))$/.test(this.ruleForm.price)) {
-                    reject('最低票价必须大于0且整数位小于7位的数字，且小数位不能超过2位!')
+                if (this.ruleForm.price <= 0 || this.ruleForm.price > 999.99 || !/^(([1-9][0-9]*)|(([0]\.\d{1,2}|[1-9][0-9]*\.\d{1,2})))$/.test(this.ruleForm.price)) {
+                    reject('最低票价必须大于0且整数位小于1000的数字，且小数位不能超过2位!')
                 } else {
                     resolve()
                 }
@@ -1528,25 +2689,25 @@ export default {
              
             var p3 = new Promise((resolve, reject) => {
                 let errorData = this.ticketData.filter(item => item.switchStatus).find(item => Number(item.price) < Number(this.ruleForm.price))
-                let errorData2 = this.ticketData.filter(item => item.switchStatus).find(item => item.price > 999999)
+                let errorData2 = this.ticketData.filter(item => item.switchStatus).find(item => item.price > 999.99)
 
                 if (!errorData && !errorData2) {
                     resolve()
                 } else if (errorData) {
                     reject(`票类${errorData.name}的票价低于最低票价， 请修改重试`)
                 } else {
-                    reject(`票类${errorData2.name}的票价不在1-7位数之间， 请修改重试`)
+                    reject(`票类${errorData2.name}的票价不在1-1000以内， 请修改重试`)
                 }
             })
             var p4 = new Promise((resolve, reject) => {
                 let errorData = this.channelData.filter(item => item.switchStatus).find(item => Number(item.price) < Number(this.ruleForm.price))
-                let errorData2 = this.channelData.filter(item => item.switchStatus).find(item => Number(item.price) > 999999)
+                let errorData2 = this.channelData.filter(item => item.switchStatus).find(item => Number(item.price) > 999.99)
                 if (!errorData && !errorData2) {
                     resolve()
                 } else if (errorData) {
                     reject(`渠道${errorData.name}的票价低于最低票价， 请修改重试`)
                 } else {
-                    reject(`渠道${errorData2.name}的票价不在1-7位数之间， 请修改重试`)
+                    reject(`渠道${errorData2.name}的票价不在1-1000以内， 请修改重试`)
                 }                  
             })
             
@@ -1558,6 +2719,7 @@ export default {
             
         },
         submitPlan() {
+            this.pd = true;
             let {cinemaUid, hallUid, joinFlag, movieCode, planTimeEnd} = this.movieData
             let planDate = this.curPlanDate, planTimeStart = this.movieData.planTime, minPrice = this.ruleForm.price, rate = this.ruleForm.rate, permitSaleBox = this.permitSaleBox ? 1 : 0, mustRightSeat = this.mustRightSeat ? 1 : 0, permitDiscount = this.permitDiscount ? 1 : 0, movieLanguage = this.langValue, planUid = this.planUid, priceProgramName = this.selectPlanData.isShow ? this.selectPlanData.programName : this.movieData.priceProgramName, priceProgramUid = this.selectPlanData.isShow ? this.selectPlanData.programUid: this.movieData.priceProgramUid,
             schPlanBaseTicketVoList = this.ticketData.filter(item => item.price > 0).map(item => {
@@ -1582,15 +2744,72 @@ export default {
                     saleStatus: item.switchStatus ? 'SALE' : 'NOT_SALE'
                 }
             })
-            
-            let saveData = {cinemaUid, hallUid, joinFlag, movieCode, movieLanguage, mustRightSeat, permitDiscount, permitSaleBox, planUid, priceProgramName, priceProgramUid, planTimeEnd,planDate, planTimeStart, minPrice, rate, schPlanBaseTicketVoList, schPlanFavTicketVoList}
+            if (this.ifCheck[0] == 0 && this.ifCheck[1] == 1) {
+                var useOccupancyFlag = 1;
+                var useStartTimeFlag = 1;
+            } else if (this.ifCheck[0] == 1) {
+                var useStartTimeFlag = 1;
+                var useOccupancyFlag = 0;
+            } else if (this.ifCheck[0] == 0) {
+                var useOccupancyFlag = 1;
+                var useStartTimeFlag = 0;
+            } else {
+                var useOccupancyFlag = 0;
+                var useStartTimeFlag = 0;
+            }
+            this.activeList.forEach((item,index)=>{
+                this.$set(item,'useOccupancyFlag',useOccupancyFlag)
+                this.$set(item,'useStartTimeFlag',useStartTimeFlag)
+                if(item.type == 0){
+                    this.$set(item,'adjustmentType',1)
+                    this.$set(item,'price',item.price * 1)
+                }else if(item.type == 1){
+                    this.$set(item,'adjustmentType',1)
+                    this.$set(item,'price',item.price * -1)
+                }else if(item.type == 2){
+                    this.$set(item,'adjustmentType',2)
+                    this.$set(item,'percentage',item.price * 1)
+                    this.$delete(item,'price')
+                }
+            })
+            console.log(this.activeList)
+            var priceAdjustmentList = this.activeList;
+            var priceRegionList = this.tableData;
+            var useRegionPrice = this.pricing;
+            var useAdjustmentPrice = this.pricing1;
+            if(useAdjustmentPrice == 0){
+                priceAdjustmentList =[];
+            }
+            if(useRegionPrice == 0){
+                priceRegionList =[];
+            }
+            let saveData = {priceAdjustmentList,priceRegionList,useRegionPrice,useAdjustmentPrice,cinemaUid, hallUid, joinFlag, movieCode, movieLanguage, mustRightSeat, permitDiscount, permitSaleBox, planUid, priceProgramName, priceProgramUid, planTimeEnd,planDate, planTimeStart, minPrice, rate, schPlanBaseTicketVoList, schPlanFavTicketVoList}
 
             
+            // var token = sessionStorage.getItem('token')
+            // axios.post('http://192.168.101.83:2301/plan/update',
+            //     {
+            //         list: this.movieData.saleStatus == 'STOP' ? [Object.assign(saveData, {isNeedApprove: 1})] : [Object.assign(saveData, {isNeedApprove: 0})]
+            //     },
+            //     {
+            //         headers:{
+            //             'Cpm-User-Token': token
+            //         }
+            //     })
+            //     .then(function (response) {
+            //     console.log(response);
+            //     })
+            //     .catch(function (error) {
+            //     console.log(error);
+            //     });
 
-            updateMoviePlan({
+            updateMoviePlan1({
                 list: this.movieData.saleStatus == 'STOP' ? [Object.assign(saveData, {isNeedApprove: 1})] : [Object.assign(saveData, {isNeedApprove: 0})]
             }).then(res => {
-                if (res.code != 200) return this.error(res.msg)
+                if (res.code != 200) {
+                    return this.error(res.msg)
+                    this.pd = false;
+                }
                 if(res.code == 200 && res.data) {
                     if (res.data.length) {
                         return this.warning('部分排片保存不成功, 请单独选择价格方案')
@@ -1615,6 +2834,7 @@ export default {
                         } else {
                             this.$router.push({path: 'layout', query: {date: this.curPlanDate}})
                         }
+                        this.pd = false;
                     }, 1000)
                 }
             })
@@ -1641,6 +2861,23 @@ export default {
         // 跳转设置竞对影院
         setVieCinema() {
             this.$router.push({path: '/analysis/group/cinema/manage'})
+        },
+        // 校验 是否在 上下映时间内
+        checkTimeRight(startTime) {
+            return {
+                planError: startTime >= new Date(this.movieData.dateShowOff).getTime() || startTime < new Date(this.movieData.dateShowFirst).getTime(),
+                errorType: startTime >= new Date(this.movieData.dateShowOff).getTime() ? '超过影片下线日期，不能编排放映计划' : startTime < new Date(this.movieData.dateShowFirst).getTime() ? '未到影片首映日期，不能编排放映计划' : ''
+            } 
+        },
+        // 校验 是否 在信息表时间内
+        checkTimeInfoRight(startTime) {
+            let planStartDate = this.formatDateTime(startTime, 1)
+
+            return {
+                planError: this.movieData.planInfoMovieTimeVoList ? this.movieData.planInfoMovieTimeVoList.length ? !this.movieData.planInfoMovieTimeVoList.some(item => 
+                    (new Date (planStartDate).getTime() >= new Date(`${item.startDate}`).getTime() && new Date(planStartDate).getTime() <= new Date(item.endDate).getTime()) && (startTime >= new Date(`${planStartDate} ${item.startTime}`).getTime() && startTime <= new Date(`${planStartDate} ${item.endTime}`).getTime())) : false : false,
+                errorType: '不在影片允许的排片时间内'
+            }
         }
     },
     components: {
@@ -1969,7 +3206,7 @@ export default {
                 }
 			}
 			.table-bottom-menu {
-				width: 360px;
+				width: 412px;
 				position: relative;
 				margin-top: 10px;
 				.canal-pirce-input {
@@ -2214,7 +3451,7 @@ export default {
 		position: fixed;
 		z-index: 999;
 		bottom: 0;
-		right: 20px;
+		right: 0;
 		background-color: #f5f5f5;
 		.btn-area {
 			width: 500px;
@@ -2273,6 +3510,20 @@ export default {
             }
         }
     }
+    .show {
+    display: block;
+    .el-input__inner {
+      width: 80px;
+      box-sizing: border-box;
+      padding-right: 0;
+    }
+    .el-select {
+      width: 120px;
+      .el-input__inner {
+        width: 120px;
+      }
+    }
+  }
 }
 
 </style>

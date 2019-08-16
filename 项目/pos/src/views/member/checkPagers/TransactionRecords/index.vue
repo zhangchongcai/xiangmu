@@ -12,13 +12,9 @@
             @getDate='getDate'>
                 <div slot='otherSubmitBtn' class="otherBtn">
                     <el-form-item>
-                        <el-button type="primary" @click="onSubmit(0)">查询</el-button>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-button type="primary" @click="onSubmit(1)">近一个月</el-button>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-button type="primary" @click="onSubmit(3)">近三个月</el-button>
+                        <el-button type="primary" @click="onSubmit(0)" class="common-btn">查询</el-button>
+                        <el-button type="primary" @click="onSubmit(1)" class="common-btn">近一个月</el-button>
+                        <el-button type="primary" @click="onSubmit(3)" class="common-btn">近三个月</el-button>
                     </el-form-item>
                 </div>
                 <!-- 操作 -->
@@ -54,7 +50,11 @@ export default {
         }
     },
     mounted(){
-        this.getOrderList(1)
+        if(!!sessionStorage['recordPageNo']){
+            this.getOrderList(sessionStorage['recordPageNo']*1)
+        }else{
+            this.getOrderList(1)
+        }
     },
     computed:{
         ...mapState(['member']),
@@ -72,6 +72,12 @@ export default {
             this.totalData = val.total;
         }
     },
+    beforeRouteEnter (to, from, next) {
+        if(from.name !== 'recordDetail'){
+            sessionStorage.removeItem('recordPageNo')
+        }
+        next()
+    },
     methods:{
         onSubmit(query){
             if(query === 0){
@@ -86,11 +92,11 @@ export default {
         getOrderList(vo){
             this.member.loading = true;
             let paramsObj;
+            this.pageNo = vo;
             if(this.startTime && this.endTime){
                 paramsObj = {
                     current:vo,
-                    // memberId:sessionStorage['memberId'],
-                    size:10,
+                    size:8,
                     startTime:this.startTime+' 00:00:00',
                     endTime:this.endTime+' 23:59:59',
                     tenantId:this.tenantId
@@ -98,23 +104,24 @@ export default {
             }else{
                 paramsObj = {
                     current:vo,
-                    // memberId:sessionStorage['memberId'],
-                    size:10,
+                    size:8,
                     tenantId:this.tenantId
                 };
             }
-            this.$route.query.type === 'phone' ? paramsObj['memberId'] = sessionStorage['memberId'] : paramsObj['cardNo'] = this.$route.query.phoneOrCard
+            this.$route.query.type === 'phone' ? paramsObj['memberId'] = sessionStorage['memberId'] : paramsObj['cardNo'] = this.$route.query.phoneOrCard;
+            paramsObj['fromChargeOff'] = false;
             let params = {
                 url: memeberApi.queryTradeRecord["url"],
-                params: paramsObj,
+                params: paramsObj
             }
             this.$store.dispatch('getOrderList',params)
         },
         handleCheck(index,item){
-            this.$router.push({path:`/member/recordDetail/${item.flowNo}`})
+            this.$router.push({name:'recordDetail',query:{flowNo:item.flowNo}})
         },
         currentPage(vo){
-            this.getOrderList(vo)
+            this.getOrderList(vo);
+            sessionStorage['recordPageNo'] = vo;
         },
         getDate(vo){
             if(!!vo.transactionTime){
@@ -131,8 +138,3 @@ export default {
     }
 }
 </script>
-<style scoped>
-.otherBtn{
-    display:inline;
-}
-</style>

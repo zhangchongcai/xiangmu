@@ -10,7 +10,7 @@
       </li>
     </ul>
     <div class="foot-buttom-layer">
-      <el-button size="medium" @click="$router.push({path:'/home'})">返回</el-button>
+      <el-button @click="$router.push({path:'/home'})" class="common-btn">返回</el-button>
     </div>
   </div>
 </template>
@@ -22,7 +22,7 @@ export default {
       menuData: [
         {
           iconPath: "../../../static/memberImage/kaika.png",
-          name: "开卡",
+          name: "开卡/激活",
           routePath: "/member/memberApplyCard",
           disabled: false,
           show:true
@@ -136,18 +136,19 @@ export default {
     }
   },
    mounted(){
-     if(!sessionStorage['payParams']){
+    //  if(!localStorage['tenantId']){
       sessionStorage['payParams'] = JSON.stringify({
         channelName:'柜台',
         cinemaName:localStorage['cinemaName'],
         operatorNo:localStorage['userUid'],
-        posNo:localStorage['tenantId'],
+        posNo:localStorage['terminalId'],
         channelId:localStorage['channelId'],
         channelNo:localStorage['channelNo'],
         cinemaId:localStorage['cinemaId'],
-        cinemaCode:localStorage['cinemaCode']
+        cinemaCode:localStorage['cinemaCode'],
+        operator:localStorage['userName']
       })
-    }
+    // }
   },
   methods: {
     handleGoDetail(routePath) {
@@ -178,11 +179,12 @@ export default {
       border-radius: 2px;
       cursor: pointer;
       .menu-icon {
-        // width: 2.9vw;
-        // height: 2.9vh;
+        width: 2.5vw;
+        height: 2.5vw;
       }
       .menu-title {
         color: #333;
+        font-size:$font-size12;
       }
     }
     .member-home-item:hover {

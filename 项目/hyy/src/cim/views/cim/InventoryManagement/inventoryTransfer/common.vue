@@ -1,7 +1,7 @@
 <template>
 <div class="iT-style">
   <div class="content">
-    <!-- {{this.queryData}} -->
+    <!-- {{this.goodList}} -->
     <!-- {{this.queryData.outStorehouseCode}} -->
     <!-- {{this.outStorehouseArr}} -->
     <!-- {{this.inStorehouseCodeArr}} -->
@@ -19,7 +19,7 @@
       :model="queryData"
       label-position="left"
       label-width="100px"
-      label-suffix=":"
+      label-suffix="："
     >
       <el-collapse  v-model="activeNames">
         <!-- 基础信息 start-->
@@ -59,14 +59,12 @@
                   prop="outStorehouseCode"
                   :rules="[{ required: routeQuery.type==3 ? false : true, message: '选择转出仓库或货架',trigger: 'change' }]"
                   >
-                  <span v-if="routeQuery.type==3">{{this.queryData.outStoreType == "1" ? '转出仓库' : '转出货架'}}</span>
+                  <span v-if="routeQuery.type==3" class="wid100">{{this.queryData.outStoreType == "1" ? '转出仓库：' : '转出货架：'}}</span>
                   <el-select v-model="queryData.outStoreType" v-else @focus="chukkuEvent() ">
                     <!-- <el-option label="全部" value></el-option> -->
                     <el-option label="转出仓库" value="1"></el-option>
                     <el-option label="转出货架" value="2"></el-option>
                   </el-select>
-
-                  <span>:</span>
                   <span v-if="routeQuery.type==3">{{this.queryData.outStorehouseName}}</span>
                   <el-select v-model="queryData.outStorehouseCode" @focus="selCkORHj(queryData.outStoreType)" v-else @change="changeSelCk()">
                     <el-option
@@ -80,13 +78,12 @@
               </el-col>
               <el-col :span="10">
                 <el-form-item label="">
-                  <span v-if="routeQuery.type==3">{{this.queryData.inStoreType == "1" ? '转入仓库' : '转入货架'}}</span>
+                  <span v-if="routeQuery.type==3" class="wid100">{{this.queryData.inStoreType == "1" ? '转入仓库：' : '转入货架：'}}</span>
                   <el-select v-model="queryData.inStoreType" v-else @focus="rukuEvent()">
                     <!-- <el-option label="全部" value></el-option> -->
                     <el-option label="转入仓库" value="1"></el-option>
                     <el-option label="转入货架" value="2"></el-option>
                   </el-select>
-                  <span>:</span>
                   <span v-if="routeQuery.type==3">{{this.queryData.inStorehouseName}}</span>
                   <el-select v-model="queryData.inStorehouseCode" v-else @focus="selRkORHj(queryData.inStoreType)" @change="changeSelRk()">
                     <el-option
@@ -174,7 +171,7 @@
       <div class="submit-box">
         <el-button type="primary" @click="ThandleSubmit" v-if="this.routeQuery.type!=3">保存并提交</el-button>
         <el-button type="primary" @click="ChandleSubmit" v-if="this.routeQuery.type!=3">保存为草稿</el-button>
-        <el-button @click="handleCancel">{{routeQuery.type !=3 ? "取消":"关闭"}}</el-button>
+        <el-button @click="fanhuihandleCancel">{{routeQuery.type !=3 ? "取消":"关闭"}}</el-button>
       </div>
     </el-form>
   </div>
@@ -304,36 +301,50 @@ export default {
   methods: {
     init() {
       if(this.routeQuery.type == "1"){
-        // this.queryData.cinemaUid = JSON.parse(this.routeQuery.data).cinemaUid
-        // this.queryData.remarks = JSON.parse(this.routeQuery.data).remarks
-        // this.queryData.remarks = JSON.parse(this.routeQuery.data).remarks
-        // this.queryData.caseName = JSON.parse(this.routeQuery.data).caseName
-        // this.queryData.uid = JSON.parse(this.routeQuery.data).uid
-        // this.GoodSelected = JSON.parse(this.routeQuery.data).checkSolutionInfosVoList
         this.resMoveBillFindMoveDetailInfo()
       }else if(this.routeQuery.type == "3"){
-        this.queryData = JSON.parse(this.routeQuery.data)
-        this.queryData.outStoreType = this.queryData.outStoreType.toString()
-        this.queryData.inStoreType = this.queryData.inStoreType.toString()
-        this.goodList = this.queryData.moveBillDetailEntityList
+        this.resMoveBillFindMoveDetailInfo1(JSON.parse(this.routeQuery.data))
       }else if(this.routeQuery.type == "2"){
-        this.queryData = JSON.parse(this.routeQuery.data)
-        this.queryData.outStoreType = this.queryData.outStoreType.toString()
-        this.queryData.inStoreType = this.queryData.inStoreType.toString()
-        this.goodList = this.queryData.moveBillDetailEntityList
-        let newArr = []
-        let newObj = {}
-        newObj.label = this.queryData.inStorehouseName
-        newObj.value = this.queryData.inStorehouseCode
-        newArr.push(newObj)
-        this.inStorehouseCodeArr = newArr
-        let newArr1 = []
-        let newObj1 = {}
-        newObj1.label = this.queryData.outStorehouseName
-        newObj1.value = this.queryData.outStorehouseCode
-        newArr1.push(newObj1)
-        this.outStorehouseArr = newArr1
+        this.resMoveBillFindMoveDetailInfo1(JSON.parse(this.routeQuery.data))
       }
+    },
+        // 转移管理查询接口
+    resMoveBillFindMoveDetailInfo1(row){
+      let val = {
+        uid:row == undefined ? "":row
+      }
+      this.$cimList.inventoryTransfer
+        .moveBillFindMoveDetailInfo(val)
+        .then(res => {
+          if (res.code === 200) {
+            if(this.routeQuery.type == "3"){
+              this.queryData = res.data
+              this.queryData.outStoreType = this.queryData.outStoreType.toString()
+              this.queryData.inStoreType = this.queryData.inStoreType.toString()
+              this.goodList = this.queryData.moveBillDetailEntityList
+            }else if(this.routeQuery.type == "2"){
+              this.queryData = res.data
+              this.queryData.outStoreType = this.queryData.outStoreType.toString()
+              this.queryData.inStoreType = this.queryData.inStoreType.toString()
+              this.goodList = this.queryData.moveBillDetailEntityList
+              let newArr = []
+              let newObj = {}
+              newObj.label = this.queryData.inStorehouseName
+              newObj.value = this.queryData.inStorehouseCode
+              newArr.push(newObj)
+              this.inStorehouseCodeArr = newArr
+              let newArr1 = []
+              let newObj1 = {}
+              newObj1.label = this.queryData.outStorehouseName
+              newObj1.value = this.queryData.outStorehouseCode
+              newArr1.push(newObj1)
+              this.outStorehouseArr = newArr1
+            }
+          } else {
+            this.error(res.msg);
+            this.$message(res.msg);
+          }
+        })
     },
     // 查询
     onQuery() {
@@ -352,7 +363,7 @@ export default {
       }
     },
     // 选泽门店回调
-    onCinemalSumit(val = []) {
+    setCinema(val = []) {
       if(val.length == 0){
         this.$nextTick(() => {
           this.queryData.inStorehouseCode = ""
@@ -366,21 +377,66 @@ export default {
       if (val.length > 0) {
         this.queryData.cinemaName = val[0].name;
         this.queryData.cinemaUid = val[0].uid;
+        // this.queryData.inStorehouseCode = ""
+        // this.queryData.inStorehouseName = ""
+        // this.queryData.outStorehouseCode = "" 
+        // this.queryData.outStorehouseName = "" 
+        // this.queryData.outStorehouseUid = ""  
+        // this.goodList = []
       } else {
         this.queryData.cinemaName = "";
         this.queryData.cinemaUid = "";
       }
       console.log(val);
     },
+    // 选泽门店回调
+    onCinemalSumit(val = [],type) {
+      console.log(val," 选泽门店回调",type);
+      if (val.length > 0) {
+        if(type=="default"){
+          if(val.length==1){
+            this.setCinema(val)
+          }
+        }else{
+          this.setCinema(val)
+        }
+      } else {
+        this.setCinema()
+      }
+    },
     selectedGoodsDialogCallBack(value) {
+      // let nowgoodList = JSON.stringify(JSON.parse(this.goodList))
+      // debugger
       let newgoodList = []
       value.data.forEach((val,index,arr)=>{
         let newObj = val.moveBillDetailEntity
         newgoodList.push(newObj)
       })
+      // let newData = value.data
+      // this.goodList.forEach((val1)=>{
+      //   newData.forEach((val2)=>{
+      //     if(val2.merCode == val1.merCode){
+      //       val2.outCount = val1.outCount
+      //       // val2.costPrice = val1.costPrice
+      //       // val2.outStoreCount = val1.outStoreCount
+      //     }
+      //   })
+      // })
       this.goodList = newgoodList
-      this.moveBillDetailEntityList = this.goodList
-      console.log(value);
+      this.queryData.moveBillDetailEntityList = this.goodList
+      // console.log(newData);
+      // debugger
+    },
+    //去重
+    unRepeat(arr) {
+        let hash = {};
+        return arr.reduce((item, next) => {
+            if (!hash[next.merCode]) {
+                hash[next.merCode] = true;
+                item.push(next);
+            }
+            return item;
+        }, []);
     },
     chukkuEvent(){
       this.queryData.outStorehouseName = ""
@@ -410,6 +466,17 @@ export default {
         this.resMoveBillFindAllStorehouse1(parseInt(type))
       }
       
+    },
+    fanhuihandleCancel() {
+      this.$store.commit("tagNav/removeTagNav", {
+          name: this.$route.name,
+          path: this.$route.path,
+          title: this.$route.meta.title,
+          query: this.$route.query
+      })
+      this.$router.push({
+          path: "/retail/InventoryManagement/inventoryTransfer/list",
+      });
     },
     addPreEvevt(){
       if(this.queryData.cinemaUid == undefined || this.queryData.cinemaUid == ""){
@@ -515,6 +582,7 @@ export default {
              this.handleCancel()
           } else {
             this.$message(res.msg);
+            this.$message(res.data);
           }
         });
       },
@@ -590,9 +658,19 @@ export default {
       } 
     },
     handleCancel() {
+       this.$store.commit("tagNav/removeTagNav", {
+          name: this.$route.name,
+          path: this.$route.path,
+          title: this.$route.meta.title,
+          query: this.$route.query
+      })
+       let queryData = {
+        cinemaUid:this.queryData.cinemaUid,
+        cinemaName:this.queryData.cinemaName
+      }
       this.returnList({
         returnType:true,
-        cinema: JSON.stringify(this.queryData)
+        cinema: JSON.stringify(queryData)
       });
     },
     returnList(param) {

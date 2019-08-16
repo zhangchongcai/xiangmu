@@ -46,26 +46,51 @@ tableOptions:{  label:"操作",
                 :prop="item.prop?item.prop:''" 
                 :label="item.label?item.label:''" 
                 :width="item.width?item.width:''" 
-                :fixed="item.fixed?item.fixed:''"
+                :fixed="item.fixed?item.fixed:false"
                 :sortable ="item.sortable?item.sortable:false">
                     <template slot-scope="scope" v-if="item.formatRole">
                         <template  v-if="item.prop=='processList'">
-                            <el-steps :space="100"  align-center>
-                                <el-step  v-for="(items,indexs) in scope.row.processList"></el-step>
-                            </el-steps>
+                            <!-- 审批流程 -->
+                            <span style="font-size: 12px;color: #333333;float: left;">开始</span>
+                            <span  class="line" style="">
+                                <span class="line-content"></span>    
+                            </span>
+                            <template v-for="(items,indexs) in scope.row.processList">
+                                <span :key="indexs">
+                                    <span class="round">
+                                        <span class="round-number">{{indexs+1}}</span>
+                                    </span>
+                                    <span class="line">
+                                        <span class="line-content"></span>    
+                                    </span>
+                                </span>
+                            </template>
+                            <span style="font-size: 12px;color: #333333;float: left;">结束</span>
                         </template>
                         <template  v-else>
-                            {{item.formatRole(scope)}}
+                            <!-- 颜色 -->
+                            <div v-if="item.prop=='statusRespons'&&scope.row.statusRespons==1" style="font-size:12px;color:#739BFF;">
+                                {{item.formatRole(scope)}}
+                            </div>
+                            <div v-else-if="item.prop=='statusRespons'&&scope.row.statusRespons==2" style="font-size:12px;color:#2DBC2D;">
+                                {{item.formatRole(scope)}}
+                            </div>
+                            <div v-else-if="item.prop=='statusRespons'&&scope.row.statusRespons==3" style="font-size:12px;color:#F33430;">
+                                {{item.formatRole(scope)}}
+                            </div>
+                            <template v-else>
+                                {{item.formatRole(scope)}}
+                            </template>
                         </template>
                     </template>
                    
                      
                 </el-table-column>
-                <el-table-column :key="index" v-else :prop="item.prop?item.prop:''" :label="item.label?item.label:''" :width="item.width?item.width:''" :fixed="item.fixed?item.fixed:''"></el-table-column>
+                <el-table-column :key="index" v-else :prop="item.prop?item.prop:''" :label="item.label?item.label:''" :width="item.width?item.width:''" :fixed="item.fixed?item.fixed:false"></el-table-column>
             </template>
 
             <!-- 操作列 -->
-            <el-table-column  :label="tableOptions.label?tableOptions.label:''"  :fixed="tableOptions.fixed?tableOptions.fixed:''">
+            <el-table-column  :label="tableOptions.label?tableOptions.label:''"  :fixed="tableOptions.fixed?tableOptions.fixed:false" :width="tableOptions.width?tableOptions.width:''">
                 <template slot-scope="scope">
                     <div v-if="tableOptions.options.length<=3">
                         <span v-for="(btn,index) in options" :key="index">
@@ -86,10 +111,8 @@ tableOptions:{  label:"操作",
                             </el-dropdown-menu>                            
                         </el-dropdown>
                     </div>
-                    
                 </template>
             </el-table-column>
-
         </el-table>
     </div>
 </template>
@@ -179,5 +202,38 @@ export default {
     }
     .button{
         display: inline-block;
+    }
+    .round{
+        border-radius: 50%;
+        height: 20px;
+        width: 20px;
+        display: inline-block;
+        vertical-align: top;
+        border: 2px solid #BCBCBC;
+        float: left;
+        .round-number{
+            display: block;
+            color: #BCBCBC;
+            height: 20px;
+            line-height: 20px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: -1px;
+            margin-left: -1px;
+        }
+    }
+    .line{
+        font-size: 12px;
+        color: #BCBCBC;
+        margin: 0 8px;
+        float: left;
+        .line-content{
+            margin: 11px 0px;
+            display: block;
+            width: 40px;
+            height: 1px;
+            background-color:#BCBCBC;
+        }
     }
 </style>

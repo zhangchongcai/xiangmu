@@ -1,5 +1,5 @@
 <template>
-  <el-dialog class="suppliers-dialog" width="500" :title="title" :visible.sync="supplierDialog" @open="openCallBack">
+  <el-dialog class="suppliers-dialog" width="600" :title="title" :visible.sync="supplierDialog" @open="openCallBack">
     <el-form
       :inline="true"
       :model="queryData"
@@ -60,6 +60,7 @@
 </template>
 
 <script>
+  import moment from 'moment';
 export default {
   props: {
     //标题
@@ -92,6 +93,7 @@ export default {
         cinemaUid:"",
         supplierCode: "",
         supplierName: "",
+        currentTime: moment().format('YYYY-MM-DD HH:mm:ss'),
         status: "1",
         page: 1,
         pageSize: 10
@@ -138,7 +140,7 @@ export default {
     },
     // 查询
     onQuery() {
-      console.log(this.queryData);
+      // console.log(this.queryData);
       this.supplierAdminQueryList(this.queryData);
     },
     // 查询
@@ -176,18 +178,18 @@ export default {
     },
     //选中供应商
     handleSelectionsSupplier(rows) {
-      console.log(rows);
+      // console.log(rows);
       this.supplierTableSelection = rows;
     },
     handleSizeChange(val) {
       this.queryData.pageSize = val;
       this.onQuery();
-      console.log(`每页 ${val} 条`);
+      // console.log(`每页 ${val} 条`);
     },
     handleCurrentChange(val) {
       this.queryData.page = val;
       this.onQuery();
-      console.log(`当前页: ${val}`);
+      // console.log(`当前页: ${val}`);
     },
   }
 };

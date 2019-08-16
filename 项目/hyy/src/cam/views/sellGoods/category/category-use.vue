@@ -11,7 +11,7 @@
             <calendar-view
               size="mini"
               v-model="time"
-              format="yyyy/MM/dd"
+              format="yyyy-MM-dd"
               :dateType="dateType"
               :dateTypeActive="dateTypeActive"
               :dateTypeIndex="dateTypeIndex"
@@ -45,23 +45,14 @@
           ></target-label>
         </div>
         <div>
-          <!-- <i
-            class="iconfont icon-neiye-zhexiantu cursor"
-            :class="[isNumber?'text-blue':'']"
-            @click="isNumber = true"
-          ></i>
-          <i
-            class="iconfont icon-neiye-biaoge cursor text-blue"
-            @click="isNumber = false"
-          ></i> -->
           <el-radio-group v-model="isNumber" size="mini" v-if="!isHistogram">
-            <el-radio-button :label="true">数值</el-radio-button>
-            <el-radio-button :label="false">占比</el-radio-button>
+            <el-radio-button :label="0">数值</el-radio-button>
+            <el-radio-button :label="1">占比</el-radio-button>
           </el-radio-group>
         </div>
       </div>
       <div class="section-content trend-chart">
-        <ve-histogram :data="chartData" :settings="chartSettings"></ve-histogram>
+        <ve-histogram :data="chartData" :settings="chartSettings" :extend="{barGap:'0'}"></ve-histogram>
       </div>
     </div>
     <div class="section">
@@ -70,168 +61,45 @@
           <i class="el-icon-arrow-up icon"></i>
           品类明细
         </div>
-        <el-button class="right">
-            <i class="ring quehuo"></i> 缺货明细
-        </el-button>
-        <el-button class="right">
-            <i class="ring zhixiao"></i>滞销明细
-        </el-button>
-        
+        <template v-if="(orgType=='cinema') && currentShow">
+          <el-button class="right" @click="replenish">
+              <i class="ring quehuo"></i> 缺货明细
+          </el-button>
+          <el-button class="right" @click="unsale">
+              <i class="ring zhixiao"></i>滞销明细
+          </el-button>
+        </template>
         <el-button class="right" size="mini" @click="getCategoryOut">导出</el-button>
       </div>
       <div class="section-content">
-        <TreeGrid :columns="columns" :tree-structure="true" :data-source="dataSource"></TreeGrid>
-        <div class="reset-table">
-          <el-table border :data="tableData" key="tableData" @sort-change="tableSortChange"
-            default-expand-all
-            :default-sort = "{prop: 'xse', order: 'descending'}"
-            :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
-          >
-            <el-table-column label="品类/商品名称" min-width="110" fixed key="area" prop="name">
-              <template slot-scope="scope">
-                <div class="cursor" @click="goDetail(scope.row.id)">
-                  <span class="text-blue">{{scope.row.name}}</span>
-                  <i class="ring quehuo"></i>
-                </div>
-              </template>
-            </el-table-column>
-            <el-table-column
-              prop="xse"
-              label="销售额(元)"
-              min-width="110"
-              sortable="custom"
-              key="xse"
-            >
-              <template slot-scope="scope">{{scope.row.xse | formatNum}}</template>
-            </el-table-column>
-            <el-table-column
-              prop="audienceCount"
-              label="销售额占比(%)"
-              min-width="150"
-              sortable="custom"
-              key="audienceCount"
-            >
-              <template slot-scope="scope">{{scope.row.audienceCount | formatNum | formatFixed}}</template>
-            </el-table-column>
-            <el-table-column
-              prop="planShowCount"
-              label="销售单量"
-              min-width="120"
-              sortable="custom"
-              v-if="memberTypeVal === 0"
-              key="planShowCount"
-            >
-              <template slot-scope="scope">{{scope.row.planShowCount | formatNum | formatFixed}}</template>
-            </el-table-column>
-            <el-table-column
-              prop="avgTicketPrice"
-              label="销售数量"
-              min-width="120"
-              sortable="custom"
-              key="avgTicketPrice"
-            >
-              <template slot-scope="scope">{{scope.row.avgTicketPrice}}</template>
-            </el-table-column>
-            <el-table-column
-              prop="servicePrice"
-              label="客单价(元)"
-              min-width="120"
-              sortable="custom"
-              key="servicePrice"
-            >
-              <template slot-scope="scope">{{scope.row.servicePrice | formatNum}}</template>
-            </el-table-column>
-            <el-table-column
-              prop="hallServicePrice"
-              label="件单价(元)"
-              min-width="120"
-              sortable="custom"
-              key="hallServicePrice"
-            >
-              <template slot-scope="scope">{{scope.row.hallServicePrice | formatNum}}</template>
-            </el-table-column>
-            <el-table-column
-              prop="payBoxOffice"
-              label="客单量"
-              min-width="90"
-              sortable="custom"
-              key="payBoxOffice"
-            >
-              <template slot-scope="scope">{{scope.row.payBoxOffice | formatNum}}</template>
-            </el-table-column>
-            <el-table-column
-              prop="splitBoxOffice"
-              label="购买率(%)"
-              min-width="120"
-              sortable="custom"
-              key="splitBoxOffice"
-            >
-              <template slot-scope="scope">{{scope.row.splitBoxOffice | formatNum}}</template>
-            </el-table-column>
-            <el-table-column
-              prop="unShowCountRate"
-              label="人均卖品金额(元)"
-              min-width="150"
-              sortable="custom"
-              v-if="memberTypeVal === 0"
-              key="unShowCountRate"
-            ></el-table-column>
-            <el-table-column
-              prop="attendanceRate"
-              label="销售成本(元)"
-              min-width="130"
-              sortable="custom"
-              v-if="memberTypeVal === 0"
-              key="attendanceRate"
-            ></el-table-column>
-            <el-table-column
-              prop="avgPlanShowCount"
-              label="成本价(元)"
-              min-width="130"
-              sortable="custom"
-              v-if="memberTypeVal === 0"
-              key="avgPlanShowCount"
-            >
-              <template slot-scope="scope">{{scope.row.avgPlanShowCount | formatFixed}}</template>
-            </el-table-column>
-            <el-table-column
-              prop="avgSeatPrice"
-              label="销售毛利"
-              min-width="100"
-              sortable="custom"
-              v-if="memberTypeVal === 0"
-              key="avgSeatPrice"
-            ></el-table-column>
-            <el-table-column
-              prop="memberBoxOfficePer"
-              label="销售毛利率(%)"
-              min-width="140"
-              sortable="custom"
-              key="memberBoxOfficePer"
-            ></el-table-column>
-            <el-table-column
-              prop="marketShare"
-              label="会员消费占比(%)"
-              min-width="150"
-              sortable="custom"
-              v-if="memberTypeVal === 0"
-              key="marketShare"
-            >
-              <template slot-scope="scope">{{scope.row.marketShare || '--'}}</template>
-            </el-table-column>
-          </el-table>
-        </div>
-        <div class="reset-page" v-if="total>0">
-          <el-pagination
+        <TreeGrid 
+            :columns="columns" 
+            :tree-structure="true" 
+            :default-expand-all="false" 
+            @tableSortChange="tableSortChange"
+            :default-sort="{prop: 'salesVolume', order: 'descending'}"
+            :data-source="dataSource">
+                    <template slot-scope="row">
+                      <span :class="{'text-blue cursor':row.row.goods}" @click="row.row.goods && goDetail(row.row)">{{row.row.categoryName}}</span>
+                      <span v-if="(orgType=='cinema') && currentShow">
+                        <i class="ring quehuo" v-if="row.row.psiType == 0"></i>
+                        <i class="ring zhixiao" v-if="row.row.psiType == 1"></i>
+                      </span>
+                    </template>
+        </TreeGrid>
+        <div class="reset-page">
+          <el-pagination v-if="total>15"
             size="mini"
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
             :current-page="page"
             :page-sizes="sizes"
             :page-size="size"
-            layout="sizes,total,prev, pager, next, jumper"
+            layout="total,sizes,prev, pager, next, jumper"
             :total="total"
           ></el-pagination>
+          <span class="page-else" v-else-if="total>0">共{{total}}条</span>
+          <span class="page-else" v-else></span>
         </div>
       </div>
     </div>
@@ -247,16 +115,5 @@ export default {
 };
 </script>
 <style>
-  /* .demo-table-expand {
-    font-size: 0;
-  }
-  .demo-table-expand label {
-    width: 90px;
-    color: #99a9bf;
-  }
-  .demo-table-expand .el-form-item {
-    margin-right: 0;
-    margin-bottom: 0;
-    width: 50%;
-  } */
+ 
 </style>

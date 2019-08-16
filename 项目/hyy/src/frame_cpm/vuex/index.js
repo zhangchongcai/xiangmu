@@ -20,6 +20,9 @@ export default new Vuex.Store({
         innerWidth: null, // 浏览器宽度
         innerHeight: null,// 浏览器高度
         changeCinemaData: null,//影片资料影院data
+        password: null,
+        CpmUserKey: null,
+        sliderData: null
     },
     mutations: {
         updateLoginTokenCPM(state, newToken) { //更新token信息
@@ -37,6 +40,13 @@ export default new Vuex.Store({
             // console.log('进来了：',data)
             state.changeCinemaData = data
         },
+        changePwd(state,data) {
+            state.password = data
+        },
+        updateUserKey(state, data) { //更新登录用户信息
+            state.CpmUserKey = data;
+        },
+
     },
     modules
 })

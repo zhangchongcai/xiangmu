@@ -1,15 +1,16 @@
 <template>
     <div class="edit-plan-guide">
-        <div class="view-ctrl-container">
+        <div class="view-ctrl-container" :style="{'margin-bottom': approveRecordData.length > 0 ? '0px' : '200px'}">
             <div class="guide-info">
                 <div class="info-options"><span>期数:</span>{{issuesNo}}</div>
-                <div class="info-options"><span>版本:</span>{{versionNo}}</div>
+                <div class="info-options"><span>版本:</span>{{versionNoShow}}</div>
                 <div class="info-options"><span>适用日期:</span>
                     <el-date-picker
                         :disabled="mode == 'view'"
                         v-model="timeValue"
                         type="daterange"
                         :clearable="false"
+                        :picker-options="pickerOptions"
                         value-format="yyyy-MM-dd"
                         range-separator="至"
                         start-placeholder="开始日期"
@@ -29,8 +30,10 @@
                 </el-input>
             </div>
             <div class="plan-guide-container" :class="showList[0].type">
-                <div class="title" @click="changeShow(0)">
-                    <i class="el-icon-arrow-down"></i><span>强制型影片指导</span>
+                <div class="title" >
+                    <div class="title-container" @click="changeShow(0)">
+                        <i class="el-icon-arrow-down"></i><span>强制型影片指导</span>
+                    </div>
                 </div>
                 <div>
                    <div class="table-top-menu-con">
@@ -43,6 +46,7 @@
                     class="force-guide-table"
                     :data="forceGuide">
                         <el-table-column
+                            width="60"
                             label="序号"
                         >
                            <template slot-scope="scope">
@@ -50,33 +54,49 @@
                             </template>
                         </el-table-column>
                         <el-table-column
+                            width="200"
                             label="影片名称"
                             prop="movieName"
                         >
+                            <template slot-scope="scope">
+                                <div v-for="(item, index) in scope.row.movieInfoVoList" class="single-movie-table-row" :key="index">{{item.movieName}}</div>
+                            </template>
                         </el-table-column>
                         <el-table-column
                             label="级别"
                             prop="movieLevel"
                         >
+                            <template slot-scope="scope">
+                                <div v-for="(item, index) in scope.row.movieInfoVoList" class="single-movie-table-row" :key="index">{{item.movieLevel}}</div>
+                            </template>
                         </el-table-column>
                         <el-table-column
                             label="制式"
+                            width="180"
                             prop="disVersions"
                         >
+                            <template slot-scope="scope">
+                                <div v-for="(item, index) in scope.row.movieInfoVoList" class="single-movie-table-row" :key="index">{{item.disVersions}}</div>
+                            </template>
                         </el-table-column>
                         <el-table-column
                             label="时长(分钟)"
                             prop="timeLong"
                         >
-                        </el-table-column>
-                        <el-table-column
-                            label="上映/落幕"
-                        >
                             <template slot-scope="scope">
-                                {{scope.row.dateShowFirst}} 至 {{scope.row.dateShowOff}}
+                                <div v-for="(item, index) in scope.row.movieInfoVoList" class="single-movie-table-row" :key="index">{{item.timeLong}}</div>
                             </template>
                         </el-table-column>
                         <el-table-column
+                            width="180"
+                            label="首映/落幕"
+                        >
+                            <template slot-scope="scope">
+                                <div v-for="(item, index) in scope.row.movieInfoVoList" class="single-movie-table-row" :key="index">{{item.dateShowFirst}} 至 {{item.dateShowOff}}</div>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                            width="180"
                             label="适用日期"
                         >
                             <template slot-scope="scope">
@@ -117,8 +137,10 @@
                 </div>
             </div>
             <div class="plan-guide-container" :class="showList[1].type">
-                <div class="title" @click="changeShow(1)">
-                    <i class="el-icon-arrow-down"></i><span>指导型影片指导</span>
+                <div class="title" >
+                    <div class="title-container" @click="changeShow(1)">
+                        <i class="el-icon-arrow-down"></i><span>指导型影片指导</span>
+                    </div>
                 </div>
                 <div>
                     <div class="table-top-menu-con">
@@ -131,6 +153,7 @@
                     class="advise-guide-table"
                         :data="adviseGuide">
                         <el-table-column
+                            width="60"
                             label="序号"
                         >
                             <template slot-scope="scope">
@@ -138,33 +161,49 @@
                             </template>
                         </el-table-column>
                         <el-table-column
+                            width="200"
                             label="影片名称"
                             prop="movieName"
                         >
+                            <template slot-scope="scope">
+                                <div v-for="(item, index) in scope.row.movieInfoVoList" class="single-movie-table-row" :key="index">{{item.movieName}}</div>
+                            </template>
                         </el-table-column>
                         <el-table-column
                             label="级别"
                             prop="movieLevel"
                         >
+                            <template slot-scope="scope">
+                                <div v-for="(item, index) in scope.row.movieInfoVoList" class="single-movie-table-row" :key="index">{{item.movieLevel}}</div>
+                            </template>
                         </el-table-column>
                         <el-table-column
+                            width="180"
                             label="制式"
                             prop="disVersions"
                         >
+                            <template slot-scope="scope">
+                                <div v-for="(item, index) in scope.row.movieInfoVoList" class="single-movie-table-row" :key="index">{{item.disVersions}}</div>
+                            </template>
                         </el-table-column>
                         <el-table-column
                             label="时长(分钟)"
                             prop="timeLong"
                         >
-                        </el-table-column>
-                        <el-table-column
-                            label="上映/落幕"
-                        >
                             <template slot-scope="scope">
-                                {{scope.row.dateShowFirst}} 至 {{scope.row.dateShowOff}}
+                                <div v-for="(item, index) in scope.row.movieInfoVoList" class="single-movie-table-row" :key="index">{{item.timeLong}}</div>
                             </template>
                         </el-table-column>
                         <el-table-column
+                            width="180"
+                            label="首映/落幕"
+                        >
+                            <template slot-scope="scope">
+                                <div v-for="(item, index) in scope.row.movieInfoVoList" class="single-movie-table-row" :key="index">{{item.dateShowFirst}} 至 {{item.dateShowOff}}</div>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                            width="180"
                             label="适用日期" 
                         >
                             <template slot-scope="scope">
@@ -205,13 +244,67 @@
                 </div>
             </div>
         </div>
-        <div class="save-tool">
-            <el-button class="w80-btn" v-if="mode != 'view'" type="primary">提交审核</el-button>
-            <el-button class="w80-btn" v-if="mode != 'view'" type="primary" @click="submitCheck">保存</el-button>
-            <el-button class="w80-btn" v-if="mode != 'view'" @click="cancelEdit">取消</el-button>
-            <el-button class="w80-btn" v-if="mode == 'view'" @click="cancelEdit">关闭</el-button>
+                <!-- :header-cell-style="{'background': '#F2F4FD'}" -->
+                <!-- stripe -->
+        <el-table
+                v-show="approveRecordData.length > 0"
+                :data="approveRecordData"
+                style="width: 100%; margin-bottom: 10px">
+            <el-table-column
+                    prop="action"
+                    label="审批记录"
+                    show-overflow-tooltip>
+                <template slot-scope="scope">
+                    <span v-if="scope.row.action === 'PASS'">通过</span>
+                    <span v-if="scope.row.action === 'REJECT'">驳回</span>
+                    <span v-if="scope.row.action === 'SUBMIT'">提交</span>
+                </template>
+            </el-table-column>
+            <el-table-column
+                    prop="remark"
+                    label="审批意见"
+                    show-overflow-tooltip>
+            </el-table-column>
+            <el-table-column
+                    prop="approveUserName"
+                    label="审批人"
+                    show-overflow-tooltip>
+            </el-table-column>
+            <el-table-column
+                    prop="approveTime"
+                    label="审批时间"
+                    show-overflow-tooltip>
+            </el-table-column>
+        </el-table>
+        <el-form class="approve-form" v-show="showApprove" :model="approveForm" :rules="rules" ref="approveForm" label-width="100px">
+            <el-form-item label="审批结果：" prop="isPass">
+                <el-radio v-model="approveForm.isPass" :label="1">通过</el-radio>
+                <el-radio v-model="approveForm.isPass" :label="0">驳回</el-radio>
+            </el-form-item>
+            <el-form-item label="审批意见：" prop="approveRemark">
+                <el-input
+                        style="width: 360px"
+                        type="textarea"
+                        :rows="3"
+                        resize="none"
+                        placeholder="请输入"
+                        show-word-limit
+                        v-model="approveForm.approveRemark"
+                        maxlength="500">
+                </el-input>
+                <!-- <span style="position: absolute; bottom: 0; line-height: 12px; font-size: 12px; margin-left: 10px;">{{approveForm.approveRemark.length}}/500</span> -->
+            </el-form-item>
+        </el-form>
+        <div class="save-tool" v-show="showSaveTool">
+            <el-button class="w80-btn" v-if="mode != 'view' && (guideStatus == '0' || guideStatus == '-1' || guideStatus == '4' || guideStatus == '3')" type="primary" @click="submitCheck(submitApprove)">提交审核</el-button>
+            <el-button class="w80-btn" v-if="mode != 'view'" type="primary" @click="submitCheck(savePlanGuide)">保存</el-button>
+            <el-button class="w80-btn" v-if="mode != 'view' " @click="cancelEdit">取消</el-button>
+            <el-button class="w80-btn" v-if="mode == 'view' && showApprove" type="primary" @click="approveAllow">确定</el-button>
+            <el-button class="w80-btn" v-if="mode == 'view' && !showApprove" @click="cancelEdit">关闭</el-button>
+            <el-button class="w80-btn" v-if="mode == 'view' && showApprove" @click="cancelEdit">返回</el-button>
+            
         </div>
-        <component :is="curComponentType ? 'newPlanGuide' : ''" :add-type="curComponentType" @cancelAddGuide="cancelAddGuide" :show-type="curComponentShowType" :force-guide="forceGuide" :advise-guide="adviseGuide" :time-value="timeValue" :mode="mode" :editData="editData" @confirmGuide="confirmGuide" @changeGuideData="changeGuideData"></component>
+        <component ref="planGuide" :is="curComponentType ? 'newPlanGuide' : ''" :add-type="curComponentType" @cancelAddGuide="cancelAddGuide" :show-type="curComponentShowType" :force-guide="forceGuide" :advise-guide="adviseGuide" :time-value="timeValue" :mode="mode" :editData="editData" @confirmGuide="confirmGuide" @changeGuideData="changeGuideData" :curCtrlGuideIndex="curCtrlGuideIndex"></component>
         <!-- <component :is="addObj.second ? 'newPlanGuide' : ''" :add-type="addObj.second" @cancelAddGuide="cancelAddGuide"></component> -->
         <!-- <el-dialog :visible.sync="timeSetErrorDialog">
             <div class="">
@@ -239,8 +332,8 @@
             :visible.sync="dialogVisible"
             width="30%"
             @closed="handleClose">
-            <div v-if="errorObj.data && errorObj.data.forceErrorData.length" style="font-size: 14px; color: #666; text-align: center;">强制型: {{errorObj.data.forceErrorData.join(',') + errorObj.msg}}</div>
-            <div v-if="errorObj.data && errorObj.data.adviseErrorData.length" style="font-size: 14px; color: #666; text-align: center;">指导型: {{errorObj.data.adviseErrorData.join(',') + errorObj.msg}}</div>
+            <div v-if="errorObj.data && errorObj.data.forceErrorData.length" style="font-size: 14px; color: #666; text-align: center; margin-bottom: 5px;">强制型: {{errorObj.data.forceErrorData.join(',') + errorObj.msg}}</div>
+            <div v-if="errorObj.data && errorObj.data.adviseErrorData.length" style="font-size: 14px; color: #666; text-align: center; margin-bottom: 5px;">指导型: {{errorObj.data.adviseErrorData.join(',') + errorObj.msg}}</div>
             
             
             <span slot="footer" class="dialog-footer">
@@ -252,15 +345,25 @@
 
 <script>
 import newPlanGuide from './newPlanGuide'
-import { getPlanGuiideDetail, savePlanGuide, updatePlanGuiideDetail } from 'ctm/http/interface'
+import {getPlanGuiideDetail, savePlanGuide, updatePlanGuiideDetail, subPlanGuideApprove, approvePlanGuide, getIssuesNo} from 'ctm/http/interface'
     export default {
         data() {
+            let approveRemarkValidator = (rule, value, callback) => {
+                if (!value && !this.approveForm.isPass) {
+                    callback(new Error('请输入审批意见'))
+                } else {
+                    callback()
+                }
+            }
             return {
                 mode: 'view',
                 issuesNo: '',
                 versionNo: '',
+                versionNoShow: '',
                 guideUid: '',
+                approveRemark: '',
                 guideData: {},
+                guideStatus: '-1',
                 timeValue: '',
                 textareaValue: '',
                 showList: [
@@ -282,8 +385,26 @@ import { getPlanGuiideDetail, savePlanGuide, updatePlanGuiideDetail } from 'ctm/
                 editData: {},
                 curCtrlGuideIndex: 0,
                 errorObj: {},
-                dialogVisible: false
-                
+                dialogVisible: false,
+                // 审批记录
+                approveRecordData: [],
+                showApprove: false,
+                rules: {
+                    isPass: [
+                        { required: true, message: '请选择审批结果', trigger: 'change' }
+                    ],
+                    approveRemark: [
+                        { validator: approveRemarkValidator, trigger: 'submit' }
+                    ],
+                },
+                approveForm: {
+                    isPass: 1,
+                    approveRemark: ''
+                },
+                showSaveTool: false,
+                pickerOptions: {
+ 
+                }
             }
         },
         created() {
@@ -291,12 +412,30 @@ import { getPlanGuiideDetail, savePlanGuide, updatePlanGuiideDetail } from 'ctm/
             // 不是新建
             if (this.mode != 'add') {
                 this.versionNo = this.$route.query ? this.$route.query.versionNo : ''
+                this.versionNoShow = this.versionNo
                 this.issuesNo = this.$route.query ? this.$route.query.issuesNo : ''
+                this.showApprove = this.$route.query ? !!this.$route.query.isAppprove : false
                 this.dataInit()
             } else {
-                this.issuesNo = (new Date().getMonth() + 1) >= 10 ? new Date().getFullYear().toString() + (new Date().getMonth() + 1).toString() :
-                new Date().getFullYear().toString() + '0' + (new Date().getMonth() + 1).toString()
-                this.versionNo = 1
+                getIssuesNo({}).then(res => {
+                    // this.issuesNo = (new Date().getMonth() + 1) >= 10 ? new Date().getFullYear().toString() + (new Date().getMonth() + 1).toString() :
+                    //                 new Date().getFullYear().toString() + '0' + (new Date().getMonth() + 1).toString()
+                    if (res.code != 200) return this.error(res.msg)
+                    if (res.code == 200) {
+                        this.issuesNo = res.data
+                        this.versionNo = 1
+                        this.versionNoShow = this.versionNo
+                        this.showSaveTool = true
+                    }
+                })
+
+            }
+        },
+        mounted() {
+            this.pickerOptions = {
+                disabledDate(time) {
+                    return (time.getTime() < (new Date().getTime() - 24 * 60 * 60 * 1000))
+                }
             }
         },
         methods: {
@@ -339,6 +478,16 @@ import { getPlanGuiideDetail, savePlanGuide, updatePlanGuiideDetail } from 'ctm/
                         this.adviseGuide = adviseGuide
                         this.guideData = res.data
                         this.timeValue = [this.guideData.startDate, this.guideData.endDate]
+                        this.guideStatus = res.data.status
+                        if (this.guideStatus == '3' && this.mode != 'view' && res.data.isMaxVersion) {
+                            this.versionNoShow = Number(this.versionNo) + 1 || 1
+                        }
+                        this.guideUid = res.data.uid
+
+                        this.approveRecordData = res.data.approveHistoryVoList
+                        this.showSaveTool = true
+                        // if (this.showApprove) {
+                        // }
                     }
                 })
                 
@@ -364,6 +513,7 @@ import { getPlanGuiideDetail, savePlanGuide, updatePlanGuiideDetail } from 'ctm/
                         cancelButtonText: '取消',
                         type: 'warning'
                         }).then(() => {
+                            this.editData = {}
                             this.curComponentType = type
                             this.curComponentShowType = 'new'
                             this.$nextTick(() => {
@@ -389,6 +539,7 @@ import { getPlanGuiideDetail, savePlanGuide, updatePlanGuiideDetail } from 'ctm/
                         cancelButtonText: '取消',
                         type: 'warning'
                         }).then(() => {
+                            this.$refs.planGuide.resetData()
                             this.curComponentType = type
                             this.curComponentShowType = 'edit'
                             this.editData = scope.row
@@ -420,6 +571,7 @@ import { getPlanGuiideDetail, savePlanGuide, updatePlanGuiideDetail } from 'ctm/
                         cancelButtonText: '取消',
                         type: 'warning'
                         }).then(() => {
+                            this.$refs.planGuide.resetData()
                             this.curComponentType = type
                             this.curComponentShowType = 'view'
                             this.editData = scope.row
@@ -477,7 +629,6 @@ import { getPlanGuiideDetail, savePlanGuide, updatePlanGuiideDetail } from 'ctm/
                 this.curComponentShowType = ''
             },
             changeGuideData(data) {
-                console.log(data)
                 let type = data.guideType == 'force' ? 'forceGuide' : 'adviseGuide'
                 let guideData = JSON.parse(JSON.stringify(this[type]))
                 guideData[this.curCtrlGuideIndex] = data
@@ -501,7 +652,7 @@ import { getPlanGuiideDetail, savePlanGuide, updatePlanGuiideDetail } from 'ctm/
                 this.curComponentType = ''
                 this.curComponentShowType = ''
             },
-            submitCheck() {
+            submitCheck(cb) {
                 // 两条个指导类型中至少存在任意一条指导数据
                 var p1 = new Promise((resolve, reject) => {
                     let isResolve = true
@@ -511,7 +662,10 @@ import { getPlanGuiideDetail, savePlanGuide, updatePlanGuiideDetail } from 'ctm/
                     if (!isResolve) {
                         reject({
                             type: 'p1',
-                            data: [],
+                            data: {
+                                forceErrorData: [],
+                                adviseErrorData: [] 
+                            },
                             msg: '请添加影片'
                         })
                     } else {
@@ -524,13 +678,13 @@ import { getPlanGuiideDetail, savePlanGuide, updatePlanGuiideDetail } from 'ctm/
                     let isResolve = true, forceErrorData = [], adviseErrorData = []
                     this.forceGuide.forEach((item, index) => {
                     // TODO 筛选出影片上下映日期不在全局日期范围内的guide    
-                        if (new Date(item.dateShowFirst).getTime() > new Date (this.timeValue[1]).getTime() || new Date(item.dateShowOff).getTime() < new Date(this.timeValue[0]).getTime()) {
+                        if (item.movieInfoVoList.some(citem => new Date(citem.dateShowFirst).getTime() > new Date (this.timeValue[1]).getTime() || new Date(citem.dateShowOff).getTime() < new Date(this.timeValue[0]).getTime())) {
                             isResolve = false
                         }
                         forceErrorData.push(`No${index + 1}`)
                     })
-                    this.adviseGuide.forEach(item => {
-                        if (new Date(item.dateShowFirst).getTime() > new Date (this.timeValue[1]).getTime() || new Date(item.dateShowOff).getTime() < new Date(this.timeValue[0]).getTime()) {
+                    this.adviseGuide.forEach((item, index) => {
+                        if (item.movieInfoVoList.some(citem => new Date(citem.dateShowFirst).getTime() > new Date (this.timeValue[1]).getTime() || new Date(citem.dateShowOff).getTime() < new Date(this.timeValue[0]).getTime())) {
                             isResolve = false
                         }
                         adviseErrorData.push(`No${index + 1}`)
@@ -560,6 +714,8 @@ import { getPlanGuiideDetail, savePlanGuide, updatePlanGuiideDetail } from 'ctm/
                         }
                     })
                     this.adviseGuide.forEach((item, index) => {
+                        // console.log(new Date (this.timeValue[0]).getTime(), this.timeValue[0])
+                        // console.log(new Date(item.startDate).getTime(), new Date (this.timeValue[0]).getTime())
                         if (new Date(item.startDate).getTime() < new Date (this.timeValue[0]).getTime() || new Date(item.endDate).getTime() > new Date(this.timeValue[1]).getTime()) {
                             isResolve = false
                             adviseErrorData.push(`No${index + 1}`)
@@ -582,8 +738,9 @@ import { getPlanGuiideDetail, savePlanGuide, updatePlanGuiideDetail } from 'ctm/
                 })
 
                 Promise.all([p1, p2, p3]).then(() => {
-                    this.savePlanGuide()
+                    cb && cb()
                 }).catch(res => {
+                    // console.log(res)
                     this.errorObj = res
                     let type = res.type
                     if (type == 'p1') {
@@ -603,7 +760,6 @@ import { getPlanGuiideDetail, savePlanGuide, updatePlanGuiideDetail } from 'ctm/
             savePlanGuide() {
                 let guideData = this.forceGuide.map(item => {
                     return {
-                        cmcBaseMovieId: item.cmcBaseMovieId,
                         endDate: item.endDate,
                         startDate: item.startDate,
                         guidanceMovieCinemaVoList: item.guidanceMovieCinemaVoList.map(citem => {
@@ -612,12 +768,16 @@ import { getPlanGuiideDetail, savePlanGuide, updatePlanGuiideDetail } from 'ctm/
                             }
                         }),
                         movieDetailVoList: item.movieDetailVoList,
-                        movieName: item.movieName,
+                        
+                        movieInfoVoList: item.movieInfoVoList.map(citem => {
+                            return {
+                                cmcBaseMovieId: citem.cmcBaseMovieId
+                            }
+                        }),
                         guideType: 1
                     }
                 }).concat(this.adviseGuide.map(item => {
                     return {
-                        cmcBaseMovieId: item.cmcBaseMovieId,
                         endDate: item.endDate,
                         startDate: item.startDate,
                         guidanceMovieCinemaVoList: item.guidanceMovieCinemaVoList.map(citem => {
@@ -626,7 +786,11 @@ import { getPlanGuiideDetail, savePlanGuide, updatePlanGuiideDetail } from 'ctm/
                             }
                         }),
                         movieDetailVoList: item.movieDetailVoList,
-                        movieName: item.movieName,
+                        movieInfoVoList: item.movieInfoVoList.map(citem => {
+                            return {
+                                cmcBaseMovieId: citem.cmcBaseMovieId
+                            }
+                        }),
                         guideType: 2
                     }
                 }))
@@ -673,6 +837,74 @@ import { getPlanGuiideDetail, savePlanGuide, updatePlanGuiideDetail } from 'ctm/
                 }
                 
             },
+            submitApprove() {
+                let guideData = this.forceGuide.map(item => {
+                    return {
+                        endDate: item.endDate,
+                        startDate: item.startDate,
+                        guidanceMovieCinemaVoList: item.guidanceMovieCinemaVoList.map(citem => {
+                            return {
+                                cinemaUid: citem.cinemaUid
+                            }
+                        }),
+                        movieDetailVoList: item.movieDetailVoList,
+                        
+                        movieInfoVoList: item.movieInfoVoList.map(citem => {
+                            return {
+                                cmcBaseMovieId: citem.cmcBaseMovieId
+                            }
+                        }),
+                        guideType: 1
+                    }
+                }).concat(this.adviseGuide.map(item => {
+                    return {
+                        endDate: item.endDate,
+                        startDate: item.startDate,
+                        guidanceMovieCinemaVoList: item.guidanceMovieCinemaVoList.map(citem => {
+                            return {
+                                cinemaUid: citem.cinemaUid
+                            }
+                        }),
+                        movieDetailVoList: item.movieDetailVoList,
+                        movieInfoVoList: item.movieInfoVoList.map(citem => {
+                            return {
+                                cmcBaseMovieId: citem.cmcBaseMovieId
+                            }
+                        }),
+                        guideType: 2
+                    }
+                }))
+                let saveData = {
+                    startDate: this.timeValue[0],
+                    endDate: this.timeValue[1],
+                    issuesNo: this.issuesNo,
+                    remark: this.guideData.remark,
+                    guidanceMovieList: guideData
+                }
+                if (this.mode != 'add') {
+                    saveData.versionNo = this.versionNo
+                    if (this.guideStatus == 0 || this.guideStatus == 4) {
+                        saveData = Object.assign(saveData, {
+                            uid: this.guideUid
+                        })
+                    }
+                }
+                subPlanGuideApprove(saveData).then(res => {
+                    if (res.code != 200) return this.error(res.msg)
+                    if (res.code == 200) {
+                        this.success('提交审核成功')
+                        // TODO 关闭页签
+                        this.$store.commit("tagNav/removeTagNav", {
+                            name: this.$route.name,
+                            path: this.$route.path,
+                            title: this.$route.meta.title,
+                            query: this.$route.query
+                        })
+                        this.$router.push({path: 'list'})
+                    }
+                })
+                
+            },
             cancelEdit() {
                 this.$store.commit("tagNav/removeTagNav", {
                     name: this.$route.name,
@@ -681,6 +913,28 @@ import { getPlanGuiideDetail, savePlanGuide, updatePlanGuiideDetail } from 'ctm/
                     query: this.$route.query
                 })
                 this.$router.push({path: 'list'})
+            },
+            // 通过审核
+            approveAllow() {
+                let action = this.approveForm.isPass == 1 ? 'PASS' : 'REJECT'
+                approvePlanGuide({
+                    action: action,
+                    remark: this.approveRemark,
+                    uid: this.guideUid
+                }).then(res => {
+                    if (res.code != 200) return this.error(res.msg)
+                    if (res.code == 200) {
+                        let msg = action == 'PASS' ? '审核通过' : '已驳回'
+                        this.success(msg)
+                        this.$store.commit("tagNav/removeTagNav", {
+                            name: this.$route.name,
+                            path: this.$route.path,
+                            title: this.$route.meta.title,
+                            query: this.$route.query
+                        })
+                        this.$router.push({path: 'list'})
+                    }
+                })
             }
         },
         components: {
@@ -706,7 +960,7 @@ import { getPlanGuiideDetail, savePlanGuide, updatePlanGuiideDetail } from 'ctm/
     .edit-plan-guide {
         .view-ctrl-container {
             overflow: hidden;
-            margin-bottom: 200px;
+            // margin-bottom: 200px;
         }
         .guide-info {
             margin-bottom: 24px;
@@ -764,7 +1018,11 @@ import { getPlanGuiideDetail, savePlanGuide, updatePlanGuiideDetail } from 'ctm/
                 font-size: 14px;
                 height: 20px;
                 line-height: 20px;
-                cursor: pointer;
+                text-align: left;
+                .title-container {
+                    cursor: pointer;
+                    display: inline-block;
+                }
                 .el-icon-arrow-down {
                     margin-right: 8px;
                     color: #333;
@@ -824,13 +1082,33 @@ import { getPlanGuiideDetail, savePlanGuide, updatePlanGuiideDetail } from 'ctm/
             .el-button + .el-button {
                 margin-left: 0;
             }
+            .single-movie-table-row {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                border-bottom: 1px solid #ebebeb;
+                height: 24px;
+                box-sizing: border-box;
+                &:last-child {
+                    border-bottom: none;
+                }
+            }
         }
         /deep/ .advise-guide-table.el-table {
             th {
                 background-color: rgb(255, 187, 109); 
-            }
+                }
             .el-button + .el-button {
                 margin-left: 0;
+            }
+            .single-movie-table-row {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                border-bottom: 1px solid #ebebeb;
+                &:last-child {
+                    border-bottom: none;
+                }
             }
         }
     }

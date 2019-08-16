@@ -1,6 +1,6 @@
 <template>
   <div class="_member-info">
-    <div class="member-info-title">{{title}}</div>
+    <div class="member-info-title" style="padding-left:0">{{title}}</div>
     <div class="member-info-content">
       <div class="content-item content-left">
         <div class="item-inner" v-if="memberCardInfo.cardNo"><label class="lable-name">会员卡号：</label>{{memberCardInfo.cardNo | emptyShow}}</div>
@@ -18,10 +18,10 @@
             <span class="nameWrap" style="display:inline-block;font-size: 1.25vw;">{{memberCardInfo.cinemaName | emptyShow}}</span>
           </el-tooltip>
         </div>
-        <div class="item-inner" v-if="memberCardInfo.cardTypeCode!='stored_card' && memberCardInfo.cardTypeCode"><label class="lable-name">有效期：</label>{{memberCardInfo.workTimeType
+        <div class="item-inner" v-if="memberCardInfo.cardTypeCode!='stored_card' && memberCardInfo.cardTypeCode"><label class="lable-name">有效期：</label>{{(memberCardInfo.workTimeType || memberCardInfo.endTime)
           |
           filterWorkTime(this)}}</div>
-        <div class="item-inner" v-if="memberCardInfo.cardTypeCode=='stored_card' && memberCardInfo.cardTypeCode"><label class="lable-name">卡内余额：</label>{{memberCardInfo.totalBalance
+        <div class="item-inner" v-if="(memberCardInfo.cardTypeCode =='stored_card' || memberCardInfo.cardTypeCode == 'gift_card') && memberCardInfo.cardTypeCode"><label class="lable-name">卡内余额：</label>{{memberCardInfo.totalBalance
           | emptyShow}}元<span class="balance-desc">（实收{{memberCardInfo.basicBalance |
             emptyShow}}元;赠送{{memberCardInfo.giveBalance |
             emptyShow}}元）</span></div>
@@ -41,7 +41,7 @@
         </div>
         <div class="item-inner" v-if="memberCardInfo.createTime"><label class="lable-name">开卡日期：</label>{{memberCardInfo.createTime | filterDate}}</div>
         <div class="item-inner" v-if="isSingleQuery && memberCardInfo.cinemaName"><label class="lable-name">适用影院：</label>
-          <router-link v-if="!!$attrs.checkMovie" :to="{name:'applyCinema',query:{phoneOrCard:memberCardInfo.cardNo,type:'card'}}" style="color:#3B74FF">查看</router-link>
+          <span v-if="!!$attrs.checkMovie" @click="toBindCinema" class='checkCinema' style="">查看</span>
           <el-tooltip effect="dark" :content="memberCardInfo.cinemaName" placement="top-start" v-else>
             <span class="nameWrap" style="display:inline-block;">{{memberCardInfo.cinemaName | emptyShow}}</span>
           </el-tooltip>
@@ -73,6 +73,9 @@ export default {
     return {};
   },
   methods: {
+    toBindCinema(){
+      this.$router.push({name:'applyCinema',query:{phoneOrCard:this.memberCardInfo.cardNo,type:'card'}})
+    },
     filterName(status) {
       switch (status) {
         case "frozen":
@@ -141,11 +144,11 @@ export default {
       }
     },
     filterWorkTime(value, that) {
-      let time = that.memberCardInfo.workTimeNum;
+      let time = that.memberCardInfo.workTimeNum || that.memberCardInfo.endTime;
       if (value == "day") {
         return time ? time + "日" : "-";
       } else if (value == "month") {
-        return time ? time + "月" : "-";
+        return time ? time.toString().indexOf('-') >= 0 ? time : time + "月" : "-";
       } else if (value == "year") {
         return time ? time + "年" : "-";
       } else {
@@ -207,12 +210,7 @@ export default {
 </script>
 <style lang="scss">
 ._member-info {
-  margin-bottom: 5vh;
-  .member-info-title {
-    font-size: $font-size14;
-    color: #333;
-    font-weight: bold;
-  }
+    margin-bottom:2vh;
   .member-info-content {
     display: flex;
     // justify-content: space-between;
@@ -236,19 +234,19 @@ export default {
         // display: flex;
         // align-items: baseline;
         width:30vw;
-        font-size: $font-size13;
+        font-size: $font-size12;
         color: #151515;
-        margin-top: 2.6vh;
+        margin-top: 1.5vh;
 
         .lable-name {
           display: inline-block;
-          font-size: $font-size13;
+          font-size: $font-size12;
           color: #666666;
           line-height: 1.3;
         }
         .balance-desc {
           color: #999999;
-          font-size: $font-size13;
+          font-size: $font-size12;
         }
         .item-detail {
           width: 23vw;
@@ -268,7 +266,12 @@ export default {
     }
   }
 }
+.checkCinema{
+  color:#3B74FF;
+  font-size:$font-size12;
+  cursor: pointer;
+}
 .mainMsgStyle{
-  font-size:1.17vw;
+  font-size:$font-size12;
 }
 </style>

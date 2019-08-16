@@ -1,5 +1,6 @@
 <template>
 <div class="storemateerial-style">
+  <!-- {{this.queryData.channels}} -->
   <div class="content" >
     <el-form
       :inline="true"
@@ -7,7 +8,7 @@
       :model="queryData"
       label-position="left"
       label-width="85px"
-      label-suffix=":"
+      label-suffix="："
     >
       <el-collapse  v-model="activeNames">
         <!-- 基础信息 start-->
@@ -151,7 +152,7 @@
           <div>
             <template v-model="skuData">
               <el-row>
-                <el-col :span="8">
+                <el-col :span="10">
                   <el-form-item label="SKU编码" >
                     <span v-if="routeQuery.type == 1">
                     {{JSON.parse(this.$route.query.data).proCode+Math.ceil(Math.random() * 99)}}
@@ -166,7 +167,7 @@
                 </el-col>
               </el-row>
               <el-row>
-                <el-col :span="8">
+                <el-col :span="10">
                   <el-form-item
                     label="售价"
                     prop="skuVoList.price"
@@ -182,23 +183,32 @@
                 <el-col :span="8">
                 <el-form-item label="销售状态">
                   <el-radio-group v-model="queryData.canSale" v-if="routeQuery.type != 3">
-                    <el-radio :label="1">允许</el-radio>
-                    <el-radio :label="0">禁止</el-radio>
+                    <el-radio :label="1">允许销售</el-radio>
+                    <el-radio :label="0">禁止销售</el-radio>
                   </el-radio-group>
-                  <span v-if="routeQuery.type == 3">{{queryData.canSale == 1 ? "允许":"禁止"}}</span>
+                  <span v-if="routeQuery.type == 3">{{queryData.canSale == 1 ? "允许销售":"禁止销售"}}</span>
                 </el-form-item>
               </el-col>
               </el-row>
             </template>
             <el-row>
-              <el-col :span="8">
+              <el-col :span="10">
                 <el-form-item label="适用门店">
                   <span>{{this.queryData.cinemaName}}</span>
                 </el-form-item>
               </el-col>
               <el-col :span="10">
                 <el-form-item label="适用渠道">
-                  <span v-if="routeQuery.type==3">{{queryData.saleChannel==1?"全部渠道": selectedChannelName}}</span>
+                  <!-- <span v-if="routeQuery.type==3">{{queryData.saleChannel==1?"全部渠道": selectedChannelName}}</span> -->
+                  <template v-if="routeQuery.type==3 && this.queryData.saleChannel === 0">
+                    <div class="see-style">
+                      <span  class="c-type" @click="channelClick()">{{selectedChannelName}}</span>
+                      <span class="c-type" @click="channelClick()">...共{{this.seechannelArr == null || this.seechannelArr == "" ? 0:this.seechannelArr.length}}家</span>
+                    </div>
+                  </template>
+                  <template v-else-if="routeQuery.type==3 && this.queryData.saleChannel === 1">
+                      <span>全部渠道</span>
+                  </template>
                   <div v-else>
                     <el-select v-model="queryData.saleChannel" placeholder="请选择" class="apply-select" @change="saleChannelEvent()">
                       <el-option
@@ -230,7 +240,7 @@
               </el-col>
             </el-row>
             <el-row>
-              <el-col :span="8">
+              <el-col :span="10">
                 <el-form-item label="安全库存"
                   prop="storeUpLimit"
                   :rules="[
@@ -238,20 +248,21 @@
                     { pattern: /^([1-9]\d*|[0]{1,1})$/, message: '请输入大于下限正整数',trigger: 'change' }
                     ]"
                   > 
-                  <span>上限</span>
+                  <span style="color: #666;">上限：</span>
                   <el-input placeholder class="basic-input widthInput100" v-if="routeQuery.type != 3" v-model="queryData.storeUpLimit"></el-input>
                     <span v-if="routeQuery.type == 3">{{queryData.storeUpLimit}}</span>
                 </el-form-item>
               </el-col>
-              <el-col :span="8">
-                <el-form-item label=""
+              <el-col :span="10">
+                <el-form-item 
+                  label="下限"
                   prop="storeDownLimit"
                   :rules="[
                     { required: false,trigger: 'change' },
                     { pattern: /^([1-9]\d*|[0]{1,1})$/, message: '请输入小于等于上线限正整数',trigger: 'change' }
                     ]"
                   >
-                  <span>下限</span>
+                  <!-- <span>下限</span> -->
                   <el-input placeholder class="basic-input widthInput100" v-if="routeQuery.type != 3" v-model="queryData.storeDownLimit"></el-input>
                   <span v-if="routeQuery.type == 3">{{queryData.storeDownLimit}}</span>
                 </el-form-item>
@@ -263,16 +274,21 @@
       <!-- 销售信息 end-->
       <div class="submit-box">
         <el-button type="primary" @click="comSingleSubmit()" v-if="routeQuery.type != 3">保 存</el-button>
-        <el-button @click="handleCancel">取 消</el-button>
+        <el-button @click="handleCancel">{{routeQuery.type !=3 ? "取消":"关闭"}}</el-button>
       </div>
     </el-form>
   </div>
   <!-- 选择渠道弹窗 -->
     <!-- <channel-dialog ref="myChannelDialog" @onSumit="onChanneSumit" multiple :title="'选择适用渠道'"></channel-dialog> -->
-    <channel-dialog ref="myChannelDialog" @onSumit="onChanneSumit" multiple :title="'选择适用渠道'" :dialogFeedbackData="queryData.channels"></channel-dialog>
+    <channel-dialog ref="myChannelDialog" @onSumit="onChanneSumit" multiple :title="'选择适用渠道'" :dialogFeedbackData="queryData.channels" :cinemaUid="routeQuery.cinemaUid"></channel-dialog>
   <!-- 选择销售地点 -->
     <sales-place ref="mySalesPlaceDialog" @onSumit="onSalesPlaceSumit" :cinemaUid="routeQuery.cinemaUid"
                  multiple></sales-place>
+    <seechannel-dialog
+          :dialogVisible.sync="dialogVisibleseechannel"
+          :needData="JSON.stringify(this.seechannelArr)"
+          >
+    </seechannel-dialog>             
 </div>
 </template>
 
@@ -284,10 +300,13 @@ import applyStores from "cim/components/applyStores/applyStores.vue";
 import applyChannel from "cim/components/applyChannel/applyChannel.vue";
 import channelDialog from "cim/components/channelDialog/channelDialog.vue";
 import salesPlace from "cim/components/salesPlace/salesPlace.vue";
+import seechannelDialog from "cim/components/seeChannelDialog/seeCinemalDialog.vue";
 export default {
   mixins: [mixin],
   data() {
     return {
+      seechannelArr:[],
+      dialogVisibleseechannel:false,
       activeNames:['1','2','3'],
       skuStart:false,
       ruter:"",
@@ -782,10 +801,10 @@ export default {
       // if (truthis.$route.querye) {}
       if(this.$route.query.type == 3){
         this.queryData.cinemaUid = JSON.parse(this.$route.query.cinemaUid)
-        this.seeMerRawStockQuery(JSON.parse(this.$route.query.data).uid)
+        this.seeMerRawStockQuery(JSON.parse(this.$route.query.data))
       }else if(this.$route.query.type == 2){
         this.queryData.cinemaUid = this.$route.query.cinemaUid
-        this.seeMerRawStockQuery(JSON.parse(this.$route.query.data).uid)
+        this.seeMerRawStockQuery(JSON.parse(this.$route.query.data))
       }
     },
     salePlaceEvent(){
@@ -828,7 +847,7 @@ export default {
                 let channelArr =[]
                 res.data.channelEntityVoList.forEach((val,index,arr)=>{
                   let newObj = {}
-                  newObj.channelUid = val.channelUid
+                  newObj.channelUid = val.uid
                   newObj.name = val.name
                   channelString.push(val.name)
                   channelArr.push(newObj)
@@ -839,6 +858,7 @@ export default {
               }
               // this.queryData.channelEntityList=res.data.channelEntityVoList
               this.queryData.unitUid =res.data.unitName
+              this.seechannelArr = res.data.channelEntityVoList
               this.queryData.cinemaMerUid =res.data.cinemaMerUid
               this.queryData.cinemaName =res.data.cinemaName
               this.queryData.catUid =res.data.catUid
@@ -945,7 +965,9 @@ export default {
       this.skudialog = false
       this.resCreateSku()
     },
-
+    channelClick(){
+        this.dialogVisibleseechannel = true
+    },
     // sku关闭按钮
     skuhandleClose(){
       this.skudialog = false
@@ -972,6 +994,7 @@ export default {
             this.resmerRawStockUpdate()
           }
         }else{
+          this.$message("信息填写有误，请按照红色提示修改");
           return false;
         }
       }) 
@@ -1201,7 +1224,7 @@ export default {
       this.$cimList.storequartersGoods.cinemaRawStockUpdate(resValue).then( res => {
           if(res.code === 200) {
             // this.AttributeSkudata = res.data
-            this.$router.go(-1);
+            this.handleCancel();
             this.$message("修改成功");
             }else {
               this.$message(res.msg);
@@ -1361,8 +1384,19 @@ export default {
       console.log(this.recipeGroupList);
     },
     // 取消提交信息
+    // handleCancel() {
+    //   this.handleCancel();
+    // },
     handleCancel() {
-      this.$router.go(-1);
+      this.$store.commit("tagNav/removeTagNav", {
+          name: this.$route.name,
+          path: this.$route.path,
+          title: this.$route.meta.title,
+          query: this.$route.query
+      })
+      this.$router.push({
+          path: "/retail/commodityInformationStore/list",
+      });
     },
     //确认提交修改
     handleModificationSubmit() {
@@ -1499,7 +1533,8 @@ export default {
     applyStores,
     applyChannel,
     channelDialog,
-    salesPlace
+    salesPlace,
+    seechannelDialog
   }
 };
 </script>

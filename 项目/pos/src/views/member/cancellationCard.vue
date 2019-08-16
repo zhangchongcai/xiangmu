@@ -7,56 +7,50 @@
       :ruleFormData="ruleForm"
       :cardStatus="cardStatus"
       :isshow='isshow'>
-      <div slot="addBlock" v-show="isshow && member.cardNoOrphoneNumState">
+      <div slot="addBlock" v-show="isshow && member.cardNoOrphoneNumState" style="margin-top: 1vw;">
         <el-form
           @submit.native.prevent
           :model="ruleForm"
           :rules="rules"
           ref="ruleForm"
-          label-width="120px"
-          style="width:54vw"
           class="demo-ruleForm"
         >
-          <div style="position:relative;margin-top:-22px">
-            <div class="recharge-info-title">验证身份</div>
-            <!-- <el-form-item label="短信验证码" prop="validationCode">
-              <el-input v-model="ruleForm.validationCode" class="psd-inp" @focus="keyboard"></el-input>
-              <el-button class="start-btn" @click="getVilidate" v-text="validataText" :disabled="disable"></el-button>
-            </el-form-item> -->
-            <el-form-item label="输入密码" prop="passwd">
+          <div style="position:relative">
+            <div class="member-info-title">验证身份</div>
+            <el-form-item label="输入密码" prop="passwd" class="row-line-center">
               <el-input type="password" v-model="ruleForm.passwd" class="psd-inp"></el-input>
               <el-button class="start-btn" @click="secKeyBoard" v-text="startKeyBorad"></el-button>
             </el-form-item>
           </div>
           <div
             style="position:relative;margin-top:22px">
-            <div class="recharge-info-title">注销会员卡</div>
+            <div class="member-info-title">注销会员卡</div>
             <el-form-item
-                label="手续费">
+                label="手续费"
+                class="row-line-center"
+                style="margin-bottom:1vw">
                 <el-input
                     v-show="!editMoney"
                     v-model.number="ruleForm.cost" 
-                    style="width:10vw"></el-input>
-                <span v-show="editMoney">{{ruleForm.cost}}</span>元
+                    ></el-input>
+                <span v-show="editMoney" style="font-size:1.04vw">{{ruleForm.cost}}</span><em style="font-size:1.04vw">元</em>
                 <el-button 
                     class="start-btn" 
                     @click="handleEdit">修改</el-button>
             </el-form-item>
-            <el-form-item label="退还金额" prop="refundSum">
-              <el-input v-model="ruleForm.refundSum" class="psd-inp" style="width:15vw"></el-input> 元
+            <el-form-item label="退还金额" prop="refundSum" class="row-line-center">
+              <el-input v-model="ruleForm.refundSum" class="psd-inp" ></el-input> <em style="font-size:1.04vw">元</em>
             </el-form-item>
-            <el-form-item label="支付方式" prop="payWayCode" v-if="ruleForm.cost!=0">
+            <el-form-item label="支付方式" prop="payWayCode" v-if="ruleForm.cost!=0" class="row-line-center" style="margin-top: 1vw;">
               <el-radio-group v-model="ruleForm.payWayCode">
-                <el-radio label="cash">现金</el-radio>
-                <el-radio label="alimicropay">支付宝</el-radio>
-                <el-radio label="wxmicropay">微信</el-radio>
+                <el-radio :label="item.label" v-for="(item,index) in payWayCode" :key="index">{{item.value}}</el-radio>
               </el-radio-group>
             </el-form-item>
           </div>
         </el-form>
       </div>
     </memberInfoAndCard>
-    <pay-loading v-model="ruleForm.barCode" :visible.sync="centerDialogVisible"></pay-loading>    
+    <pay-loading v-model="ruleForm.barCode" :visible.sync="centerDialogVisible" :payMethod='ruleForm.payWayCode'></pay-loading>    
   </div>
 </template>
 
@@ -64,9 +58,10 @@
 import memberInfoAndCard from "./components/memberInfoAndCard";
 import { mapState, mapGetters } from "vuex";
 import { MemberAjax, memeberApi } from "src/http/memberApi";
-import { readCard ,secKeyBoard  ,statusDeter ,cardStatusCN ,submit,stopPay} from './util/utils';
+import { readCard ,secKeyBoard  ,statusDeter ,cardStatusCN ,submit,stopPay } from './util/utils';
 import getVilidateCode from './mixins/getVilidateCode';
 import payMixins from './mixins/payMixins';
+import { passwdReg} from "./util/validate.js";
 export default {
   mixins:[getVilidateCode,payMixins],
   data() {
@@ -79,13 +74,13 @@ export default {
       startKeyBorad:'启动密码输入',
       ruleForm: {
         passwd: "",
-        refundSum:'', //退还金额
+        refundSum:'0', //退还金额
         cost:'0',
         payWayCode:'',
         barCode:''
       },
       rules: {
-        passwd: [{ required: true, message: "请输入密码", trigger: "blur" }],
+        passwd: [{ validator:passwdReg,trigger:'change'}],
         validationCode: [
           { required: true, message: "请输入验证码", trigger: "change" }
         ],
@@ -114,6 +109,7 @@ export default {
         tenantId: this.tenantId,
         cardNo: this.member.cardNo,
         operator: this.operator,
+        cardProductId:this.member.cardProductId
         // phoneNum: this.member.phoneNum,
       },JSON.parse(sessionStorage['payParams']));
       if(!!data.passwd) {
@@ -148,7 +144,6 @@ export default {
       if(newVal){
         this.$store.dispatch('cardPolicy',{cardNo:newVal,tenantId: this.tenantId}).then(res=>{
           this.ruleForm.cost = this.member.cancellationFees || 0;
-          // this.ruleForm.refundSum = res.data.backPrice || 0;
         })
       }
     }

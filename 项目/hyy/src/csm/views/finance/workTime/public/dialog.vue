@@ -32,7 +32,7 @@
           <el-table-column v-if="isTwo" property="userAccount" label="用户账号" width="240"></el-table-column>
           <!-- </div> -->
           <el-table-column v-if="isOne" property="userName" label="用户姓名" width="480"></el-table-column>
-          <el-table-column v-if="isVip" property="vipLevelName" label="会员等级" width="480"></el-table-column>
+          <el-table-column v-if="isVip" property="vipLevelName" label="会员卡政策" width="480"></el-table-column>
           <el-table-column v-if="isOther" property="name" label="物品名称" width="480"></el-table-column>
         </el-table>
         <!-- 分页 -->

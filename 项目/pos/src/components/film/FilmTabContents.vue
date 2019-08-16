@@ -1,14 +1,15 @@
 <template>
     <div class="container">
-        <div :class="['film-contents', currentFilmId == item.id ? 'selected' : '']" v-for="(item, index) in content" :key="'hall' + index" @click="setFilmId(item.id, item.plan_code, item.allow_single_sold)">
+        <div :class="['film-contents', currentFilmId == item.id ? 'selected' : '']" v-for="(item, index) in content" :key="'hall' + index" @click="setFilmId(item.id, item.plan_code, item.allow_single_sold, item.min_price)">
             <span :class="['play-time', currentFilmId == item.id ? 'font-selected' : '']">
-                {{item.show_time.substring(10, 16)}}
+                {{item.next_day + item.show_time.substring(10, 16)}}
             </span>
             <span :class="['play-place', currentFilmId == item.id ? 'font-selected' : '']">
                 {{item.hall_name}}
             </span>
             <span :class="['play-sell', currentFilmId == item.id ? 'font-selected' : '']">
-                {{"已售" + item.soldnum  + "/" + item.seatnum}}
+                <!-- {{"已售" + item.soldnum  + "/" + item.seatnum}} -->
+                {{'共' + item.seatnum +  '座'}}
             </span>
             <img v-show="currentFilmId == item.id" class="selection-pos" src="/static/imgs/selected.png" alt="选中">
             <!-- <i v-show="currentFilmId == item.id" class="iconfont selection-pos iconchangcixuanzhongzhuangtai"></i> -->
@@ -18,7 +19,7 @@
 
 <script>
 import {mapGetters, mapMutations} from 'vuex'
-import {SET_FILM_CURRENT_SEL_ID, SET_CURRENT_FILM_TITLE, SET_CURRENT_PLANCODE} from 'types'
+import {SET_FILM_CURRENT_SEL_ID, SET_CURRENT_FILM_TITLE, SET_CURRENT_PLANCODE, SET_CURRENT_TICKET_MINPRICE} from 'types'
 export default {
     props: {
         content: {
@@ -28,7 +29,8 @@ export default {
 
     computed: {
         ...mapGetters([
-            'currentFilmId'
+            'currentFilmId',
+            'seatSelection'
         ])
     },
 
@@ -36,16 +38,24 @@ export default {
         ...mapMutations([
             SET_FILM_CURRENT_SEL_ID,
             SET_CURRENT_FILM_TITLE,
-            SET_CURRENT_PLANCODE
+            SET_CURRENT_PLANCODE,
+            SET_CURRENT_TICKET_MINPRICE
         ]),
-        setFilmId(id, code, allowSingle) {
-            let codeAndSingle = {
-                code,
-                allowSingleSold: parseInt(allowSingle) ? true : false
+        setFilmId(id, code, allowSingle, minPrice) {
+            if(this.seatSelection.length) {
+               this.$alert('请取消当前场次的影票及座位后再切换场次', {
+                 confirmButtonText: '确定'
+               });
+            }else {
+               let codeAndSingle = {
+                    code,
+                    allowSingleSold: parseInt(allowSingle) ? true : false
+                }
+                this.SET_FILM_CURRENT_SEL_ID(id)
+                this.SET_CURRENT_PLANCODE(codeAndSingle)
+                this.SET_CURRENT_FILM_TITLE()
+                this.SET_CURRENT_TICKET_MINPRICE(minPrice)
             }
-            this.SET_FILM_CURRENT_SEL_ID(id)
-            this.SET_CURRENT_PLANCODE(codeAndSingle)
-            this.SET_CURRENT_FILM_TITLE()
         },
     }
 }
@@ -81,11 +91,11 @@ export default {
                     right: 0;
                     top:0;
                     // font-size: $font-size12;
-                    width: 1.4vw;
+                    width: 2.2vw;
                 }
 
                 .play-time {
-                    font-size: $font-size16;
+                    font-size: $font-size14;
                     color: $font-color3;
                 }
 

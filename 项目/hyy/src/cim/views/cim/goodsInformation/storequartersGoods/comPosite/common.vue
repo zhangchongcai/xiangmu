@@ -171,10 +171,10 @@
             <el-row>
               <div class="form-item-box left">
                 <el-form-item label="销售状态" prop="canSale">
-                  <span v-if="routeQuery.type==3">{{queryData.canSale == 1 ? '允许':'禁止'}}</span>
+                  <span v-if="routeQuery.type==3">{{queryData.canSale == 1 ? '允许销售':'禁止销售'}}</span>
                   <el-radio-group v-else v-model="queryData.canSale">
-                    <el-radio label="1">允许</el-radio>
-                    <el-radio label="0">禁止</el-radio>
+                    <el-radio label="1">允许销售</el-radio>
+                    <el-radio label="0">禁止销售</el-radio>
                   </el-radio-group>
                 </el-form-item>
               </div>
@@ -250,22 +250,22 @@
                           <el-button
                                   v-if="routeQuery.type!=3"
                                   @click.stop="handleDialog('myChannelDialog')"
-                          >编辑</el-button>
+                          >选择</el-button>
                         </span>
                   </div>
                 </el-form-item>
               </div>
             </el-row>
             <el-row>
-              <div class="form-item-box left">
-                <el-form-item prop="isSaleAsSetMeal" label-width="160px" label="是否只允许套餐内售卖">
-                  <span v-if="routeQuery.type==3">{{queryData.canSale == 1 ? '允许':'禁止'}}</span>
-                  <el-radio-group v-else v-model="queryData.isSaleAsSetMeal">
-                    <el-radio label="1">是</el-radio>
-                    <el-radio label="0">否</el-radio>
-                  </el-radio-group>
-                </el-form-item>
-              </div>
+<!--              <div class="form-item-box left">-->
+<!--                <el-form-item prop="isSaleAsSetMeal" label-width="160px" label="是否只允许套餐内售卖">-->
+<!--                  <span v-if="routeQuery.type==3">{{queryData.canSale == 1 ? '允许':'禁止'}}</span>-->
+<!--                  <el-radio-group v-else v-model="queryData.isSaleAsSetMeal">-->
+<!--                    <el-radio label="1">是</el-radio>-->
+<!--                    <el-radio label="0">否</el-radio>-->
+<!--                  </el-radio-group>-->
+<!--                </el-form-item>-->
+<!--              </div>-->
               <div class="form-item-box left">
                 <el-form-item label="销售地点">
                    <span v-if="routeQuery.type==3" :class="queryData.salePlace!=1 ? 'examine':''">
@@ -295,7 +295,7 @@
                         <el-button
                                 v-if="routeQuery.type!=3"
                                 @click.stop="handleDialog('mySalesPlaceDialog')"
-                        >编辑</el-button>
+                        >选择</el-button>
                     </span>
                   </div>
                 </el-form-item>
@@ -495,7 +495,6 @@
     },
     mounted() {
       this.init();
-      console.log(this.routeQuery)
     },
 
     methods: {
@@ -597,8 +596,6 @@
                     this.queryData.salePlace = this.queryData.salePlace.toString();
                     this.goodList = this.queryData.cinemaCombinationSkuVoList[0].cinemaMakeItemVoList;
                     this.synproFindUnitList({catUid: this.queryData.catUid});
-                    console.log("this.goodList", this.goodList);
-
                     this.selectedStoreName = resData.data.cinemasList
                             .map(item => {
                               return item.cinemaName;
@@ -616,15 +613,19 @@
                     if (resData.data.cinemaSalePlaceVoList) {
                       this.salesPlaceName = resData.data.cinemaSalePlaceVoList.map(item => {
                         return item.placeName
-                      }).join(",")
+                      }).join(",");
+                      this.queryData.cinemaSalePlaceVoList = this.queryData.cinemaSalePlaceVoList.map(item => {
+                        item.code = item.placeCode;
+                        return item;
+                      })
+                      placeCode
                     }
                   }
                 })
                 .catch(err => {});
       },
       // 确定提交信息
-      handleSubmit() {
-        console.log(this.queryData);
+      handleSubmit() {;
         this.$refs["ruleForm"].validate(valid => {
           if (valid) {
             if ((this.queryData.saleChannel == 0) && (this.queryData.cinemaSaleChannelVoList.length == 0)) {
@@ -653,10 +654,17 @@
       },
       // 取消提交信息
       handleCancel() {
-        this.$router.go(-1);
+        this.$store.commit("tagNav/removeTagNav", {
+          name: this.$route.name,
+          path: this.$route.path,
+          title: this.$route.meta.title,
+          query: this.$route.query
+        })
+        this.$router.push({
+          path: "/retail/commodityInformationStore/list",
+        });
       },
       selectedGoodsDialogCallBack(value) {
-        console.log(value);
         if (value.btnType == 1) {
           this.goodList = value.data;
           let skuIds = this.goodList
@@ -722,7 +730,6 @@
                   tempObj.code = data.code;
                   tempObj.cinemaMakeItemVoList = data.cinemaMakeItemVoList;
                   this.queryData.cinemaCombinationSkuVoList.push(tempObj);
-                  console.log(data);
                 }
         );
       },
@@ -731,8 +738,6 @@
         this.queryData.cinemaCombinationSkuVoList.splice(index, 1);
       },
       handleRecipeTableDlete(groupIndex, row, index) {
-        console.log(groupIndex, row, index);
-
         this.handleDelMaterial(row);
         this.queryData.cinemaCombinationSkuVoList.forEach(item => {
           item.cinemaMakeItemVoList = item.cinemaMakeItemVoList.filter(item => {
@@ -767,7 +772,7 @@
                   return item.name;
                 })
                 .join(",");
-        console.log("门店数据", data);
+        // console.log("门店数据", data);
       },
       // 渠道
       onChanneSumit(data = []) {
@@ -782,7 +787,7 @@
                   return item.channelName  ||  item.name;
                 })
                 .join(",");
-        console.log("渠道数据", data);
+        // console.log("渠道数据", data);
       },
       // 销售地点
       onSalesPlaceSumit(data = []) {
@@ -798,7 +803,7 @@
                   return item.placeName ||  item.name;
                 })
                 .join(",");
-        console.log("销售地点数据", data);
+        // console.log("销售地点数据", data);
       },
       //删除门店
       handleDeleteCinemas() {

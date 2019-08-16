@@ -208,8 +208,16 @@ let alertHandle = {
         /**
          * @function cinemaClick - 点击打开影院弹窗
          */
-        cinemaClick() {
-            this.$refs.cinemaDialog.openDialog(true)
+        cinemaClick(reviewData) {
+            // 回显
+            let reviewList = []
+            if (reviewData && reviewData.value && reviewData.text) {
+                reviewData.value.split(',').map((item) => { reviewList.push({ code: item, name: "", reviewFlag: "review" }) });
+                reviewData.text.split(',').map((item, index) => { reviewList[index].name = item });
+            }
+            console.log("reviewList", reviewList);
+            // 开启弹窗
+            this.$refs.cinemaDialog.openDialog(true, reviewList)
         },
         /**
          * @function handleCinemaBack - 影院弹窗回调
@@ -219,19 +227,29 @@ let alertHandle = {
             let nameArr = []
             data.map(item => { nameArr.push(item.name) })
             let uidArr = []
-            data.map(item => { uidArr.push(item.code) })
-            this.baseConfig.form[`${this.currentInputName}`] = uidArr.join(',')
-            this.baseConfig.system.forEach(item => {
-                if (item.keyName == this.currentInputName) {
-                    item.value = nameArr.join(',')
-                }
-            })
+            data.map(item => { uidArr.push(item.code) });
+            // this.baseConfig.form[`${this.currentInputName}`] = uidArr.join(',')
+            // this.baseConfig.system.forEach(item => {
+            //     if (item.keyName == this.currentInputName) {
+            //         item.value = nameArr.join(',')
+            //     }
+            // })
+            this.searchHeaderFormData.searchBusinessCode = nameArr.join(',')
+            this.searchHeaderDialogData.searchBusinessCode = uidArr.join(',')
         },
         /**
          * @function userCreaterClick - 点击打开创建人用户弹窗
          */
-        userCreaterClick() {
-            this.$refs.userCreaterDialog.openDialog(true)
+        userCreaterClick(reviewData) {
+            // 回显
+            let reviewList = []
+            if (reviewData && reviewData.value && reviewData.text) {
+                reviewData.value.split(',').map((item) => { reviewList.push({ id: item, fullName: "", reviewFlag: "review" }) });
+                reviewData.text.split(',').map((item, index) => { reviewList[index].fullName = item });
+            }
+            console.log("reviewList", reviewList);
+            // 开启弹窗
+            this.$refs.userCreaterDialog.openDialog(true, reviewList)
         },
         /**
          * @function handleUserCreaterBack - 创建人用户弹窗回调
@@ -241,19 +259,29 @@ let alertHandle = {
             let nameArr = []
             data.map(item => { nameArr.push(item.fullName) })
             let uidArr = []
-            data.map(item => { uidArr.push(item.id) })
-            this.baseConfig.form[`${this.currentInputName}`] = uidArr.join(',')
-            this.baseConfig.system.forEach(item => {
-                if (item.keyName == this.currentInputName) {
-                    item.value = nameArr.join(',')
-                }
-            })
+            data.map(item => { uidArr.push(item.id) });
+            // this.baseConfig.form[`${this.currentInputName}`] = uidArr.join(',')
+            // this.baseConfig.system.forEach(item => {
+            //     if (item.keyName == this.currentInputName) {
+            //         item.value = nameArr.join(',')
+            //     }
+            // })
+            this.searchHeaderFormData.searchCreaterId = nameArr.join(',')
+            this.searchHeaderDialogData.searchCreaterId = uidArr.join(',')
         },
         /**
          * @function userApprovalClick - 点击打开审批人用户弹窗
          */
-        userApprovalClick() {
-            this.$refs.userApprovalDialog.openDialog(true)
+        userApprovalClick(reviewData) {
+            // 回显
+            let reviewList = []
+            if (reviewData && reviewData.value && reviewData.text) {
+                reviewData.value.split(',').map((item) => { reviewList.push({ id: item, fullName: "", reviewFlag: "review" }) });
+                reviewData.text.split(',').map((item, index) => { reviewList[index].fullName = item });
+            }
+            console.log("reviewList", reviewList);
+            // 开启弹窗
+            this.$refs.userApprovalDialog.openDialog(true, reviewList)
         },
         /**
          * @function handleUserApprovalBack - 审批人用户弹窗回调
@@ -263,19 +291,29 @@ let alertHandle = {
             let nameArr = []
             data.map(item => { nameArr.push(item.fullName) })
             let uidArr = []
-            data.map(item => { uidArr.push(item.id) })
-            this.baseConfig.form[`${this.currentInputName}`] = uidArr.join(',')
-            this.baseConfig.system.forEach(item => {
-                if (item.keyName == this.currentInputName) {
-                    item.value = nameArr.join(',')
-                }
-            })
+            data.map(item => { uidArr.push(item.id) });
+            // this.baseConfig.form[`${this.currentInputName}`] = uidArr.join(',')
+            // this.baseConfig.system.forEach(item => {
+            //     if (item.keyName == this.currentInputName) {
+            //         item.value = nameArr.join(',')
+            //     }
+            // })
+            this.searchHeaderFormData.searchApprovalmanId = nameArr.join(',')
+            this.searchHeaderDialogData.searchApprovalmanId = uidArr.join(',')
+
         },
         /**
          * @function orgStructureClick - 点击打开组织结构弹窗
          */
-        orgStructureClick() {
-            this.$refs.orgStructureDialog.openDialog(true)
+        orgStructureClick(reviewData) {
+            // 回显
+            let reviewList = []
+            if (reviewData && reviewData.value) {
+                reviewList = reviewData.value.split(',')
+            }
+            console.log("reviewList", reviewList);
+            // 开启弹窗
+            this.$refs.orgStructureDialog.openDialog(true, reviewList)
         },
         /**
          * @function handleOrgStructureBack - 组织结构弹窗回调
@@ -285,13 +323,15 @@ let alertHandle = {
             let nameArr = []
             data.map(item => { nameArr.push(item.text) })
             let uidArr = []
-            data.map(item => { uidArr.push(item.id) })
-            this.baseConfig.form[`${this.currentInputName}`] = uidArr.join(',')
-            this.baseConfig.system.forEach(item => {
-                if (item.keyName == this.currentInputName) {
-                    item.value = nameArr.join(',')
-                }
-            })
+            data.map(item => { uidArr.push(item.id) });
+            // this.baseConfig.form[`${this.currentInputName}`] = uidArr.join(',')
+            // this.baseConfig.system.forEach(item => {
+            //     if (item.keyName == this.currentInputName) {
+            //         item.value = nameArr.join(',')
+            //     }
+            // })
+            this.searchHeaderFormData.searchCreaterArea = nameArr.join(',')
+            this.searchHeaderDialogData.searchCreaterArea = uidArr.join(',')
         }
 
     }

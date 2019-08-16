@@ -1,42 +1,47 @@
 <template>
-    <div class="ccm-single-dialog">
+    <div class="ccm_dialog">
         <el-dialog
         title="选择品牌"
         :visible.sync="framedialogVisible"
-        width="62%"
+        width="640px"
         :close-on-click-modal="false"
         >
         <div class="search-header">
             <el-form :inline="true" ref="ruleForm"  size="small" class="film-search">
                 <el-form-item label="品牌编码:">
-					<el-input v-model="searchAdition.brandCode"></el-input>
+					<el-input v-model="searchAdition.code"></el-input>
 				</el-form-item>
-                <el-form-item label="品牌名称：" style="margin-left:8px">
-					<el-input v-model="searchAdition.brandName"></el-input>
+                <el-form-item label="品牌名称：" >
+					<el-input v-model="searchAdition.name"></el-input>
 				</el-form-item>
-                <el-button type="primary" @click="searchFunc"  style="position:absolute;right:20px">查询</el-button>
+                <div style="text-align:right;padding-top:10px;">
+                    <el-button type="primary" @click="searchFunc"  >查询</el-button>
+
+                </div>
             </el-form>
         </div>
-        <div class="ccm-dialog-body">
-                <el-table :data="tableData" @row-click= "showRow"   height="308px" ref="filmListRef" highlight-current-row>
-                    <el-table-column label="选择" width="50">
-                        <template slot-scope="scope">
-                            <el-radio v-model="selectedId" :label="scope.row.id">&nbsp;</el-radio>
-                        </template>
-                    </el-table-column>
-                    <template v-for="(item,index) in tableConfig" >
-                        <el-table-column :key="index" v-if="item.hasTemplate" 
-                        :prop="item.prop?item.prop:''" 
-                        :label="item.label?item.label:''" 
-                        :width="item.width?item.width:''" >
-                            <div slot-scope="scope">
-                                {{formatStatus(scope.row.stockStatus)}}
-                            </div>
+        <div class="choose-body">
+                <div class="ccm-table">
+                    <el-table :data="tableData" @row-click= "showRow"  ref="filmListRef" highlight-current-row>
+                        <el-table-column label="选择" width="50">
+                            <template slot-scope="scope">
+                                <el-radio v-model="selectedId" :label="scope.row.uid">&nbsp;</el-radio>
+                            </template>
                         </el-table-column>
-                        <el-table-column :key="index" v-else :prop="item.prop?item.prop:''" :label="item.label?item.label:''" :width="item.width?item.width:''"></el-table-column> -->
-                    </template>
-					
-				</el-table>
+                        <template v-for="(item,index) in tableConfig" >
+                            <el-table-column :key="index" v-if="item.hasTemplate" 
+                            :prop="item.prop?item.prop:''" 
+                            :label="item.label?item.label:''" 
+                            :width="item.width?item.width:''" >
+                                <div slot-scope="scope">
+                                    {{formatStatus(scope.row.stockStatus)}}
+                                </div>
+                            </el-table-column>
+                            <el-table-column :key="index" v-else :prop="item.prop?item.prop:''" :label="item.label?item.label:''" :width="item.width?item.width:''"></el-table-column> -->
+                        </template>
+                    </el-table>
+
+                </div>
                 <div class="page-wrap">
                     <el-pagination
                     background
@@ -45,15 +50,14 @@
                     :current-page="searchAdition.page"
                     :page-sizes="[10, 25, 50, 100]"
                     :page-size="searchAdition.pageSize"
-                    layout="total, sizes, prev, pager, next, jumper"
+                    layout="total,prev, pager, next, jumper" 
                     :total="searchAdition.total">
                     </el-pagination>
                 </div>
         </div>
-         <span slot="footer" class="dialog-footer">
-              <slot name="footerId"></slot>
+         <span slot="footer">
+            <el-button type="primary" @click="confirmData()" style="margin-right:17px;">确 定</el-button>
             <el-button @click="closeDialog(false)">取 消</el-button>
-            <el-button type="primary" @click="confirmData()">确 定</el-button>
         </span>
         
     </el-dialog>
@@ -71,8 +75,8 @@ export default {
                 pageSize: 10,
                 size: 1,
                 total: 0,
-                brandCode:'',
-                brandName:'',
+                code:'',
+                name:'',
             },
             multipleSelection: [],
             rules:{},
@@ -99,8 +103,9 @@ export default {
         //状态转换
         formatStatus(status) {},
         
-        openDialog() {
+        openDialog(flag,innerData) {
             this.framedialogVisible = true
+            this.selectedId = innerData
             this.search()
         },
         closeDialog() {
@@ -111,11 +116,13 @@ export default {
             //赋值给radio
             let _this = this;
             this.selectedRow = row;
-            _this.selectedId = row.id
+            _this.selectedId = row.uid
         },
         confirmData(){
             let _this = this;
-            let cinemaIdss = !!this.selectedRow?this.selectedRow:{}
+            if(!this.selectedRow){
+                return this.framedialogVisible =false
+            }
             _this.$emit('selectedBrandSingleCallBack',this.selectedRow) 
             this.framedialogVisible =false
         },
@@ -152,27 +159,6 @@ export default {
 }
 </script>
 
-<style lang="scss">
-    .ccm-single-dialog{
-        .film-top{
-            margin-left:10px;
-        }
-        .el-dialog__header{
-            .el-dialog__title{
-                padding-bottom: 5px;
-                width: 100%;
-                display: inline-block;
-                border-bottom: 1px solid #e5e5e5;
-            }
-        }
-        .el-dialog {
-            .el-dialog__body{
-                padding: 20px;
-            }
-        }
-        .ccm-dialog-body{
-            border:1px solid #e5e5e5;
-        }
-    }
-
+<style lang="scss" scoped>
+@import "../../assets/css/dialogs.scss"; 
 </style>

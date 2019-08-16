@@ -1,7 +1,7 @@
 <template>
   <div class="my_dialog">
     <el-dialog :title="title" :visible.sync="dialogTableVisible">
-      <el-form label-position="right" label-width="100">
+      <el-form label-position="left" label-width="100">
         <el-form-item label="资金科目编号:">
           <el-input v-model="subjectCode" style="width:300px"  :disabled="changed"></el-input>
         </el-form-item>
@@ -18,7 +18,7 @@
       <div style="height:24px;background:transparent;"></div>
       <div class="btn-area">
         <el-button type="primary" @click="addSubject">确定</el-button>
-        <el-button type="primary" @click="dialogTableVisible = false">取消</el-button>
+        <el-button @click="dialogTableVisible = false" style="margin-left:32px;">取消</el-button>
       </div>
     </el-dialog>
   </div>
@@ -55,10 +55,11 @@
           // console.log(this.bpType,typeof(this.bpType))
           this.bpType = this.bpType == "收入"?"0":this.bpType == "支出"?"1":this.bpType
           this.$csmList.changeSubject(
-            this.subjectCode,{
+            {
               bpType:this.bpType,
               subjectName:this.subjectName,
-              uid:this.uid
+              uid:this.uid,
+              subjectCode:this.subjectCode
             }
           ).then(data => {
             if (data && data.code === 200) {
@@ -148,9 +149,11 @@
     /deep/ .el-dialog {
       width: 576px;
       height: 365px;
-
+      .el-dialog__title{
+        color: #333;
+      }
       .el-dialog__header::after {
-        content: "";
+        // content: "";
         display: block;
         width: 536px;
         height: 1px;
@@ -179,6 +182,7 @@
           line-height: 24px;
           padding-right: 0px;
           letter-spacing: 0;
+          color: #666;
         }
 
         .el-form-item__label {

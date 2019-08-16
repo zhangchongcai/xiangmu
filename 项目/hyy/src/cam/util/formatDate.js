@@ -19,7 +19,7 @@ export function formatDate(date, fmt) {
         return fmt;
     }
     catch(e){
-        console.log(e);
+        // console.log(e);
         return '' ;
     }
 };

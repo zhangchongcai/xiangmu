@@ -1,7 +1,8 @@
 <template>
   <div class="month-select">
     <el-date-picker
-      v-model="monthValue"
+      class="rpt-month-picker"
+      v-model="monthSelectObj.monthValue"
       type="month"
       @change="monthValChange"
       value-format="yyyy-MM"
@@ -11,37 +12,34 @@
 
 <script>
 import Moment from "moment";
-import mixins from "src/frame_cpm/mixins/cacheMixin.js";
 export default {
-  mixins: [mixins.cacheMixin],
   props: {
     resetStatus: Boolean,
-    queryName: String
+    queryName: String,
+    monthSelectObj: Object
   },
   data() {
-    return {
-      cacheField: [
-        "monthValue"
-      ],
-      subComName: "monthSelect",
-      monthValue: ""
-    };
+    return {};
   },
   methods: {
     monthValChange() {
-      if (this.monthValue === null) {
-        this.monthValue = "";
+      if (this.monthSelectObj.monthValue === null) {
+        this.monthSelectObj.monthValue = "";
       }
-      this.$emit("selectMonthData", this.monthValue, this.queryName);
+      this.$emit(
+        "selectMonthData",
+        this.monthSelectObj.monthValue,
+        this.queryName
+      );
     },
     init() {
       let currentMonth = Moment().format("YYYY-MM");
-      this.monthValue = currentMonth;
+      this.monthSelectObj.monthValue = currentMonth;
       this.$emit("selectMonthData", currentMonth, this.queryName);
     }
   },
   mounted() {
-    this.init();
+    if (this.monthSelectObj.monthValue === "") this.init();
   },
   watch: {
     resetStatus(newVal) {
@@ -53,8 +51,16 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .month-select {
   display: inline-block;
+}
+.rpt-month-picker {
+  width: 256px !important;
+    .el-input__icon,
+    .el-range-separator,
+    .el-range-input {
+      font-size: 12px;
+    }
 }
 </style>

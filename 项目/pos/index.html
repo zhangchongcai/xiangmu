@@ -1,23 +1,28 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-cn">
 
 <head>
     <meta charset="utf-8">
     <meta name="format-detection" content="telephone=no,email=no" />
     <meta name="format-detection" content="telephone=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
     <title>POS</title>
-    <script src="https://cdn.staticfile.org/vue/2.5.17/vue.js"></script>
-    <script src="https://cdn.staticfile.org/element-ui/2.4.0/index.js"></script>
-    <script src="https://cdn.staticfile.org/axios/0.18.0/axios.js"></script>
-    <script src="https://cdn.staticfile.org/vue-router/3.0.1/vue-router.min.js"></script>
-    <script src="https://cdn.staticfile.org/vuex/3.0.1/vuex.min.js"></script>
-    <link rel="stylesheet" href="//at.alicdn.com/t/font_1073479_j8jvhgs3q0r.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_1073479_yha7o28gq28.css">
 </head>
 
-<body>
+<body>    
     <div id="app"></div>
+    <div id="loadingImg" style="margin: 120px auto; width: 300px;">
+        <img style="width: 100%" src="/static/imgs/colorLogo.png" alt="新晨星科技">
+    </div>
+    <script src="https://cdn.staticfile.org/vue/2.5.17/vue<%= htmlWebpackPlugin.options.isProd %>.js"></script>
+    <script src="https://cdn.staticfile.org/element-ui/2.4.0/index.js"></script>
+    <script src="https://cdn.staticfile.org/axios/0.18.0/axios.min.js"></script>
+    <script src="https://cdn.staticfile.org/vue-router/3.0.1/vue-router.min.js"></script>
+    <script src="https://cdn.staticfile.org/vuex/3.0.1/vuex.min.js"></script>
+    <!-- <% if (!htmlWebpackPlugin.options.isProd) {%> -->
     <script src="/static/js/vendor.dll.js"></script>
-
+    <!-- <%}%> -->
 </body>
 
 </html>

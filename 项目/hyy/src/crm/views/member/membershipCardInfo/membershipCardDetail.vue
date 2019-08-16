@@ -106,7 +106,8 @@
               show-overflow-tooltip></el-table-column>
             <el-table-column prop="transactionTime" label="时间" min-width="120" :formatter="formateEmpty"
               show-overflow-tooltip></el-table-column>
-            <!-- <el-table-column prop="phone" label="订单号" min-width="120" :formatter="formateEmpty" show-overflow-tooltip></el-table-column> -->
+            <el-table-column prop="outOrderNo" label="订单号" min-width="140" :formatter="formateEmpty"
+              show-overflow-tooltip></el-table-column>
             <el-table-column prop="flowNo" label="流水号" min-width="140" :formatter="formateEmpty" show-overflow-tooltip>
             </el-table-column>
             <el-table-column prop="cinemaName" label="门店" min-width="100" :formatter="formateEmpty"
@@ -200,13 +201,26 @@ export default {
   methods: {
     // 关闭
     handleBack() {
-      this.$router.push({ path: "/member/membershipCard/list" });
+      this.$store.commit("tagNav/removeTagNav", this.$route);
+      if (this.$route.query.pathOrigin == "detail") {
+        this.$router.push({
+          path: "/member/member/detail",
+          query: {
+            levelNo: this.$route.query.levelNo,
+            id: this.$route.query.id,
+            startOpenDate: this.$route.query.startOpenDate,
+            endOpenDate: this.$route.query.endOpenDate
+          }
+        });
+      } else {
+        this.$router.push({ path: "/member/membershipCard/list" });
+      }
     },
     formateEmpty(row, column, cellValue, index) {
-      if (cellValue != null || cellValue != "") {
-        return cellValue;
-      } else {
+      if (cellValue == null || cellValue == "") {
         return "-";
+      } else {
+        return cellValue;
       }
     },
     getMemberCardDetail() {
@@ -272,7 +286,8 @@ export default {
         path: "/member/cardTypeManagement/detail",
         query: {
           cardProductId: this.cardDetail.cardProductId,
-          tenantId: this.$store.state.loginUser.consumerId
+          cardNo: this.$route.query.cardNo,
+          pathOrigin: "detail"
         }
       });
     },
@@ -492,7 +507,7 @@ export default {
   }
   .detail-btn-wrap {
     width: 100%;
-    margin: 0 0 40px;
+    margin: 1px 0 40px;
     text-align: center;
   }
 }

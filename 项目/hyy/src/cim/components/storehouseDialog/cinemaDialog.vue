@@ -61,8 +61,8 @@
             <el-button type="text" class="right" @click="handleEmptyMaterials">清 空</el-button>
           </div>
           <ul class="empty-content">
-            <li :key="item.merCode" v-for="(item) in selectedData" class="clearfix">
-              <span class="left title">{{item.cinemaName || item.name}}</span>
+            <li :key="key" v-for="(item,key) in selectedData" class="clearfix">
+              <span class="left title">{{item.name}}</span>
               <i class="el-icon-close right" @click="deleteSelected(item,false)"></i>
             </li>
           </ul>
@@ -113,6 +113,15 @@ export default {
       selectRadio:"",
       cinemalDialog: false,
       //门店弹窗查询数据
+      // queryData: {
+      //   pageSize: 10,
+      //   page: 1,
+      //   cinemaUid:null,
+      //   cinemaName:null,
+      //   name: null,
+      //   code: null,
+      //   status: "1"
+      // },
       queryData: {
         cinemaName: "",
         cinemaUid: "",
@@ -164,10 +173,10 @@ export default {
     handleDialog(flag) {
       this.cinemalDialog = flag;
     },
-    // 获取门店列表
+    // 获取门店列表queryStorehouse
     getMerCinemaList(param = {}, type) {
       this.tableLoding =true;
-      this.$cimList.inventoryManagement.checkBillStorehouse(param).then(resData => {
+      this.$cimList.queryStorehouse(param).then(resData => {
         if (resData.code == 200) {
           if (type == "open") {
             this.$nextTick(() => {
@@ -179,7 +188,7 @@ export default {
               }
             })
           }
-          this.cinemalTableData = resData.data.map(item => {
+          this.cinemalTableData = resData.data.list.map(item => {
             item.cinemaUid = item.uid;
             return item;
           })

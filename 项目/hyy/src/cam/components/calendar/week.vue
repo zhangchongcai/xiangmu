@@ -15,6 +15,7 @@
                     <li :key="index" :class="{'current' : item.ifCurrentWeek , 
                     'selected' : selectedIndex == index,
                     'noEnableChoise': (!item.enableChoise)}" 
+                    :ref="item.ifCurrentWeek ? 'currentWeek':''"
                     @click="handleChoiseItem(item,index)">
                         {{item.label}}
                         <template v-if="item.ifCurrentWeek">
@@ -42,7 +43,7 @@ export default {
     watch:{
         value(){
             this.initDate()
-        },
+        }
     },
     data(){
         return {
@@ -53,26 +54,40 @@ export default {
         }   
     } , 
     created(){
-        this.initDate()
+        this.initDate(true)
+    },
+    mounted() {
+        this.initPosition()
+    },
+    updated() {
+        this.initPosition()
     },
     methods: {
-        initDate(){
+        initDate(flag){
             if(this.value instanceof Array){
                 // week 
                 this.nowYear = new Date().getFullYear();
                 this.weekList = getWeekData(this.nowYear);
-                this.selectedIndex = -1;  
+                if(flag) {
+                    this.selectedIndex = this.weekList.findIndex(item=>(item.weekStartDate == +this.value[0]) && (item.weekEndDate == +this.value[1]));  
+                }
             }else{
                 //day -- > week  
                 this.nowYear = (new Date()).getFullYear(); //当前年
                 this.weekList = getWeekData(this.nowYear);
-                // this.weekList.forEach((item , index)=>{
-                //     if(item.ifCurrentWeek===true){
-                //         // this.currentIndex = index;
-                //     }
-                // }); 
-                this.selectedIndex = -1;  
+                // this.selectedIndex = -1;  
             } 
+        },
+        initPosition() {
+            // this.$refs['currentWeek'][0] && this.$refs['currentWeek'][0].scrollIntoView({
+            //     block: 'center'
+            // })
+            let wrap = this.$refs.weekListDom
+            let li = this.$refs['currentWeek'][0]
+            if(wrap && li) {
+                // wrap.scrollTo(0, li.offsetTop - wrap.offsetTop - 118) 等同下面的方法
+                wrap.scrollTop = li.offsetTop - wrap.offsetTop - 118
+            }
         },
         coutDownYears(){    //减一年
             this.nowYear -- ; 

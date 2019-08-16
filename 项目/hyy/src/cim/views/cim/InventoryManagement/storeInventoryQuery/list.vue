@@ -4,9 +4,8 @@
       <el-form
         :inline="true"
         :model="queryData"
-        label-position="right"
-        label-width="100px"
-        label-suffix=":"
+        label-position="left"
+        label-suffix="："
       >
         <el-form-item label="门店名称" class="select-input">
             <el-input
@@ -21,38 +20,51 @@
         <el-form-item label="商品名称">
           <el-input
             v-model="queryData.name"
-            placeholder="请输内容"
-          ></el-input>
-        </el-form-item>
-        <el-form-item label="速记代码">
-          <el-input
-            v-model="queryData.shorthandCode"
-            placeholder="请输内容"
+            placeholder="请输入"
           ></el-input>
         </el-form-item>
         <el-form-item label="商品编码">
           <el-input
             v-model="queryData.code"
-            placeholder="请输内容"
+            placeholder="请输入"
           ></el-input>
-        </el-form-item>
-        <el-form-item label="仓库名称">
-          <el-input v-model="storeHouseName" placeholder="请选择门店" style="width:150px;">
-            <i class="el-icon-close el-input__icon" slot="suffix" @click="onStoreHouseSumit()"></i>
-          </el-input>
-          <el-button @click="selectStoreHouseDialog">选择</el-button>
-        </el-form-item>
-        <el-form-item label="货架名称">
-          <el-input v-model="goodsName" placeholder="请选择门店" style="width:150px;">
-            <i class="el-icon-close el-input__icon" slot="suffix" @click="ongoodsSumit()"></i>
-          </el-input>
-          <el-button @click="selectdoodsDialog">选择</el-button>
         </el-form-item>
         <el-form-item label="SKU编码">
           <el-input
             v-model="queryData.skuCode"
-            placeholder="请输内容"
+            placeholder="请输入"
           ></el-input>
+        </el-form-item>
+        <el-form-item label="速记代码">
+          <el-input
+            v-model="queryData.shorthandCode"
+            placeholder="请输入"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="仓库名称" class="select-input">
+          <el-input 
+            v-model="storeHouseName" 
+            clearable
+            placeholder="请选择仓库"
+            @clear="onStoreHouseSumit"
+             @focus="selectStoreHouseDialog"
+            >
+          </el-input>
+          <el-button @click="selectStoreHouseDialog" type="primary cinemaSel-btn" plain>选择</el-button>
+        </el-form-item>
+        <el-form-item label="货架名称" class="select-input">
+          <el-input 
+            v-model="goodsName"
+            clearable
+            placeholder="请选择货架"
+            @clear="ongoodsSumit"
+             @focus="selectdoodsDialog"
+            >
+          </el-input>
+          <el-button @click="selectdoodsDialog" type="primary cinemaSel-btn" plain>选择</el-button>
+        </el-form-item>
+        <el-form-item>
+          <el-checkbox v-model="checkIsFilterZeroInventory" @change="kcProBtn()">过滤无库存商品</el-checkbox>
         </el-form-item>
 
         <el-form-item class="query-btn-box">
@@ -62,7 +74,7 @@
     </div>
     <div>
       <div>
-        <el-table :data="tableData" stripe :height="this.defaultTableHeight">
+        <el-table :data="tableData" stripe :height="this.defaultTableHeight" v-loading="tableLoding">
           <el-table-column
             v-for="item in tableColumn"
             :key="item.key"
@@ -113,16 +125,18 @@ export default {
   mixins: [mixin,mixins.cacheMixin],
   data() {
     return {
-      cacheField:["queryData"],
+      tableLoding:false,
+      cacheField:["queryData","storeHouseName","goodsName","newstoreHouseCodeList","newRackCodeList","checkIsFilterZeroInventory"],
       newstoreHouseCodeList:[],
       newRackCodeList:[],
       // 仓库列表
-      storeHouseTableData:"",
+      storeHouseTableData:[],
       // 货架列表
-      goodsNameTableData:"",
+      goodsNameTableData:[],
       //查询数据
       storeHouseName:"",
       goodsName:"",
+      checkIsFilterZeroInventory:false,
       queryData: {
         cinemaUid:"",
         cinemaName:"",
@@ -155,17 +169,22 @@ export default {
           width:''
         },
         {
-          label: "速记代码",
-          key: "shorthandCode",
-          width:''
-        },
-        {
           label: "SKU编码",
           key: "skuCode",
           width:''
         },
         {
-          label: "单位",
+          label: "速记代码",
+          key: "shorthandCode",
+          width:''
+        },
+        {
+          label: "商品规格",
+          key: "merSpec",
+          width:''
+        },
+        {
+          label: "基本单位",
           key: "unitName",
           width:''
         },
@@ -202,6 +221,11 @@ export default {
     // 初始化
     init() {
       this.queryData.pageSize = this.pageSize
+      if(this.queryData.cinemaUid === "" || this.queryData.cinemaUid === null){
+
+      }else{
+        this.goodsDataQueryGoodsList(this.queryData)
+      }
     },
     // 查询
     onQuery() {
@@ -213,13 +237,44 @@ export default {
       
     },
     // 选泽门店回调
-    onCinemalSumit(val = []) {
+    setCinema(val = []) {
       if (val.length > 0) {
         this.queryData.cinemaName = val[0].name;
         this.queryData.cinemaUid = val[0].uid;
+          let sval = {
+            cinemaUid:this.queryData.cinemaUid
+          }
+          let sval1 = {
+            cinameUid:this.queryData.cinemaUid
+          }
+        this.$cimList.inventoryManagement.checkBillStorehouse(sval).then(resData => {
+              if (resData.code == 200) {
+                this.storeHouseTableData = resData.data == null || resData.data == "" ? []:resData.data
+              }
+        })
+        this.$cimList.inventoryManagement.checkBillStorageRack(sval1).then(resData => {
+              if (resData.code == 200) {
+                this.goodsNameTableData = resData.data == null || resData.data == "" ? []:resData.data
+              }
+        })
       } else {
         this.queryData.cinemaName = null;
         this.queryData.cinemaUid = null;
+      }
+    },
+    // 选泽门店回调
+    onCinemalSumit(val = [],type) {
+      console.log(val," 选泽门店回调",type);
+      if (val.length > 0) {
+        if(type=="default"){
+          if(val.length==1){
+            this.setCinema(val)
+          }
+        }else{
+          this.setCinema(val)
+        }
+      } else {
+        this.setCinema()
       }
     },
     // 选泽仓库回调
@@ -295,7 +350,11 @@ export default {
       this.goodsDataQueryGoodsList(this.queryData);
       // console.log(`当前页: ${val}`);
     },
+    kcProBtn(){
+      this.queryData.isFilterZeroInventory = this.checkIsFilterZeroInventory == true ? 1:0
+    },
     goodsDataQueryGoodsList(val) {
+      // this.tableLoding = true;
       this.$cimList.storeInventoryQuery
         .cinemaMerStockQueryStock(val)
         .then(res => {
@@ -303,8 +362,10 @@ export default {
             this.tableData = res.data.list;
             this.total = res.data.total;
             this.listDataHandle(this.tableData)
+            // this.tableLoding = false;
           } else {
             this.error(res.msg);
+            // this.tableLoding = false;
           }
         })
     },
@@ -313,74 +374,83 @@ export default {
     },
     // 获取仓库列表
     getMerCinemaList(param) {
-        this.tableColumn = [
-        {
-          label: "门店名称",
-          key: "cinemaName",
-          width:''
-        },
-        {
-          label: "商品名称",
-          key: "name",
-          width:''
-        },
-        {
-          label: "商品编码",
-          key: "code",
-          width:''
-        },
-        {
-          label: "速记代码",
-          key: "shorthandCode",
-          width:''
-        },
-        {
-          label: "SKU编码",
-          key: "skuCode",
-          width:''
-        },
-        {
-          label: "单位",
-          key: "unitName",
-          width:''
-        },
-        {
-          label: "售价（元）",
-          key: "price",
-          width:''
+      this.tableLoding = true;
+        let thistableColumn = [
+          {
+            label: "门店名称",
+            key: "cinemaName",
+            width:''
+          },
+          {
+            label: "商品名称",
+            key: "name",
+            width:''
+          },
+          {
+            label: "商品编码",
+            key: "code",
+            width:''
+          },
+          {
+            label: "SKU编码",
+            key: "skuCode",
+            width:''
+          },
+          {
+            label: "速记代码",
+            key: "shorthandCode",
+            width:''
+          },
+          {
+            label: "商品规格",
+            key: "merSpec",
+            width:''
+          },
+          {
+            label: "基本单位",
+            key: "unitName",
+            width:''
+          },
+          {
+            label: "售价（元）",
+            key: "price",
+            width:''
 
-        },
-        {
-          label: "成本单价（元）",
-          key: "storeCostPrice",
-          width:''
-        },
-        {
-          label: "合计库存数量",
-          key: "storeCount",
-          width:''
-        },
-        {
-          label: "合计库存金额",
-          key: "storeCostAmount",
-          width:''
-        }
-      ]
-      this.tableColumn.forEach((tcval,tcindex)=>{
+          },
+          {
+            label: "成本单价（元）",
+            key: "storeCostPrice",
+            width:''
+          },
+          {
+            label: "合计库存数量",
+            key: "storeCount",
+            width:''
+          },
+          {
+            label: "合计库存金额",
+            key: "storeCostAmount",
+            width:''
+          }
+        ]
+      thistableColumn.forEach((tcval,tcindex)=>{
         tcval.width = "150"
-        if(tcindex == 4){
+        if(tcval.key == 'skuCode'){
           tcval.width = "170"
         }
       })
       let val = {
         cinemaUid:param.cinemaUid
       }
+      let val1 = {
+        cinameUid:param.cinemaUid
+      }
       // 仓库条件为空，货架条件为空
       if(this.queryData.storeHouseCodeList.length === 0 && this.queryData.rackCodeList.length === 0){
-        this.$nextTick(() => {
-          this.$cimList.inventoryManagement.checkBillStorehouse(val).then(resData => {
-            if (resData.code == 200) {
-              this.storeHouseTableData = resData.data
+        // this.$nextTick(() => {
+          // this.$cimList.inventoryManagement.checkBillStorehouse(val).then(resData => {
+          //   if (resData.code == 200) {
+          //     this.storeHouseTableData = resData.data
               this.storeHouseTableData.forEach((storeval,storeindex,storearr)=>{
                 let newObj = {}
                 let newObj1 = {}
@@ -392,11 +462,11 @@ export default {
                 newObj1.key = storeval.code + "storeHouseCostAmount"
                 newObj1.code = storeval.code
                 newObj1.width = '150'
-                this.tableColumn.splice(-2,0,newObj)
-                this.tableColumn.splice(-2,0,newObj1)
+                thistableColumn.splice(-2,0,newObj)
+                thistableColumn.splice(-2,0,newObj1)
               })
-            }
-          });
+          //   }
+          // });
           this.tableData.forEach((zongval,zongindex,zongarr)=>{
             zongval.storeHouseList.forEach((newVal,newIndex,newArr)=>{
               let sx = newVal.storehouseCode + "storeCount"
@@ -405,9 +475,9 @@ export default {
               this.$set(zongarr[zongindex],sx1,newVal.storeHouseCostAmount)
             })
           })
-          this.$cimList.inventoryManagement.checkBillStorageRack(val).then(resData => {
-            if (resData.code == 200) {
-              this.goodsNameTableData = resData.data
+          // this.$cimList.inventoryManagement.checkBillStorageRack(val1).then(resData => {
+          //   if (resData.code == 200) {
+          //     this.goodsNameTableData = resData.data
               this.goodsNameTableData.forEach((storeval,storeindex,storearr)=>{
                 let newObj = {}
                 let newObj1 = {}
@@ -419,22 +489,21 @@ export default {
                 newObj1.key = storeval.code + "rackCostAmount"
                 newObj1.code = storeval.code
                 newObj1.width = '150'
-                this.tableColumn.splice(-2,0,newObj)
-                this.tableColumn.splice(-2,0,newObj1)
+                thistableColumn.splice(-2,0,newObj)
+                thistableColumn.splice(-2,0,newObj1)
                 console.log(this.tableColumn)
               })
-            }
-          });
+          //   }
+          // });
           this.tableData.forEach((zongval,zongindex,zongarr)=>{
             zongval.rackList.forEach((newVal,newIndex,newArr)=>{
-              let sx = newVal.storehouseCode + "rackCount"
-              let sx1 = newVal.storehouseCode + "rackCostAmount"
-              this.$set(zongarr[zongindex],sx,newVal.rackCount)
+              let sx = newVal.rackCode + "rackCount"
+              let sx1 = newVal.rackCode + "rackCostAmount"
+              this.$set(zongarr[zongindex],sx,newVal.storeCount)
               this.$set(zongarr[zongindex],sx1,newVal.rackCostAmount)
             })
           })
-          
-        })
+        // })
       }else if(this.queryData.storeHouseCodeList.length > 0 && this.queryData.rackCodeList.length === 0){
           this.newstoreHouseCodeList.forEach((storeval,storeindex,storearr)=>{
                let newObj = {}
@@ -447,8 +516,8 @@ export default {
                 newObj1.key = storeval.code + "storeHouseCostAmount"
                 newObj1.code = storeval.code
                 newObj1.width = '150'
-                this.tableColumn.splice(-2,0,newObj)
-                this.tableColumn.splice(-2,0,newObj1)
+                thistableColumn.splice(-2,0,newObj)
+                thistableColumn.splice(-2,0,newObj1)
           })
           this.tableData.forEach((zongval,zongindex,zongarr)=>{
             zongval.storeHouseList.forEach((newVal,newIndex,newArr)=>{
@@ -470,14 +539,14 @@ export default {
                 newObj1.key = storeval.code + "rackCostAmount"
                 newObj1.code = storeval.code
                 newObj1.width = '150'
-                this.tableColumn.splice(-2,0,newObj)
-                this.tableColumn.splice(-2,0,newObj1)
+                thistableColumn.splice(-2,0,newObj)
+                thistableColumn.splice(-2,0,newObj1)
           })
           this.tableData.forEach((zongval,zongindex,zongarr)=>{
             zongval.rackList.forEach((newVal,newIndex,newArr)=>{
-              let sx = newVal.storehouseCode + "rackCount"
-              let sx1 = newVal.storehouseCode + "rackCostAmount"
-              this.$set(zongarr[zongindex],sx,newVal.rackCount)
+              let sx = newVal.rackCode + "rackCount"
+              let sx1 = newVal.rackCode + "rackCostAmount"
+              this.$set(zongarr[zongindex],sx,newVal.storeCount)
               this.$set(zongarr[zongindex],sx1,newVal.rackCostAmount)
             })
           })
@@ -493,8 +562,8 @@ export default {
                 newObj1.key = storeval.code + "storeHouseCostAmount"
                 newObj1.code = storeval.code
                 newObj1.width = '150'
-                this.tableColumn.splice(-2,0,newObj)
-                this.tableColumn.splice(-2,0,newObj1)
+                thistableColumn.splice(-2,0,newObj)
+                thistableColumn.splice(-2,0,newObj1)
           })
           this.tableData.forEach((zongval,zongindex,zongarr)=>{
             zongval.storeHouseList.forEach((newVal,newIndex,newArr)=>{
@@ -515,22 +584,24 @@ export default {
                 newObj1.key = storeval.code + "rackCostAmount"
                 newObj1.code = storeval.code
                 newObj1.width = '150'
-                this.tableColumn.splice(-2,0,newObj)
-                this.tableColumn.splice(-2,0,newObj1)
+                thistableColumn.splice(-2,0,newObj)
+                thistableColumn.splice(-2,0,newObj1)
           })
           this.tableData.forEach((zongval,zongindex,zongarr)=>{
             zongval.rackList.forEach((newVal,newIndex,newArr)=>{
-              let sx = newVal.storehouseCode + "rackCount"
-              let sx1 = newVal.storehouseCode + "rackCostAmount"
-              this.$set(zongarr[zongindex],sx,newVal.rackCount)
+              let sx = newVal.rackCode + "rackCount"
+              let sx1 = newVal.rackCode + "rackCostAmount"
+              this.$set(zongarr[zongindex],sx,newVal.storeCount)
               this.$set(zongarr[zongindex],sx1,newVal.rackCostAmount)
             })
           })
       }
-
-
-
-
+      this.tableColumn = thistableColumn
+      this.tableLoding = false;
+      // this.tableData.forEach((sval)=>{
+      //   sval.storeCostPrice = sval.storeCostPrice
+      //   sval.storeCostAmount = sval.storeCostAmount
+      // })
     },
   },
   components: {
@@ -545,25 +616,19 @@ export default {
 @import "../../../../assets/css/common.scss";
 @import "../../../../assets/css/element-common.scss";
 .store-i-q-style{
-.select-input {
-  .el-input {
-    width: 70%;
+  .newPro-box {
+    .title {
+      margin: 10px 0;
+      font-size: 16px;
+    }
+    .selectName {
+      font-size: 16px;
+      margin: 10px 0;
+    }
+    .newProTree {
+      height: 330px;
+      overflow: auto;
+    }
   }
-}
-
-.newPro-box {
-  .title {
-    margin: 10px 0;
-    font-size: 16px;
-  }
-  .selectName {
-    font-size: 16px;
-    margin: 10px 0;
-  }
-  .newProTree {
-    height: 330px;
-    overflow: auto;
-  }
-}
 }
 </style>

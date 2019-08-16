@@ -25,25 +25,25 @@
         <li @click="MeClick('1')" :class="{active:cur==1}">
           <div>卖品收入</div>
           <div>
-            <span>{{GoodTop.salesVolume | capitalizeOne}}</span>{{GoodTop.salesVolume | foo}}
+            <span class="page-num">{{GoodTop.salesVolume | capitalizeOne}}</span>{{GoodTop.salesVolume | foo}}
           </div>
         </li>
         <li @click="MeClick('2')" :class="{active:cur==2}">
           <div>购买率</div>
           <div>
-            <span>{{GoodTop.buyRate | woo}}</span>%
+            <span class="page-num">{{GoodTop.buyRate | woo}}</span>%
           </div>
         </li>
         <li @click="MeClick('3')" :class="{active:cur==3}">
           <div>客单价</div>
           <div>
-            <span>{{GoodTop.unitPrice | capitalizeOne}}</span>{{GoodTop.unitPrice | foo}}
+            <span class="page-num">{{GoodTop.unitPrice | capitalizeOne}}</span>{{GoodTop.unitPrice | foo}}
           </div>
         </li>
         <li @click="MeClick('4')" :class="{active:cur==4}">
           <div>套餐销售占比</div>
           <div>
-            <span>{{GoodTop.setmealSalesVolumePercent | woo}}</span>%
+            <span class="page-num">{{GoodTop.setmealSalesVolumePercent | woo}}</span>%
           </div>
         </li>
       </ul>
@@ -52,18 +52,18 @@
     <div class="PerCapita_Content" v-if="cur==0">
       <!-- KPI -->
       <div class="ModuleTitleLayout ModuleKPI" v-if="flag">
-        <div class="ModuleTitle ">
+        <div class="ModuleTitle">
           <div>
             KPI完成率
             <el-tooltip class="item" effect="dark" placement="right-start">
               <div slot="content" style="width:300px">
                 <ul id="ulMain">
                   <li>人均卖品收入当日达成 : <span>{{SellKPIData.sppCurrent | capitalizeOne}}{{SellKPIData.sppCurrent | foo}}</span></li>
-                  <li>环比前一日 : <span :class="[SellKPIData.sppChainDay > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[SellKPIData.sppChainDay > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{SellKPIData.sppChainDay | woo}}%</span></li>
+                  <li>环比前一日 : <span :class="[SellKPIData.sppChainDay > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[SellKPIData.sppChainDay > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{SellKPIData.sppChainDay | woo(true)}}%</span></li>
                   <li>月至今达成 : <span>{{SellKPIData.sppMonthToNow | capitalizeOne}}{{SellKPIData.sppMonthToNow | foo}}</span></li>
-                  <li>环比上月 : <span :class="[SellKPIData.sppChainMonth > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[SellKPIData.sppChainMonth > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{SellKPIData.sppChainMonth | woo}}%</span></li>
+                  <li>环比上月 : <span :class="[SellKPIData.sppChainMonth > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[SellKPIData.sppChainMonth > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{SellKPIData.sppChainMonth | woo(true)}}%</span></li>
                   <li>本月目标为 : <span>{{SellKPIData.sppTarget | capitalizeOne}}</span>{{SellKPIData.sppTarget | foo}}</li>
-                  <li>距目标额差距 : <span :class="[SellKPIData.sppGap > 0? 'green':'red']">{{SellKPIData.sppGap | woo}}%</span></li>
+                  <li>距目标额差距 : <span :class="[SellKPIData.sppGap > 0? 'green':'red']">{{SellKPIData.sppGap | woo}}</span></li>
                 </ul>
               </div>
               <i class="iconfont icon-danchuang-tishi"></i>
@@ -110,7 +110,7 @@
                 <span class="color" @click="clickCity(scope.$index, scope.row)">{{ scope.row.name }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="showNumSell" label="人均卖品金额" min-width="115" align="left" sortable="custom">
+            <el-table-column prop="showNumSell" label="人均卖品金额" min-width="120" align="left" sortable="custom">
               <template slot-scope="scope">
                 <span>{{ scope.row.showNumSell }}</span>
               </template>
@@ -133,12 +133,14 @@
       <div class="reset-page">
         <el-pagination v-if="this.totalPage>10"
           background 
-          layout="prev, pager, next"
+          layout="total,prev, pager, next"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
           :page-size="this.pageSize"
           :total="this.totalPage" 
         ></el-pagination>
+        <span class="page-else" v-else-if="totalPage>0">共{{totalPage}}条</span>
+        <span class="page-else" v-else></span>
       </div>
     </div>
     <!--卖品总收入Content -->
@@ -202,12 +204,14 @@
       <div class="reset-page">
         <el-pagination v-if="this.totalPage>10"
           background 
-          layout="prev, pager, next"
+          layout="total,prev, pager, next"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
           :page-size="this.pageSize"
           :total="this.totalPage" 
         ></el-pagination>
+        <span class="page-else" v-else-if="totalPage>0">共{{totalPage}}条</span>
+        <span class="page-else" v-else></span>
       </div>
     </div>
     <!--购买率Content -->
@@ -271,12 +275,14 @@
       <div class="reset-page">
         <el-pagination v-if="this.totalPage>10"
           background 
-          layout="prev, pager, next"
+          layout="total,prev, pager, next"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
           :page-size="this.pageSize"
           :total="this.totalPage" 
         ></el-pagination>
+        <span class="page-else" v-else-if="totalPage>0">共{{totalPage}}条</span>
+        <span class="page-else" v-else></span>
       </div>
     </div>
     <!--客单价Content -->
@@ -339,12 +345,14 @@
       <div class="reset-page">
        <el-pagination v-if="this.totalPage>10"
           background 
-          layout="prev, pager, next"
+          layout="total,prev, pager, next"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
           :page-size="this.pageSize"
           :total="this.totalPage" 
         ></el-pagination>
+        <span class="page-else" v-else-if="totalPage>0">共{{totalPage}}条</span>
+        <span class="page-else" v-else></span>
       </div>
     </div>
     <!--套餐消费占比趋势Content -->
@@ -385,7 +393,7 @@
                 <span class="color" @click="clickCity(scope.$index, scope.row)">{{ scope.row.name }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="showNumSell" label="套餐消费占比" min-width="115" align="left" sortable="custom">
+            <el-table-column prop="showNumSell" label="套餐消费占比" min-width="120" align="left" sortable="custom">
               <template slot-scope="scope">
                 <span>{{ scope.row.showNumSell }}</span>
               </template>
@@ -408,12 +416,14 @@
       <div class="reset-page">
         <el-pagination v-if="this.totalPage>10"
           background 
-          layout="prev, pager, next"
+          layout="total,prev, pager, next"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
           :page-size="this.pageSize"
           :total="this.totalPage" 
         ></el-pagination>
+        <span class="page-else" v-else-if="totalPage>0">共{{totalPage}}条</span>
+        <span class="page-else" v-else></span>
       </div>
     </div>
   </div>
@@ -626,9 +636,9 @@ export default {
     }
   },
   filters: {
-    woo(value){
+    woo(value,isPositive){
       if (!value) return "--"
-      return value.toFixed(2)
+      return isPositive ? Math.abs(value).toFixed(2): value.toFixed(2) 
     },
     capitalizeOne(value) {
       if (!value) return "--"
@@ -636,10 +646,10 @@ export default {
       //判断逻辑
       if(newValue.indexOf('.') != -1){
         
-        if(newValue.length < 7){
+        if(newValue.length <= 7){
           return Number(newValue + '0').toFixed(2)
         }
-        else if(newValue.length >= 7 && newValue.length <= 11){
+        else if(newValue.length > 7 && newValue.length <= 11){
           return (newValue / 10000).toFixed(2)
         }
         else if(newValue.length >= 12){
@@ -697,11 +707,11 @@ export default {
       let foo = ''
 
       if(newValue.indexOf('.') != -1){
-        if(newValue.length < 7){
+        if(newValue.length <= 7){
           foo = '元'
           return foo
         }
-        else if(newValue.length >= 7 && newValue.length <= 11){
+        else if(newValue.length > 7 && newValue.length <= 11){
           foo = '万元'
           return foo
         }
@@ -1228,8 +1238,11 @@ export default {
       width: 100%;
       line-height: 40px;
       padding: 0 16px;
-      font-size: 16px;
-      font-weight: bold;
+    .title{
+        font-family: PingFangSC-Medium;
+        font-size: 14px;
+        color:#333;
+      }
       .iconfont {
         margin-right: 5px;
         color: #1296db;
@@ -1245,7 +1258,7 @@ export default {
       .tip {
         font-size: 12px;
         color: #3b74ff;
-        font-weight: normal;
+        // font-weight: normal;
         vertical-align: middle;
       }
     }
@@ -1276,6 +1289,7 @@ export default {
             text-align: center;
             display: block;
             margin-top:13px;
+            font-weight:bold;
           }
           p {
             font-size: 12px;
@@ -1379,6 +1393,7 @@ export default {
 }
 .icon-shouye-maipin {
   color: #FE825E !important;
+  font-size:16px;
 }
 .page {
   text-align: center;
@@ -1400,5 +1415,10 @@ export default {
 }
 .red{
   color:red;
+}
+@media screen and (max-width: 1500px) {
+  .BoxContainer .right-col .listUl li.first-li .cont h1 {
+    transform: scale(.8)
+  }
 }
 </style>

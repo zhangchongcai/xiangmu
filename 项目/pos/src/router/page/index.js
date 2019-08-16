@@ -12,7 +12,7 @@ const pagesRoutes = [
       path: 'order', 
       meta: { title: '订单页面' }, 
       component: (resolve) => require(['views/csmpos/order/layout'], resolve), 
-      name: '订单', 
+      name: 'order', 
     },
     {
       path: 'pickUp', //取货首页
@@ -164,7 +164,12 @@ const pagesRoutes = [
       path: 'sellCoupon', //票卷销售
       name: 'sellCoupon',
       component: () => import('views/csmpos/sellcoupon'),
-    }
+    },
+    // {
+    //   path:'demo',
+    //   name:'demo',
+    //   component: () => import('views/dome/index')
+    // }
 
 ]
 

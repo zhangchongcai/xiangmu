@@ -19,8 +19,9 @@
         <number-key-board ref="keyBoard" class="keyboard"  @keynumber="onkey"></number-key-board>
       </div>
     </div>
+    
     <div class="footButtomLayer">
-      <el-button size="medium" @click="$router.go(-1)">返回</el-button>
+      <el-button size="medium" @click="routerGo">取消</el-button>
       <el-button type="primary" size="medium" @click="onChangePassword">确定</el-button>
     </div>
     <!-- <pwd-keyboard ref="pwd" v-model="testVal"></pwd-keyboard> -->
@@ -30,6 +31,7 @@
 import numberKeyBoard from 'components/numberKeyBoard/index.vue'
 // import pwdKeyboard from 'components/pwdKeyboard/index';
 import {  changePassword,userLogout } from 'http/apis'
+import { mapGetters } from 'vuex'
 export default {
   components:{
     numberKeyBoard,
@@ -45,6 +47,11 @@ export default {
         valStr:'',
         testVal:'',
     }
+  },
+  computed:{
+    ...mapGetters([
+        'configData'
+      ])
   },
   methods:{
     onkey(item){
@@ -65,8 +72,8 @@ export default {
       if(!againNewPassword) return this.$message.warning('请输入确认密码!');
       if(againNewPassword != newPassword) return this.$message.warning('新密码不一致，请重新输入！');
       const data = await changePassword({
-        cinemaLicence: 'b931c317c9303855',
-        user_name : localStorage.getItem('userName'),
+        cinemaLicence: localStorage.getItem('cinemaLicence'),
+        user_name : localStorage.getItem('userAccount'),
         oldPassword,
         newPassword
       })
@@ -79,6 +86,13 @@ export default {
       localStorage.removeItem('token')
       this.$router.replace({name:'login'})
 
+    },
+    routerGo(){
+      if(['both','movie'].includes(this.configData.counter_type_value)){
+          this.$router.push({path: '/home'})
+      }else{
+          this.$router.push({path: '/home/goods/cellgoods'})
+      }
     }
   }
 }
@@ -113,6 +127,10 @@ export default {
 .footButtomLayer{
   padding: 1.3vh 0;
   text-align: right;
+  position: absolute;
+  left: 2vw;
+  right: 2vw;
+  bottom: 0;
 }
 .inputTip{
   font-size: 12px;

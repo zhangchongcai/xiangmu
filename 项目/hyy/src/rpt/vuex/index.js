@@ -1,4 +1,4 @@
-import rpt from './module/tableFilter'
+import rpt from './module/common'
 
 export default {
     rpt

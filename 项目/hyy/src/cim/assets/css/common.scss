@@ -1,10 +1,9 @@
 $primary-blue-color:  #3b74ff;
 $primary-red-color: #F33430;
-
 .retail-style{
   // 页面公用样式
   .common-header {
-    padding: 20px 24px;
+    padding: 24px;
     margin-bottom: 10px;
     background: #f5f5f5;
     box-sizing: border-box;
@@ -12,22 +11,32 @@ $primary-red-color: #F33430;
     .el-form-item{
       margin-bottom:0;
     }
+    .select-input .el-input{
+      width: 192px;
+    }
     .el-input{
-      width: 176px;
+      width: 192px;
     }
     .query-btn{
       padding-left: 20px;
       padding-right: 20px;
       width: 96px;
       margin-top: 5px;
-      float: right;
+      //margin-left: 20px;
+      //float: right;
     }
+    .el-form-item{
+      margin-right: 32px;
+    }
+    .el-form-item__label{
+      padding-right: 12px;
+    }
+  }
+  .fix-content-width{
+    //width: 82%;
   }
   .form-item-box{
     width: 600px;
-  }
-  .el-date-editor--datetimerange.el-input__inner{
-    width: 345px;
   }
   .select-btn{
     .el-button{
@@ -46,9 +55,7 @@ $primary-red-color: #F33430;
     margin-top: 12px;
     width: 400px;
   }
-  .el-form-item.is-success .el-input__inner{
-    border-color: #bcbcbc!important;
-  }
+
   .select-input {
     cursor: pointer;
     .el-input{
@@ -64,8 +71,9 @@ $primary-red-color: #F33430;
     }
     .el-button {
       margin-top: 5px;
-      margin-left: 5px;
+      margin-left: 8px;
       width: 80px;
+      height: 32px;
       float: right;
     }
 
@@ -93,6 +101,14 @@ $primary-red-color: #F33430;
   .apply-select{
     .el-input__inner{
       width: 192px;
+    }
+  }
+  .el-dialog__body{
+    padding-top: 5px;
+    padding-bottom: 5px;
+    .query-btn{
+      //margin-left: 20px;
+      //float: right;
     }
   }
   .query-btn-box {
@@ -149,5 +165,41 @@ $primary-red-color: #F33430;
   }
   .col666{
     color: #666;
+  }
+  .colred{
+    color: red;
+  }
+  .fontbold{
+    font-weight: bold;
+  }
+  // 单品页面
+  .basic-input200{
+    width: 200px;
+  }
+  .basic-input .el-input__inner{
+    width: 300px;
+  }
+  .basic-input .el-textarea__inner{
+    width: 300px;
+  }
+  .widthInput100 .el-input__inner{
+    width: 192px;
+  }
+  .wid100{
+    display: inline-block;
+    width: 100px;
+    padding-right: 5px;
+    text-align: right;
+  }
+  .c-type{
+    display: inline-block;
+    max-width: 200px;
+    height: 40px;
+    overflow: hidden;
+    color: #3b74ff; 
+    cursor: pointer;
+  }
+  .see-style{
+    height:40px;
   }
 }

@@ -128,8 +128,8 @@ export default {
                     .have-sel-pos {
                         position: absolute;
                         right: 0;
-                        top: 0;
-                        font-size: 32px;
+                        top: -4px;
+                        font-size: 2.2vw;
                         color: #3B74FF;
                         }
                 }

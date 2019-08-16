@@ -122,9 +122,9 @@
 
         <!-- 原材料信息 start-->
         <el-collapse-item title="原材料信息" name="2">
-          <div>
+          <div class="fix-content-width">
             <div class="add-btn clearfix" v-if="routeQuery.type!=3">
-              <el-button @click="selectedGoodsDialogVisible=true" type="primary" plain>添加原材料及包装</el-button>
+              <el-button class="right" @click="selectedGoodsDialogVisible=true" type="primary" plain>添加原材料及包装</el-button>
             </div>
             <div
                     class="recipe-box"
@@ -162,13 +162,10 @@
                     </el-form-item>
                   </el-col>
                   <el-col :span="4" v-if="routeQuery.type!=3">
-                    <el-button
-                            class="right"
-                            v-if="groupIndex >0"
-                            type="text"
-                            size="medium"
-                            @click.stop="handleDleteRecipeGroup(groupIndex)"
-                    >删除配方</el-button>
+                    <i class="el-icon-close right delete-recipe-group"
+                       v-if="groupIndex >0"
+                       @click.stop="handleDleteRecipeGroup(groupIndex)"
+                    ></i>
                   </el-col>
                 </el-row>
               </el-form>
@@ -246,10 +243,10 @@
             <el-row>
               <div class="form-item-box good-img-col left">
                 <el-form-item label="销售状态" prop="canSale">
-                  <span v-if="routeQuery.type==3">{{queryData.canSale == 1 ? '允许':'禁止'}}</span>
+                  <span v-if="routeQuery.type==3">{{queryData.canSale == 1 ? '允许销售':'禁止销售'}}</span>
                   <el-radio-group v-else v-model="queryData.canSale">
-                    <el-radio label="1">允许</el-radio>
-                    <el-radio label="0">禁止</el-radio>
+                    <el-radio label="1">允许销售</el-radio>
+                    <el-radio label="0">禁止销售</el-radio>
                   </el-radio-group>
                 </el-form-item>
               </div>
@@ -323,7 +320,7 @@
                                   @clear="handleDeleteCinemas"
                           >
                          </el-input>
-                         <el-button type="primary" plain @click.stop="handleDialog('myCinemalDialog')">{{selectedStoreName?"编辑":"选择"}}</el-button>
+                         <el-button type="primary" plain @click.stop="handleDialog('myCinemalDialog')">选择</el-button>
                      </span>
                   </div>
                 </el-form-item>
@@ -358,23 +355,23 @@
                                   type="primary" plain
                                   v-if="routeQuery.type!=3"
                                   @click.stop="handleDialog('myChannelDialog')"
-                          >{{selectedChannelName?"编辑":"选择"}}</el-button>
+                          >选择</el-button>
                      </span>
                   </div>
                 </el-form-item>
               </div>
             </el-row>
-            <el-row>
-              <el-col :span="12">
-                <el-form-item prop="isSaleAsSetMeal" label-width="160px" label="是否只允许套餐内售卖">
-                  <span v-if="routeQuery.type==3">{{queryData.canSale == 1 ? '允许':'禁止'}}</span>
-                  <el-radio-group v-else v-model="queryData.isSaleAsSetMeal">
-                    <el-radio label="1">是</el-radio>
-                    <el-radio label="0">否</el-radio>
-                  </el-radio-group>
-                </el-form-item>
-              </el-col>
-            </el-row>
+<!--            <el-row>-->
+<!--              <el-col :span="12">-->
+<!--                <el-form-item prop="isSaleAsSetMeal" label-width="160px" label="是否只允许套餐内售卖">-->
+<!--                  <span v-if="routeQuery.type==3">{{queryData.canSale == 1 ? '允许':'禁止'}}</span>-->
+<!--                  <el-radio-group v-else v-model="queryData.isSaleAsSetMeal">-->
+<!--                    <el-radio label="1">是</el-radio>-->
+<!--                    <el-radio label="0">否</el-radio>-->
+<!--                  </el-radio-group>-->
+<!--                </el-form-item>-->
+<!--              </el-col>-->
+<!--            </el-row>-->
           </div>
         </el-collapse-item>
         <!-- 销售信息 end-->
@@ -403,8 +400,10 @@
       :dialogVisible.sync="selectedGoodsDialogVisible"
       :dialogFeedbackData="goodList"
       :merType="'5'"
+      :canSale="'-1'"
       @cimSelectedGoodsDialogCallBack="selectedGoodsDialogCallBack"
     ></selected-goods>
+<!--    <fixStepTool :stepData="stepData.stepList"></fixStepTool>-->
   </div>
 </template>
 
@@ -417,9 +416,11 @@
   import cinemalDialog from "cim/components/cinemalDialog/cinemaDialog.vue";
   import channelDialog from "cim/components/channelDialog/channelDialog.vue";
   import imgUpload from "cim/components/imgUpload/imgUpload.vue";
+  import fixStepTool from "ctm/components/fix-step-tool/fix-step-tool";
+  import fixStepMixin from "ctm/mixins/fixStepTool";
 
   export default {
-  mixins: [mixin],
+  mixins: [mixin,fixStepMixin],
   data() {
     return {
       //查询数据
@@ -549,6 +550,23 @@
       multipleCinemal: true,
       cinemalDialogTittle: "选择适用门店",
       channelDialogTittle: "选择适用渠道",
+      //交互部分数据
+      stepData: {
+        stepList: [
+          {
+            name: "基础信息",
+            isactive: false
+          },
+          {
+            name: "原材料信息",
+            isactive: false
+          },
+          {
+            name: "销售信息",
+            isactive: false
+          },
+        ]
+      },
     };
   },
   activated(){
@@ -556,7 +574,6 @@
   },
   mounted() {
     this.init();
-    console.log(this.routeMerData);
   },
 
   methods: {
@@ -664,12 +681,12 @@
             this.queryData.isSaleAsSetMeal = this.queryData.isSaleAsSetMeal.toString();
             this.goodList = this.queryData.combinationSkuVoList[0].makeItemVoList;
             this.synproFindUnitList({ catUid: this.queryData.catUid,flag:"0" });
-            console.log("this.goodList", this.goodList);
             this.selectedStoreName = resData.data.cinemasList
               .map(item => {
                 return item.cinemaName;
               })
               .join(",");
+
             this.selectedChannelName = resData.data.channelsList
               .map(item => {
                 return item.channelName;
@@ -677,6 +694,9 @@
               .join(",");
             this.queryData.cinemasList = this.queryData.cinemasList.map(item => {
               item.name = item.cinemaName;
+              if(!item.areaName){
+                item.areaName = item.area;
+              }
               return item
             })
             this.queryData.channelsList = this.queryData.channelsList.map(item => {
@@ -689,7 +709,7 @@
     },
     // 确定提交信息
     handleSubmit() {
-      console.log(this.queryData);
+      // console.log(this.queryData);
       this.$refs["ruleForm"].validate(valid => {
         if (valid) {
           if ((this.queryData.saleCinema == 0) && (this.queryData.cinemasList.length == 0)) {
@@ -718,10 +738,17 @@
     },
     // 取消提交信息
     handleCancel() {
-      this.$router.go(-1);
+      this.$store.commit("tagNav/removeTagNav", {
+        name: this.$route.name,
+        path: this.$route.path,
+        title: this.$route.meta.title,
+        query: this.$route.query
+      })
+      this.$router.push({
+        path: "/retail/commodityInformation/list",
+      });
     },
     selectedGoodsDialogCallBack(value) {
-      console.log(value);
       if (value.btnType == 1) {
         this.goodList = value.data;
         this.addRawMaterialDialog = false;
@@ -788,7 +815,6 @@
           tempObj.code = data.code;
           tempObj.makeItemVoList = data.makeItemVoList;
           this.queryData.combinationSkuVoList.push(tempObj);
-          console.log(data);
         }
       );
     },
@@ -808,7 +834,6 @@
 
     },
     handleRecipeTableDlete(groupIndex, row, index) {
-      console.log(groupIndex, row, index);
       this.$confirm("<i class='el-icon-circle-close'></i><span>确定删除吗?</span>", {
         customClass: "retail-style",
         dangerouslyUseHTMLString: true,
@@ -856,7 +881,7 @@
           return item.cinemaName  || item.name;
         })
         .join(",");
-      console.log("门店数据", data);
+      // console.log("门店数据", data);
     },
     // 渠道
     onChanneSumit(data = []) {
@@ -871,7 +896,7 @@
           return item.channelName  ||  item.name;
         })
         .join(",");
-      console.log("渠道数据", data);
+      // console.log("渠道数据", data);
     },
     //图片上传成功回调
     successAvatarUpload(response) {
@@ -951,7 +976,8 @@
     selectedGoods,
     cinemalDialog,
     channelDialog,
-    imgUpload
+    imgUpload,
+    fixStepTool
   }
 };
 </script>
@@ -961,16 +987,13 @@
 @import "../../../../../assets/css/common.scss";
 .com-posite{
   .add-btn{
-    margin: 5px 0;
+    padding: 5px 10px;
   }
   .price-inp {
     width: 100px;
   }
   .both-edit-inp {
     width: 60px;
-  }
-  .recipe-box{
-    /*padding-bottom: 20px;*/
   }
   .el-form{
     .el-form-item{
@@ -979,6 +1002,11 @@
     .code{
       color: #666;
     }
+  }
+  .delete-recipe-group{
+    font-size: 22px;
+    padding: 10px 0px;
+    cursor: pointer;
   }
 
 }

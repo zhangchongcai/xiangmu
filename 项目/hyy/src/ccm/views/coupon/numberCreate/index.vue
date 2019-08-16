@@ -18,8 +18,15 @@
     </section>
 
     <!-- 分页 -->
-    <section class="pagination-section flex-base flex-center" v-if="tableData.length != 0">
-        <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="pageConfig.currentPage" :page-sizes="pageConfig.pageSizes" :page-size="pageConfig.pageSize" layout="total, sizes, prev, pager, next, jumper" :total="pageConfig.total">
+    <section class="pagination-section flex-base flex-center pageStyle" v-if="tableData.length != 0">
+        <el-pagination 
+        @size-change="handleSizeChange" 
+        @current-change="handleCurrentChange" 
+        :current-page="pageConfig.currentPage" 
+        :page-sizes="pageConfig.pageSizes" 
+        :page-size="pageConfig.pageSize" 
+        background layout="total, prev, pager, next, jumper, sizes"          
+        :total="pageConfig.total">
         </el-pagination>
     </section>
 
@@ -243,20 +250,17 @@ export default {
          * @param {String} value
          */
         exportTicket(param) {
-            console.log('导出')
             let pointer = this;
             let type = "warning";
             let url = this.baseURL + "/coupon/prebuild/exportExcel?batchCode=" + param;
-            console.log(this.baseURL)
-            // let store = this.$stroe
-            let headers = {
-                // "Content-Type": "application/json;charset=UTF-8",
-                // Authorization: store.state.loginToken,
-                // timestamp: timestamp,
-                // sign: md5(store.state.loginToken + store.state.signKey + timestamp),
-                "Cpm-User-Token": localStorage.getItem("token")
-            };
-                // this.$ccmList.exportExcel({batchCode:param}).
+            let headers={}
+            if(this.$store.state.CpmUserKey){
+                headers['Cpm-User-Token'] = this.$store.state.CpmUserKey;
+            }
+            if (sessionStorage.getItem('token')) {
+                headers['Cpm-User-Token'] = sessionStorage.getItem('token');
+            }
+            
             this.axios(url, {
                 headers,
                 method: "get",
@@ -322,5 +326,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "../../../assets/css/comList.scss";   
 
 </style>

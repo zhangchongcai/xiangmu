@@ -4,13 +4,16 @@ import filmDialog from "cmm/dialogs/film/filmDialog.vue"; //影片弹窗
 import filmTypeDialog from "cmm/dialogs/filmType/filmTypeDialog.vue"; //影片类型弹窗
 import cinemaAdminRegionDialog from 'cmm/dialogs/cinemaAdminRegion/cinemaAdminRegionDialog' //行政区域
 import projectionEffectDialog from 'cmm/dialogs/projectionEffect/projectionEffectDialog' //放映效果
+
 import orgStructureDialog from "cmm/dialogs/orgStructure/orgStructureDialog.vue"; //组织结构多个节点多选弹窗
 import salePlace from 'cmm/dialogs/salePlace' //行政区域
 
 import selBrandDialog from "cmm/dialogs/selectBrand"; //品牌弹窗
-import selectedGoods from 'cmm/dialogs/selectedGoods' //选择商品
+// import selectedGoods from 'cmm/dialogs/selectedGoods' //选择商品
+import selectedGoods from "cim/dialogs/cimSelectedGoods/index.vue"; //选择商品
 import selectedGoodsSingle from 'ccm/dialogs/selectedGoodsSingle' //选择商品 单选
 import MerClass from 'cmm/dialogs/merClass' //选择类别
+import goodClassDialog from 'cmm/dialogs/merClass/goodClassDialog' //选择类别
 
 import tradeChannelDialog from 'cmm/dialogs/tradeChannel/tradeChannelDialog' //交易渠道
 import tradeMerchantDialog from 'cmm/dialogs/tradeMerchant/tradeMerchantDialog' //交易客商
@@ -49,27 +52,34 @@ let alertHandle = {
         salePlace,
         cinemaAdminRegionDialog,
         projectionEffectDialog,
-        orgStructureDialog
+        orgStructureDialog,
+        goodClassDialog
     },
     data() {
         return {
-            //选择会员等级弹窗传入参数
-            reviewCrmMemberLevelData: [],
+            reviewCrmMemberLevelData: [], //选择会员等级弹窗传入参数,例子:{ levelNo: "1", levelName: "普通会员", }
             crmMemberLevelDialogVisible: false, //选择会员等级弹窗 状态
             crmMemberLevelDialogWhereUse: "", //选择会员等级弹窗 引入标识
-            //选择会员卡类型弹窗传入参数
-            reviewCrmCardTypeData: [],
+
+            reviewCrmCardTypeData: [], //选择会员卡类型弹窗传入参数,例子:{ cardType: "联名卡", cardTypeCode: "cobranded_card" }
             crmCardTypeDialogVisible: false, //选择会员卡类型弹窗 状态
             crmCardTypeDialogWhereUse: "", //选择会员卡类型弹窗 引入标识
-            //选择会员卡政策弹窗传入参数
-            reviewCrmCardPolicyTypeData: [],
+
+            reviewCrmCardPolicyTypeData: [], //选择会员卡政策弹窗传入参数,例子:{ productNo: "010014", cardName: "储值卡" }
             crmCardPolicyDialogVisible: false, //选择会员卡政策弹窗 状态
             crmCardPolicyDialogWhereUse: "", //选择会员卡政策弹窗 引入标识
+            crmCardPolicyDialogUnique: "id", //用于回显判断唯一标识,默认productNo
+
             //品牌弹窗
             brandQueryData: {
                 list: {
                     id: ""
                 }
+            },
+            //商品类别弹窗
+            goodClassDialog: {
+                goodClassDialogVisible: false,
+                title: "商品类别",
             },
             //组织结构弹窗
             orgStructureDialog: {
@@ -131,6 +141,7 @@ let alertHandle = {
                 filmDialogVisible: false,
                 title: "选择影片",
             },
+
             //品牌弹窗
             selBrandDialog: {
                 title: "选择品牌",
@@ -197,8 +208,16 @@ let alertHandle = {
         //-----------------------------已弃用-交易客商end------------------------------------
         //-----------------------------交易渠道start------------------------------------
         // 交易渠道-点击开启弹窗
-        tradeChannelClick() {
-            this.$refs.tradeChannelDialog.openDialog(true)
+        tradeChannelClick(reviewData) {
+            // 回显
+            let reviewList = []
+            if (reviewData && reviewData.value && reviewData.text) {
+                reviewData.value.split(',').map((item) => { reviewList.push({ code: item, name: "", reviewFlag: "review" }) });
+                reviewData.text.split(',').map((item, index) => { reviewList[index].name = item });
+            }
+            console.log("reviewList", reviewList);
+            // 开启弹窗
+            this.$refs.tradeChannelDialog.openDialog(true, reviewList)
         },
         // 交易渠道-（自定义营销页面）回调函数
         handleTradeChannelCallBack(data) {
@@ -232,8 +251,16 @@ let alertHandle = {
         //-----------------------------交易渠道end------------------------------------
         //-----------------------------放映效果start------------------------------------
         // 放映效果-点击开启弹窗
-        projectionEffectClick() {
-            this.$refs.projectionEffectDialog.openDialog(true)
+        projectionEffectClick(reviewData) {
+            // 回显
+            let reviewList = []
+            if (reviewData && reviewData.value && reviewData.text) {
+                reviewData.value.split(',').map((item) => { reviewList.push({ propertyCode: item, propertyName: "", reviewFlag: "review" }) });
+                reviewData.text.split(',').map((item, index) => { reviewList[index].propertyName = item });
+            }
+            console.log("reviewList", reviewList);
+            // 开启弹窗
+            this.$refs.projectionEffectDialog.openDialog(true, reviewList)
         },
         // 放映效果-（自定义营销页面）回调函数
         handleProjectionEffectCallBack(data) {
@@ -276,8 +303,15 @@ let alertHandle = {
             this.basicDataForm.cinemaAreaId25.text = nameArr.join(',')
         },
         // 影院行政区域（组织结构）-点击开启弹窗
-        orgStructureClick() {
-            this.$refs.orgStructureDialog.openDialog(true)
+        orgStructureClick(reviewData) {
+            // 回显
+            let reviewList = []
+            if (reviewData && reviewData.value) {
+                reviewList = reviewData.value.split(',')
+            }
+            console.log("reviewList", reviewList);
+            // 开启弹窗
+            this.$refs.orgStructureDialog.openDialog(true, reviewList)
         },
         // 影院行政区域（组织结构）-（自定义营销页面）回调函数
         handleOrgStructureBack(data) {
@@ -294,8 +328,16 @@ let alertHandle = {
         //-----------------------------影院行政区域end------------------------------------
         //-----------------------------影院start------------------------------------
         // 影院-点击开启弹窗
-        cinemaClick(cinemaDialog) {
-            this.$refs[`${cinemaDialog}`].openDialog(true)
+        cinemaClick(cinemaDialog, reviewData) {
+            // 回显
+            let reviewList = []
+            if (reviewData && reviewData.value && reviewData.text) {
+                reviewData.value.split(',').map((item) => { reviewList.push({ code: item, name: "", reviewFlag: "review" }) });
+                reviewData.text.split(',').map((item, index) => { reviewList[index].name = item });
+            }
+            console.log("reviewList", reviewList);
+            // 开启弹窗
+            this.$refs[`${cinemaDialog}`].openDialog(true, reviewList)
         },
         // 注册影院-（自定义营销页面）回调函数
         handleRegisterCinemaCallBack(data) {
@@ -319,7 +361,7 @@ let alertHandle = {
             this.basicDataForm.cinemaCode19.value = uidArr.join(',')
             this.basicDataForm.cinemaCode19.text = nameArr.join(',')
         },
-        // 注册影院、交易影院-（除去自定义营销页面）回调函数
+        // 注册影院、交易影院-（全部页面）回调函数
         handleMovieTicketCinemaDialogCallBack(data) {
             console.log(data)
             let nameArr = []
@@ -334,8 +376,16 @@ let alertHandle = {
         //-----------------------------影片start------------------------------------
 
         // 影片-点击开启弹窗
-        filmClick() {
-            this.$refs.filmDialog.openDialog(true)
+        filmClick(reviewData) {
+            // 回显
+            let reviewList = []
+            if (reviewData && reviewData.value && reviewData.text) {
+                reviewData.value.split(',').map((item) => { reviewList.push({ code: item, filmName: "", reviewFlag: "review" }) });
+                reviewData.text.split(',').map((item, index) => { reviewList[index].filmName = item });
+            }
+            console.log("reviewList", reviewList);
+            // 开启弹窗
+            this.$refs.filmDialog.openDialog(true, reviewList)
         },
         // 影片-（自定义营销页面）回调函数
         handleFilmCallBack(data) {
@@ -360,8 +410,16 @@ let alertHandle = {
         //-----------------------------影片end------------------------------------
         //-----------------------------影厅类型start------------------------------------
         // 影厅类型-点击开启弹窗
-        cinemaTypeClick() {
-            this.$refs.cinemaTypeDialog.openDialog(true)
+        cinemaTypeClick(reviewData) {
+            // 回显
+            let reviewList = []
+            if (reviewData && reviewData.value && reviewData.text) {
+                reviewData.value.split(',').map((item) => { reviewList.push({ keyCode: item, keyName: "", reviewFlag: "review" }) });
+                reviewData.text.split(',').map((item, index) => { reviewList[index].keyName = item });
+            }
+            console.log("reviewList", reviewList);
+            // 开启弹窗
+            this.$refs.cinemaTypeDialog.openDialog(true, reviewList)
         },
         // 影厅类型-（自定义营销页面）回调函数
         handleCinemaTypeCallBack(data) {
@@ -386,8 +444,16 @@ let alertHandle = {
         //-----------------------------影厅类型end------------------------------------
         //-----------------------------影片类型start------------------------------------
         // 影片类型-点击开启弹窗
-        filmTypeClick() {
-            this.$refs.filmTypeDialog.openDialog(true)
+        filmTypeClick(reviewData) {
+            // 回显
+            let reviewList = []
+            if (reviewData && reviewData.value && reviewData.text) {
+                reviewData.value.split(',').map((item) => { reviewList.push({ propertyCode: item, propertyName: "", reviewFlag: "review" }) });
+                reviewData.text.split(',').map((item, index) => { reviewList[index].propertyName = item });
+            }
+            console.log("reviewList", reviewList);
+            // 开启弹窗
+            this.$refs.filmTypeDialog.openDialog(true, reviewList)
         },
         // 影片类型-（自定义营销页面）回调函数
         handleFilmTypeCallBack(data) {
@@ -412,8 +478,16 @@ let alertHandle = {
         //-----------------------------影片类型end------------------------------------
         //-----------------------------支付方式start------------------------------------
         // 支付方式-点击开启弹窗
-        payTypeClick() {
-            this.$refs.payTypeDialog.openDialog(true);
+        payTypeClick(reviewData) {
+            // 回显
+            let reviewList = []
+            if (reviewData && reviewData.value && reviewData.text) {
+                reviewData.value.split(',').map((item) => { reviewList.push({ payTypeCode: item, payTypeName: "", reviewFlag: "review" }) });
+                reviewData.text.split(',').map((item, index) => { reviewList[index].payTypeName = item });
+            }
+            console.log("reviewList", reviewList);
+            // 开启弹窗
+            this.$refs.payTypeDialog.openDialog(true, reviewList);
         },
         // 支付方式-（自定义营销页面）回调函数
         handlePayTypeCounterUseCallBack(data) {
@@ -440,7 +514,16 @@ let alertHandle = {
         //-----------------------------支付方式end------------------------------------
         //-----------------------------会员类-会员等级、消费者身份start------------------------------------
         // 会员等级、消费者身份-点击开启弹窗
-        membershipLevelClick(whereUse) {
+        membershipLevelClick(whereUse, reviewData) {
+            // 回显
+            let reviewList = []
+            if (reviewData && reviewData.value && reviewData.text) {
+                reviewData.value.split(',').map((item) => { reviewList.push({ levelNo: item, levelName: "", reviewFlag: "review" }) });
+                reviewData.text.split(',').map((item, index) => { reviewList[index].levelName = item });
+            }
+            this.reviewCrmMemberLevelData = reviewList
+            console.log("reviewList", reviewList);
+            //开启弹窗
             this.crmMemberLevelDialogWhereUse = whereUse
             this.crmMemberLevelDialogVisible = true
         },
@@ -450,9 +533,9 @@ let alertHandle = {
             let nameArr = []
             data.data.map(item => { nameArr.push(item.levelName) });
             let uidArr = []
-            data.data.map(item => { uidArr.push(item.id) });
+            data.data.map(item => { uidArr.push(item.levelNo) });
 
-            //会员等级-（自定义营销页面）回调函数
+            // 会员等级-（自定义营销页面）回调函数
             if (this.crmMemberLevelDialogWhereUse == "crmMemberLevelDialog") {
                 this.basicDataForm.customerLevelCode101.value = uidArr.join(',')
                 this.basicDataForm.customerLevelCode101.text = nameArr.join(',')
@@ -466,7 +549,16 @@ let alertHandle = {
         //-----------------------------会员类-会员等级、消费者身份end------------------------------------
         //-----------------------------会员类-会员卡类型start------------------------------------
         // 会员卡类型-点击开启弹窗
-        cardRightCodeClick(whereUse) {
+        cardTypeKeyClick(whereUse, reviewData) {
+            // 回显
+            let reviewList = []
+            if (reviewData && reviewData.value && reviewData.text) {
+                reviewData.value.split(',').map((item) => { reviewList.push({ cardTypeCode: item, cardType: "", reviewFlag: "review" }) });
+                reviewData.text.split(',').map((item, index) => { reviewList[index].cardType = item });
+            }
+            this.reviewCrmCardTypeData = reviewList
+            console.log("reviewList", reviewList);
+            //开启弹窗
             this.crmCardTypeDialogWhereUse = whereUse;
             this.crmCardTypeDialogVisible = true;
         },
@@ -483,7 +575,16 @@ let alertHandle = {
         //-----------------------------会员类-会员卡类型end------------------------------------
         //-----------------------------会员类-会员卡政策start------------------------------------
         // 会员卡政策-点击开启弹窗
-        cardPolicyClick(whereUse) {
+        cardPolicyClick(whereUse, reviewData) {
+            // 回显
+            let reviewList = []
+            if (reviewData && reviewData.value && reviewData.text) {
+                reviewData.value.split(',').map((item) => { reviewList.push({ id: item, cardName: "", reviewFlag: "review" }) });
+                reviewData.text.split(',').map((item, index) => { reviewList[index].cardName = item });
+            }
+            this.reviewCrmCardPolicyTypeData = reviewList
+            console.log("reviewList", reviewList);
+            //开启弹窗
             this.crmCardPolicyDialogWhereUse = whereUse
             this.crmCardPolicyDialogVisible = true
         },
@@ -500,12 +601,12 @@ let alertHandle = {
                 this.basicDataForm.cardRightCode100.value = uidArr.join(',')
                 this.basicDataForm.cardRightCode100.text = nameArr.join(',')
             }
-            //消费者身份-（自定义营销页面）回调函数
+            //已弃用-消费者身份-（自定义营销页面）回调函数
             if (this.crmCardPolicyDialogWhereUse == "consumerIdentityDialog") {
                 this.basicDataForm.consumerTypeKey27.value = uidArr.join(',')
                 this.basicDataForm.consumerTypeKey27.text = nameArr.join(',')
             }
-            //消费者身份-（影票活动管理、卖品活动管理、套票促销活动管理 三个页面）回调函数
+            //已弃用-消费者身份-（影票活动管理、卖品活动管理、套票促销活动管理 三个页面）回调函数
             if (this.crmCardPolicyDialogWhereUse == "movieTicketConsumerIdentityDialog") {
                 this.basicDataForm.consumerIdentityId = uidArr.join(',')
                 this.basicDataForm.consumerIdentityInput = nameArr.join(',')
@@ -517,12 +618,20 @@ let alertHandle = {
             }
         },
         //-----------------------------会员类-会员卡政策end------------------------------------
-        //-----------------------------票券批次（多选）start------------------------------------
-        //票券批次（多选）-点击开启弹窗
-        couponBatchClick(couponBatchDialog) {
-            this.$refs[`${couponBatchDialog}`].openDialog(true);
+        //-----------------------------已弃用-票券批次（多选）start------------------------------------
+        //已弃用-票券批次（多选）-点击开启弹窗
+        couponBatchClick(couponBatchDialog, reviewData) {
+            // 回显
+            let reviewList = []
+            if (reviewData && reviewData.value && reviewData.text) {
+                reviewData.value.split(',').map((item) => { reviewList.push({ applyCode: item, couponName: "", reviewFlag: "review" }) });
+                reviewData.text.split(',').map((item, index) => { reviewList[index].couponName = item });
+            }
+            console.log("reviewList", reviewList);
+            // 开启弹窗
+            this.$refs[`${couponBatchDialog}`].openDialog(true, reviewList);
         },
-        //票券批次（多选）-（自定义营销页面）回调函数
+        //已弃用-票券批次（多选）-（自定义营销页面）回调函数
         handleCouponBatchCallBack(data) {
             console.log(data)
             let nameArr = []
@@ -533,7 +642,7 @@ let alertHandle = {
             this.basicDataForm.giftTicket.couponApplyCode3.value = uidArr.join(',')
             this.basicDataForm.giftTicket.couponApplyCode3.text = nameArr.join(',')
         },
-        //票券批次（多选）-（赠送票券活动管理页面）回调函数
+        //已弃用-票券批次（多选）-（赠送票券活动管理页面）回调函数
         handleGiftCouponBatchCallBack(data) {
             console.log(data)
             let nameArr = []
@@ -547,9 +656,19 @@ let alertHandle = {
         //-----------------------------票券批次（多选）end------------------------------------
         //-----------------------------票券批次（单选）start------------------------------------
         //票券批次（单选）-点击开启弹窗
-        couponBatchSingleClick(couponBatchSingleDialog) {
-            console.log(couponBatchSingleDialog)
-            this.$refs[`${couponBatchSingleDialog}`].openDialog(true);
+        couponBatchSingleClick(couponBatchSingleDialog, reviewData) {
+            // 回显
+            let obj = {}
+            if (reviewData && reviewData.value && reviewData.text) {
+                obj = {
+                    applyCode: reviewData.value,
+                    couponName: reviewData.text,
+                    reviewFlag: "review"
+                }
+            }
+            console.log("obj", obj);
+            // 开启弹窗
+            this.$refs[`${couponBatchSingleDialog}`].openDialog(true, obj);
         },
         //票券批次（单选）-（自定义营销页面）回调函数
         handleCouponBatchSingleCallBack(data) {
@@ -565,61 +684,151 @@ let alertHandle = {
         },
         //-----------------------------票券批次（单选）end------------------------------------
 
-
-
-
-
-
-        //-----------------------------------卖品类弹窗start----------------------------------
-        /**
-         * @function selectBrand  -选择品牌选择
-         */
-        brandNameClick(whereUse) {
-            this.$refs[whereUse].openDialog(true)
+        //-----------------------------------卖品类-商品品牌start----------------------------------
+        //商品品牌-点击开启弹窗
+        brandNameClick(whereUse, reviewData) {
+            // 回显
+            let reviewList = []
+            if (reviewData && reviewData.value && reviewData.text) {
+                reviewData.value.split(',').map((item) => { reviewList.push({ code: item, name: "", reviewFlag: "review" }) });
+                reviewData.text.split(',').map((item, index) => { reviewList[index].name = item });
+            }
+            console.log("reviewList", reviewList);
+            // 开启弹窗
+            this.$refs[whereUse].openDialog(true, reviewList)
         },
-        //-回调
+        //商品品牌-回调函数
         SelBrandCallBack(data) {
-            this.basicDataForm.brandId40.value = data.valueArr.join(',')
-            this.basicDataForm.brandId40.text = data.textArr.join(',')
-        },
-        youhuiBrandcallBack(data) {
-            this.basicDataForm.judgeDiscountPriceByBrand.brandId28.value = data.valueArr.join(',')
-            this.basicDataForm.judgeDiscountPriceByBrand.brandId28.text = data.textArr.join(',')
-        },
+            console.log(data)
+            let nameArr = []
+            data.map(item => { nameArr.push(item.name) })
+            let uidArr = []
+            data.map(item => { uidArr.push(item.code) })
 
-        /**
-         * @function selectType  -选择类别
-         */
+            this.basicDataForm.brandId40.value = uidArr.join(',')
+            this.basicDataForm.brandId40.text = nameArr.join(',')
+
+        },
+        //商品品牌-回调函数
+        youhuiBrandcallBack(data) {
+            console.log(data)
+            let nameArr = []
+            data.map(item => { nameArr.push(item.name) })
+            let uidArr = []
+            data.map(item => { uidArr.push(item.code) })
+
+            this.basicDataForm.judgeDiscountPriceByBrand.brandId28.value = uidArr.join(',')
+            this.basicDataForm.judgeDiscountPriceByBrand.brandId28.text = nameArr.join(',')
+        },
+        //商品品牌-回调函数
+        buyNumByBrandcallBack(data) {
+            console.log(data)
+            let nameArr = []
+            data.map(item => { nameArr.push(item.name) })
+            let uidArr = []
+            data.map(item => { uidArr.push(item.code) })
+
+            this.basicDataForm.buyNumByBrand.brandId29.value = uidArr.join(',')
+            this.basicDataForm.buyNumByBrand.brandId29.text = nameArr.join(',')
+        },
+        //-----------------------------------卖品类-商品品牌end----------------------------------
+        //-----------------------------------卖品类-商品类别start----------------------------------
+        //商品类别-点击开启弹窗
         selectType(ref) {
             this.$refs[ref].openMerClassTree()
         },
-        /*同类商品累计购买数量 - 选择商品类别 */
-        //-回调
+        //商品类别-回调函数
         selectMerClassCallBack(data) {
             this.basicDataForm.classCode41.text = data.textArr.join(',')
             this.basicDataForm.classCode41.value = data.valueArr.join(',')
         },
+        //商品类别-回调函数
         sameMerClassCallBack(data) {
             this.basicDataForm.buyNumByType.classCode28.text = data.textArr.join(',')
             this.basicDataForm.buyNumByType.classCode28.value = data.valueArr.join(',')
         },
+        //商品类别-回调函数
         maiPingMerClassCallBack(data) {
             this.basicDataForm.judgeDiscountPriceByType.classCode27.text = data.textArr.join(',')
             this.basicDataForm.judgeDiscountPriceByType.classCode27.value = data.valueArr.join(',')
         },
-        /**
-         * @function selectBrand  -选择商品名称 点击事件
-         */
-        selectGoodsClick(whereUse) {
 
-            // console.log(ref)
-            //单选
+        // 商品类别-点击开启弹窗
+        goodClassClick(goodClassDialog, reviewData) {
+            // 回显
+            let reviewList = []
+            if (reviewData && reviewData.value) {
+                reviewList = reviewData.value.split(',')
+            }
+            console.log("reviewList", reviewList);
+            // 开启弹窗
+            this.$refs[`${goodClassDialog}`].openDialog(true, reviewList)
+        },
+        // 商品类别-（自定义营销页面-活动条件-卖品类）回调函数
+        handleGoodClassCallBack(data) {
+            console.log(data);
+            let nameArr = []
+            data.map(item => { nameArr.push(item.name) })
+            let uidArr = []
+            data.map(item => { uidArr.push(item.uid) });
+            this.basicDataForm.classCode41.value = uidArr.join(',')
+            this.basicDataForm.classCode41.text = nameArr.join(',')
+            console.log("classCode41.value=", this.basicDataForm.classCode41.value)
+            console.log("classCode41.text=", this.basicDataForm.classCode41.text)
+        },
+        // 商品类别-（自定义营销页面-活动条件-交易类）回调函数
+        handleTradeGoodClassCallBack(data) {
+            console.log(data);
+            let nameArr = []
+            data.map(item => { nameArr.push(item.name) })
+            let uidArr = []
+            data.map(item => { uidArr.push(item.uid) });
+
+            this.basicDataForm.buyNumByType.classCode28.value = uidArr.join(',')
+            this.basicDataForm.buyNumByType.classCode28.text = nameArr.join(',')
+        },
+        // 商品类别-（自定义营销页面-执行条件-交易类）回调函数
+        handleAcitonTradeGoodClassCallBack(data) {
+            console.log(data);
+            let nameArr = []
+            data.map(item => { nameArr.push(item.name) })
+            let uidArr = []
+            data.map(item => { uidArr.push(item.uid) });
+
+            this.basicDataForm.judgeDiscountPriceByType.classCode27.value = uidArr.join(',')
+            this.basicDataForm.judgeDiscountPriceByType.classCode27.text = nameArr.join(',')
+        },
+        //-----------------------------------卖品类-商品类别end----------------------------------
+        //-----------------------------------卖品类-商品名称start----------------------------------
+        //商品名称-点击开启弹窗
+        selectGoodsClick(whereUse, innerData) {
+            console.log(whereUse)
+
+            //商品名称（单选）-点击开启弹窗
             if (this.$refs[whereUse]) {
-                this.$refs[whereUse].openDialog()
-            } else {
+                if (innerData) {
+                    this.$refs[whereUse].openDialog(true, innerData)
+                } else {
+                    this.$refs[whereUse].openDialog(true)
+                }
+            }
+            //商品名称（多选）-点击开启弹窗
+            else {
                 this.whereSelectedGoodsName = whereUse
                 this.selectedGoodsDialogVisible = true
+                console.log("商品名称（多选）")
                 console.log(whereUse)
+                let reviewList = []
+
+                if (innerData) {
+                    // 回显
+                    if (innerData && innerData.value && innerData.text) {
+                        innerData.value.split(',').map((item) => { reviewList.push({ skuUid: item, merName: "" }) });
+                        innerData.text.split(',').map((item, index) => { reviewList[index].merName = item });
+                    }
+                }
+                console.log("reviewList", reviewList);
+                this.selectedFeedbackData = reviewList
                     // if(whereUse == "tradeGoods") {
                     //     this.selectedFeedbackData = this.basicDataForm.merKey46.value ? this.basicDataForm.merKey46.value.split(',') : []
                     // }else if(whereUse == "appointGoods") {
@@ -631,10 +840,9 @@ let alertHandle = {
                     // }
             }
         },
-        /**
-         * @function  卖品回调函数
-         */
+        //商品名称（多选）-回调函数
         cimSelectedGoodsDialogCallBack(data) {
+            console.log(data)
             let Arr = data.data
             let valueArr = []
             let textArr = []
@@ -644,11 +852,11 @@ let alertHandle = {
                 } else {
                     valueArr.push(item.uid)
                 }
-                if (item.skuName) {
-                    textArr.push(item.skuName)
-                } else {
-                    textArr.push(item.merName)
-                }
+                // if (item.skuName) {
+                //     textArr.push(item.skuName)
+                // } else {
+                textArr.push(item.merName)
+                    // }
             })
             if (this.whereSelectedGoodsName == "tradeGoods") {
                 this.basicDataForm.merKey46.value = valueArr.join(',')
@@ -693,10 +901,8 @@ let alertHandle = {
         //     this.basicDataForm.tradeNameId = data.valueArr.join(',')
         //     this.basicDataForm.tradeNameInput = data.textArr.join(',')
         // },
-        /**
-         * 
-         * @param {*} data //-----卖品的单选弹窗回调
-         */
+
+        //商品名称（单选）-回调函数
         zengSongGoodsCallBack(data) {
             // let value = data.merType == "4" ? data.uid : data.skuUid
             if (data.skuUid) {
@@ -710,6 +916,7 @@ let alertHandle = {
                 this.basicDataForm.giftGoods.merKey11.text = data.merName
             }
         },
+        //商品名称（单选）-回调函数
         singleGoodsCallBack(data) {
             if (data.skuUid) {
                 this.basicDataForm.judgeDiscountPrice.merKey9.value = data.skuUid
@@ -722,6 +929,7 @@ let alertHandle = {
                 this.basicDataForm.judgeDiscountPrice.merKey9.text = data.merName
             }
         },
+        //商品名称（单选）-回调函数
         favorablePriceCallBack(data) {
             if (data.skuUid) {
                 this.basicDataForm.addGoodsWithDiscountPrice.merKey10.value = data.skuUid
@@ -734,20 +942,22 @@ let alertHandle = {
                 this.basicDataForm.addGoodsWithDiscountPrice.merKey10.text = data.merName
             }
         },
-        //套票
+        //商品名称（单选）-（赠送票券活动管理）回调函数
         packageSelectedGoodsCallBack(data) {
-            if (data.skuUid) {
-                this.basicDataForm.tradeNameId = data.skuUid
-            } else {
-                this.basicDataForm.tradeNameId = data.uid
-            }
-            if (data.skuName) {
-                this.basicDataForm.tradeNameInput = data.skuName
-            } else {
-                this.basicDataForm.tradeNameInput = data.merName
+            if (data) {
+                if (data.skuUid) {
+                    this.basicDataForm.tradeNameId = data.skuUid
+                } else {
+                    this.basicDataForm.tradeNameId = data.uid
+                }
+                if (data.skuName) {
+                    this.basicDataForm.tradeNameInput = data.skuName
+                } else {
+                    this.basicDataForm.tradeNameInput = data.merName
+                }
             }
         },
-        //-----------------------------------卖品类弹窗end----------------------------------
+        //-----------------------------------卖品类-商品名称end----------------------------------
 
     }
 };

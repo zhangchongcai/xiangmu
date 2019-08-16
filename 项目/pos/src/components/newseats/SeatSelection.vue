@@ -14,8 +14,8 @@
 
 <script>
 import {mapMutations, mapGetters} from 'vuex'
-import {CLEAR_SELECTION, GET_CART_DATA, GET_CART_BILLCODE, GET_CART_BILLCODEUID, GET_CART_CINEMAUID, RENDER_SELECTION_AFTER_RELEASE} from 'types'
-import {releaseSeat, onlyClearSeats, findCart} from 'src/http/apis.js'  //获取全部座位，用来座位布局
+import {CLEAR_SELECTION, GET_CART_DATA, GET_CART_BILLCODE, GET_CART_BILLCODEUID, GET_CART_CINEMAUID, RENDER_SELECTION_AFTER_RELEASE, CHECK_CURRENT_SEAT_STATUS} from 'types'
+import {releaseSeat, onlyClearSeats, findCart, findTimeSeatStatus} from 'src/http/apis.js'  //获取全部座位，用来座位布局
 export default {
     props: {
         selectedTickets: {
@@ -46,7 +46,8 @@ export default {
            GET_CART_BILLCODEUID,
            GET_CART_CINEMAUID,
            GET_CART_DATA,
-           RENDER_SELECTION_AFTER_RELEASE
+           RENDER_SELECTION_AFTER_RELEASE,
+           CHECK_CURRENT_SEAT_STATUS
         ]),
 
         extendSeats() {
@@ -58,7 +59,6 @@ export default {
                 billCode: this.billCode
                 }).then(res => {
                 if(res.code == 200) {
-                    this.GET_CART_DATA({goodsList: []})
                     releaseSeat({
                         channelCode: this.channelCode,
                         cinemaCode: this.cinemaCode,
@@ -66,6 +66,12 @@ export default {
                         timeSeatList: this.seatSelection
                         }).then(res => {
                         if(res.code == 200) {
+                            findTimeSeatStatus({cinemaCode: this.cinemaCode, planCode: this.currentPlanCode}).then(res => {
+                                if(res.code == 200) {
+                                this.CHECK_CURRENT_SEAT_STATUS(res.data)
+                                }
+                            })
+                            this.GET_CART_DATA({goodsList: []})
                             this.CLEAR_SELECTION()
                             // this.GET_CART_BILLCODE('')
                             // this.GET_CART_BILLCODEUID('')
@@ -101,12 +107,11 @@ export default {
         overflow: hidden;
         width: 70vw;
         right: 0;
-        bottom: 19.8vh;
         display: flex;
         align-items: flex-start;
         justify-content: flex-start;
         background-color: #F2F2F2;
-        padding: 1vh 18px;
+        padding: 0.5vh 18px;
         border-radius: 4px;
         z-index: 90;
     }
@@ -128,6 +133,7 @@ export default {
         font-size: $font-size12;
         box-sizing: border-box;
         cursor: pointer;
+        border-radius: 2px;
     }
     .have-sel-font,
     .total-seats-num {
@@ -148,7 +154,8 @@ export default {
         color: #ffffff;
         background: #3b74ff;
         font-size: 1vw;
-        margin: 0 1% 1% 0;
+        margin: 0 1% 0.5% 0;
+        border-radius: 2px;
     }
 </style>
 

@@ -10,6 +10,10 @@ let routes = [{   //一级路由  home  或者  page
 			// 主 menu home 页 (外层带页面框架的页面)
 			{
 				path: 'home',
+				name: 'homePage',
+				meta: {
+					keepAlive: true
+				},
 				component: () => import('views/common/layout/index'),
 				children: homeRoutes //二级路由
 			},
@@ -18,7 +22,7 @@ let routes = [{   //一级路由  home  或者  page
 			{
 				path: 'page',
 				component: () => import('views/common/page/Index'),
-				children: pagesRoutes //二级路由
+				children: pagesRoutes, //二级路由
 			},
 			//会员模块路由 （合并冲突采用来源）
 			{

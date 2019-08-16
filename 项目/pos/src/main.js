@@ -19,6 +19,9 @@ import Axios from './http/http'
 import * as TYPES from './newVuex/types'
 import util from './http/app'
 import payLoading from 'views/member/components/payLoading'
+import vAlert from './components/dialog/alert.js'
+Vue.prototype.$alert = vAlert.install
+
 Vue.use(VueRouter);
 Vue.use(payLoading);
 Vue.prototype.$get = Axios.get;
@@ -27,6 +30,7 @@ Vue.prototype.$post = Axios.post;
 Vue.prototype.$md5 = md5;
 Vue.prototype.pageLoading = false;
 // Vue.use(ElementUI)
+
 const router = new VueRouter({
     mode: 'history',    //本地开发
     routes
@@ -35,7 +39,7 @@ const router = new VueRouter({
 /**
  * Config
  */
-
+const isProduction = process.env.NODE_ENV === 'production'
 Vue.config.debug = process.env.NODE_ENV === 'development'
 Vue.config.silent = process.env.NODE_ENV === 'production'
 Vue.config.devtools = true
@@ -58,30 +62,32 @@ const setGlobalTopNavs = function(to, next) {
     }
     next();
 }
-Vue.prototype.$wsUrl = process.env.NODE_ENV == 'production' ? `ws://api${location.host}/websocket/server/` : 'ws://apidevpos.oristarcloud.com/websocket/server/'
+Vue.prototype.$wsUrl = process.env.NODE_ENV == 'production' ? `wss://api${location.host}/websocket/server/` : 'wss://apitestpos.oristarcloud.com/websocket/server/'
 
 Vue.use(require('vue-wechat-title'));
 
 //获取终端配置
-util.readTerminalParameter((configData)=>{
-    store.commit(TYPES.SET_CONFIG_DATA,configData)
-    util.readCard(configData,function(e){
-        if(e.toString() === '浏览器不支持此功能'){
-            localStorage['globalAppState'] = false;
-        }else{
-            localStorage['globalAppState'] = true;
-        }
+const getConfigData = () => {
+    return new Promise((res,rej) => {
+        util.readTerminalParameter((configData)=>{
+            let data = {
+                ...store.state.config.configData,
+                ...configData
+            }
+            store.commit(TYPES.SET_CONFIG_DATA,data)
+            if(configData.isBrowser){
+                localStorage['globalAppState'] = false;
+            }else{
+                localStorage['globalAppState'] = true;
+            }
+            res()
+        })
     })
-})
-// router.beforeEach((to,form,next) => {
-//     //数组里放哪里页面不需要头部尾部显示的 routerName
-//     if(['setting'].includes(to.name)){
-      
-//     }else{
-//         // store.commit(TYPES.USER_INFO,true)
-//     }
-//     next();
-// })
+}
+//获取终端配置 同步阻塞 确保进入 beforEach已经获取到配置信息
+(async () => {
+    await getConfigData()
+})()
 
 router.beforeEach((to, from, next) => {
     store.commit(TYPES.SAVE_CINEMA_INFO)
@@ -90,7 +96,9 @@ router.beforeEach((to, from, next) => {
         case 'memberHome':
             let token = localStorage.getItem('token');
             if (token) {
-                next();
+                let globalAppState = JSON.parse(localStorage.getItem('globalAppState')) 
+                if(globalAppState && !store.state.config.configData.isSetting) next({name:'setting'})
+                next()
             } else {
                 next({ path: '/login' });
             }
@@ -191,7 +199,23 @@ Vue.prototype.$sign = function(obj){
         sign : Vue.prototype.$md5(valueArr.join('')+'memberPos')
     });
 }
-
+//home页面添加 第一层菜单添加icon
+Vue.prototype.$addHomeNavIcon = function(nav){
+    var iconList = {
+        'csm_pos_sale_ticket_manager':'iconpiaowushouye',
+        'csm_pos_sale_goods_manager':'iconmaipin',
+        'csm_pos_member':'iconhuiyuan'
+    };
+    var turnBack = navList => {
+        navList.map(item=>{
+            item.icon = iconList[item.menuCode];
+            if(item.submenu.length){
+                turnBack(item.submenu)
+            }
+        })
+    };
+    turnBack(nav[0].submenu)
+}
 
 new Vue({
     router,

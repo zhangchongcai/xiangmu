@@ -2,7 +2,7 @@
   <div>
     <el-select
       popper-class="rpt-select"
-      v-model="movieType"
+      v-model="movieTypeObj.movieType"
       placeholder="请选择"
       @change="getdataValue"
       @focus="focusBTn"
@@ -19,26 +19,22 @@
   </div>
 </template>
 <script type="text/javascript">
-import mixins from "src/frame_cpm/mixins/cacheMixin.js";
 export default {
-  mixins: [mixins.cacheMixin],
   props: {
     selectValue: {
       type: null | Object,
       default: "",
       require: true
     },
-    resetStatus: Boolean
+    resetStatus: Boolean,
+    movieTypeObj: Object
   },
   data() {
     return {
-      cacheField: ["movieType"],
-      subComName: "movieType",
       newselectValue: this.selectValue,
       options: [],
       channelName: this.selectValue.defVALUE,
-      loading: false,
-      movieType: ""
+      loading: false
     };
   },
   methods: {
@@ -68,7 +64,7 @@ export default {
     },
     resetStatus(newVal) {
       if (newVal) {
-        this.movieType = "";
+        this.movieTypeObj.movieType = "";
       }
     }
   }

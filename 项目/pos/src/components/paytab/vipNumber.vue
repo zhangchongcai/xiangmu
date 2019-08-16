@@ -1,0 +1,327 @@
+<template>
+    <div>
+        <el-dialog
+            title="请输入会员卡或手机号"
+            :visible.sync="showStatus"
+            :close-on-click-modal="false"
+            width="30%"
+            >
+        <div class="input-container">
+            <span class="input-name">会员卡/手机号</span>
+            <el-input ref="autofocusInput" class="input-box" v-model="telNumber" placeholder="在这里输入"  @keyup.enter.native="checkoutVip"></el-input>
+            <el-button style="margin-left: 20px;" @click="readCard">读 卡</el-button>
+        </div>
+        <span slot="footer" class="dialog-footer">
+            <!-- <el-button @click="showStatus = false">取 消</el-button> -->
+            <el-button type="primary" @click="checkoutVip">确 定</el-button>
+        </span>
+        </el-dialog>
+        <el-dialog
+          title="选择会员卡"
+          :visible.sync="showListStatus"
+          :close-on-click-modal="false"
+          width="88vw"
+          style="font-size: 1.36vw !important"
+        >
+          <div>
+              <span class="mobile-num">
+                  手机号：{{mobileNum}}
+              </span>
+          </div>
+          <el-table
+            :data="vipList"
+            ref="multipleTable"
+            stripe
+            :header-cell-style="{background:'#E5EAFF ',color:'#333'}"
+            style="width: 90%; height: 4.9%; margin: 20px auto;"
+            :cell-style="abnormalStyleFn"
+            @row-click="clickSingleRow"
+          >
+            <el-table-column
+            >
+                <template slot-scope="scope">
+                    <el-radio :disabled="scope.row.cardStatus != '正常'" class="radio"   v-model="selectedId" :label="scope.row.cardNo">&nbsp;</el-radio>
+                </template>
+            </el-table-column>
+            <el-table-column
+              prop="name"
+              label="姓名"
+            >
+            </el-table-column>
+            <el-table-column
+              prop="cardNo"
+              label="卡号"
+            >
+            </el-table-column>
+            <el-table-column
+              prop="totalBalance"
+              label="余额"
+            >
+            </el-table-column>
+            <el-table-column
+              prop="scoreBalance"
+              label="积分"
+            >
+            </el-table-column>
+            <el-table-column
+              prop="cardType"
+              label="卡类"
+            >
+            </el-table-column>
+            <el-table-column
+              prop="cardStatus"
+              label="卡状态"
+            >
+            </el-table-column>
+          </el-table>
+          <div style="display:flex; justify-content:center">
+              <el-button style=" width: 7.8vw; height: 4.2vh; background: #3B74FF; padding: 0; font-size: 1.04vw" type="primary" :disabled="buttonName == '查询中...'" @click.native="checkoutVipActivity">{{buttonName}}</el-button>
+          </div>
+        </el-dialog>
+    </div>
+</template>
+
+<script>
+import {mapGetters, mapMutations, mapActions} from 'vuex'
+import {SET_VIP_CHECKOUT_BOX, SET_VIP_LIST_BOX, SET_ACTIVITY_LIST, PAY_DIALOG_TRIGER, SET_VIP_INFO, CART_FIND_CART_DATA, PAY_METHOD_TRIGER, SAVE_VIP_ISPWD, GET_ACTIVITY_DATA} from 'types'
+import {checkoutVip} from 'src/http/apis'
+import app from 'src/http/app'
+export default {
+    data() {
+        return {
+           telNumber: '',
+           mobileNum: '',
+           selectedId: '',
+           buttonName: '确认',
+           vipList: [
+               {
+                   name: "divad",
+                   cardNo: "431634322543165",
+                   totalBalance: 45,
+                   scoreBalance: 121,
+                   cardType: "储值卡",
+                   cardStatus: "正常"
+               },
+               {
+                   name: "divad",
+                   cardNo: "431634322543165",
+                   totalBalance: 45,
+                   scoreBalance: 121,
+                   cardType: "储值卡",
+                   cardStatus: "正常"
+               },
+               {
+                   name: "divad",
+                   cardNo: "431634322543165",
+                   totalBalance: 45,
+                   scoreBalance: 121,
+                   cardType: "储值卡",
+                   cardStatus: "正常"
+               },
+               {
+                   name: "divad",
+                   cardNo: "431634322543165",
+                   totalBalance: 45,
+                   scoreBalance: 121,
+                   cardType: "储值卡",
+                   cardStatus: "正常"
+               }
+           ]
+        }
+    },
+
+    computed: {
+        ...mapGetters([
+            'vipInputStatus',
+            'vipListStatus',
+            'billCode',
+            'payDialog',
+            'configData'
+        ]),
+
+        showStatus: {
+            get() {
+                // this.autofocusInput()
+                return this.vipInputStatus
+            },
+            set(val) {
+                this.SET_VIP_CHECKOUT_BOX(false)
+                this.telNumber = ''
+            }
+        },
+
+        showListStatus: {
+            get() {
+                return this.vipListStatus
+            },
+
+            set(val) {
+                this.SET_VIP_LIST_BOX(false)
+            }
+        }
+    },
+
+    watch: {
+       vipInputStatus() {
+           setTimeout(() => {
+               this.autofocusInput()
+           }, 1000)
+       }
+    },
+
+    methods: {
+      ...mapMutations([
+        SET_VIP_CHECKOUT_BOX,
+        SET_VIP_LIST_BOX,
+        SET_ACTIVITY_LIST,
+        PAY_DIALOG_TRIGER,
+        SET_VIP_INFO,
+        PAY_METHOD_TRIGER,
+        SAVE_VIP_ISPWD
+      ]),
+      ...mapActions([
+          CART_FIND_CART_DATA,
+          GET_ACTIVITY_DATA
+      ]),
+      //   自动获取焦点
+      autofocusInput() {
+         this.$refs.autofocusInput.focus();
+      },
+
+      abnormalStyleFn({row, column, rowIndex, columnIndex}) {
+        //   console.log(row.cardStatus)
+         if(row.cardStatus != '正常') {
+             return  'background: #f0f0f0; color: #999999'
+         }
+      },
+      async checkoutVip() {
+         if(!this.telNumber) {
+            this.$message({
+                        message: "未输入手机号或者会员卡号",
+                        type: 'warning'
+                        });
+         }else {
+                let vipdata = await checkoutVip({memberNumber: this.telNumber, code: this.billCode})
+                if(vipdata.code == 200) {
+                    if(this.telNumber.length == 11) {
+                        this.SET_VIP_CHECKOUT_BOX(false)
+                        this.mobileNum = vipdata.data.mobileNum
+                        this.vipList = vipdata.data.memberResultVoList
+                        this.SET_VIP_LIST_BOX(true)
+                    }else {
+                        if(!vipdata.data.memberCardVO.phoneNumber){
+                            return this.$confirm('该卡没有绑定手机号，请先完善会员资料！', '操作提示', {
+                            confirmButtonText: '去完善',
+                            cancelButtonText: '取消',
+                            type: 'warning'
+                            }).then(() => {
+                                this.SET_VIP_CHECKOUT_BOX(false)
+                                this.$router.push({
+                                name:'ModifyData',
+                                query:{
+                                    phoneOrCard:this.telNumber,
+                                    type:'card'
+                                    }
+                                })
+                            }).catch(() => {
+                                    
+                            });
+                        }
+                        this.SET_VIP_CHECKOUT_BOX(false)
+                        this.SET_ACTIVITY_LIST(vipdata.data.marketingResultVoList)
+                        this.SAVE_VIP_ISPWD(vipdata.data.freeConsumption)
+                        this.SET_VIP_INFO(vipdata.data.memberCardVO)
+                        this.PAY_METHOD_TRIGER({
+                            payTypeName: '会员卡',
+                            payTypeCode: '0X03'
+                        })
+                        if(!this.payDialog) {this.PAY_DIALOG_TRIGER()}
+                        this.buttonName = '确定'
+                        this.GET_ACTIVITY_DATA()
+                    }
+                    
+                }else {
+                    this.$message({
+                        message: vipdata.msg,
+                        type: 'warning'
+                        });
+                }
+                this.telNumber = ''
+         }
+        
+      },
+      clickSingleRow(row) {
+        if(row.cardStatus == '正常')
+        this.selectedId = row.cardNo
+      },
+      async checkoutVipActivity() {
+          if(this.selectedId) {
+            this.buttonName = "查询中..."
+            let vipResultdata = await checkoutVip({memberNumber: this.selectedId, code: this.billCode})
+            if(vipResultdata.code == 200) {
+                // this.SET_ACTIVITY_LIST(vipResultdata.data.marketingResultVoList)
+                this.SET_VIP_INFO(vipResultdata.data.memberCardVO)
+                this.SAVE_VIP_ISPWD(vipResultdata.data.freeConsumption)
+                this.PAY_METHOD_TRIGER({
+                    payTypeName: '会员卡',
+                    payTypeCode: '0X03'
+                })
+                this.buttonName = '确定'
+                this.SET_VIP_LIST_BOX(false)
+                this.GET_ACTIVITY_DATA()
+                // this.CART_FIND_CART_DATA()
+                if(!this.payDialog) {this.PAY_DIALOG_TRIGER()}
+            }else {
+                this.$message({
+                    message: vipResultdata.msg || '查询失败',
+                    type: 'warning'
+                    });
+                this.buttonName = '确定'
+            }
+          }else {
+              this.$message({
+                    message: '请选择有效会员卡',
+                    type: 'warning'
+                    });
+          }
+      },
+      readCard(){
+          app.readCard(this.configData,(data)=>{
+              if(typeof data == 'string') this.$message.error(data)
+              this.telNumber = data[0];
+          })
+      }
+    }
+}
+</script>
+
+<style lang="scss" scoped>
+  .input-container {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      .input-name {
+          flex: 0 0 8vw;
+          font-size: $font-size12;
+          color: $font-color3;
+      }
+      .input-box {
+          flex: 1;
+      }
+  }
+  .dialog-footer {
+      display:flex;
+      justify-content: flex-end;
+  }
+  .list-container {
+      width: 88vw;
+      height: 63vh;
+      background: #ffffff;
+      border-radius: 4px;
+  }
+  .mobile-num {
+      font-size: $font-size12;
+  }
+</style>
+
+

@@ -57,19 +57,19 @@
                 </div>
                 <div class="item-wrap">
                     <draggable v-model="selectList" group="people" @start="drag=true" @end="drag=false">
-                    <transition-group>
+                    <!-- <transition-group> -->
                         <div class="selected-item flex" v-for="(item,index) in selectList" :key="index">
                         <div class="item-name">{{item.name}}</div>
                         <div>  
                             <i class="iconfont icon-danchuang-tuodongpaixu"></i>
                             </div>
                         </div>
-                    </transition-group>
+                    <!-- </transition-group> -->
                     </draggable>
                 </div>
             </div>
         </div>
-       <div class="note-wrap">
+        <div class="note-wrap text-red">
             说明：一次最多可选6个指标
         </div>
         <div class="footer">
@@ -143,6 +143,8 @@ export default {
     font-size: 12px;
     border-bottom: 1px solid #f5f5f5;
     line-height: 48px;
+    height:48px;
+    box-sizing:border-box;
   }
   .select {
     padding: 0 14px;
@@ -176,8 +178,9 @@ export default {
 
   }
   .item-wrap {
+    box-sizing: border-box;
     padding:6px 0 16px;
-    height:400px;
+    height:380px;
     overflow:auto;
     .item-list {
         .item-name{

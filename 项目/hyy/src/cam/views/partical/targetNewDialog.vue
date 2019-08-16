@@ -32,7 +32,7 @@
           </div>
           <div class="detail">
              <draggable v-model="selectList" group="people" @start="drag=true" @end="drag=false">
-               <transition-group>
+               <!-- <transition-group> -->
                  <div class="selected-item flex" 
                     v-for="(item,index) in selectList" 
                     :key="index">
@@ -40,7 +40,7 @@
                    <div>  
                      <i class="iconfont icon-danchuang-tuodongpaixu"></i></div>
                   </div>
-               </transition-group>
+               <!-- </transition-group> -->
             </draggable>
           </div>
         </div>
@@ -108,7 +108,6 @@ export default {
 };
 </script>
 <style scoped lang="scss">
-
 .content {
   background: #ffffff;
   border:1px solid #e5e5e5;
@@ -119,6 +118,8 @@ export default {
     font-size: 12px;
     border-bottom: 1px solid #f5f5f5;
     line-height: 48px;
+    height:48px;
+    box-sizing:border-box;
   }
   .select {
     padding: 0 14px;
@@ -151,8 +152,9 @@ export default {
 
   }
   .detail {
-    padding:16px 0;
-    height:400px;
+    box-sizing: border-box;
+    padding:6px 0 16px;
+    height:380px;
     overflow:auto;
     .detail-item {
         margin-top:10px;
@@ -175,11 +177,6 @@ export default {
          }
     }
   }
-}
-.note-wrap{
-  line-height:36px;
-  font-size:12px;
-  padding-left:20px;
 }
 </style>
 

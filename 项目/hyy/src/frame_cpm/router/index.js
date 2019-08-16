@@ -1,59 +1,50 @@
 import sysRoutes from './sys'
-import ctmRoutes from 'ctm/router/'
-import cmmRoutes from 'cmm/router/'
-import rptRoutes from 'rpt/router/'
-import crmRoutes from 'crm/router/'
-import ccmRoutes from 'ccm/router/'
-import camRoutes from 'cam/router/'
-import cimRoutes from 'cim/router/'
-import csmRoutes from 'csm/router/'
-import cwfRoutes from 'cwf/router/'
+import ctmRoutes from 'ctmRouters'
+import cmmRoutes from 'cmmRouters'
+import rptRoutes from 'rptRouters'
+import crmRoutes from 'crmRouters'
+import ccmRoutes from 'ccmRouters'
+import camRoutes from 'camRouters'
+import cimRoutes from 'cimRouters'
+import csmRoutes from 'csmRouters'
+import cwfRoutes from 'cwfRouters'
 
-const routerView = { template: '<router-view></router-view>' };
+const routerView = {
+    template: '<router-view></router-view>'
+}
 let routes = [{
         path: '/login',
         meta: {
             title: '登录'
         },
-        component: (resolve) => require(['../views/login/index.vue'], resolve),
-        name: '登录',
-    }, {
+        component: resolve => require(['../views/login/index.vue'], resolve),
+        name: '登录'
+    },
+    {
         path: '/',
         meta: {
             title: '首页'
         },
-        component: (resolve) => require(['../views/index.vue'], resolve),
-        name: '首页',
+        component: resolve => require(['../views/index.vue'], resolve),
         redirect: 'home',
         children: [
             // 首页
             {
                 path: 'home',
                 meta: {
-                    title: '主页',
-                    // hidden:true
+                    title: '工作台',
+                    hidden: true
                 },
-                component: (resolve) => require(['../views/Home.vue'], resolve),
+                component: resolve => require(['../views/Home.vue'], resolve),
                 name: '主页',
-                children:[
-                    // {
-                    //     path: '/sys',
-                    //     meta: {
-                    //         title: "系统管理",
-                    //     },
-                    //     component: (resolve) => require(['../views/sysMange/link.vue'], resolve),
-                    //     name: '系统管理',
-                    //     children: sysRoutes
-                    // },
-                ]
             },
             //基础平台系统路由
             {
                 path: 'sys',
                 meta: {
-                    title: "系统管理",
+                    title: '系统管理'
                 },
-                component: (resolve) => require(['../views/sysMange/link.vue'], resolve),
+                component: resolve => require(['../views/sysMange/link.vue'], resolve),
                 name: '系统管理',
                 children: sysRoutes
             },
@@ -61,7 +52,7 @@ let routes = [{
             {
                 path: 'ticket',
                 meta: {
-                    title: "票务系统"
+                    title: '票务系统'
                 },
                 component: routerView,
                 name: '票务系统',
@@ -71,9 +62,9 @@ let routes = [{
             {
                 path: 'marketing',
                 meta: {
-                    title: "营销系统"
+                    title: '营销系统'
                 },
-                component: (resolve) => require(['cmm/views/marketing.vue'], resolve),
+                component: resolve => require(['cmm/views/marketing.vue'], resolve),
                 name: '营销系统',
                 children: cmmRoutes
             },
@@ -81,9 +72,9 @@ let routes = [{
             {
                 path: 'report',
                 meta: {
-                    title: "报表系统"
+                    title: '报表系统'
                 },
-                component: (resolve) => require(['rpt/views/index.vue'], resolve),
+                component: resolve => require(['rpt/views/index.vue'], resolve),
                 name: '报表系统',
                 children: rptRoutes
             },
@@ -91,9 +82,9 @@ let routes = [{
             {
                 path: 'member',
                 meta: {
-                    title: "会员系统"
+                    title: '会员系统'
                 },
-                component: (resolve) => require(['crm/views/index.vue'], resolve),
+                component: resolve => require(['crm/views/index.vue'], resolve),
                 name: '会员系统',
                 children: crmRoutes
             },
@@ -101,9 +92,9 @@ let routes = [{
             {
                 path: 'coupon',
                 meta: {
-                    title: "票券系统"
+                    title: '票券系统'
                 },
-                component: (resolve) => require(['ccm/views/index.vue'], resolve),
+                component: resolve => require(['ccm/views/index.vue'], resolve),
                 name: '票券系统',
                 children: ccmRoutes
             },
@@ -111,9 +102,9 @@ let routes = [{
             {
                 path: 'analysis',
                 meta: {
-                    title: "经营决策系统"
+                    title: '经营决策系统'
                 },
-                component: (resolve) => require(['cam/views/index.vue'], resolve),
+                component: resolve => require(['cam/views/index.vue'], resolve),
                 name: '经营决策系统',
                 children: camRoutes
             },
@@ -121,7 +112,7 @@ let routes = [{
             {
                 path: 'retail',
                 meta: {
-                    title: "卖品系统"
+                    title: '卖品系统'
                 },
                 component: routerView,
                 name: '卖品系统',
@@ -132,7 +123,7 @@ let routes = [{
             {
                 path: 'trade',
                 meta: {
-                    title: "交易系統"
+                    title: '交易系統'
                 },
                 component: routerView,
                 name: '交易系統',
@@ -143,17 +134,15 @@ let routes = [{
             {
                 path: 'workflow',
                 meta: {
-                    title: "交易系統"
+                    title: '交易系統'
                 },
-                component: (resolve) => require(['cwf/views/index.vue'], resolve),
+                component: resolve => require(['cwf/views/index.vue'], resolve),
                 name: '交易系統',
                 redirect: 'workflow/index',
                 children: cwfRoutes
             }
         ]
     }
-
 ]
 
-
-export default routes;
+export default routes

@@ -4,9 +4,8 @@
       <el-form
         :inline="true"
         :model="queryData"
-        label-position="right"
-        label-width="100px"
-        label-suffix=":"
+        label-position="left"
+        label-suffix="："
       >
         <el-form-item label="门店名称" class="select-input">
             <el-input
@@ -16,13 +15,13 @@
                     @focus="selectCinemalDialog"
                     placeholder="请选择门店"
             ></el-input>
-            <el-button @click="selectCinemalDialog" type="primary cinemaSel-btn" plain>{{queryData.cinameName?"编辑":"选择"}}</el-button>
+            <el-button @click="selectCinemalDialog" type="primary cinemaSel-btn" plain>选择</el-button>
         </el-form-item>
         <el-form-item label="货架编码">
-          <el-input v-model="queryData.code" placeholder="请输内容"></el-input>
+          <el-input v-model="queryData.code" placeholder="请输入"></el-input>
         </el-form-item>
         <el-form-item label="货架名称">
-          <el-input v-model="queryData.name" placeholder="请输内容"></el-input>
+          <el-input v-model="queryData.name" placeholder="请输入"></el-input>
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="queryData.status">
@@ -75,7 +74,7 @@
         :model="changeData"
         label-position="left"
         label-width="100px"
-        label-suffix=":"
+        label-suffix="："
         :rules="changeRules"
         @close="candleBtn"
       >
@@ -100,7 +99,7 @@
                         @focus="selectCinemalDialog1"
                         placeholder="请选择门店"
                 ></el-input>
-                <el-button @click="selectCinemalDialog1" type="primary" plain>{{newcinameName?"编辑":"选择"}}</el-button>
+                <el-button @click="selectCinemalDialog1" type="primary" plain>选择</el-button>
               </div>
           </el-form-item>
         </el-col>
@@ -122,9 +121,9 @@
       </span>
     </el-dialog>
     <!-- 选择影院弹窗 -->
-    <cinemal-dialog ref="myCinemalDialog" @onSumit="onCinemalSumit" :dialogFeedbackData="cinemaList"></cinemal-dialog>
+    <cinemal-dialog ref="myCinemalDialog" @onSumit="onCinemalSumit" :dialogFeedbackData="[{cinemaUid:queryData.cinameUid,cinemaName:queryData.cinameName}]"></cinemal-dialog>
     <!-- 选择影院弹窗 -->
-    <cinemal-dialog ref="myCinemalDialog1" @onSumit="onCinemalSumit1" :dialogFeedbackData="cinemaList1"></cinemal-dialog>
+    <cinemal-dialog ref="myCinemalDialog1" @onSumit="onCinemalSumit1" :dialogFeedbackData="[{cinemaUid:changeData.cinameUid,cinemaName:changeData.cinameName}]"></cinemal-dialog>
   </div>
 </template>
 
@@ -226,7 +225,7 @@ export default {
       isNewBuile: true,
       changeDialog: false,
       changeRules: {
-        newcinameName: [{ required: true, message: '请选择门店', trigger: 'change' }],
+        newcinameName: [{ required: true, message: '请选择门店', trigger: 'blur' }],
         name: [{ required: true, message: '请输入货架名称', trigger: 'change' }],
         code: [{ required: true,validator:codePass, trigger: 'change'}]
       }
@@ -264,7 +263,7 @@ export default {
       }
     },
     // 选泽门店回调
-    onCinemalSumit(val = []) {
+    setCinema(val = []) {
       if (val.length > 0) {
         this.queryData.cinameName = val[0].name;
         this.queryData.cinameUid = val[0].uid || val[0].cinemaUid;
@@ -283,7 +282,22 @@ export default {
       console.log(val);
     },
     // 选泽门店回调
-    onCinemalSumit1(val = []) {
+    onCinemalSumit(val = [],type) {
+      console.log(val," 选泽门店回调",type);
+      if (val.length > 0) {
+        if(type=="default"){
+          if(val.length==1){
+            this.setCinema(val)
+          }
+        }else{
+          this.setCinema(val)
+        }
+      } else {
+        this.setCinema()
+      }
+    },
+    // 选泽门店回调
+    setCinema1(val = []) {
       let cinemaL = []
       val.forEach((newval)=>{
         let newObj = {}
@@ -302,10 +316,21 @@ export default {
         this.changeData.cinameUid = "";
         this.newcinameName = "";
       }
-      
-      // console.log(cinemaL.cinemaUid)
-      // alert(this.cinemaList1.cinemaUid)
-      
+    },
+    // 选泽门店回调
+    onCinemalSumit1(val = [],type) {
+      console.log(val," 选泽门店回调",type);
+      if (val.length > 0) {
+        if(type=="default"){
+          if(val.length==1){
+            this.setCinema1(val)
+          }
+        }else{
+          this.setCinema1(val)
+        }
+      } else {
+        this.setCinema1()
+      }
     },
     selectCinemalDialog() {
       this.$refs.myCinemalDialog.handleDialog(true);
@@ -410,6 +435,7 @@ export default {
     },
     // 修改操作
     handleModification(index, row) {
+      // this.resetForm('changeForm')
       if(row.isDef == 1){
         this.isDefVal = true
       }else{
@@ -466,7 +492,7 @@ export default {
           return false;
         }
       });
-      _self.isDefVal = ""
+      // _self.isDefVal = ""
     },
     handleSizeChange(val) {
       this.queryData.pageSize = val;

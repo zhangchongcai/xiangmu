@@ -1,33 +1,46 @@
 <template>
 <div>
-    <el-dialog :title="dialog.title" :visible.sync="dialog.visible" :width="dialog.width">
+    <el-dialog 
+    :title="dialog.title" 
+    :visible.sync="dialog.visible" 
+    :width="dialog.width" 
+    :close-on-click-modal="false"
+    style="margin-top:5vh"
+    >
         <!-- 搜索栏 -->
         <searchLan class="margin-bottom-10" :modelName="searchConfig.name" :config="searchConfig.elements" :searchLevelButton="searchConfig.isShowLevel" @pressSearch="search" @searchValueChange="setSearch"></searchLan>
         <!-- 表格内容 -->
-        <el-table class="margin-bottom-10" :ref="table.ref" :data="table.data" :border="table.border" highlight-current-row :style="{width: table.width}" @row-click="tableCurrentChange">
-            <!-- <el-table-column type="selection" width="55" :fixed="'left'" :align="table.itemAlign"></el-table-column> -->
-            <template v-for="item in table.title">
-                <el-table-column :show-overflow-tooltip="table.itemTooltip" :align="table.itemAlign" :key="item.title" :prop="item.prop" :label="item.label" :width="item.width" :fixed="item.fixed">
+        <div class="choose-body">
+            <el-table class="margin-bottom-10" :ref="table.ref" :data="table.data" :border="table.border" highlight-current-row :style="{width: table.width}" @row-click="tableCurrentChange">
+                <!-- <el-table-column type="selection" width="55" :fixed="'left'" :align="table.itemAlign"></el-table-column> -->
+                <el-table-column label="选择" width="100" align="center">
                     <template slot-scope="scope">
-                        <div v-if="!item.hasTemplate">{{scope.row[`${item.prop}`]}}</div>
-                        <section v-else>
-                            <div v-if="item.prop == 'auditState'">
-                                {{auditStateText(scope.row[`${item.prop}`])}}
-                            </div>
-                            <div v-if="item.prop == 'state'">
-                                {{stateText(scope.row[`${item.prop}`])}}
-                            </div>
-                            <div v-if="item.prop == 'couponType'">
-                                {{couponTypeText(scope.row[`${item.prop}`])}}
-                            </div>
-                        </section>
+                        <el-radio class="radio"  v-model="selectedId"  :label="scope.row.applyCode" :disabled="disableRadio(scope.row)">&nbsp;</el-radio>
                     </template>
                 </el-table-column>
-            </template>
-        </el-table>
-        <el-row v-if="table.data.length != 0" class="flex-base flex-center margin-top-10">
-            <el-pagination @size-change="paginationSizeChange" @current-change="paginationCurrentChange" :current-page="pagination.currentPage" :page-sizes="pagination.sizes" :page-size="pagination.size" layout="total, sizes, prev, pager, next, jumper" :total="pagination.total"></el-pagination>
-        </el-row>
+                <template v-for="item in table.title">
+                    <el-table-column :show-overflow-tooltip="table.itemTooltip" :align="table.itemAlign" :key="item.title" :prop="item.prop" :label="item.label" :width="item.width" :fixed="item.fixed">
+                        <template slot-scope="scope">
+                            <div v-if="!item.hasTemplate">{{scope.row[`${item.prop}`]}}</div>
+                            <section v-else>
+                                <div v-if="item.prop == 'auditState'">
+                                    {{auditStateText(scope.row[`${item.prop}`])}}
+                                </div>
+                                <div v-if="item.prop == 'state'">
+                                    {{stateText(scope.row[`${item.prop}`])}}
+                                </div>
+                                <div v-if="item.prop == 'couponType'">
+                                    {{couponTypeText(scope.row[`${item.prop}`])}}
+                                </div>
+                            </section>
+                        </template>
+                    </el-table-column>
+                </template>
+            </el-table>
+            <el-row v-if="table.data.length != 0" class="flex-base flex-center margin-top-10">
+                <el-pagination @size-change="paginationSizeChange" @current-change="paginationCurrentChange" :current-page="pagination.currentPage" :page-sizes="pagination.sizes" :page-size="pagination.size" layout="total, sizes, prev, pager, next, jumper" :total="pagination.total"></el-pagination>
+            </el-row>
+        </div>
         <div slot="footer" class="dialog-footer">
             <el-row class="flex-base flex-center">
                 <el-button type="primary" @click="emitFn()">确 定</el-button>
@@ -45,6 +58,14 @@ export default {
         incomeData: {
             type: Object,
             default: null
+        },
+        disabledData:{
+            type:Array,
+            default:null
+        },
+        unique:{
+            type:String,
+            default:'applyCode'
         }
     },
     components: {
@@ -59,7 +80,7 @@ export default {
             dialog: {
                 visible: false,
                 title: '查询票券批次',
-                width: '85%'
+                width: '75%'
             },
             searchConfig: {
                 name: 'saleListDialog',
@@ -234,7 +255,8 @@ export default {
                 sizes: [10, 20, 30, 40],
                 total: 0
             },
-            currentRow: null
+            currentRow: null,
+            selectedId:'',
         }
     },
     watch:{
@@ -257,7 +279,6 @@ export default {
         },
         dialog: {
             handler: function(newVal,oldVal) {
-                console.log(newVal)
                 if(newVal.visible){
                     this.init()
                     this.param={
@@ -288,7 +309,10 @@ export default {
     methods: {
         init(){
             let data = this.incomeData;
-
+            this.currentRow = data
+            if(data){
+                this.selectedId = data[this.unique]
+            }
             if (typeof data != 'object') {
                 return TypeError('传入参数不是一个对象!');
             }
@@ -306,7 +330,7 @@ export default {
                     }
                 }
                 this.searchConfig.elements = elements;
-                console.log(elements)
+                // console.log(elements)
             }
         },
         /**
@@ -356,6 +380,7 @@ export default {
             _param[`pageNo`] = this.pagination.currentPage;
             _param[`pageSize`] = this.pagination.size;
             _param[`state`] = 2;
+            _param[`isPop`] = true;
 
             return _param;
         },
@@ -389,10 +414,36 @@ export default {
             });
         },
         /**
+         * 禁选
+         */
+        disableRadio(row){
+            if(this.disabledData){
+                let _disabledData = this.disabledData
+                for(let i = 0; i < _disabledData.length; i++){
+                    if(_disabledData[i][this.unique]==row[this.unique]){
+                        return true
+                    }
+                }
+            }
+            return false
+        },
+        /**
          * @function tableCurrentChange - 选中表格行
          */
         tableCurrentChange(row) {
-            this.currentRow = row;
+            if(this.disabledData){
+                let disableArr = []
+                this.disabledData.forEach(item => {
+                    disableArr.push(item[this.unique])
+                })
+                if(!disableArr.includes(row[this.unique])){
+                    this.currentRow = row;
+                    this.selectedId = row[this.unique]
+                }
+            }else{
+                this.currentRow = row;
+                this.selectedId = row[this.unique]
+            }
         },
         /**
          * @function paginationSizeChange - 当前分页每页显示改变
@@ -413,6 +464,7 @@ export default {
          */
         emitFn() {
             let param = this.currentRow;
+            console.log(param)
             if (param) {
                 this.$emit('ccmSaleListCallBack', {
                     data: param
@@ -505,5 +557,25 @@ export default {
 
 .margin-bottom-10 {
     margin-bottom: 10px;
+}
+.choose-body{
+    border: #e5e5e5 solid 1px;
+    padding-bottom: 15px;
+}
+/deep/ .el-dialog__header::after {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 1px;
+    background: #e5e5e5;
+}
+/deep/ .el-pagination{
+    text-align: center
+}
+/deep/ .el-dialog__body{
+    padding: 0px 20px
+}
+/deep/ .el-dialog{
+    margin-top: 3vh!important;
 }
 </style>

@@ -4,10 +4,14 @@
             <i class="iconfont icon-neiye-qiehuanzuojiantou" data-control="left"></i>
         </div>
         <div class="film-libary" ref="filmLibary">
-            <ul class="content flex-base" :style="{left: config.left + 'px', width: config.filmsWidth + 'px'}" ref="filmsContent">
+            <ul class="content" :style="{left: config.left + 'px', width: config.filmsWidth + 'px'}" ref="filmsContent">
                 <el-tooltip placement="bottom" v-for="(film,film_index) in filmsData" :key="film_index">
                     <div slot="content" class="plan-tool-tips">
                         <div>{{film.movieName}} ({{film.disversion}}/{{film.language}}) {{film.timeLong}}分钟</div>
+                        <div v-if="film.planInfoMovieTimeVoList.length">
+                            <div>可排片时段:</div>
+                            <div v-for="(item, index) in film.planInfoMovieTimeVoList" :key="index">{{item.startDate}} <span v-if="!(!item.startDate || !item.endDate)">至</span> {{item.endDate}} {{item.startTime}}  <span v-if="!(!item.startTime || !item.endTime)">至</span>{{item.endTime}}</div>
+                        </div>
                         <!-- <div>
                             <div>大盘数据：</div>
                             <div>全国累积票房：<span class="font-bold">{{film.boxOffice}}</span></div>
@@ -15,11 +19,11 @@
                             <div>周围影城排片率：<span class="font-bold">{{film.hallSeatRate}}</span></div>
                         </div> -->
                     </div>
-                    <li class="flex-base film-item" :class="{isSelect: film.select}" @click="selectMovie(film.id)">
+                    <li class="film-item" :class="{isSelect: film.select}" @click="selectMovie(film.id)">
                         <div class="line" :style="{background:film.color}"></div>
-                        <div class="film-content flex-base">
-                            <div :title="film.movieName" class="text-hide">{{film.movieName}}</div>
-                            <div class="flex-base">
+                        <div class="film-content">
+                            <div :title="film.movieName" class="movie-name">{{film.movieName}}</div>
+                            <div class="lang-timelong">
                                 <div :title="film.disversion +'/'+ film.language" class="text-hide">({{film.disversion}}/{{film.language}})</div>
                                 <div :title="film.timeLong+'分钟'">{{film.timeLong}}分钟</div>
                             </div>
@@ -121,7 +125,7 @@ export default {
             this.filmsData = films
 
             this.$forceUpdate()
-            console.log(selectMoive)
+            
             this.$emit('selectMovie', {
                 isSelect,
                 selectMoive
@@ -173,7 +177,6 @@ export default {
 <style lang="scss" scoped>
 section {
     height: 54px;
-    // min-width: 1043px;
     width: 100%;
     background-color: #EDF1FD;
     box-sizing: border-box;
@@ -223,54 +226,55 @@ section {
     ul {
         position: absolute;
         height: 46px;
-        justify-content: flex-start;
         transition: left .5s;
         min-width: 100%;
         li {
             width: 154px;
             height: 100%;
-            align-items: flex-start;
+            float: left;
             background: #edf1fd;
             margin-right: 8px;
 
             .line {
                 width: 3px;
                 height: 100%;
+                float: left;
             }
 
             .film-content {
-                flex-direction: column;
-                justify-content: center;
-                align-items: flex-start;
+                float: left;
                 height: 100%;
                 width: 151px;
                 background-color: #fff;
-                &>div {
-                    margin-left: 10px;
+                padding-top: 5px;
+                padding-left: 8px;
+                box-sizing: border-box;
+                .lang-timelong {
+                    overflow: hidden;
+                    & > div {
+                        float: left;
+                        font-size: 12px;
+                        color: #333333;
+                        &:first-child {
+                            width: 80px;
+                            margin-right: 8px;
+                        }
+                        &:last-child {
+                            width: 48px;
+                        }
+                    }
                 }
-
-                &>div:nth-of-type(1) {
+                .movie-name {
                     font-size: 12px;
                     color: #333333;
                     font-weight: bold;
                     margin-bottom: 6px;
-                    max-width: 80%;
+                    max-width: 124px;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
                 }
-
-                &>div:nth-of-type(2) {
-                    div {
-                        font-size: 12px;
-                        color: #333333;
-                    }
-
-                    div:nth-of-type(1) {
-                        max-width: 50%;
-                    }
-
-                    div:nth-of-type(2) {
-                        margin-left: 20px;
-                    }
-                }
+            
             }
         }
 

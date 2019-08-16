@@ -9,8 +9,8 @@ export const creditNum = (rule, value, callback)=>{
 }
 export const num10_999float2 = (rule, value, callback)=>{
     var validate = /^[1-9][0-9]{1,2}|[1-9][0-9]{1,2}[.][0-9]{0,2}|[1-9]{1}|[1-9]{1}[.][0-9]{0,2}$/
-    var chargeMin = !!sessionStorage['chargeMin'] ? JSON.parse(sessionStorage['chargeMin']).toFixed(2):'10.00';
-    var chargeMax = !!sessionStorage['chargeMax'] ? JSON.parse(sessionStorage['chargeMax']).toFixed(2):'999.00';
+    var chargeMin = sessionStorage['chargeMin'] ? Number(sessionStorage['chargeMin']).toFixed(2):'10.00';
+    var chargeMax = sessionStorage['chargeMax'] ? Number(sessionStorage['chargeMax']).toFixed(2):'999.00';
     let val = value.toString().replace(/\s/g, "");
     if (!validate.test(val) || val*1 < chargeMin*1 || val*1 > chargeMax*1) {
       callback(new Error(`单次充值限额:${chargeMin}元—${chargeMax}元`));
@@ -27,21 +27,17 @@ export const customPasswordReg = (rule,value,callback) => {
       beforeAndAfterEmpty = /^\s+|\s+$/g,//前后空格
       midEmpty = /\s/g;//中间空格
       var value = value.toString();
-      if(rule.passwordkType === 1){
+      if(!numberType.test(value)){
+        callback(new Error('密码格式不正确，请重新输入'))
+      }
+      if(rule.passwordkType == 1){
         callback();
         return;
       }
-      if(value.length === 32){
-        callback();return;
-      }
-      if(!PwdCount.test(value) && !addOrReduce.test(value) && numberType.test(value) && !beforeAndAfterEmpty.test(value) && !midEmpty.test(value)){
-        callback()
+      if(!PwdCount.test(value) && !addOrReduce.test(value) && !beforeAndAfterEmpty.test(value) && !midEmpty.test(value)){
+        callback();
       }else{
-        if(!numberType.test(value)){
-          callback(new Error('密码格式不正确，请重新输入'))
-        }else{
-          callback(new Error('密码过于简单，请重新输入'))
-        }
+        callback(new Error('密码过于简单，请重新输入'))
       }
 }
 //手机号正则
@@ -72,6 +68,23 @@ export const validateName = (rule,value,callback)=>{
   }else {
     callback();
   }
+}
+
+/**
+ * 
+ * @param {*} rule 6位密码正则
+ * @param {*} value 
+ * @param {*} callback 
+ */
+export const passwdReg = function(rule, value, callback){
+  if (value === '') {
+      callback(new Error('请输入密码'));
+    } else {
+      if (!/^\d{6}$/.test(value.toString())) {
+        callback(new Error('请输入6位数字密码'));
+      }
+      callback();
+    }
 }
 
 

@@ -7,24 +7,24 @@
                     <div class="title"><span>票版元素</span><span style="margin-left:5px;">(请拖动选择)</span></div>
                     <el-collapse v-model="activeNames">
                     <el-collapse-item title="全部元素" name="1">
-                        <div v-for="(item,ind) in ele_list" :key="ind" class="content" v-show="!item.isSele">
-                                <span @mousedown="drag($event,item,ind)">
-                                    <span class="star_require" v-if='item.require'>*</span>
-                                    <span :style="item.require? '':'padding-left:12px'" style="cursor:pointer" >
-                                        {{item.name}}:{{item.description}}
-                                    </span>
-                                </span> 
+                        <div v-for="(item,ind) in ele_list" 
+                        :key="ind" 
+                        :class="['print-item',item.require==1?'star_required':'indents']" 
+                        v-show="!item.isSele"
+                        @mousedown="drag($event,item,ind)"
+                        >
+                            {{item.name}}:{{item.description}}                         
                         </div>
                     </el-collapse-item>
                     <!-- 已选元素 -->
                     <el-collapse-item title="已选择元素" name="2">
-                        <div v-for="(item,ind) in ele_list" :key="ind" class="content" v-show="item.isSele">
-                                <span @mousedown="drag($event,item,ind)">
-                                    <span class="star_require" v-if='item.require'>*</span>
-                                    <span :style="item.require? '':'padding-left:12px'" style="cursor:pointer" >
-                                        {{item.name}}:{{item.description}}
-                                    </span>
-                                </span> 
+                        <div v-for="(item,ind) in ele_list" 
+                        :key="ind" 
+                        :class="['print-item',item.require==1?'star_required':'indents']" 
+                        v-show="item.isSele"
+                        @mousedown="drag($event,item,ind)"
+                        >
+                            {{item.name}}:{{item.description}}                         
                         </div>
                     </el-collapse-item>
                 </el-collapse>
@@ -72,7 +72,9 @@
                         <div class="content">
                             <div class="file_sele">
                                 <div href="javascript::void(0)" class="file-btn" type="plain"  @click="handerTicketFile">选择文件</div>
-                                <span>{{fileName}}</span>
+                                <span style="margin-left:5px;">{{config.fileName}}
+                                    <i class="el-icon-close" v-if="config.file"  @click="clearImg" style="cursor: pointer"></i>
+                                </span>
                                 <input type="file" @change="readTicketFile($event)" ref="ticketFile" style="display:none">
                             </div>
                         </div>
@@ -80,22 +82,24 @@
                     <div class="option-warp">
                         <label class="name">适用影院：</label>
                         <div class="content">
-                            <div class="inputFrame nowrap">
+                            <span v-if="config.isDefualtticketSample">全部影院</span>
+                            <span v-else-if="(config.type=='edit'?true:false)||config.isDefualtticketSample">{{cinemaNameList}}</span>
+                            <div class="inputFrame nowrap" v-else>
                                 <el-input type="input" v-model="cinemaNameList"
                                 @focus="cinemaDialogShow"
                                 clearable
                                 @clear="clearCinemaName"
-                                :disabled="isDefualtticketSample"
                                 ></el-input>
                             </div>
                         </div>
                     </div>
                     <div class="option-warp">
                         <label class="name">票版名称：</label>
-                        <div class="content">
-                            <div class="inputFrame nowrap">
+                        <div class="content" >
+                            <span v-if="config.isDefualtticketSample">{{edi_ele.name}}</span>
+                            <div class="inputFrame nowrap" v-else>
                                 <el-input type="input" v-model="edi_ele.name"
-                                :disabled="isDefualtticketSample"
+                                :disabled="config.isDefualtticketSample"
                             ></el-input>
                             </div>
                         </div>
@@ -120,8 +124,9 @@
                     </div>
                     <div class="option-warp" style="height:auto">
                         <label class="name">适用渠道：</label>
-                        <div class="content">
-                            <div class="qudao">
+                        <div class="content" >
+                            <span v-if="config.isDefualtticketSample">全部渠道</span>
+                            <div class="qudao" v-else>
                                 <el-select
                                 v-model="channel_new"
                                 multiple
@@ -130,7 +135,7 @@
                                 placeholder="选择渠道"
                                 @change="channel_change"
                                 @visible-change="channel_handel"
-                                :disabled="isDefualtticketSample"
+                                :disabled="config.isDefualtticketSample"
                                 >
                                 <el-option
                                 v-for="item in channels"
@@ -192,10 +197,13 @@
                         <div class="option-warp" v-show="edi_ele.isPrintTitle==1">
                             <label class="name">打印标题：</label>
                             <div class="content">
-                                <el-radio-group v-model="selected_element.isPrintTitle" @change="isPrintTitle_change ">
-                            <el-radio :label="1">是</el-radio>
-                            <el-radio :label="0">否</el-radio>
-                            </el-radio-group>
+                                <el-radio-group v-model="selected_element.isPrintTitle" 
+                                @change="isPrintTitle_change " 
+                                :disabled="selected_element.showMode =='1' || selected_element.showMode=='2'"
+                                >
+                                    <el-radio :label="1">是</el-radio>
+                                    <el-radio :label="0">否</el-radio>
+                                </el-radio-group>
                             </div>
                         </div>
                         <div class="option-warp">
@@ -212,9 +220,9 @@
                             <div class="content">
                                 <div class="show-way" >
                                     <el-radio-group v-model="selected_element.showMode" @change="showMode_change">
-                                        <el-radio :label="0" :disabled="model">文本</el-radio>
+                                        <el-radio :label="0" :disabled="selected_element.itemCode=='k014'?true:false">文本</el-radio>
                                         <el-radio :label="1" >二维码</el-radio>
-                                        <el-radio :label="2" :disabled="model">条码</el-radio>
+                                        <el-radio :label="2" :disabled="selected_element.itemCode=='k014'?true:false">条码</el-radio>
                                     </el-radio-group>
                                 </div>
                             </div>
@@ -251,39 +259,23 @@
         </div>
             
     <!-- 选择影院弹窗 -->
-    <!-- <muti-cinema
-      title="选择影院"
-      v-if="cinemaDialogVisible"
-      @close="cinemaDialogVisible=false"
-      :innerData="[]"
-      :dialogTableVisible.sync="cinemaDialogVisible"
-      ref="movieSelectDialog"
-      @callBack="handleCinemaDialogCallBack"
-    ></muti-cinema>     -->
     <single-cinema
-      @close="singleCinemaVisible=false"
-      v-if="singleCinemaVisible"
-      :framedialogVisible="singleCinemaVisible"
-      :whereUse="null"
-      :type="2"
-      :innerData="cinemaData"
-      @callBackSingle="handleSingleCallBack"
-      ref="frameSingleCinema"
-    >
+        @callBackSingle="handleSingleCallBack"
+        :type='2'
+        :framedialogVisible='singleCinemaVisible'
+        :innerData="innerData"
+        ref="frameSingleCinema"
+      > 
       <div slot="footerId">
-        <el-button @click="singleCinemaVisible= false">取 消</el-button>
-        <el-button
-          type="primary"
-          @click="confirmCinemaSingleDialog(), singleCinemaVisible= false"
-        >确 定</el-button>
+        <el-button type="primary" @click="$refs.frameSingleCinema.confirmData(),singleCinemaVisible=false">确定</el-button>
+        <el-button @click="singleCinemaVisible=false">取消</el-button>
       </div>
-    </single-cinema>
+      </single-cinema>
     </div>
 </template>
 <script>
 import qs from 'qs';
-// import MutiCinema from 'ctm/components/cinema/MutiCinema';
-import SingleCinema from 'ctm/components/cinema/SingleCinema'
+import SingleCinema from 'frame_cpm/dialogs/cinemaDialog/singleCinema'
 
 export default {
     components:{
@@ -298,10 +290,10 @@ export default {
             cinemaList:[],
             cinemaNameList:'',
             cinemaData:{},
+            innerData:{},
 
             isZoom:false,
             activeNames: ['1',"2"],
-            model:false,
             //字体大小数组
             fontOption: [
                 { label:'12号字体',value:12 },
@@ -340,11 +332,18 @@ export default {
                 name: '',
                 width: 60,
                 height: 80,
-                isOtherUse:1,
+                isOtherUse:2,
                 isPrintTitle:1,
                 printMode:2,
             },
-            fileName:'未选择任何文件',//票样文件名字
+            config:{
+                fileName:'未选择任何文件',//票样文件名字
+                file:'',
+                id:'',
+                type:'',
+                isDefualtticketSample:false,
+                showModel:''
+            },
             //------------------票版数据-----------
             kName:{
                 "k001":"影院",
@@ -380,7 +379,6 @@ export default {
             barcode:require('ctm/assets/images/ticketSample/barcode.jpg'),
             scale_length:45,//尺标大小
             uid : '', //票版的uid
-            isDefualtticketSample:false,
             //票版的边界
             boxBoder_x:"",
             boxBoder_y:"",
@@ -395,33 +393,19 @@ export default {
             selected_No : '',//选中元素索引号
             selected_element:{//当前选中的元素
                 name:'',
+                code:'',
                 size:'',
                 showMode:'',
                 isPrintTitle:'',
                 bold:'',
                 textLength:'',
+                
             }, 
              //字体大小数组
         };
 
     },
     watch: {
-        mouse_context: {
-            handler(New , Old) {
-                this.repaintCanvas()
-            }
-        },
-        ticket_data: {
-            handler(New , Old) {
-                this.repaintCanvas()
-            }
-        },
-        defualt_background: {
-            handler(New , Old) {
-                console.log(New)
-                this.repaintCanvas()
-            }
-        },
         cinemaList : {
             handler(New , Old) {
                 console.log(New)
@@ -457,8 +441,8 @@ export default {
             if(this.ticket_data.length && this.selected_No>=0){
                 let selected_element = this.selected_element
                 selected_element.size = val
-                this.mouse_context.font = 'small-caps '+ item.size + "px Courier New"
-                selected_element.width = this.mouse_context.measureText(item.description).width //设置元素的宽度
+                this.mouse_context.font = 'small-caps '+ selected_element.size + "px Courier New"
+                selected_element.width = this.mouse_context.measureText(selected_element.description).width //设置元素的宽度
                 selected_element.height = val
                 this.repaintCanvas()
             }
@@ -481,6 +465,9 @@ export default {
                 selected_element.showMode = val
                 this.repaintCanvas()
                 setTimeout(this.repaintCanvas, 10)
+                if(val==2 || val == 1){
+                    this.selected_element.isPrintTitle = 0
+                }
                 return
             }
         },
@@ -504,28 +491,30 @@ export default {
         readTicketFile($event) {
             let file = this.$refs.ticketFile.value;
             let oFileReader = new FileReader();
-            this.fileName = file.substring(file.lastIndexOf('\\')+1)
+            this.config.fileName = file.substring(file.lastIndexOf('\\')+1)
             let fileName = file.substring(file.lastIndexOf(".")+1).toLowerCase();
             oFileReader.onloadend =  (e) => {
                 let base64 = e.target.result;
                 let img = new Image();
                 img.src = base64;
-                console.log(base64)
+                // console.log(base64)
                 this.sele_background = img;
                 this.sele_background.onload = _ => {
                     this.repaintCanvas()
                 }
             };
             if(fileName=="jpg" || fileName == "jpeg" || fileName == "png" || fileName == "bmp"){
-                if($event.srcElement.files[0].size > 200*1024){
+                console.log($event.srcElement.files[0].size)
+                if($event.srcElement.files[0].size > 2000*1024){
                     this.$refs.ticketFile.value = "";
                     return this.$message({
-                        message:'不能图片超过200kb！',
+                        message:'图片不能超过2m！',
                         type:'warning',
                         durantion:1000,
                     })
                 }
                 oFileReader.readAsDataURL($event.srcElement.files[0]);
+                this.config.file = $event.srcElement.files[0]
                 console.log($event)
             }else{
                 this.$refs.ticketFile.value = ""
@@ -541,8 +530,13 @@ export default {
         handleSingleCallBack(opt) {
             this.cinemaList = []
             this.cinemaList.push(opt.data)
-            console.log(this.cinemaList)
             this.cinemaNameList = opt.data.name
+            this.innerData.id = opt.data.id
+            this.channel_new = []
+            this.channel_old = []
+            if(opt.isCloseWindow){
+            this.singleCinemaVisible = false
+            }
         },
         cinemaDialogShow() {
             this.singleCinemaVisible = true                
@@ -645,6 +639,7 @@ export default {
         selectedCurrentElement(item) {
             if(item){ 
                 this.selected_element = item   
+                console.log(this.selected_element)
             }else{
                 this.selected_element = {
                     name:'',
@@ -683,17 +678,21 @@ export default {
         },
         // 拖拽元素库
         drag(e,item,ind) {
-            var  target= e.target.parentNode.parentNode;
+            var  target= e.target;
             var newEl=target.cloneNode(true);
             newEl.style.position= 'absolute';
             newEl.style.left = e.pageX + 'px';
             newEl.style.top = e.pageY + 'px';
             newEl.style.corson = 'pointer';
+            newEl.style.zIndex = 100;
             document.documentElement.appendChild(newEl);
             document.onmousemove = (e) =>{
                 newEl.style.left = e.pageX-10 + 'px';
                 newEl.style.top = e.pageY-10 + 'px';
             };
+            //元素库拖动的边界范围
+            this.boxBoder_x = this.mouse_canv.getBoundingClientRect().left;
+            this.boxBoder_y = this.mouse_canv.getBoundingClientRect().top;
             document.onmouseup = (e) => {
                 if( e.clientX > this.boxBoder_x && 
                     e.clientX < this.boxBoder_x + this.mouseCanv_width * this.zoom  &&
@@ -907,53 +906,41 @@ export default {
         keyDownonCanva(event) {
             var e = event || window.event || arguments.callee.caller.arguments[0];
             let selected = this.selected_element
-            switch(e.keyCode) {
-                case 38:
-                //向上
-                    if(this.ticket_data.length && this.selected_No>=0){
-                            selected.ulY--;
-                            selected.ulY = selected.ulY < 0 ? 0 :selected.ulY;
-                            selected.ulY = selected.ulY
-                            this.repaintCanvas()
-                    }
-                    break;
-                case 39:
-                //向右
-                    if(this.ticket_data.length && this.selected_No>=0){
-                            selected.ulX++;
-                            selected.ulX = selected.ulX >= this.mouseCanv_width  - selected.width*2/3? this.mouseCanv_width-selected.width*2/3 : selected.ulX
-                            selected.ulX = selected.ulX
-                            this.repaintCanvas()
-                    }
-                    break;
-                case 40:
-                //向下
-                    if(this.ticket_data.length && this.selected_No>=0){
-                            selected.ulY++
-                            selected.ulY = selected.ulY >= this.mouseCanv_height - selected.size ? this.mouseCanv_height - selected.size  : selected.ulY;
-                            selected.ulY = selected.ulY
-                            this.repaintCanvas()
-                    }
-                    break;
-                case 37:
-                //向左
-                    if(this.ticket_data.length && this.selected_No>=0){
-                            selected.ulX--
-                            selected.ulX = selected.ulX <= 0? 0 : selected.ulX
-                            selected.ulX = selected.ulX
-                            this.repaintCanvas()
-                    }
-                    break;
-                case 46:
-                //删除当前元素
-                    if(this.ticket_data.length && this.selected_No>=0){
-                            this.delCureentElement()
-                    }
-                    break;
-                default:
-                            this.repaintCanvas()
-			}
-			
+            if(this.ticket_data.length && this.selected_No>=0){
+                console.log(this.ticket_data.length,this.selected_No)
+                switch(e.keyCode) {
+                    case 38:
+                    //向上
+                        selected.ulY--;
+                        selected.ulY = selected.ulY < 0 ? 0 :selected.ulY;
+                        this.repaintCanvas()
+                        return false
+                    case 39:
+                    //向右
+                        selected.ulX++;
+                        selected.ulX = selected.ulX >= this.mouseCanv_width  - selected.width*2/3? this.mouseCanv_width-selected.width*2/3 : selected.ulX
+                        this.repaintCanvas()
+                        return false
+                    case 40:
+                    //向下
+                        selected.ulY++
+                        selected.ulY = selected.ulY >= this.mouseCanv_height - selected.size ? this.mouseCanv_height - selected.size  : selected.ulY;
+                        this.repaintCanvas()
+                        return false
+                    case 37:
+                    //向左
+                        selected.ulX--
+                        selected.ulX = selected.ulX <= 0? 0 : selected.ulX
+                        this.repaintCanvas()
+                        return false
+                    case 46:
+                    //删除当前元素
+                        this.delCureentElement()
+                        break;
+                    default:
+                    this.repaintCanvas()
+                }
+            }
         },
         //--数据请求--元素列表
         getElemenlist() {
@@ -995,10 +982,10 @@ export default {
                     this.edi_ele.isPrintTitle = data.isPrintTitle
                     this.edi_ele.isOtherUse = data.isOtherUse
                     this.edi_ele.printMode = data.printMode
-                    this.isDefualtticketSample = data.isDefault==1? true : false
+                    this.config.isDefualtticketSample = data.isDefault==1? true : false
                     //获取适用影院
                     this.cinemaNameList = data.cinemaNames? data.cinemaNames.join(',') : ''
-                    console.log('data.cinemaList[0]',data.cinemaList[0])
+                    // console.log('data.cinemaList[0]',data.cinemaList[0])
                     if(data.cinemaList && data.cinemaList.length){
                         let _data = {
                             id : data.cinemaList[0].cinemaUid,
@@ -1012,14 +999,17 @@ export default {
                     if(this.cinemaData) { 
                         this.getChannelList(this.cinemaData.id)
                     }
-                    //获取图片base64
+                    //获取图片请求
                      if(data.picUrl){
-                        let url = data.sele_background ? data.sele_background: null
                         let image = new Image()
-                        image.src = url 
-                        this.sele_background = image
+                        image.src = data.picUrl 
+                        // let promise = new Promise()
+                        image.onload =  _=>{
+                            this.sele_background = image
+                            this.repaintCanvas()
+                        }
                     } 
-                    //赋值渠道
+                    //赋值渠道  ticketsampleChannelUids
                     this.channel_new =data.ticketsampleChannelUids? JSON.parse(JSON.stringify(data.ticketsampleChannelUids)) : [] ;
                     this.channel_old =data.ticketsampleChannelUids? JSON.parse(JSON.stringify(data.ticketsampleChannelUids)) : [] ;
                     this.ticket_data.forEach(item => {
@@ -1047,6 +1037,7 @@ export default {
                             item.height = 30; //设置高 
                         }
                     })
+                    this.repaintCanvas()
                 }
             })
         },
@@ -1087,7 +1078,7 @@ export default {
                     return false
                 }
             }
-            if(!this.cinemaList.length && !this.isDefualtticketSample) { 
+            if(!this.cinemaList.length && this.config.type=='new') { 
                 this.$message({
                     type:'warning',
                     message:'请选择适用影院',
@@ -1104,7 +1095,7 @@ export default {
                     });
                 return false
             }
-            if(!this.channel_new.length && !this.isDefualtticketSample) {
+            if(!this.channel_new.length && !this.config.isDefualtticketSample) {
                 this.$message({
                         message: '请选择适用渠道',
                         type: 'warning',
@@ -1127,13 +1118,19 @@ export default {
             }
             return true
         },
+        clearImg() {
+            this.config.fileName = '未选择文件'
+            this.config.file = ''
+            this.sele_background = ''
+            this.$refs.ticketFile.value = ''
+            this.repaintCanvas()
+        },
         /**
          *  @function saveTicketSample 修改保存
          *  @param type = edit 修改
          *  @param type = new  新建
          */
-        
-        saveTicketSample(type){
+        async saveTicketSample(type){
             var flag = this.judge();
             if(flag){
                 var data = Object.assign(this.edi_ele)
@@ -1154,9 +1151,23 @@ export default {
                 data.cinemaList = cinemaList
                 data.picUrl = this.sele_background;
 
-                data.width = this.edi_ele.width*this.mmToPixel
-                data.height = this.edi_ele.height*this.mmToPixel
-
+                data.width =  this.mouseCanv_width 
+                data.height = this.mouseCanv_height
+                let paramsImg = new FormData();
+                if(this.config.file){
+                    paramsImg.append('file', this.config.file); //传文件
+                    paramsImg.append('moduleName', 'ctmFile'); //传文件
+                    let res = await this.$ctmList.fileUpload(paramsImg)
+                    if(res.code==200){
+                        data['picUrl'] = res.data
+                    }else{
+                        this.$message({
+                            type:'warning',
+                            message:res.msg?res.msg:'图片上传失败！'
+                        })
+                    }
+                    console.log(data)
+                }
                 if(type == 'edit'){ //修改
                     data.uid = this.uid  
                     this.$ctmList.ticketSampleUpdata(data).then( data => {
@@ -1221,15 +1232,7 @@ export default {
             setTimeout( this.repaintCanvas,500)
             this.repaintCanvas()
         }
-        //元素库拖动的边界范围
-        this.boxBoder_x = this.mouse_canv.getBoundingClientRect().left;
-        this.boxBoder_y = this.mouse_canv.getBoundingClientRect().top;
-        let breadcrumb = document.querySelector('.el-breadcrumb')
-        if(breadcrumb){
-            console.log(breadcrumb)
-            this.boxBoder_y-=30
-        }
-
+         
         //键盘事件
         window.onkeydown = this.keyDownonCanva;
 
@@ -1247,23 +1250,47 @@ export default {
         img3.src = this.barcode;
         this.barcode =  img3 ;
         
-
+        if(this.$route.query.isEdit){
+            this.config.type = 'edit'
+            this.config.uid = this.$route.query.uid
+        }else{
+            this.config.type = 'new'
+        }
         /* 获取列表
          *  Func- getElemenlist
         */
         this.getElemenlist();
         //获取票版元素信息 
+    },
+    destroyed() {
+        window.onkeydown = null
     }
 }
 </script>
 <style lang="scss">
-    .star_require{color: #f56c6c;cursor: pointer;}
+    .star_required{
+            &::before{
+                content:'*';
+                color: #f56c6c;
+                cursor: pointer;
+                line-height: 14px
+            }
+        }
+        .print-item{
+            font-size: 12px;
+            color:#666;
+            cursor: pointer;
+        }
+        .indents{
+            text-indent: 5px;
+        }
     .full{
         position: fixed;
         top:0;
         right:0;
         left: 0;
         bottom: 0;
+        z-index: 99;
     }
     .ticket_design {
         display: flex;
@@ -1383,13 +1410,16 @@ export default {
                     }
                 }
                 .ticketSize{
-                    .el-input{width: 62px;}
+                    .el-input{
+                        width: 62px;
+                        font-size: 12px;
+                    }
                     input{width: 62px;font-size: 12px;padding: 0 10px;text-align: center}
                 }
                 .qudao{
                     white-space: nowrap;
-                    .el-input{width: 150px;}
-                    .el-select__tags{max-width: 145px!important;}
+                    // .el-input{width: 150px;}
+                    // .el-select__tags{max-width: 145px!important;}
                     span{font-size: 12px;}
                 }
                 .inputFrame{

@@ -39,6 +39,7 @@ export default {
     },
     // 取消
     handleCancle() {
+      this.$store.commit("tagNav/removeTagNav", this.$route);
       this.$router.push({ path: "/member/otherCommodity/commodityList" });
     }
   },

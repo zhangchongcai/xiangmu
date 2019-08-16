@@ -1,8 +1,9 @@
+import { payType } from 'cmm/http/interface.js';
 <template>
   <div class="my_dialog">
     <el-dialog :title="title" :visible.sync="mydialogTableVisible">
       <el-form label-width="100px" :model="form">
-          <el-row>
+          <el-row v-show="isFristPage">
             <el-col :span="24">
               <el-form-item label="关联业务单据：">
                 {{uid}}
@@ -14,8 +15,8 @@
             <el-col :span="12">
               <el-form-item label="资金科目：" required>
                 <el-select v-model="subject">
-                  <el-option label="请选择" value>请选择</el-option>
-                  <el-option v-for="(item,index) in subjectList" :key="index" :label="item.subjectName" :value="`${item.subjectName},${item.subjectCode}`">{{item.subjectName}}</el-option>
+                  <!-- <el-option label="请选择" value>请选择</el-option> -->
+                  <el-option v-for="(item,index) in subjectList" :key="index" :label="item.subjectFull" :value="`${item.subjectName},${item.subjectCode},${item.bpType}`">{{item.subjectFull}}</el-option>
                 </el-select>
               </el-form-item>
             </el-col>
@@ -52,7 +53,7 @@
       <el-table :data="tableData" :cell-style={padding:0} :row-style={height:30} :header-cell-style={padding:0}
         highlight-current-row   max-height="210">
         <el-table-column property="subjectName" label="资金科目" width="150" show-overflow-tooltip></el-table-column>
-        <el-table-column property="payTypeCode" label="支付方式" width="96"></el-table-column>
+        <el-table-column property="payType" label="支付方式" width="96"></el-table-column>
         <el-table-column property="changeValue" label="调整值" width="96"></el-table-column>
         <el-table-column property="remarks" label="摘要说明"  show-overflow-tooltip></el-table-column>
          <el-table-column label="操作" width="70">
@@ -116,7 +117,8 @@
         subject:'',
         tableData:[],
         mydialogTableVisible: this.dialogTableVisible,
-        currentPage: 1
+        currentPage: 1,
+        isFristPage:true
       }
     },
     methods: {
@@ -125,26 +127,41 @@
         this.currentPage = val
       },
       adjustTemporary(){
+        if(!this.subject){
+          this.$message("请填写资金科目")
+          return
+        }
+        if(!this.form.payTypeCode){
+          this.$message("请填写支付方式")
+          return
+        }
+        if(!this.form.changeValue){
+          this.$message("请填写调整值")
+          return
+        }
+        console.log(this.subject)
         let limit = {
           timeCode:this.$route.query.timeCode,
           workTimeUid:this.$route.query.uid,
           subjectName: this.subject.split(",")[0],
           subjectCode:this.subject.split(",")[1],
-          cinemaUid:this.$store.state.csm.cinemaUid
+          cinemaUid:this.$route.query.cinemaUid,
+          payType:this.form.payTypeCode=="XRMB"?'现金':'银联',
+          bpType:this.subject.split(",")[2]
         };
         let addition = this.form;
         this.tableData.push(Object.assign({}, limit, addition))
+        console.log(this.tableData)
         this.form = {}
         this.subject = ''
       },
       adjustDelate(scope){
-        console.log(scope)
-        console.log(this.tableData)
         this.tableData.splice(scope.$index,1)
       },
       adjustAdd(){
         console.log(this.tableData)
         if(this.tableData.length == 0){
+          this.$message('请先新增要调整的资金科目')
           return;
         }
         this.$csmList.adjustAdd(this.tableData).then(data=>{
@@ -157,7 +174,10 @@
               }
             });
           } else {
-
+            this.$message({
+              type: 'info',
+              message: `${data.msg}`
+            });  
           }
           
         });
@@ -179,6 +199,13 @@
       },
       currentPage(val) {
         this.$emit("changeCurrentPage", val)
+      },
+      "form.changeValue"(val){
+        try {
+           this.form.changeValue = val.replace(/\-/g,'')
+        } catch (error) {
+          
+        } 
       }
     },
     created() {

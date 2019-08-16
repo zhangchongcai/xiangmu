@@ -3,8 +3,7 @@
         <el-dialog
         title="选择要绑定的usbKey"
         :visible.sync="dialogVisible"
-        :show-close="false"
-        width="40%"
+        width="576px"
         :close-on-click-modal=false
         >
         <div class="film-body">
@@ -21,8 +20,8 @@
         </div>
             <span slot="footer" class="dialog-footer">
                 <slot name="footerId"></slot>
-                <el-button @click="dialogVisible=false">取 消</el-button>
                 <el-button type="primary" @click="confirmData()">确 定</el-button>
+                <el-button @click="dialogVisible=false">取 消</el-button>
             </span>
             <div class="inner-dialog">
                 <el-dialog

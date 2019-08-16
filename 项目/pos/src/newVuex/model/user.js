@@ -34,6 +34,9 @@ export default {
             localStorage.setItem('channelId', '0')
             localStorage.setItem('channelNo', '0')
             localStorage.setItem('channelName', '柜台')
+            localStorage.setItem('userAccount',data.userAccount)
+            localStorage.setItem('workTimeUid',data.workTimeUid)
+            localStorage.setItem('preAmount',data.preAmount)
         }
     }
 }

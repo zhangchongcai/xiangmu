@@ -22,7 +22,7 @@
                 <div class="block-word">{{items.equity.equityName}}</div>
               </li>
               <div class="block-item" v-if="showType">
-                <el-button class="block-icon-btn"  @click="handleAddEquityDialog(parentIndex)">+</el-button>
+                <el-button class="block-icon-btn"  @click="handleAddEquityDialog(parentIndex,item.levelEquitys)">+</el-button>
                 <div class="block-word ">添加</div>
               </div>
             </ul>
@@ -51,10 +51,10 @@
     </div>
     <!-- 底部 -->
     <div class="footer-btn-wrap" v-if="showType">
-      <el-button type="primary" @click="handleCommit" class="_el-btn-custom _member-add-edit-save-btn">保存</el-button>
-      <el-button @click="handleCancle" class="_el-btn-custom">取消</el-button>
+      <el-button type="primary" :disabled="btnDisabled" @click="handleCommit" class="_el-btn-custom _member-add-edit-save-btn">保存</el-button>
+      <el-button :disabled="btnDisabled" @click="handleCancle" class="_el-btn-custom">取消</el-button>
     </div>
-        <!-- 添加权益dialog -->
+    <!-- 添加权益dialog -->
     <el-dialog title="自有权益" class="__equity-dialog" :visible.sync="equityDialog" width="892px">
       <div class="__table-wrap">
         <el-form :inline="true" :model="formData" ref="formData" class="form-data-wrap">
@@ -107,16 +107,16 @@
         <el-button @click="changeEquityDialog(false)" class="_el-btn-custom">取消</el-button>
       </span>
     </el-dialog>
-     <!--  权益相同时的dialog -->
+    <!--  权益相同时的dialog -->
     <el-dialog class="__equity-dialog" :visible.sync="sameCategoryDialog">
-      <div style="text-align:center;margin:40px 0;">
-        {{`此政策内包含同为“${sameCategory}”权益类别的规则`}}<br /><br />
-        请仔细检查，避免会员在<span style="font-size:22px;">同一场次可享受多种价格权益</span>的情况发生<br /><br />
-        若出现此情况，则默认<span style="color:red;">享受最低折扣（全部优惠中的最高价格）</span>
+      <div style="text-align:center;">
+        {{`最多只可选择一条“${sameCategory}”权益，无法保存`}}
+        <!-- 请仔细检查，避免会员在<span style="font-size:22px;">同一场次可享受多种价格权益</span>的情况发生<br /><br />
+        若出现此情况，则默认<span style="color:red;">享受最低折扣（全部优惠中的最高价格）</span> -->
       </div>
       <span slot="footer" class="dialog-footer">
         <!-- <el-button type="primary" @click="handleSureSameEquity" class="_el-btn-custom _member-add-edit-save-btn">确定</el-button> -->
-        <el-button @click="sameCategoryDialog = false" class="_el-btn-custom">取消</el-button>
+        <el-button @click="sameCategoryDialog = false" class="_el-btn-custom">关闭</el-button>
       </span>
     </el-dialog>
   </div>
@@ -128,8 +128,8 @@ export default {
   },
   data() {
     return {
-      url: 'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg',
-      showType:false,
+      showType:false,//页面显示状态是否可以编辑
+      btnDisabled:true,//是否可以操作按钮
       tenantId: this.$store.state.loginUser.consumerId,
       levelList:[],
       checkData:[],
@@ -163,22 +163,22 @@ export default {
         { name: "影票折扣", value: "movie" },
         { name: "卖品折扣", value: "goods" },
         { name: "生日赠券", value: "birthday" },
-        { name: "代金卷", value: "voucher" }
+        { name: "代金券", value: "voucher" }
       ], 
       multipleSelectionItem: [], //临时选择的自有权益
       equityList:[],
     };
   },
-  mounted(){
+  created(){
     this.getShowType()
   },
   watch:{
-    showType:{
-      deep:true,
-      handler(newVal,oldVal){
-        this.getShowType()
-      }
-    },
+    // showType:{
+    //   deep:true,
+    //   handler(newVal,oldVal){
+    //     this.getShowType()
+    //   }
+    // },
     equityDialog:{
       deep:true,
       handler(newVal,oldVal){
@@ -192,21 +192,37 @@ export default {
     //获取显示页面状态
     getShowType(){
       //编辑页面显示
-      if(this.showType){
-        // this.levelList=this.editData
-        this.getLevelEquityList()
-      }else{//查看页面显示
-        // this.levelList=this.checkData
-        this.getLevelEquityList()
-      }
+      // if(this.showType){
+      //   // this.levelList=this.editData
+      //   this.getLevelEquityList()
+      // }else{//查看页面显示
+      //   // this.levelList=this.checkData
+      //   this.getLevelEquityList()
+      // }
+      console.log("this.$route.path",this.$route.path)
+      // if(this.$route.path=="/member/memberLevelEquity/edit"){
+      //   this.showType=true
+      // }
+      // if(this.$route.path=="/member/memberLevelEquity/detail"){
+      //   this.showType=false
+      // }
+      this.getLevelEquityList()
     },
     //编辑
     handleEdit(){
-      this.showType=true
+      // this.showType=true
+      // this.$store.commit("tagNav/removeTagNav", this.$route);
+      this.$router.push({
+        path:"/member/memberLevelEquity/edit"
+      })
     },
     //取消
     handleCancle(){
-      this.showType=false
+      // this.showType=false
+      this.$store.commit("tagNav/removeTagNav", this.$route);
+      this.$router.push({
+        path:"/member/memberLevelEquity/detail"
+      })
     },
     //保存
     handleCommit(){
@@ -241,13 +257,15 @@ export default {
       for (var i = 0; i < arr.length; i++) {
         console.log("arr[i].equityType",arr[i].equityType)
         if (arr[i].equityType == "consumer_type") {
-          if (temp.indexOf(arr[i].equityCategory+arr[i].levelId) == -1) {
-            temp.push(arr[i].equityCategory+arr[i].levelId);
-          } else if (
-            temp.indexOf(arr[i].equityCategory+arr[i].levelId) != -1 &&
-            arr[i].equityCategory != null
-          ) {
-            repeatArr.push(arr[i].equityCategory);
+          if (arr[i].equityCategory == "goods" || arr[i].equityCategory == "movie") {
+            if (temp.indexOf(arr[i].equityCategory+arr[i].levelId) == -1) {
+              temp.push(arr[i].equityCategory+arr[i].levelId);
+            } else if (
+              temp.indexOf(arr[i].equityCategory+arr[i].levelId) != -1 &&
+              arr[i].equityCategory != null
+            ) {
+              repeatArr.push(arr[i].equityCategory);
+            }
           }
         }
       }
@@ -282,7 +300,7 @@ export default {
         console.log("sameCategory",this.sameCategory)
       } else {
         //发起请求
-        this.handleSureSameEquity(listCommitParams);
+        this.handleSureSameEquity({list:listCommitParams});
       }
     },
     // 点击搜索按钮
@@ -303,7 +321,16 @@ export default {
       this.$crmList
         .addLevelEquity(params)
         .then(data => {
-        
+          this.$message({
+            message: '保存成功',
+            type: 'success',
+            duration: 1500,
+          })
+          // this.showType=false
+          // this.$store.commit("tagNav/removeTagNav", this.$route);
+          this.$router.push({
+            path:"/member/memberLevelEquity/detail"
+          })
         })
         .catch(err => {
           console.log(err)
@@ -322,20 +349,26 @@ export default {
       this.$crmList
         .getEquityList(params)
         .then(data => {
-          this.tableData = data.records;
-          this.total = data.total;
-          this.$refs.multipleTable.clearSelection();
-          console.log("clearSelection")
-          // this.rowMultipleChecked(this.multipleSelectionItem);
+          if(data){
+            this.tableData = data.records || [];
+            this.total = data.total || 0;
+            this.$refs.multipleTable.clearSelection();
+            console.log("clearSelection")
+            console.log("tableData",this.tableData)
+            console.log("this.multipleSelectionItem",this.multipleSelectionItem)
+            this.rowMultipleChecked(this.multipleSelectionItem);
+          }
         })
-        .catch(err => {});
+        .catch(err => {
+          console.log(err)
+        });
     },
     // 权益回显
     rowMultipleChecked(selectedArr) {
       if (selectedArr.length != 0) {
         for (let i = 0; i < selectedArr.length; i++) {
           for (let k = 0; k < this.tableData.length; k++) {
-            if (selectedArr[i].id == this.tableData[k].id) {
+            if (selectedArr[i].equity.id == this.tableData[k].id) {
               this.$refs.multipleTable.toggleRowSelection(
                 this.tableData[k],
                 true
@@ -363,30 +396,37 @@ export default {
           }
         }
       }
+      console.log("sldfkjsfjsa")
     },
     //单一数据toggle
     rowOneToggle(row) {
+      console.log("0000000000")
       for (let index = 0; index < this.multipleSelectionItem.length; index++) {
-        if (row.id == this.multipleSelectionItem[index].id) {
+        if (row.id == this.multipleSelectionItem[index].equity.id) {
+          console.log("delete",this.multipleSelectionItem[index])
           this.multipleSelectionItem.splice(index, 1);
           return;
         }
       }
-      this.multipleSelectionItem.push(row);
+      this.multipleSelectionItem.push({equity:row});
+       console.log("multipleSelectionItem",this.multipleSelectionItem)
     },
     //单一数据add
     rowOneAdde(row) {
+      console.log("1111111111")
       for (let index = 0; index < this.multipleSelectionItem.length; index++) {
-        if (row.id == this.multipleSelectionItem[index].id) {
+        if (row.id == this.multipleSelectionItem[index].equity.id) {
           return;
         }
       }
-      this.multipleSelectionItem.push(row);
+      console.log("22222222222")
+      this.multipleSelectionItem.push({equity:row});
     },
      //单一数据reomove
     rowOneRemove(row) {
+        console.log("33333333")
       for (let index = 0; index < this.multipleSelectionItem.length; index++) {
-        if (row.id == this.multipleSelectionItem[index].id) {
+        if (row.id == this.multipleSelectionItem[index].equity.id) {
           this.multipleSelectionItem.splice(index, 1);
           return;
         }
@@ -397,12 +437,13 @@ export default {
       this.equityDialog = false;
       if (ok) {
         this.equityList = new Array(...this.multipleSelectionItem);
+        this.levelList[this.parentIndex].levelEquitys=[]
         this.equityList.forEach(item => {
-            this.levelList[this.parentIndex].levelEquitys.push({
-              equity:item
-            }) 
+            this.levelList[this.parentIndex].levelEquitys.push(
+              item
+            ) 
         });
-      
+        this.btnDisabled=false//按钮可以点击
       } else {
         this.multipleSelectionItem = new Array(...this.equityList);
       }
@@ -424,14 +465,18 @@ export default {
     },
     //删除
     deleteItem(parentIndex,index){
+      this.btnDisabled=false//按钮可以点击
       this.levelList[parentIndex].levelEquitys.splice(index,1)
     },
     //添加权益（打开弹窗）
-    handleAddEquityDialog(parentIndex){
+    handleAddEquityDialog(parentIndex,item){
+      let levelEquitys = JSON.parse(JSON.stringify(item))
       this.equityList=[]
-      this.multipleSelectionItem=[]
+      this.multipleSelectionItem=levelEquitys.length==0 ? [] : levelEquitys
       this.equityDialog=true
       this.parentIndex=parentIndex
+      console.log("levelEquitys",levelEquitys)
+      //回显
       // this.search()
     },
     //获取会员等级权益列表
@@ -442,8 +487,10 @@ export default {
       }
       this.$crmList.levelEquityList(params)
       .then(data => {
+        if(data){
           this.levelList=data
           console.log("levelList",data)
+        }
       })
       .catch(err => {
         console.log(err);

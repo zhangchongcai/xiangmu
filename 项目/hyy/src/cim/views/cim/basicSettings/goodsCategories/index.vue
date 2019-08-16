@@ -4,8 +4,7 @@
       <el-form
         :inline="true"
         :model="queryData"
-        label-position="right"
-        label-width="80px"
+        label-position="left"
         label-suffix=":"
       >
       </el-form>

@@ -64,14 +64,14 @@ export default {
     },
     watch:{
         type(){
-            // console.log('watch props type')
             this.ratioType = this.type;
         }
     },
     filters: {
         formatMoney(money,code) {
-            let codeArr = ['xzhy','yxhy','ljhy','kzhyh',
-            'xinkhy','xukhy','bkhy','czhy','ydqhy30','ydqhy7'];
+            // let codeArr = ['xzhy','yxhy','ljhy','kzhyh',
+            // 'xinkhy','xukhy','bkhy','czhy','ydqhy30','ydqhy7'];
+            let codeArr = Global.targetNum;
             if(codeArr.includes(code)){
                 return Global.formatMoney(money,0);
             }else{

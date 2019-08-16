@@ -4,8 +4,7 @@
             <el-form
                     :inline="true"
                     :model="queryData"
-                    label-position="right"
-                    label-width="80px"
+                    label-position="left"
                     label-suffix="："
             >
                 <el-form-item label="门店名称" class="select-input">
@@ -16,7 +15,7 @@
                             @focus="handleDialogEvent('refCinemalDialog')"
                             placeholder="请选择门店"
                     ></el-input>
-                    <el-button @click="handleDialogEvent('refCinemalDialog')" type="primary" plain>{{queryData.cinemaName?"编辑":"选择"}}</el-button>
+                    <el-button @click="handleDialogEvent('refCinemalDialog')" type="primary" plain>选择</el-button>
                 </el-form-item>
             </el-form>
         </div>
@@ -24,6 +23,7 @@
             <div class="good-setting-title clearfix">
                 <div class="left">
                     <span>常用商品设置</span>
+                    <span class="hint">操作提示: 可通过鼠标拖拽排序</span>
                 </div>
                 <div class="right">
                     <el-button @click="addBlankBlock(1)">添加空白块</el-button>
@@ -48,7 +48,7 @@
                     ></el-table-column>
                     <el-table-column label="操作" style="width:180px;">
                         <template slot-scope="{row}">
-                            <el-button type="text" size="small" @click.stop="handleOperateEvent('1',row)">修改</el-button>
+                            <el-button type="text" size="small" @click.stop="handleOperateEvent('1',row)">编辑</el-button>
                             <el-button type="text" size="small" @click.stop="handleOperateEvent('2',row)">删除</el-button>
                         </template>
                     </el-table-column>
@@ -60,10 +60,11 @@
             <div class="good-setting-title clearfix">
                 <div class="left">
                     <span>推荐商品设置(最多选4种)</span>
+                    <span class="hint">操作提示: 可通过鼠标拖拽排序</span>
                 </div>
                 <div class="right">
                     <el-button @click="addBlankBlock(2)">添加空白块</el-button>
-                    <el-button @click="handleUsedGoodEvent(2)">添加常用商品</el-button>
+                    <el-button @click="handleUsedGoodEvent(2)">添加推荐商品</el-button>
                     <el-button @click="handleSave(2)">保存</el-button>
                 </div>
             </div>
@@ -85,7 +86,7 @@
                     ></el-table-column>
                     <el-table-column label="操作" style="width:180px;">
                         <template slot-scope="{row}">
-                            <el-button type="text" size="small" @click.stop="handleOperateEvent('1',row)">修改</el-button>
+                            <el-button type="text" size="small" @click.stop="handleOperateEvent('1',row)">编辑</el-button>
                             <el-button type="text" size="small" @click.stop="handleOperateEvent('2',row)">删除</el-button>
                         </template>
                     </el-table-column>
@@ -94,17 +95,10 @@
         </div>
 
         <!-- 选择影院弹窗 -->
-        <cinemal-dialog ref="refCinemalDialog" @onSumit="onCinemalSumit" :dialogFeedbackData="[{ cinemaUid : queryData.cinemaUid,cinemaName:queryData.cinemaName }]"></cinemal-dialog>
+        <cinemal-dialog ref="refCinemalDialog" title="选择门店" @onSumit="onCinemalSumit" :dialogFeedbackData="[{ cinemaUid : queryData.cinemaUid,cinemaName:queryData.cinemaName }]"></cinemal-dialog>
         <!-- 选择供应商弹窗 -->
         <suppliers-dialog ref="refSuppliersDialog"></suppliers-dialog>
         <!-- 选择商品弹窗 -->
-<!--        <selected-goods-->
-<!--                :dialogVisible.sync="selectedGoodsDialogVisible"-->
-<!--                :cinemaUid="queryData.cinemaUid"-->
-<!--                :dialogFeedbackData="[{ skuUid: '0503a326-9dfd-446e-91f1-bea42236660e',name:'name' },{ skuUid: '922b51e6-f81b-459a-a09d-539570f8114f',name:'name1' },{skuUid:'645717a6-e9b3-4598-9661-06a23e2004ce',name:'name2'}]"-->
-<!--                :autoClose="false"-->
-<!--                @cimSelectedGoodsDialogCallBack="selectedGoodsDialogCallBack"-->
-<!--        ></selected-goods>-->
         <selected-goods
                 :dialogVisible.sync="selectedGoodsDialogVisible"
                 :cinemaUid="queryData.cinemaUid"
@@ -115,6 +109,7 @@
         <!-- 选择终端弹窗 -->
         <terminal-selected-dialog
                 ref="refTerminalSelectedDialog"
+                :preType="preType"
                 :title="'添加独立终端设置'"
                 :cinemaUid="queryData.cinemaUid"
                 :dialogFeedbackData="terminaCheckedKeys"
@@ -139,7 +134,7 @@
                 queryData: {
                     cinemaUid: "", //门店id
                     cinemaName: "", //门店名称
-                    type: "0", //1-常用商品 2-门店推荐商品 3-终端常用商品 4-终端推荐商品
+                    type: "0", //1-常用商品 2-推荐商品 3-终端常用商品 4-终端推荐商品
                     useVoList: [], //常用商品列表
                     terminaInfoList: [], //终端常用商品列表
                     recomuseVoList: [], //推荐商品列表
@@ -163,7 +158,7 @@
             };
         },
         mounted() {
-           // this.onQuery();
+          // console.log(this.$cimList.posSetting)
         },
         beforeDestroy(){
             // alert("销毁")
@@ -175,13 +170,13 @@
             //设置保存
             handleSave(type) {
                 this.queryData.type = type;
-                console.log(this.queryData);
+                // console.log(this.queryData);
                 this.userProSaveUseInfo(this.queryData,type);
             },
             // 查询商品设置
             userProQueryUseInfo(param){
                 // debugger
-                this.$cimList.procurement.userProQueryUseInfo(param).then(resData => {
+                this.$cimList.posSetting.userProQueryUseInfo(param).then(resData => {
                     if (resData.code == 200) {
                         this.queryData.useVoList = resData.data.useVoList.map(item=>{
                             item.preType  = 1
@@ -212,7 +207,7 @@
                     });
                     return;
                 }
-                this.$cimList.procurement.userProSaveUseInfo(param).then(resData => {
+                this.$cimList.posSetting.userProSaveUseInfo(param).then(resData => {
                     if (resData.code == 200) {
                         this.$message({
                             type: "success",
@@ -230,7 +225,7 @@
             },
             // 删除终端商品
             userProDelterminal(param) {
-                this.$cimList.procurement.userProDelterminal(param).then(resData => {
+                this.$cimList.posSetting.userProDelterminal(param).then(resData => {
                     if (resData.code == 200) {
                         this.$message({
                             type: "success",
@@ -297,12 +292,14 @@
                 this.handleDialogEvent("refTerminalSelectedDialog");
             },
             selectedGoodsDialogCallBack(value) {
-                console.log(value);
+                // console.log(value);
                 if (value.btnType == 1) {
                     value.data = value.data.map(item => {
                         //正常商品
                         if (item.merCode) {
-                            item.merUid = item.uid;
+                            if(!item.merUid){
+                                item.merUid = item.uid;
+                            }
                         }
                         return item;
                     });
@@ -348,7 +345,7 @@
             handleOperateEvent(type, row) {
                 // debugger
                 this.terminaCheckedKeys = row;
-                console.log(row);
+                // console.log(row);
                 if (type == 1) {
                     //修改
                     if (row.preType == 1) {
@@ -357,10 +354,12 @@
                         this.handleTerminalGoodEvent(2,'upDate')
                     }
                 } else {
-                    this.$confirm("确认删除吗, 是否继续?", "提示", {
-                        confirmButtonText: "确定",
+                    this.$confirm("<i class='el-icon-circle-close'></i><span>确定删除吗?</span>", {
+                        customClass: "retail-style",
+                        dangerouslyUseHTMLString: true,
                         cancelButtonText: "取消",
-                        type: "warning"
+                        confirmButtonText: "确定",
+                        center: true,
                     })
                         .then(() => {
                             //删除
@@ -375,21 +374,34 @@
                 }
             },
             // 选泽门店回调
-            onCinemalSumit(val = []) {
+            onCinemalSumit(val = [],type) {
+                // console.log(val," 选泽门店回调",type);
                 if (val.length > 0) {
-                    this.queryData.cinemaName = val[0].name || val[0].cinemaName;
-                    this.queryData.cinemaUid = val[0].uid || val[0].cinemaUid;
-                    this.onQuery();
+                    if(type=="default"){
+                        if(val.length==1){
+                            this.setCinema(val);
+                            this.onQuery();
+                        }
+                    }else{
+                        this.setCinema(val)
+                        this.onQuery();
+                    }
                 } else {
+                    this.setCinema()
+                }
+            },
+            setCinema(val=[]){
+                if(val.length>0){
+                    this.queryData.cinemaName =  val[0].name || val[0].cinemaName ;
+                    this.queryData.cinemaUid =  val[0].uid || val[0].cinemaUid;
+                }else{
                     this.queryData.cinemaName = "";
                     this.queryData.cinemaUid = "";
                 }
-
-                console.log(this.queryData);
             },
             //终端商品设置
             onTerminalSumit(val) {
-                console.log(val);
+                // console.log(val);
                 val = JSON.parse(JSON.stringify(val));
                 if (this.preType == 1) {
                     //常用商品
@@ -440,6 +452,8 @@
 
        .draggable-box {
            min-height: 300px;
+           max-height: 600px;
+           overflow-y: scroll;
        }
 
        .good-setting-title {
@@ -457,7 +471,10 @@
            /*margin-bottom: 20px;*/
            padding: 10px;
        }
-
+       .hint {
+           color: #E6A23C;
+           margin-left: 10px;
+       }
        .select-input {
            .el-input {
                width: 200px;

@@ -3,22 +3,22 @@
       <!-- 查询块 -->
         <div class="demo-ruleForm">
           <div class="item-warp" >
-            <span>影院名称:</span>
-            <el-input v-model="cinemaName" @focus="cinemaDialogShow" style="width:220px;" readonly></el-input>
+            <span class="title">影院名称:</span>
+            <el-input v-model="cinemaName" @focus="cinemaDialogShow" style="width:200px;" @clear="clearInputValue" clearable >
+            </el-input>
           </div>
             <div style="display:inline-block;margin-left:12px;">
               <el-button type="primary" @click="searchCinema">查询</el-button>
             </div>
         </div>
         <div style="text-align:right;padding:12px 0">
-          <el-button type="primary"  plain @click="addTicket()" >新建</el-button>
+          <el-button type="primary"  plain @click="ediHandle(false)" >新建</el-button>
         </div>
       
       <!-- 内容块 -->
       <el-table
         :data='dataList'
         stripe
-        v-loading="dataListLoading"
         style='width: 100%;'>
         <el-table-column
           type="index"
@@ -34,6 +34,7 @@
           align="center"
           width="">
           <template slot-scope="scope">
+            <span v-if="scope.row.isDefault == 1">全部影院</span>
             <span v-if="scope.row.cinemaNames">{{scope.row.cinemaNames.join(',')}}</span>
           </template>
         </el-table-column>
@@ -57,13 +58,26 @@
         </el-table-column>
         <el-table-column
           prop='ticketsampleChannelNames'
-          label='渠道'>
+          label='适用渠道'>
+          <template slot-scope="scope">
+            <div v-if="scope.row.isDefault == 1">
+              全部渠道
+            </div>
+            <div v-else-if="scope.row.ticketsampleChannelNames">
+              {{scope.row.ticketsampleChannelNames[0]}}
+            </div>
+          </template>
         </el-table-column>
         <el-table-column
           prop='isDefault'
-          label='是否默认票版'
-          :formatter = "isDefaultFormat"
+          label='默认票版'
+          width="80"
           >
+          <template slot-scope="scope">
+            <div>
+              {{scope.row.isDefault == 1?'是':'否'}}
+            </div>
+          </template>
         </el-table-column>
         <el-table-column
           prop='createTime'
@@ -72,6 +86,14 @@
         <el-table-column
           prop='createUser'
           label='制作人'>
+          <template slot-scope="scope">
+            <div v-if="scope.row.isDefault == 1">
+              系统管理员
+            </div>
+            <div v-else>
+              {{scope.row.createUser}}
+            </div>
+          </template>
         </el-table-column>
         <el-table-column
           fixed='right'
@@ -79,7 +101,7 @@
           label='操作'>
           <template slot-scope='scope' >
             <el-button size='mini' type="text" @click='searchDetail(scope.row.uid)'>查看</el-button>
-            <el-button size='mini' type="text" @click='ediHandle(scope.row.uid)'>修改</el-button>
+            <el-button size='mini' type="text" @click='ediHandle(scope.row.uid)'>编辑</el-button>
             <el-button size='mini' type="text" @click='deleteHandle(scope.row)' v-if="scope.row.isDefault == 0">删除</el-button>
             <el-button size='mini' type="text" @click='importHandle(scope.row.uid)'>导入</el-button>
             <input class="hidden" ref="importExecl" type="file" @change="selExcelFile($event)">
@@ -105,14 +127,22 @@
         </el-pagination>
       </div>
       <frameSinglecinema
-        @cinemaCallback="cinemaCallback"
+        @callBackSingle="cinemaCallback"
+        :type='2'
+        :framedialogVisible='singleCinemaVisible'
+        :innerData='innerData'
         ref="frameSingleCinema"
-      >
+      > 
+      <div slot="footerId">
+        <el-button type="primary" @click="$refs.frameSingleCinema.confirmData(),singleCinemaVisible=false">确定</el-button>
+        <el-button @click="singleCinemaVisible=false">取消</el-button>
+      </div>
       </frameSinglecinema>
   </div>
 </template>
 <script>
-import frameSinglecinema  from "ctm/components/cinema"
+// import frameSinglecinema  from "ctm/components/cinema"
+import frameSinglecinema  from "frame_cpm/dialogs/cinemaDialog/singleCinema"
 import minxins from 'frame_cpm/mixins/cacheMixin.js'
 
   export default {
@@ -123,6 +153,7 @@ import minxins from 'frame_cpm/mixins/cacheMixin.js'
         /* 缓存数据 */
         cacheField: ["cinemaName","cinemaUid","dataList","pageIndex","pageSize","total"],
         subComName:'ticketSample',
+        innerData:{},
         excelUrl: '',
         // 添加/编辑数据
         dataForm: {},
@@ -131,22 +162,19 @@ import minxins from 'frame_cpm/mixins/cacheMixin.js'
         pageIndex: 1,
         pageSize: 10,
         total: 10,
-        dataListLoading: false,
         uid:null,
         /* 选择影院参数 */
         cinemaUid:'',
         cinemaName:'',
-        innerDataSingle: { id: 38 },
         singleCinemaVisible: false,
-        whereUse: null,
-        cinematype: 2, // 传递给 组件的调用的影院类型 属性参数
-        innerData: [], // 传递给 组件的可选参数 props 参数
+        cinematype: '2', // 传递给 组件的调用的影院类型 属性参数
       }
     },
     created () {
       this.getDataList();
     },
     methods: {
+      
       // 获取数据列表
       getDataList (uid) {
         let limit = {
@@ -184,12 +212,6 @@ import minxins from 'frame_cpm/mixins/cacheMixin.js'
         this.pageIndex = val
         this.getDataList()
       },
-      //新建
-      addTicket() {
-        this.$router.push({
-          path:"ticketdesign"
-        })
-      },
       //px单位转换mm
       widthFormat(row, column) {
 				return Math.ceil(row.width/3.99)
@@ -197,10 +219,7 @@ import minxins from 'frame_cpm/mixins/cacheMixin.js'
       heightFormat(row, column) {
 				return Math.ceil(row.height/3.99)
       },
-      //默认票版
-      isDefaultFormat(row) {
-        return row.isDefault==1?'是':'否'
-      },
+      
 
       //查询
       searchDetail(uid){
@@ -213,7 +232,10 @@ import minxins from 'frame_cpm/mixins/cacheMixin.js'
       ediHandle(uid) {
         this.$router.push({
           path:'ticketdesign',
-          query:{uid:uid},
+          query:{
+            uid:uid,
+            isEdit:uid?true:false
+          },
         })
       },
       // 删除
@@ -346,19 +368,27 @@ import minxins from 'frame_cpm/mixins/cacheMixin.js'
       /**
        * 弹窗方法
        */
-      //弹窗方法
-        confirmCinemaSingleDialog(){
-            this.$refs.frameSingleCinema.confirmData()
-        },
-        cinemaCallback(opt) {
-            console.log("这里返回数据",opt)
-            this.cinemaUid = opt.data.id
-            this.cinemaName= opt.data.name
-        },
-        cinemaDialogShow() {
-        this.$refs.frameSingleCinema.openDialog()
-        this.$refs.frameSingleCinema.listAuthCommCinemas();
-        },
+      confirmCinemaSingleDialog(data){
+        console.log('回调',data)
+      },
+      
+      cinemaDialogShow() {
+        this.singleCinemaVisible = true
+      },
+      cinemaCallback(opt) {
+        console.log("这里返回数据",opt)
+        this.innerData.id = this.cinemaUid = opt.data.id
+        this.cinemaName= opt.data.name
+        if(opt.isCloseWindow){
+          this.singleCinemaVisible = false
+        }
+      },
+      //清除
+      clearInputValue() {
+        this.cinemaUid = ''
+        this.cinemaName= ''
+        this.innerData.id = ''
+      }
     }
   }
 </script>
@@ -375,11 +405,14 @@ import minxins from 'frame_cpm/mixins/cacheMixin.js'
     padding: 18px 24px;
     .item-warp{
       display: inline-block;
-      span{
+      .title{
         display:inline-block;
-        width: 70px;line-height: 32px;
+        width: 70px;
         color:#666666;
         font-size: 12px;
+      }
+      .el-input__inner{
+        background: #f5f5f5;
       }
     }
     .search-Btn{

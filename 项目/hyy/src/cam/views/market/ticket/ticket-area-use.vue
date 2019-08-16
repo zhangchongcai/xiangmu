@@ -24,7 +24,7 @@
         @showCompar="showCompar">
         <div class="reset-page">
             <el-pagination size="mini"  v-if="total > 15"
-                layout="sizes,total,prev, pager, next, jumper"
+                layout="total,sizes,prev, pager, next, jumper"
                 @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"
                 :current-page="page"

@@ -578,26 +578,153 @@ export const queryCodeListCount = (data) => {
         data
     })
 }
-/**      ---------------票版接口----------
- * @function findcouponPrintModelDef - 查看票券模板元素定义
- */
-export const findcouponPrintModelDef = (data) => {
-    return axios({
-        url: '/couponPrint/selectdef',
-        method: 'get',
-        data
-    })
-}
-/**      ---------------票版接口----------couponPrint/selectmodel
- * @function findcouponPrintModelDef - 查看票券模板元素定义
+
+/**     ---------------票版接口----------
+ * @function findcouponPrintModelDef - 查看票券模板列表
  */
 export const selectmodel = (data) => {
     return axios({
-        url: '/couponPrint/selectmodel',
+        url: '/coupon/couponPrint/selectmodel',
         method: 'post',
         data
     })
 }
+/**      
+ * @function selectmodelid - 根据票版id 查询 
+ * @param    id
+ */
+export const selectmodelid = (data) => {
+    return axios({
+        url: '/coupon/couponPrint/selectmodelid',
+        method: 'post',
+        data
+    })
+}
+/**      
+ * @function deletemodel - 根据票版id 删除
+ * @param    id
+ */
+export const deletemodel = (data) => {
+    return axios({
+        url: '/coupon/couponPrint/deletemodel',
+        method: 'post',
+        data
+    })
+}
+
+/**      
+ * @function setdefault - 根据票版id 设置默认票版
+ * @param    id
+ */
+export const setdefault = (data) => {
+    return axios({
+        url: '/coupon/couponPrint/setdefault',
+        method: 'post',
+        data
+    })
+}
+
+/**      
+ * @function findcouponPrintModelDef - 查看票券模板元素定义
+ */
+export const findcouponPrintModelDef = (data) => {
+    return axios({
+        url: '/coupon/couponPrint/selectdef',
+        method: 'get',
+        data
+    })
+}
+/**      
+ * @function addmodel - 添加票版
+ * @param  id   -修改的id不为空 id=null为新增
+ */
+export const addmodel = (data) => {
+    return axios({
+        url: '/coupon/couponPrint/addmodel',
+        method: 'post',
+        data
+    })
+}  
+/**      
+ * @function addBackgroundImg - 上传图片
+ * @param   file   文件
+ */
+export const addBackgroundImg = (data) => {
+    return axios({
+        url: '/coupon/couponPrint/img',
+        method: 'post',
+        data
+    })
+}
+/**    ------------打印-----------
+ * @function findCouponByCondition - 打印票版列表
+ */
+export const findCouponByCondition = (data) => {
+    return axios({
+        url: '/coupon/couponPrint/findCouponByCondition',
+        method: 'post',
+        data
+    })
+}
+export const ticketPrinting = (data) => {
+    return axios({
+        url: '/coupon/couponPrint/ticketPrinting',
+        method: 'post',
+        data
+    })
+}
+export const reprint = (data) => {
+    return axios({
+        url: '/coupon/couponPrint/reprint',
+        method: 'post',
+        data
+    })
+}
+/**     -----------应收款单------------
+ *  @function    receivableList       - 收款管理表查询
+ *  @param       
+ */
+export const receivableList = (data) => {
+    return axios({
+        url: '/coupon/receivable/findReceivable',
+        method: 'post',
+        data
+    })
+}
+/**    
+ *  @function    receivableSelectItem       - 收款记录列表查询
+ *  @param       id
+ */
+export const receivableSelectItem = (data) => {     
+    return axios({
+        url: '/coupon/receivable/selectItem',
+        method: 'post',
+        data
+    })
+}
+/**    
+ *  @function    addReceivableItem       - 新建收款记录
+ *  @param       id
+ */
+export const addReceivableItem = (data) => {
+    return axios({
+        url: '/coupon/receivable/addReceivableItem',
+        method: 'post',
+        data
+    })
+}
+/**    
+ *  @function    receivableUpdateState       - 终止收款单功能接口
+ *  @param       id
+ */
+export const receivableUpdateState = (data) => {
+    return axios({
+        url: '/coupon/receivable/updateState',
+        method: 'post',
+        data
+    })
+}
+
 /**
  * 票卷批次记录弹窗
  * 
@@ -682,12 +809,27 @@ export default {
     cancelCode,
     exportTemplate,
     queryCodeListCount,
+    /* 票券打印 */
+    findCouponByCondition,
+    ticketPrinting,
+    reprint,
+
     /* 票券模板 */
     findcouponPrintModelDef,
     selectmodel,
+    addmodel,
+    deletemodel,
+    selectmodelid,
+    addBackgroundImg,
+    setdefault,
 
     /* 票卷批次记录弹窗 */
     alertSaleList,
     getOrgTreeAndCinema,
-    listBuyerCondition
+    listBuyerCondition,
+    /* 应收款管理*/
+    receivableList,
+    addReceivableItem,
+    receivableUpdateState,
+    receivableSelectItem
 };

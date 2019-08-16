@@ -1,17 +1,7 @@
 <template>
-<div class="iT-style">
+<div class="iT-style"  v-loading="indexloading">
+  <!-- {{this.goodList}} -->
   <div class="content">
-    <!-- {{this.queryData}} -->
-    <!-- {{this.queryData.outStorehouseCode}} -->
-    <!-- {{this.outStorehouseArr}} -->
-    <!-- {{this.inStorehouseCodeArr}} -->
-    <!-- {{this.routeQuery.type}} -->
-    <!-- <div class="breadcrumb">
-      <el-breadcrumb separator-class="el-icon-arrow-right">
-        <el-breadcrumb-item  :to="{ path: '/retail/InventoryManagement/inventoryTransfer/list' }">库存转移管理</el-breadcrumb-item>
-        <el-breadcrumb-item>{{typeText}}库存转移管理</el-breadcrumb-item>
-      </el-breadcrumb>
-    </div> -->
     <div class="tittle"></div>
     <el-form
       :inline="true"
@@ -19,7 +9,7 @@
       :model="queryData"
       label-position="left"
       label-width="100px"
-      label-suffix=":"
+      label-suffix="："
     >
       <el-collapse  v-model="activeNames">
         <!-- 基础信息 start-->
@@ -74,7 +64,7 @@
                 </el-form-item>
               </el-col>
             </el-row>
-            <el-row v-if="this.routeQuery.type == '2' || this.routeQuery.type == '4'">
+            <el-row v-if="this.routeQuery.type == '2' || this.routeQuery.type == '4' || this.routeQuery.type == '3'">
               <el-col :span="10">
                 <el-form-item label="制单日期">
                   <span>{{this.routeQuery.type == '2' ? "-":this.queryData.billTime}}</span>
@@ -86,7 +76,7 @@
                 </el-form-item>
               </el-col>
             </el-row>
-            <el-row v-if="this.routeQuery.type == '2' || this.routeQuery.type == '4'">
+            <el-row v-if="this.routeQuery.type == '2' || this.routeQuery.type == '4' || this.routeQuery.type == '3'">
               <el-col :span="10">
                 <el-form-item label="单据状态">
                   <span>{{statusS(this.queryData.status)}}</span>
@@ -155,6 +145,33 @@
           </div>
         </el-collapse-item>
         <!-- 商品清单 end-->
+        <!--  审批流程-->
+                <el-collapse-item title="审批流程" name="3" v-if="routeQuery.type=='3'">
+                    <el-form-item label="审批流程名称" label-width="110px">
+                        <span>调拨单审核</span>
+                    </el-form-item>
+                    <el-steps :space="200" :active="approvalActive" finish-status="success">
+                        <el-step :title="approvalStart()"></el-step>
+                        <el-step :title="item.auditMan" :key="item.auditTime"
+                                 v-for="item in queryData.reviewRecordList"></el-step>
+                        <el-step title="结束" v-if="queryData.approvalStatus==2"></el-step>
+                    </el-steps>
+                </el-collapse-item>
+                <!--  审批记录-->
+                <el-collapse-item title="审批记录" name="4" v-if="routeQuery.type=='3'">
+                    <div>
+                        <el-table :data="queryData.reviewRecordList" stripe>
+                            <el-table-column
+                                    v-for="item in reviewRecordTableColumn"
+                                    :key="item.key"
+                                    :prop="item.key"
+                                    :label="item.label"
+                                    :formatter="item.formatter"
+                            >
+                            </el-table-column>
+                        </el-table>
+                    </div>
+                </el-collapse-item>
       </el-collapse>
       <!-- 选择调入门店 -->
       <cinemal-dialog ref="myCinemalDialog" @onSumit="onCinemalSumit" :dialogFeedbackData="[{cinemaUid:queryData.inCinemaUid,cinemaName:queryData.inCinemaName}]"></cinemal-dialog>
@@ -170,7 +187,7 @@
       <div class="submit-box">
         <el-button type="primary" @click="ThandleSubmit" v-if="this.routeQuery.type!=3">保存并提交</el-button>
         <el-button type="primary" @click="ChandleSubmit" v-if="this.routeQuery.type!=3">保存为草稿</el-button>
-        <el-button @click="handleCancel">{{routeQuery.type !=3 ? "取消":"关闭"}}</el-button>
+        <el-button @click="fanhuihandleCancel">{{routeQuery.type !=3 ? "取消":"关闭"}}</el-button>
       </div>
     </el-form>
   </div>
@@ -187,27 +204,11 @@ export default {
   mixins: [mixin],
   data() {
     return {
-      activeNames:['1','2','3'],
+      // 页面加载
+      indexloading:false,
+      activeNames:['1','2','3','4'],
       selectedGoodsDialogVisible:false,
-      goodList:[
-          // {
-          //   "uid":"",
-          //   "allotBillUid":"DB201907010001",
-          //   "merUid":"ef5f128c-0045-4fd1-837a-c238ef148a76",
-          //   "merCode":"DP2019070116281165",
-          //   "merName":"可口可乐",
-          //   "merSpec":"350ML",
-          //   "skuUid":"e716b50c-d6a6-41c3-9de8-490ff3268bbc",
-          //   "skuCode":"DP201907011628116594",
-          //   "skuName":"可口可乐",
-          //   "unitUid":"5c6e9b35-b2ae-4b45-b9d5-d150754b3e72",
-          //   "unitName":"箱",
-          //   "costPrice":"0.91070000",
-          //   "delFlag":"0",
-          //   "storeCount":"50",
-          //   "allotCount":"",
-          // }
-      ],
+      goodList:[],
       outStorehouseArr:[],
       inStorehouseCodeArr:[],
       value: '',
@@ -223,10 +224,28 @@ export default {
         status:"",
         detailList:[],
         delFlag:"0",
-        approvalStatus:"",
-        status:"",
+        approvalStatus:""
       },
       total: 0,
+      // 查看审核表头
+      reviewRecordTableColumn:[
+        {
+            label: "审核时间",
+            key: "auditTime"
+        },
+        {
+            label: "审核人",
+            key: "auditMan"
+        },
+        {
+            label: "审核结果",
+            key: "arditResult"
+        },
+        {
+            label: "审核意见",
+            key: "auditOpinion"
+        },
+      ],
       // 表格表头
       tableColumn: [
         {
@@ -277,6 +296,7 @@ export default {
             tcval.edit = false
           }
         })
+        // this.queryData.reviewRecordList
       }else if(this.routeQuery.type == "2"){
         // 未提交状态
         this.resAllotBillFind(JSON.parse(this.routeQuery.data))
@@ -304,20 +324,15 @@ export default {
         })
     },
     // 调入门店回调
-    onCinemalSumit(val = []) {
-      if(val.length == 0){
-        this.$nextTick(() => { 
-          this.goodList = []
-        })
-      }
+    setCinema(val = []) {
       if (val.length > 0) {
         if(val[0].uid == this.queryData.outCinemaUid){
           this.$message("调入门店不能和调出门店相同");
           this.queryData.inCinemaName = "";
           this.queryData.inCinemaUid = "";
         }else{
-        this.queryData.inCinemaName = val[0].name;
-        this.queryData.inCinemaUid = val[0].uid;
+          this.queryData.inCinemaName = val[0].name;
+          this.queryData.inCinemaUid = val[0].uid;
         }
       } else {
         this.queryData.inCinemaName = "";
@@ -325,12 +340,38 @@ export default {
       }
       console.log(val);
     },
+    onCinemalSumit(val = [],type) {
+        console.log(val," 选泽门店回调",type);
+        if (val.length > 0) {
+            if(type=="default"){
+                if(val.length==1){
+                    this.setCinema(val)
+                }
+            }else{
+                this.setCinema(val)
+            }
+        } else {
+            this.setCinema()
+        }
+    },
     // 关闭调入门店
     selectCinemalDialog() {
       this.$refs.myCinemalDialog.handleDialog(true);
     },
+    // 取消返回
+    fanhuihandleCancel() {
+      this.$store.commit("tagNav/removeTagNav", {
+          name: this.$route.name,
+          path: this.$route.path,
+          title: this.$route.meta.title,
+          query: this.$route.query
+      })
+      this.$router.push({
+          path: "/retail/InventoryManagement/goodsWarehousingApply/list",
+      });
+    },
     // 调出门店回调
-    onCinemalSumit1(val = []) {
+    setCinema1(val = []) {
       if(val.length == 0){
         this.$nextTick(() => { 
           this.goodList = []
@@ -344,12 +385,27 @@ export default {
         }else{
           this.queryData.outCinemaName = val[0].name;
           this.queryData.outCinemaUid = val[0].uid;
+          this.goodList = []
         }
       } else {
         this.queryData.outCinemaName = "";
         this.queryData.outCinemaUid = "";
       }
       console.log(val);
+    },
+    onCinemalSumit1(val = [],type) {
+        console.log(val," 选泽门店回调",type);
+        if (val.length > 0) {
+            if(type=="default"){
+                if(val.length==1){
+                    this.setCinema1(val)
+                }
+            }else{
+                this.setCinema1(val)
+            }
+        } else {
+            this.setCinema1()
+        }
     },
     // 关闭调出门店allotBillSave
     selectCinemalDialog1() {
@@ -365,14 +421,33 @@ export default {
     },
     // 选择商品回调
     selectedGoodsDialogCallBack(value) {
-      this.goodList = value.data
+      let newData = value.data
+      this.goodList.forEach((val1)=>{
+        newData.forEach((val2)=>{
+          if(val2.merCode == val1.merCode){
+            val2.allotCount = val1.allotCount
+          }
+        })
+      })
+     
+      this.goodList = newData
+    },
+    //去重
+    unRepeat(arr) {
+        let hash = {};
+        return arr.reduce((item, next) => {
+            if (!hash[next.merCode]) {
+                hash[next.merCode] = true;
+                item.push(next);
+            }
+            return item;
+        }, []);
     },
     // 保存调拨申请单
     resAllotBillSave(type,status,approvalStatus) {
+      this.indexloading = true
       type.status = status
       type.approvalStatus = approvalStatus
-      console.log(type)
-      debugger
       this.$cimList.goodsWarehousingApply
         .allotBillSave(type)
         .then(res => {
@@ -382,14 +457,18 @@ export default {
             }else if(this.routeQuery.type == "2"){
               this.$message("编辑成功");
             }
+            this.indexloading = false
             this.handleCancel()
           } else {
+            debugger
+            this.indexloading = false
             this.$message(res.msg);
           }
         });
       },
       // 未提交修改调拨申请单
       resAllotBillUpdate(type,status,approvalStatus) {
+        this.indexloading = true
         type.status = status
         type.approvalStatus = approvalStatus
         this.$cimList.goodsWarehousingApply
@@ -401,8 +480,11 @@ export default {
               }else if(this.routeQuery.type == "2"){
                 this.$message("编辑成功");
               }
+              this.indexloading = false
               this.handleCancel()
             } else {
+              debugger
+              this.indexloading = false
               this.$message(res.msg);
             }
           });
@@ -422,7 +504,7 @@ export default {
               let dqActive = ""
               this.goodList.some((val,newindex,arr)=>{
                 let check = /(^[1-9][0-9]{0,})|(^0)/g
-                val.allotCount = val.allotCount.toString()
+                // val.allotCount = val.allotCount.toString()
                 if(val.allotCount == "" || val.allotCount == null || !check.test(val.allotCount)){
                   return newAvtive = {a1:true,a2:val}
                 }
@@ -488,7 +570,7 @@ export default {
     // 判断转出数量是否为数字
     changeUnitEvent(row,index){
       let check = /(^[1-9][0-9]{0,})|(^0)/g
-      if(row.allotCount > row.outallotCount){
+      if(row.allotCount > row.storeCount){
         this.$message(row.merName+"转出数量不可以大于可转出数量");
         row.allotCount = ""
       }else if(!check.test(row.allotCount)){
@@ -498,6 +580,12 @@ export default {
     },
     // 返回上一级
     handleCancel() {
+      this.$store.commit("tagNav/removeTagNav", {
+          name: this.$route.name,
+          path: this.$route.path,
+          title: this.$route.meta.title,
+          query: this.$route.query
+      })
       this.returnList({
         returnType:true
       });
@@ -520,11 +608,9 @@ export default {
           if (res.code == 200) {
             this.queryData = res.data
             this.queryData.status = this.queryData.status.toString()
-            this.queryData.approvalStatus = this.queryData.approvalStatus.toString()
-            this.goodList = this.queryData.detailList
-            this.goodList.forEach((storeVal)=>{
-              storeVal.storeCount = "50"
-            })   
+            this.queryData.approvalStatus = this.queryData.approvalStatus
+            this.queryData.reviewRecordList = this.queryData.reviewRecordList == null ? []:this.queryData.reviewRecordList
+            this.goodList = this.queryData.detailList  
           }
         });
     },
@@ -549,22 +635,47 @@ export default {
           break;
       }
     },
+    approvalStart(type) {
+      let result = "";
+      switch (this.queryData.approvalStatus) {
+          case 0:
+              result = "未审核";
+              break;
+          case 1:
+              result = "待审核";
+              break;
+          case 2:
+              if (type == 1) {
+                  result = "审核通过";
+              } else {
+                  result = "开始";
+              }
+              break;
+          case 3:
+              result = "审核不通过";
+              break;
+          case 4:
+              result = "无需审核";
+              break;
+      }
+      return result;
+    },
     // 审核状态
     approvalStatusS(type) {
       switch (type) {
-        case "0":
+        case 0:
           return "未审核";
           break;
-        case "1":
+        case 1:
           return "待审核";
           break;
-        case "2":
+        case 2:
           return "审核通过";
           break;
-        case "3":
+        case 3:
           return "审核不通过";
           break; 
-        case "4":
+        case 4:
           return "无需审核";
           break;    
       }
@@ -581,7 +692,28 @@ export default {
         return {};
       }
     },
-  },
+    approvalActive() {
+        let result = 0;
+        switch (this.queryData.approvalStatus) {
+            case 0:
+                result = 1;
+                break;
+            case 1:
+                result = 1;
+                break;
+            case 2:
+                result = this.queryData.reviewRecordList.length + 2
+                break;
+            case 3:
+                result = this.queryData.reviewRecordList.length + 2
+                break;
+            case 4:
+                result = 1;
+                break;
+        }
+        return result;
+    }
+},
   components: {
     cinemalDialog,
     selectedGoods

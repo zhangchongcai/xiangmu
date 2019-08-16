@@ -530,8 +530,90 @@ const getTickets = data =>{
     })
 }
 
+// 渠道分析 / 查询渠道趋势
+export const queryChannelTrend = data => {
+    return axios({
+        url:'/analysis/channel/querySellGoodsTrend',
+        method:'post',
+        data
+    })
+}
+// 渠道分析 / 查询渠道明细
+export const queryChannelDetails = data => {
+    return axios({
+        url:'/analysis/channel/querySellGoodsDetails',
+        method:'post',
+        data
+    })
+}
 
+// 品类分析 / 查询品类趋势
+export const queryCategoryTrend = data => {
+    return axios({
+        url:'/analysis/category/querySellGoodsTrend',
+        method:'post',
+        data
+    })
+}
+// 品类分析 / 查询品类明细
+export const queryCategoryDetails = data => {
+    return axios({
+        url:'/analysis/category/querySellGoodsDetail',
+        method:'post',
+        data
+    })
+}
+
+// 商品分析 / 查询商品趋势
+export const querySkuTrend = data => {
+    return axios({
+        url:'/analysis/sku/querySkuTrend',
+        method:'post',
+        data
+    })
+}
+// 商品分析 / 查询商品指标概览
+export const querySkuIndicator = data => {
+    return axios({
+        url:'/analysis/sku/queryIndicatorView',
+        method:'post',
+        data
+    })
+}
+// 商品分析 / 查询商品明细
+export const querySkuDetails = data => {
+    return axios({
+        url:'/analysis/sku/querySkuDetail',
+        method:'post',
+        data
+    })
+}
+// 商品详情 / 查询商品详情信息
+export const querySkuDetailsInfo = data => {
+    return axios({
+        url:'/analysis/skuAnalysis/queryMainSku',
+        method:'post',
+        data
+    })
+}
+// 商品详情 / 查询商品详情趋势
+export const querySkuDetailsTrend = data => {
+    return axios({
+        url:'/analysis/skuAnalysis/querySkuTrend',
+        method:'post',
+        data
+    })
+}
 export default {
+    querySkuDetailsInfo,
+    querySkuDetailsTrend,
+    querySkuTrend,
+    querySkuIndicator,
+    querySkuDetails,
+    queryCategoryTrend,
+    queryCategoryDetails,
+    queryChannelTrend,
+    queryChannelDetails,
     getTickets,
     getOrgInfo,
     selectBrand,

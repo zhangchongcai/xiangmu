@@ -2,7 +2,12 @@
 <div class="table-page">
     <!-- 搜索栏 -->
     <section class="search-section">
-        <searchLan :modelName="modelName" :config="searchConfig" @pressSearch="search" @searchValueChange="setSearch"></searchLan>
+        <searchLan :modelName="modelName" 
+        :config="searchConfig" 
+        @pressSearch="search" 
+        @searchValueChange="setSearch"
+        ref="searchTitle"
+        ></searchLan>
     </section>
 
     <!-- 信息提示/按钮组 -->
@@ -19,7 +24,7 @@
     </section>
 
     <!-- 表格 -->
-    <section class="table-section">
+    <section class="table-section ">
         <el-table :data="tableConfig.data" style="width: 100%" >
             <template v-for="(item,index) in tableConfig.title">
                 <el-table-column :key="index" v-if="item.prop && !item.hasTemplate" :prop="item.prop" :label="item.label" :width="item.width" show-overflow-tooltip :fixed="item.fixed"></el-table-column>
@@ -38,8 +43,15 @@
     </section>
     
     <!-- 分页 -->
-    <section class="pagination-section flex-base flex-center" v-if="tableConfig.data.length != 0">
-        <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="pageConfig.currentPage" :page-sizes="pageConfig.pageSizes" :page-size="pageConfig.pageSize" layout="total, sizes, prev, pager, next, jumper" :total="pageConfig.total">
+    <section class="pagination-section flex-base flex-center pageStyle" v-if="tableConfig.data.length != 0">
+        <el-pagination 
+        @size-change="handleSizeChange" 
+        @current-change="handleCurrentChange" 
+        :current-page="pageConfig.currentPage" 
+        :page-sizes="pageConfig.pageSizes" 
+        :page-size="pageConfig.pageSize" 
+        background layout="total, prev, pager, next, jumper, sizes"  
+        :total="pageConfig.total">
         </el-pagination>
     </section>
     <!-- 弹窗 -->
@@ -97,7 +109,7 @@ export default {
                     value:0
                 },{
                     label: '已过期',
-                    key:"stopCount",
+                    key:"expireCount",
                     value:0
                 },
             ],
@@ -141,34 +153,7 @@ export default {
                         label: '已过期',
                         value: '7'
                     }]
-                },
-                //  {
-                //     keyName: 'alreadyPresented',
-                //     name: '是否已赠送',
-                //     type: 'select',
-                //     value: '',
-                //     options: [{
-                //         label: '不限',
-                //         value: 'selected'
-                //     }, {
-                //         label: '是',
-                //         value: '1'
-                //     }, {
-                //         label: '否',
-                //         value: '2'
-                //     }],
-                // }, {
-                //     keyName: 'memberCarNo',
-                //     name: '会员卡号',
-                //     type: 'input',
-                //     value: ''
-                // }, {
-                //     keyName: 'telphoneNo',
-                //     name: '手机号',
-                //     type: 'input',
-                //     value: ''
-                // }, 
-                {
+                }, {
                     keyName: 'contractCode',
                     name: '合同协议号',
                     type: 'input',
@@ -190,31 +175,11 @@ export default {
                     label: '票券名称',
                     prop: 'couponName',
                     width: '200',
-                }, 
-                // {
-                //     label: '赠送',
-                //     prop: 'gifty',
-                //     width: '200',
-                // }, {
-                //     label: '会员手机号',
-                //     prop: 'memberPho',
-                //     width: '200',
-                // }, {
-                //     label: '会员卡号',
-                //     prop: 'memberNo',
-                //     width: '200',
-                // }, 
-                // {
-                //     label: '绑定日期',
-                //     prop: 'bindDay',
-                //     width: '200',
-                // }, 
-                {
+                }, {
                     label: '激活日期',
                     prop: 'actTime',
                     width: '200',
-                }, 
-                {
+                }, {
                     label: '消费日期',
                     prop: 'saleTime',
                     width: '200',
@@ -244,9 +209,14 @@ export default {
 
         let applyCode = this.$route.query[`applyCode`];
         if (applyCode) {
-            this.searchConfig[0].value = applyCode;
             this.searchParam.applyCode = applyCode;
+            this.searchConfig[0].value = applyCode
+            this.pageConfig.currentPage = 1
             this.search();
+            this.$nextTick(_=>{
+                console.log(this.searchConfig)
+                this.$refs.searchTitle.init(this.searchConfig)
+            })
         }
     },
     methods: {
@@ -330,7 +300,9 @@ export default {
             if (message.isShow) {
                 return message;
             }
-
+            if(param){
+                this.pageConfig.currentPage=1   //查询返回第一页数
+            }
             params[`pageNo`] = this.pageConfig.currentPage;
             params[`pageSize`] = this.pageConfig.pageSize;
             return params;
@@ -462,6 +434,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "../../../assets/css/comList.scss";   
 $margin:5px;
 $fontSize: 12px;
 

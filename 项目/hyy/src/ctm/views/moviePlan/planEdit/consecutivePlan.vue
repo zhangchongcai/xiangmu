@@ -10,19 +10,19 @@
                 </el-form-item>
                 <el-form-item label="连场名称：">
                     <span class="cinema-stock-edit-text">
-                        <el-input class="normal-input" v-model="movieData.joinMovieName" placeholder="请输入连场名称"></el-input>
+                        <el-input class="normal-input" v-model="movieData.joinMovieName" placeholder="请输入连场名称" :disabled="movieData.saleStatus =='STOP'"></el-input>
                     </span>
                 </el-form-item>
                 <el-form-item label="开始时间：">
                     <span class="cinema-stock-edit-text">
                         {{showPlanDate}}
-                        <el-input class="short-input" v-model="planMinute" @change="timeChange"></el-input>
+                        <el-input class="short-input" v-model="planMinute" @change="timeChange" :disabled="movieData.saleStatus =='STOP'"></el-input>
                         &nbsp;分
                     </span>
                 </el-form-item>
                 <el-form-item label="影片间隔：">
                     <span class="cinema-stock-edit-text">
-                        <el-input class="short-input" @change="timeIntervalChange" v-model="movieData.intervalMinute"></el-input>
+                        <el-input class="short-input" @change="timeIntervalChange" v-model="movieData.intervalMinute" :disabled="movieData.saleStatus =='STOP'"></el-input>
                         &nbsp;分钟
                     </span>
                 </el-form-item>
@@ -57,7 +57,7 @@
         </div>
 
         <div class="basic-info" v-if="isEditMode && movieData.soldSeatCount == 0">
-            <div class="base-info-title">选择连排影片 <el-button @click="showAddFilmDialog">添加影片</el-button></div>
+            <div class="base-info-title" >选择连排影片 <el-button @click="showAddFilmDialog" :disabled="movieData.saleStatus =='STOP'">添加影片</el-button></div>
             <el-table
             :data="movieTable">
                 <el-table-column
@@ -90,10 +90,10 @@
                 <el-table-column
                     label="操作"
                 >
-                <template slot-scope="scope">
-                    <el-button style="padding: 0" @click="deleteIndex(scope.$index)" type="text">删除</el-button>
-                    <el-button style="padding: 0" v-if="scope.$index && movieTable.length > 1" @click="changeIndex('top', scope.$index)" type="text" icon="el-icon-top">上移</el-button>
-                    <el-button style="padding: 0" v-if="scope.$index != movieTable.length - 1 && movieTable.length > 1" @click="changeIndex('down', scope.$index)" type="text" icon="el-icon-bottom">下移</el-button>
+                <template slot-scope="scope" >
+                    <el-button style="padding: 0" @click="deleteIndex(scope.$index)" type="text" :disabled="movieData.saleStatus =='STOP'">删除</el-button>
+                    <el-button style="padding: 0" v-if="scope.$index && movieTable.length > 1" @click="changeIndex('top', scope.$index)" type="text" icon="el-icon-top" :disabled="movieData.saleStatus =='STOP'">上移</el-button>
+                    <el-button style="padding: 0" v-if="scope.$index != movieTable.length - 1 && movieTable.length > 1" @click="changeIndex('down', scope.$index)" type="text" icon="el-icon-bottom" :disabled="movieData.saleStatus =='STOP'">下移</el-button>
                 </template>
                 </el-table-column>
             </el-table>
@@ -162,7 +162,7 @@
                                         prop="price"
                                         label="票类价格">
                                         <template slot-scope="scope">
-                                            <span class="input-con"><el-input type="number" maxlength="9" max="999999" @blur="tableFixed(scope)" v-model="scope.row.price"></el-input><i class="rmb-hover">¥</i></span>
+                                            <span class="input-con"><el-input type="number" maxlength="4" max="1000" @blur="tableFixed(scope)" v-model="scope.row.price"></el-input><i class="rmb-hover">¥</i></span>
                                         </template>
                                     </el-table-column>
                                 </el-table>
@@ -199,7 +199,7 @@
                                         prop="price"
                                         label="渠道价格">
                                         <template slot-scope="scope">
-                                            <span class="input-con"><el-input type="number" maxlength="9" max="999999" @blur="cichannelToFixed(scope)" v-model="scope.row.price"></el-input><i class="rmb-hover">¥</i></span>
+                                            <span class="input-con"><el-input type="number" maxlength="4" max="1000" @blur="cichannelToFixed(scope)" v-model="scope.row.price"></el-input><i class="rmb-hover">¥</i></span>
                                         </template>
                                     </el-table-column>
                                 </el-table>
@@ -318,7 +318,7 @@
                     label="最低票价(元)"
                 >
                     <template slot-scope="scope">
-                        <span class="input-con"><el-input type="number" maxlength="9" max="999999" @blur="percentTableToFixed(scope)" v-model="scope.row.minPrice"></el-input></span>
+                        <span class="input-con"><el-input type="number" maxlength="4" max="1000" @blur="percentTableToFixed(scope)" v-model="scope.row.minPrice"></el-input></span>
                     </template>
                 </el-table-column>
                 <el-table-column
@@ -633,7 +633,7 @@ import {getmoviePlanDetails, getPlanMovieList, initTimeLine, datePlanList, updat
                     movieName: this.searchMovieName
                 }).then(res => {
                     if (res.code != 200) return this.error(res.msg)
-                    this.addMovieTable = res.data.records
+                    this.addMovieTable = res.data
                 })
             },
             handleSelectionChange(val) {
@@ -679,7 +679,7 @@ import {getmoviePlanDetails, getPlanMovieList, initTimeLine, datePlanList, updat
                     item.movieLanguage = item.moviedesclanguage
                 })
                 let addData = selAddData.map(item => {
-                    let {dateShowFirst,dateShowOff,minPrice,disVersion,movieCode,movieLanguage,percentPrice,publisherRate,showIndex,movieName,timeLong,startTimeC,startTime,endTimeC,endTime} = item, movieUid = item.uid
+                    let {dateShowFirst, dateShowOff, minPrice, disVersion, movieCode, movieLanguage, percentPrice, publisherRate, showIndex, movieName, timeLong,startTimeC, startTime, endTimeC, endTime, planInfoMovieTimeVoList} = item, movieUid = item.uid
                     return {
                         dateShowFirst,
                         dateShowOff,
@@ -697,7 +697,8 @@ import {getmoviePlanDetails, getPlanMovieList, initTimeLine, datePlanList, updat
                         startTime,
                         endTimeC,
                         endTime,
-                        movieLanguage
+                        movieLanguage,
+                        planInfoMovieTimeVoList
                     }
                 })
                 this.movieTable = this.movieTable.concat(addData)
@@ -1006,17 +1007,27 @@ import {getmoviePlanDetails, getPlanMovieList, initTimeLine, datePlanList, updat
                     if (!errorData.length) {
                         resolve()
                     } else if (errorData) {
-                        reject(`电影${errorData.join(',')}的放映时间不在上下映时间范围内, 请修改`)
+                        reject(`电影${errorData.join(',')}的放映时间不在上下映时间范围内, 请修改!`)
+                    } 
+                    
+                })
+                var timeInfoP = new Promise((resolve, reject) => {
+                    let errorObj = this.checkTimeInfoRight()
+                    
+                    if (!errorObj.planError) {
+                        resolve()
+                    } else if (errorObj.planError) {
+                        reject(errorObj.errorType)
                     } 
                     
                 })
                 var p2 = new Promise((resolve, reject) => {
-                    let errorData = this.movieTable.find(item => (item.minPrice > 1000000) || (item.minPrice <= 0) || !/^(([1-9][0-9]*)|(([0]\.\d{1,2}|[1-9][0-9]*\.\d{1,2})))$/.test(item.minPrice))
+                    let errorData = this.movieTable.find(item => (item.minPrice > 999.99) || (item.minPrice <= 0) || !/^(([1-9][0-9]*)|(([0]\.\d{1,2}|[1-9][0-9]*\.\d{1,2})))$/.test(item.minPrice))
 
                     if (!errorData) {
                         resolve()
                     } else if (errorData) {
-                        reject(`电影${errorData.movieName}的最低票价必须大于0且整数位小于7位的数字，且小数位不能超过2位!`)
+                        reject(`电影${errorData.movieName}的最低票价必须大于0小于1000的数字，且小数位不能超过2位!`)
                     } 
                     
                 })
@@ -1041,19 +1052,19 @@ import {getmoviePlanDetails, getPlanMovieList, initTimeLine, datePlanList, updat
                     } 
                 })
                 var p5 = new Promise((resolve, reject) => {
-                    let errorData = this.ticketData.filter(item => item.switchStatus).find(item => item.price > 999999 || item.price <= 0)
+                    let errorData = this.ticketData.filter(item => item.switchStatus).find(item => item.price > 999.99 || item.price <= 0)
                     if (!errorData) {
                         resolve()
                     } else if (errorData) {
-                        reject(`票类${errorData.name}的票价必须大于0且整数位小于7位的数字，且小数位不能超过2位!`)
+                        reject(`票类${errorData.name}的票价必须大于0小于1000的数字，且小数位不能超过2位!`)
                     } 
                 })
                 var p6 = new Promise((resolve, reject) => {
-                    let errorData = this.channelData.filter(item => item.switchStatus).find(item => Number(item.price) > 999999 || item.price <= 0)
+                    let errorData = this.channelData.filter(item => item.switchStatus).find(item => Number(item.price) > 999.99 || item.price <= 0)
                     if (!errorData) {
                         resolve()
                     } else if (errorData) {
-                        reject(`渠道${errorData.name}的票价必须大于0且整数位小于7位的数字，且小数位不能超过2位!`)
+                        reject(`渠道${errorData.name}的票价必须大于0小于1000的数字，且小数位不能超过2位!`)
                     }                
                 })
 
@@ -1077,9 +1088,10 @@ import {getmoviePlanDetails, getPlanMovieList, initTimeLine, datePlanList, updat
                     }                
                 })
                 
-                Promise.all([p1, timeP, p2, p3, p4, p5, p6, p7, p8]).then(() => {
+                Promise.all([p1, timeP, timeInfoP, p2, p3, p4, p5, p6, p7, p8]).then(() => {
                     this.submitPlan()
                 }).catch(res => {
+                    console.log(res)
                     this.error(res)
                 })
             },
@@ -1187,6 +1199,53 @@ import {getmoviePlanDetails, getPlanMovieList, initTimeLine, datePlanList, updat
             },
             rowIsDisabled(row) {
                 return row.baseFlag
+            },
+            // 校验 是否在 上下映时间内
+            checkTimeRight() {
+                let errorData = []
+                this.movieTable.forEach(item => {
+                    if (new Date(item.startTimeC).getTime() >= new Date(item.dateShowOff).getTime() || new Date(item.startTimeC).getTime() < new Date(item.dateShowFirst).getTime()) {
+                        errorData.push(item)
+                    }
+                })
+                return {
+                    planError: errorData.length,
+                    errorType: `影片${errorData.map(item => item.movieName).join(',')}的开场时间不在上下映范围内, 不能编排放映计划`
+                }
+            },
+            // 校验 是否 在信息表时间内
+            checkTimeInfoRight() {
+                let errorData = []
+                this.movieTable.forEach(item => {
+                    if (item.planInfoMovieTimeVoList.length) {
+                        let planDate = this.formatDateTime(new Date(item.startTimeC).getTime(), 1)
+                        let isRight = item.planInfoMovieTimeVoList.some(citem => {
+                            if (item.startDate && item.endDate && item.endTime && item.startTime) {
+                                return (new Date (planDate).getTime() >= new Date(`${citem.startDate}`).getTime() && new Date(planDate).getTime() <= new Date(citem.endDate).getTime()) && (new Date(`${item.planTimeStart}`).getTime() >= new Date(`${planDate} ${citem.startTime}`).getTime() && new Date(`${item.planTimeStart}`).getTime() <= new Date(`${planDate} ${citem.endTime}`).getTime())
+                                    
+                                
+                            } else if (citem.startDate && citem.endDate && (!citem.endTime || !citem.startTime)) {
+                                 
+                                return new Date (planDate).getTime() >= new Date(`${citem.startDate}`).getTime() && new Date(planDate).getTime() <= new Date(citem.endDate).getTime()
+                                
+                            } else if ((!citem.startDate || !citem.endDate) && citem.endTime && citem.startTime) {
+                                
+                                return new Date(`${item.planTimeStart}`).getTime() >= new Date(`${planDate} ${citem.startTime}`).getTime() && new Date(`${item.planTimeStart}`).getTime() <= new Date(`${planDate} ${citem.endTime}`).getTime()
+                            }else {
+                                return true
+                            }
+                        }) 
+                        if (!isRight) {
+                            errorData.push(item)
+                        }
+                    }
+                })
+
+                return {
+                    planError: errorData.length,
+                    errorType: `影片${errorData.map(item => item.movieName).join(',')}的开场时间不在影片允许的排片时间内, 不能编排放映计划`
+                }
+                
             }
         },
         computed: {
@@ -1390,7 +1449,7 @@ import {getmoviePlanDetails, getPlanMovieList, initTimeLine, datePlanList, updat
             position: fixed;
             z-index: 999;
             bottom: 0;
-            right: 20px;
+            right: 0;
             background-color: #f5f5f5;
             .btn-area {
                 width: 500px;

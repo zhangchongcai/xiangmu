@@ -2,10 +2,10 @@
   <div class="ticket-type">
     <div v-if="!dialogShow">
       <!-- 查询块 -->
-      <header class="header">
+      <header class="headers">
         <div class="item-warp" >
-          <span>适用影院:</span>
-          <el-input v-model="cinemaName" @focus="cinemaDialogShow" clearable @clear='clearCinema'></el-input>
+          <span class="title">适用影院:</span>
+          <el-input v-model="cinemaName" @focus="cinemaDialogShow" clearable @clear='clearCinema' style="width:200px"></el-input>
         </div>
         <div class="search-Btn" >
           <el-button type="primary" @click="searchCinema" readonly style="width:80px;height:32px">查询</el-button>
@@ -61,7 +61,7 @@
             width='200'
             label='操作'>
             <template slot-scope='scope'>
-              <el-button size='small' type="text" @click='addOrUpdateHandle(scope.row)'>修改</el-button>
+              <el-button size='small' type="text" @click='addOrUpdateHandle(scope.row)'>编辑</el-button>
               <el-button size='small' v-if="scope.row.name!='成人票'&&scope.row.name!='团体票'&&scope.row.name!='学生票'" type="text" @click='deleteHandle(scope.row.uid)'>删除</el-button>
             </template>
           </el-table-column>
@@ -80,19 +80,18 @@
     </div>
     <ticket-type v-else ref="addOrUpdate" @refreshDataList="getDataList"></ticket-type>
     <!-- 影院复选框 -->
-    <muti-cinema
-      title="选择影院"
-      v-if="cinemaDialogVisible"
-      @close="cinemaDialogVisible=false"
-      :innerData="[]"
-      :dialogTableVisible.sync="cinemaDialogVisible"
-      ref="movieSelectDialog"
-      @callBack="handleCinemaDialogCallBack"
-    ></muti-cinema>
+    <GroupMultiSelectCinema 
+      :reviewData = []
+      :dialogVisible.sync = "dialogVisible"
+      @frameCinemaDialogCallBack="handleCinemaDialogCallBack"
+      :disabledData=[]
+      :innerCinemaMultiData='innerData'
+      >
+    </GroupMultiSelectCinema>
   </div>
 </template>
 <script>
-  import MutiCinema  from 'ctm/components/cinema/MutiCinema'
+  import GroupMultiSelectCinema  from 'frame_cpm/dialogs/cinemaDialog/multiCinema2.vue'
   import TicketType from './ticketType-add-or-update'
   import minxins from 'frame_cpm/mixins/cacheMixin.js'
   import SirTable from './sirTable'
@@ -104,7 +103,7 @@
     components: {
       TicketType,
       SirTable,
-      MutiCinema
+      GroupMultiSelectCinema
     },
 		mixins: [minxins.cacheMixin],
     data () {
@@ -124,7 +123,10 @@
         // 影院复选
         cinemaName:null,
         cinemaUids:[],
-        cinemaDialogVisible: false,
+        dialogVisible:false,
+        innerData:{
+          type:2
+        },
 
 
       }
@@ -237,12 +239,13 @@
         };
       },
       //弹窗方法
-      handleCinemaDialogCallBack (val) {
-          console.log(val);
+      handleCinemaDialogCallBack (data) {
+          data = data.data
+          console.log(data);
           this.cinemaDialogVisible = false;
           let  text = []
           this.cinemaUids=[]
-          val.forEach(item => {
+          data.forEach(item => {
             text.push(item.name)
             this.cinemaUids.push(item.id)
           })
@@ -250,7 +253,7 @@
       },
       //弹窗开启
       cinemaDialogShow(){
-        this.cinemaDialogVisible = true     
+        this.dialogVisible = true     
       },
       //清除input框
       clearCinema() { 
@@ -267,24 +270,30 @@
 
 <style lang="scss">
 .ticket-type{
+  /deep/ .el-input__inner{
+    text-overflow: ellipsis;
+  }
   .demo-ruleForm{
     padding-right: 50px;
     padding-top: 20px;
     float: right;
   }
-  .header{
+  .headers{
     background: #f5f5f5;
     padding: 24px 12px;
     display: flex;
     .item-warp{
         display: inline-flex;
         .el-input{display: inline-block;}
-        span{
+        .title{
           display:inline-block;
           width: 80px;
           font-size: 12px;
           line-height: 32px;
           color:#666;
+        }
+        .el-input__inner{
+          background: #f5f5f5;
         }
       }
       .search-Btn{

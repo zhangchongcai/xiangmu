@@ -3,34 +3,32 @@
         <el-dialog :visible="show"  title="选择影院"  :before-close="handleClose"
             :close-on-click-modal="false">
             <div>
-                <div class="mt10">
+                <div class="search-section">
                     <label>影院名称：
                         <el-input size="small" style="width:160px" palceholder="请输入影院名称" v-model="searchName"></el-input>
                    </label>
                    <el-button style="margin-left:24px" type="primary" size="small" @click="search">搜索</el-button>
                 </div>
-                <div class="mt10">
-                    <el-table :data="cinemaList" height="400">
-                        <el-table-column  min-width="40" align="center">
-                            <template slot-scope="scope">
-                                <el-radio v-model="cinemaId" :label="scope.row.cinemaCode" @change="changeCinema(scope.row.cinemaName)">
-                                    {{''}}
-                                </el-radio>
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="cinemaName" label="影院名称" min-width="110" >
-                        </el-table-column>
-                        <el-table-column prop="cinemaCode" label="专资编码" min-width="100"></el-table-column>
-                        <el-table-column prop="address" label="城市地区" min-width="220"></el-table-column>
-                    </el-table>
-                </div>
-                <div class="center reset-page" style="padding:12px 0;margin:0">
-                    <el-pagination  size="small" v-if="total>15"
+                <el-table :data="cinemaList" height="376">
+                    <el-table-column  min-width="40" align="center">
+                        <template slot-scope="scope">
+                            <el-radio v-model="cinemaId" :label="scope.row.cinemaCode" @change="changeCinema(scope.row.cinemaName)">
+                                {{''}}
+                            </el-radio>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="cinemaName" label="影院名称" min-width="110" >
+                    </el-table-column>
+                    <el-table-column prop="cinemaCode" label="专资编码" min-width="100"></el-table-column>
+                    <el-table-column prop="address" label="城市地区" min-width="220"></el-table-column>
+                </el-table>
+                <div class="note-wrap reset-page">
+                    <el-pagination  size="small" v-if="total>15" style="padding-top:6px"
                         @size-change="handleSizeChange"
                         @current-change="handleCurrentChange"
                         :current-page.sync="page"
                         :page-size="pageSize"
-                        layout="prev, pager, next"
+                        layout="total,prev, pager, next"
                         :total="total">
                     </el-pagination>
                     <span v-else-if="total>0">共{{total}}条</span>

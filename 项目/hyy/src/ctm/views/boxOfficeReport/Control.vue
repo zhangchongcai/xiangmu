@@ -8,8 +8,8 @@
                 :innerData="innerData"
                 @callBackSingle="callBackSingle">
             <div slot="footerId">
-                <el-button @click="singleCinemaVisible = false">取 消</el-button>
                 <el-button type="primary" @click="$refs.frameSingleCinema.confirmData(), singleCinemaVisible = false">确 定</el-button>
+                <el-button @click="singleCinemaVisible = false">取 消</el-button>
             </div>
         </singleCinema>
 
@@ -40,16 +40,16 @@
         </div>
         <div class="table-body clearfix">
             <div :class="['table-body-content', {'bg-holiday': index % 7 === 0 || index % 7 === 6}, {'bg-today': new Date(Date.parse(item.reportDate)).toDateString() === new Date().toDateString()}]" v-for="(item, index) in bodyData" :key="index">
-                <div v-if="Date.parse(item.reportDate) < new Date().getTime() - 24*60*60*1000 && item.reportStatus != '0'" :class="['iconfont', {'icon-report-success': item.reportStatus == 3 }, {'icon-report-failed': !item.reportStatus || item.reportStatus == 2}, {'icon-reporting': item.reportStatus == 1}]"></div>
+                <div v-if="Date.parse(item.reportDate) < new Date().getTime() - 22*60*60*1000 && item.reportStatus != '0'" :class="['iconfont', {'icon-report-success': item.reportStatus == 3 }, {'icon-report-failed': !item.reportStatus || item.reportStatus == 2}, {'icon-reporting': item.reportStatus == 1}]"></div>
                 <span class="table-content-title">{{ item.reportDate ? (item.reportDate.split('-')[2] > 9 ? item.reportDate.split('-')[2] : item.reportDate.split('-')[2].split('')[1]) : '' }}</span>
                 <div
                         @click="report(item.reportDate)"
-                        v-if="Date.parse(item.reportDate) < new Date().getTime() - 24*60*60*1000 && item.reportStatus != '0'"
+                        v-if="Date.parse(item.reportDate) < new Date().getTime() - 22*60*60*1000 && item.reportStatus != '0'"
                         class="table-content-btn"
                 >重新上报</div>
                 <div
                         @click="report(item.reportDate)"
-                        v-if="Date.parse(item.reportDate) < new Date().getTime() - 24*60*60*1000 && item.reportStatus == '0'"
+                        v-if="Date.parse(item.reportDate) < new Date().getTime() - 22*60*60*1000 && item.reportStatus == '0'"
                         class="table-content-btn"
                 >上报</div>
 
@@ -112,6 +112,10 @@
         methods: {
 
             callBackSingle(data) {
+                this.singleCinemaVisible = data.framedialogVisible
+
+                if(data.isCloseWindow) return
+
                 console.log(data, '-----> data')
                 this.cinemaName = data.data.name
                 this.formData.cinemaUid = data.data.id

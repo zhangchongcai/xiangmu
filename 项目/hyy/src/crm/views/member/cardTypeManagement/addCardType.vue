@@ -1,7 +1,7 @@
 <template>
   <div class="add-edit-card-type">
     <!-- 内容区 - 折叠面板 -->
-    <el-form :model="ruleForm" :rules="rules" ref="ruleForm" size="medium" label-width="120px" label-position="right">
+    <el-form :model="ruleForm" :rules="rules" ref="ruleForm" size="medium" label-width="120px" label-position="left">
       <el-collapse v-model="activeNames" class="card-type-content">
         <!-- 基础设置 *****************************************************************基础设置***************************************************-->
         <el-collapse-item title="基础设置" name="1">
@@ -11,7 +11,7 @@
             </el-form-item>
             <el-form-item label="卡类型：" prop="cardTypeCode">
               <el-radio-group v-model="ruleForm.cardTypeCode" :disabled="$route.query.cardId?true:false"
-                @change="handleChangeCardType('ruleForm')">
+                @change="handleChangeCardType($event,'ruleForm')">
                 <el-radio label="stored_card">储值卡</el-radio>
                 <el-radio label="equity_card">权益卡</el-radio>
                 <el-radio label="cobranded_card">联名卡</el-radio>
@@ -37,7 +37,7 @@
                 </div>
                 <div class="custom_card-item">
                   <el-radio label="custom_card">自定义卡片</el-radio>
-                  <template v-if="ruleForm.custom">
+                  <div v-if="ruleForm.custom">
                     <img v-if="ruleForm.picPath" :src="ruleForm.picPath" alt="custom_card" class="custom-card">
                     <el-upload :action="this.$store.state.crm.imgAction" list-type="picture-card"
                       :show-file-list="false" accept="image/png" :before-upload="beforeAvatarUpload"
@@ -46,7 +46,7 @@
                       <i class="el-icon-plus"></i>
                     </el-upload>
                     <div class="upload-tip">（535×318，背景透明 png24，200K以内）</div>
-                  </template>
+                  </div>
                 </div>
               </el-radio-group>
             </el-form-item>
@@ -67,35 +67,35 @@
               </el-checkbox-group>
             </el-form-item>
             <!-- 储值卡 次卡 礼品卡 包月卡公用 start 1 -->
-            <template v-if="ruleForm.cardTypeCode != 'equity_card' && ruleForm.cardTypeCode != 'cobranded_card'">
+            <div v-if="ruleForm.cardTypeCode != 'equity_card' && ruleForm.cardTypeCode != 'cobranded_card'">
               <el-form-item label="简单密码：" prop="weakPassword">
                 <el-select v-model="ruleForm.weakPassword" placeholder="请选择">
                   <el-option label="允许简单密码" :value="1"></el-option>
                   <el-option label="不允许简单密码" :value="0"></el-option>
                 </el-select>
               </el-form-item>
-            </template>
+            </div>
             <!-- 储值卡 次卡 礼品卡 包月卡公用 end 1 -->
             <!-- 礼品卡 次卡 包月卡公用 start1  -->
-            <template
+            <div
               v-if="ruleForm.cardTypeCode == 'gift_card' || ruleForm.cardTypeCode == 'times_card' || ruleForm.cardTypeCode == 'month_card'">
               <el-form-item label="卡面值：" prop="cardProductExtVO.cardValue">
                 <el-input v-model="ruleForm.cardProductExtVO.cardValue"></el-input>
                 <span class="unit">元</span>
               </el-form-item>
-            </template>
+            </div>
             <!-- 礼品卡 次卡 包月卡公用 end 1 -->
             <!-- 次卡 可观影总票数 start  -->
-            <template v-if="ruleForm.cardTypeCode == 'times_card'">
+            <div v-if="ruleForm.cardTypeCode == 'times_card'">
               <el-form-item label="可观影总票数：" prop="cardProductExtVO.watchTickets">
                 <el-input v-model="ruleForm.cardProductExtVO.watchTickets"></el-input>
                 <span class="unit">张</span>
               </el-form-item>
-            </template>
+            </div>
             <!-- 次卡 可观影总票数 end -->
 
             <!-- 储值卡 start 1-->
-            <template v-if="ruleForm.cardTypeCode == 'stored_card'">
+            <div v-if="ruleForm.cardTypeCode == 'stored_card'">
               <el-form-item label="充值设置：" prop="canCharge">
                 <el-select v-model="ruleForm.canCharge" placeholder="请选择">
                   <el-option label="允许充值" :value="1"></el-option>
@@ -114,20 +114,20 @@
                 <el-input v-model="ruleForm.chargeMax"></el-input>
                 <span class="unit">元</span>
               </el-form-item>
-            </template>
+            </div>
             <!-- 储值卡 end 1-->
 
             <!-- 储值卡 次卡 礼品卡 包月卡公用 start2  -->
-            <template v-if="ruleForm.cardTypeCode != 'equity_card' && ruleForm.cardTypeCode != 'cobranded_card'">
+            <div v-if="ruleForm.cardTypeCode != 'equity_card' && ruleForm.cardTypeCode != 'cobranded_card'">
               <el-form-item label="开卡手续费：" prop="openPrice">
                 <el-input v-model="ruleForm.openPrice"></el-input>
                 <span class="unit">元</span>
               </el-form-item>
-            </template>
+            </div>
             <!-- 储值卡 次卡 礼品卡 包月卡公用 end 2 -->
 
             <!-- 储值卡 次卡 包月卡公用 start1  -->
-            <template
+            <div
               v-if="ruleForm.cardTypeCode == 'stored_card' || ruleForm.cardTypeCode == 'times_card' || ruleForm.cardTypeCode == 'month_card'">
               <el-form-item label="补卡手续费：" prop="makeUpPrice">
                 <el-input v-model="ruleForm.makeUpPrice"></el-input>
@@ -137,19 +137,19 @@
                 <el-input v-model="ruleForm.replacePrice"></el-input>
                 <span class="unit">元</span>
               </el-form-item> -->
-            </template>
+            </div>
             <!-- 储值卡 次卡 包月卡公用 end 1 -->
             <!-- 礼品卡 次卡 包月卡公用 start2  -->
-            <template
+            <div
               v-if="ruleForm.cardTypeCode == 'gift_card' || ruleForm.cardTypeCode == 'times_card' || ruleForm.cardTypeCode == 'month_card'">
               <el-form-item label="售价：" prop="price">
                 <el-input v-model="ruleForm.price"></el-input>
                 <span class="unit">元</span>
               </el-form-item>
-            </template>
+            </div>
             <!-- 礼品卡 次卡 包月卡公用 end 2 -->
             <!-- 储值卡 start 2-->
-            <template v-if="ruleForm.cardTypeCode == 'stored_card'">
+            <div v-if="ruleForm.cardTypeCode == 'stored_card'">
               <el-form-item label="注销手续费：" prop="backPrice">
                 <el-input v-model="ruleForm.backPrice"></el-input>
                 <span class="unit">元</span>
@@ -210,11 +210,11 @@
               <el-form-item label="限制单用户开卡数" prop="limitNumber">
                 <el-input v-model="ruleForm.limitNumber"></el-input><span class="unit"> 张</span>
               </el-form-item> -->
-            </template>
+            </div>
             <!-- 储值卡 end 2-->
             <!-- ------------------------------------------------------------------------------------------ -->
             <!-- 权益卡 start -->
-            <template v-if="ruleForm.cardTypeCode == 'equity_card'">
+            <div v-if="ruleForm.cardTypeCode == 'equity_card'">
               <el-form-item label="权益卡售价：" prop="price">
                 <el-input v-model="ruleForm.price"></el-input>
                 <span class="unit">元</span>
@@ -225,11 +225,11 @@
                   <el-option label="不允许免密支付" :value="0"></el-option>
                 </el-select>
               </el-form-item>
-            </template>
+            </div>
             <!-- 权益卡 end -->
             <!-- ------------------------------------------------------------------------------------------ -->
             <!-- 联名卡 start -->
-            <template v-if="ruleForm.cardTypeCode == 'cobranded_card'">
+            <div v-if="ruleForm.cardTypeCode == 'cobranded_card'">
               <el-form-item label="联名卡结算价：" prop="settlementPrice">
                 <el-input v-model="ruleForm.settlementPrice"></el-input>
                 <span class="unit">元</span>
@@ -238,7 +238,7 @@
                 <el-input v-model="ruleForm.priceTag"></el-input>
                 <span class="unit">元</span>
               </el-form-item>
-            </template>
+            </div>
             <!-- 联名卡 end -->
             <!-- 权益卡和 联名卡的延期设置 start-->
             <el-form-item v-if="ruleForm.cardTypeCode == 'equity_card' || ruleForm.cardTypeCode == 'cobranded_card'"
@@ -272,7 +272,7 @@
                     <el-checkbox :indeterminate="isIndeterminateChannel" v-model="checkAllChannels"
                       @change="handleCheckAllChange">全选</el-checkbox>
                     <el-checkbox-group v-model="checkedChannels" @change="handleCheckedChannelsChange">
-                      <el-checkbox v-for="(item,index) in channels" :label="item.desc+','+item.code" :key="index">
+                      <el-checkbox v-for="(item,index) in channels" :label="item.code" :key="index">
                         {{item.desc}}</el-checkbox>
                     </el-checkbox-group>
                   </div>
@@ -280,8 +280,8 @@
               </div>
             </el-form-item>
             <!-- 储值卡允许补现、积分规则 -->
-            <template v-if="ruleForm.cardTypeCode == 'stored_card'">
-              <el-form-item label="余额不足：" prop="withCash" class="balance-insufficient"
+            <div v-if="ruleForm.cardTypeCode == 'stored_card'">
+              <el-form-item label="余额不足：" class="balance-insufficient" prop="withCash"
                 :rules="[{ required: true, message: ' ', trigger: 'blur' }]">
                 <el-select v-model="ruleForm.withCash" placeholder="请选择">
                   <el-option label="允许补现" :value="1"></el-option>
@@ -292,19 +292,19 @@
                 <span style="fontSize:12px;">为普通消费积分的</span>
                 <el-input v-model="ruleForm.integralRule" placeholder="请填写数字"></el-input><span class="unit"> 倍</span>
               </el-form-item> -->
-            </template>
+            </div>
             <!-- 联名卡选择商户 -->
-            <template v-if="ruleForm.cardTypeCode == 'cobranded_card'">
+            <div v-if="ruleForm.cardTypeCode == 'cobranded_card'">
               <el-form-item label="联名商户：" prop="merchantList" class="merchant-list">
                 <div style="display:flex;">
                   <div class="select-btn" @click="handleClickSelectMerchant">选择商户</div>
-                  <el-tag closable v-if="currentMerchantRow.merchantId" @close="handleClose(tag)"
-                    style="margin-left:15px;">{{currentMerchantRow.merchantName}}</el-tag>
+                  <el-tag closable v-if="currentMerchantRow.merchantId" @close="handleClose" class="_merchant-tags">
+                    {{currentMerchantRow.merchantName}}</el-tag>
                 </div>
               </el-form-item>
-            </template>
+            </div>
             <!-- 权益卡 和 联名卡 有效期 -->
-            <template v-if="ruleForm.cardTypeCode == 'equity_card' || ruleForm.cardTypeCode == 'cobranded_card'">
+            <div v-if="ruleForm.cardTypeCode == 'equity_card' || ruleForm.cardTypeCode == 'cobranded_card'">
               <el-form-item label="有效期：" prop="workTimeNum">
                 <el-input v-model="ruleForm.workTimeNum" placeholder="请填写数字"></el-input>
                 <el-select v-model="ruleForm.workTimeType" placeholder="请选择">
@@ -313,9 +313,9 @@
                   <el-option label="年" value="year"></el-option>
                 </el-select>
               </el-form-item>
-            </template>
+            </div>
             <!-- 礼品卡 有效期 是否可与优惠券同时使用 start-->
-            <template v-if="ruleForm.cardTypeCode == 'gift_card'">
+            <div v-if="ruleForm.cardTypeCode == 'gift_card'">
               <el-form-item label="有效期：" class="gift-card-validity-wrap" prop="cardProductExtVO.validTimeType">
                 <div>
                   <el-radio style="width:96px;" v-model="ruleForm.cardProductExtVO.validTimeType" label="fixed">固定有效期
@@ -348,10 +348,10 @@
                   <el-radio label="0">否</el-radio>
                 </el-radio-group>
               </el-form-item>
-            </template>
+            </div>
             <!-- 礼品卡 有效期 是否可与优惠券同时使用 end-->
             <!-- 次卡、包月卡公用 start -->
-            <template v-if="ruleForm.cardTypeCode == 'times_card' || ruleForm.cardTypeCode == 'month_card'">
+            <div v-if="ruleForm.cardTypeCode == 'times_card' || ruleForm.cardTypeCode == 'month_card'">
               <el-form-item label="有效期：" class="gift-card-validity-wrap" prop="cardProductExtVO.validTimeType">
                 <div>
                   <el-radio style="width:96px;" v-model="ruleForm.cardProductExtVO.validTimeType" label="fixed">固定有效期
@@ -381,7 +381,7 @@
                 </div>
               </el-form-item>
               <!-- 包月卡独有 -->
-              <template v-if="ruleForm.cardTypeCode == 'month_card'">
+              <div v-if="ruleForm.cardTypeCode == 'month_card'">
                 <el-form-item label="有效期内观影次数：" class="gift-card-validity-wrap"
                   prop="cardProductExtVO.watchTimesIntime">
                   <div>
@@ -431,7 +431,7 @@
                     <span class="unit">张</span>
                   </div>
                 </el-form-item>
-                <el-form-item label="" class="month-card-validity-wrap" prop="cardProductExtVO.ticketLimitFilm">
+                <!-- <el-form-item label="" class="month-card-validity-wrap" prop="cardProductExtVO.ticketLimitFilm">
                   <div>
                     <el-checkbox style="width:96px;" v-model="filmBuyTicketLimit">每部影片上限
                     </el-checkbox>
@@ -441,9 +441,9 @@
                     </el-input>
                     <span class="unit">张</span>
                   </div>
-                </el-form-item>
-              </template>
-              <el-form-item label="出票金额：" class="gift-card-validity-wrap" prop="cardProductExtVO.outTicketAmount">
+                </el-form-item> -->
+              </div>
+              <!-- <el-form-item label="出票金额：" class="gift-card-validity-wrap" prop="cardProductExtVO.outTicketAmount">
                 <div>
                   <el-radio style="width:96px;" v-model="ruleForm.cardProductExtVO.outTicketType" label="0">最低票价
                   </el-radio>
@@ -457,8 +457,8 @@
                   </el-input>
                   <span class="unit">元</span>
                 </div>
-              </el-form-item>
-            </template>
+              </el-form-item> -->
+            </div>
             <!-- 次卡、包月卡公用 end -->
           </div>
         </el-collapse-item>
@@ -494,51 +494,78 @@
     </el-form>
     <fixStepTool :stepData="stepData.stepList" class="_fixsteptool-member"></fixStepTool>
     <!-- 添加权益dialog -->
-    <el-dialog title="自有权益" class="__equity-dialog" :visible.sync="equityDialog" width="892px">
+    <el-dialog title="自有权益" class="__equity-dialog" :visible.sync="equityDialog" width="896px">
       <div class="__table-wrap">
-        <el-form :inline="true" :model="formData" ref="formData" class="form-data-wrap">
-          <el-form-item label="权益名称：" prop="equityName">
+        <el-form :inline="true" :model="formData" ref="formData" class="__dialog-table-form">
+          <el-form-item label="权益名称" prop="equityName">
             <el-input v-model="formData.equityName" placeholder="填写权益名称" clearable maxlength="30"></el-input>
           </el-form-item>
-          <el-form-item label="权益类型：" prop="equityType">
-            <el-select v-model="formData.equityType" placeholder="全部" clearable>
+          <el-form-item label="权益类型" prop="equityType">
+            <el-select v-model="formData.equityType" placeholder="全部" clearable @change="handleChangeEquityType">
               <el-option v-for="item in equityTypeList" :key="item.name" :label="item.name" :value="item.value">
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="权益类别：" prop="equityCategory" class="heightBug">
+          <el-form-item label="权益类别" prop="equityCategory" class="heightBug"
+            v-if="ruleForm.cardTypeCode != 'times_card'">
             <el-select v-model="formData.equityCategory" placeholder="全部" clearable
-              :disabled="formData.equityType != 'consumer_type'">
+              :disabled="formData.equityType != 'consumer_type'" @clear="handleClearCategory">
               <el-option v-for="item in equityCategoryList" :key="item.name" :label="item.name" :value="item.value">
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item class="btn-wrap">
+          <el-form-item label="权益类别" prop="equityCategory" class="heightBug" v-else>
+            <el-select v-model="formData.equityCategory" placeholder="全部" clearable
+              :disabled="formData.equityType != 'consumer_type'" @clear="handleClearCategory">
+              <el-option v-for="item in equityCategoryList2" :key="item.name" :label="item.name" :value="item.value">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item class="__dialog-search-bar-btn-wrap">
             <el-button type="primary" @click="handleSearch" class="_el-btn-custom">搜索</el-button>
-            <el-button @click="resetForm('formData')" plain class="_el-btn-custom _member-custom-ghost-button">重置
-            </el-button>
+            <!-- <el-button @click="resetForm('formData')" plain class="_el-btn-custom _member-custom-ghost-button">重置
+            </el-button> -->
           </el-form-item>
         </el-form>
-        <div class="member-list-table _m-member-table-custom">
-          <el-table ref="multipleTable" :data="tableData" stripe style="width: 100%" @select="handleSelect"
-            @select-all="handleSelect" :row-key="getRowKeys">
-            <el-table-column type="selection" width="55" :reserve-selection="true">
-            </el-table-column>
-            <el-table-column prop="equityName" :formatter="emptyShow" label="权益名称" min-width="120"
-              show-overflow-tooltip></el-table-column>
-            <el-table-column prop="equityTypeName" :formatter="emptyShow" label="权益类型" min-width="120"
-              show-overflow-tooltip></el-table-column>
-            <el-table-column prop="equityCategoryName" :formatter="equityCategoryNameShow" label="权益类别" min-width="100"
-              show-overflow-tooltip></el-table-column>
-          </el-table>
+        <div class="__equity-dialog-content-wrap">
+          <div class="__equity-dialog-content-left">
+            <div class="__equity-dialog-table _m-member-table-custom">
+              <el-table ref="multipleTable" :data="tableData" stripe style="width: 100%" @select="handleSelect"
+                @select-all="handleSelect" :row-key="getRowKeys">
+                <el-table-column type="selection" width="55" :reserve-selection="true">
+                </el-table-column>
+                <el-table-column prop="equityName" :formatter="emptyShow" label="权益名称" min-width="120"
+                  show-overflow-tooltip></el-table-column>
+                <el-table-column prop="equityTypeName" :formatter="emptyShow" label="权益类型" min-width="120"
+                  show-overflow-tooltip></el-table-column>
+                <el-table-column prop="equityCategoryName" :formatter="equityCategoryNameShow" label="权益类别"
+                  min-width="100" show-overflow-tooltip></el-table-column>
+              </el-table>
+            </div>
+            <!-- 分页 start -->
+            <div class="page-wrap _equity-dialog-paginatioin">
+              <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange"
+                :current-page="formData.current-0" :page-size="formData.size-0"
+                layout="total, prev, pager, next, jumper" :page-sizes="[20 , 50 , 100]" :total="total-0">
+              </el-pagination>
+            </div>
+            <!-- 分页 end -->
+          </div>
+          <div class="__equity-dialog-content-right">
+            <div class="__content-right-wrap">
+              <div class="__content-right-title">
+                已选权益
+              </div>
+              <div class="__clear-btn" @click="handleEmpty">清空</div>
+            </div>
+            <ul class="__selected-equity-wrap">
+              <li class="__selected-equity-item-inner" v-for="(item, index) of multipleSelectionItem" :key="index">
+                <div class="__selected-equity-name-desc">{{item.equityName}}</div>
+                <i class="el-icon-close __dialog-icon-delete" @click="dialogDeleteEquity(index)"></i>
+              </li>
+            </ul>
+          </div>
         </div>
-        <!-- 分页 start -->
-        <div class="page-wrap" style="padding:0">
-          <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange"
-            :current-page="formData.current-0" :page-size="formData.size-0" layout="prev, pager, next, jumper, sizes"
-            :page-sizes="[20 , 50 , 100]" :total="total-0"></el-pagination>
-        </div>
-        <!-- 分页 end -->
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button type="primary" @click="changeEquityDialog(true)" class="_el-btn-custom _member-add-edit-save-btn">确定
@@ -547,15 +574,17 @@
       </span>
     </el-dialog>
     <!-- 预览dialog -->
-    <el-dialog title="权益预览" class="__equity-dialog" :visible.sync="previewDialog" width="892px">
-      <OwnershipDetail :equityID="equityId" :isShow="false"></OwnershipDetail>
+    <el-dialog title="权益预览" class="__equity-dialog" :visible.sync="previewDialog" width="896px">
+      <div style="overflow:auto;height:480px">
+        <OwnershipDetail :equityID="equityId" :isShow="false"></OwnershipDetail>
+      </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="previewDialog = false" class="_el-btn-custom">关闭</el-button>
       </span>
     </el-dialog>
     <!--  权益相同时的dialog -->
-    <el-dialog title="" class="__equity-dialog" :visible.sync="sameCategoryDialog">
-      <div style="text-align:center;margin:40px 0;">
+    <el-dialog title="" class="__same-equity-dialog __equity-dialog" :visible.sync="sameCategoryDialog">
+      <div class="__same-equity-desc">
         {{`此政策内包含同为“${sameCategory}”权益类别的规则`}}<br /><br />
         请仔细检查，避免会员在<span style="font-size:22px;">同一场次可享受多种价格权益</span>的情况发生<br /><br />
         若出现此情况，则默认<span style="color:red;">享受最低折扣（全部优惠中的最高价格）</span>
@@ -567,9 +596,9 @@
       </span>
     </el-dialog>
     <!-- 选择商户的dialog -->
-    <el-dialog title="联名商户" class="__equity-dialog" :visible.sync="merchantDialog" width="892px">
+    <el-dialog title="联名商户" class="__equity-dialog" :visible.sync="merchantDialog" width="576px">
       <div class="__table-wrap">
-        <el-form :inline="true" :model="searchData" ref="searchData" class="search-data-wrap">
+        <el-form :inline="true" :model="searchData" ref="searchData" class="__dialog-table-form">
           <el-form-item label="商户编号" prop="merchantNum" :rules="[{ max: 20, message: '长度不可超过20个字符', trigger: 'blur' }]">
             <el-input v-model="searchData.merchantNum"
               @blur="()=>{searchData.merchantNum = searchData.merchantNum.trim()}" placeholder="请输入商户编号" clearable>
@@ -581,10 +610,10 @@
               @blur="()=>{searchData.merchantName = searchData.merchantName.trim()}" placeholder="请输入商户名称" clearable>
             </el-input>
           </el-form-item>
-          <el-form-item class="btn-wrap">
+          <el-form-item class="__dialog-search-bar-btn-wrap">
             <el-button type="primary" @click="handleSelectMerchant" class="_el-btn-custom">搜索</el-button>
-            <el-button @click="resetForm('searchData')" plain class="_el-btn-custom _member-custom-ghost-button">重置
-            </el-button>
+            <!-- <el-button @click="resetForm('searchData')" plain class="_el-btn-custom _member-custom-ghost-button">重置
+            </el-button> -->
           </el-form-item>
         </el-form>
         <div class="entity-card-list-table _m-member-table-custom">
@@ -605,7 +634,7 @@
           </el-table>
         </div>
         <!-- 分页 start -->
-        <div class="page-wrap">
+        <div class="page-wrap _equity-dialog-paginatioin">
           <el-pagination background @size-change="handleMerchantSizeChange"
             @current-change="handleMerchantCurrentChange" :current-page="searchData.current-0"
             :page-size="searchData.size-0" layout="prev, pager, next, jumper, sizes" :page-sizes="[20 , 50 , 100]"
@@ -625,6 +654,7 @@
 import FixStepTool from "../../../components/fix-step-tool/fix-step-tool";
 import fixStepMixin from "../../../mixins/CRM/fixStepTool.js";
 import OwnershipDetail from "../components/OwnershipDetail";
+import dataCenterVue from "../../../../rpt/views/dataCenter.vue";
 
 export default {
   name: "addCardType",
@@ -649,7 +679,7 @@ export default {
             if (data.isExist) {
               callback(new Error("该名称已存在，请更换其他名称"));
             } else {
-              this.ruleForm.cardName = value.toString().trim();
+              // this.ruleForm.cardName = value.toString().trim();
               callback();
             }
           })
@@ -719,6 +749,11 @@ export default {
           ) {
             callback(new Error("单充最大金额不能小于单充最小金额"));
           }
+        }
+      }
+      if (rule.field == "yearRule.price") {
+        if (value.toString().replace(/\s/g, "") * 1 <= 0) {
+          callback(new Error("请输入大于0的数字"));
         }
       }
       if (
@@ -954,11 +989,30 @@ export default {
       }
     };
     // 校验出票金额
-    var checkOutTicket = (rule, value, callback) => {
-      if (
-        this.ruleForm.cardProductExtVO.outTicketType == "1" ||
-        this.watchTimesType == "1"
-      ) {
+    // var checkOutTicket = (rule, value, callback) => {
+    //   if (this.ruleForm.cardProductExtVO.outTicketType == "1") {
+    //     if (value.toString().replace(/\s/g, "") == "") {
+    //       callback(new Error("请输入数字"));
+    //     }
+    //     if (value.toString().replace(/\s/g, "") * 1 <= 0) {
+    //       callback(new Error("请输入大于0的数字"));
+    //     }
+    //     if (
+    //       !/^\d{1,8}$|^\d{1,8}[.]\d{1,2}$/.test(
+    //         value.toString().replace(/\s/g, "")
+    //       )
+    //     ) {
+    //       callback(new Error("整数部分最多8位，且最多两位小数"));
+    //     } else {
+    //       callback();
+    //     }
+    //   } else {
+    //     callback();
+    //   }
+    // };
+    // 校验有效期内观影次数
+    var checkWatchTimesIntime = (rule, value, callback) => {
+      if (this.watchTimesType == "1") {
         if (value.toString().replace(/\s/g, "") == "") {
           callback(new Error("请输入数字"));
         }
@@ -967,6 +1021,24 @@ export default {
         }
         if (value.toString().replace(/\s/g, "") * 1 > 99999999) {
           callback(new Error("最多不能超过8位数字"));
+        }
+        if (
+          value.toString().replace(/\s/g, "") * 1 <
+          this.ruleForm.cardProductExtVO.ticketLimitDay
+        ) {
+          callback(new Error("有效期内观影次数不能小于每日购票上限"));
+        }
+        if (
+          value.toString().replace(/\s/g, "") * 1 <
+          this.ruleForm.cardProductExtVO.ticketLimitWeek
+        ) {
+          callback(new Error("有效期内观影次数不能小于每周购票上限"));
+        }
+        if (
+          value.toString().replace(/\s/g, "") * 1 <
+          this.ruleForm.cardProductExtVO.ticketLimitMonth
+        ) {
+          callback(new Error("有效期内观影次数不能小于每月购票上限"));
         } else {
           callback();
         }
@@ -1026,12 +1098,8 @@ export default {
     };
     // 验证购票限制
     var checkTicketLimitDay = (rule, value, callback) => {
-      if (
-        this.dayBuyTicketLimit ||
-        this.weekBuyTicketLimit ||
-        this.monthBuyTicketLimit ||
-        this.filmBuyTicketLimit
-      ) {
+      //  || this.filmBuyTicketLimit
+      if (this.dayBuyTicketLimit) {
         if (value.toString().replace(/\s/g, "") == "") {
           callback(new Error("请输入数字"));
         }
@@ -1040,6 +1108,38 @@ export default {
         }
         if (value.toString().replace(/\s/g, "") * 1 > 99999999) {
           callback(new Error("最多不能超过8位数字"));
+        }
+        if (
+          this.watchTimesType == "1" ||
+          this.weekBuyTicketLimit ||
+          this.monthBuyTicketLimit
+        ) {
+          if (
+            this.watchTimesType == "1" &&
+            this.ruleForm.cardProductExtVO.watchTimesIntime &&
+            value.toString().replace(/\s/g, "") * 1 >
+              this.ruleForm.cardProductExtVO.watchTimesIntime
+          ) {
+            callback(new Error("每日购票上限不能大于有效期内观影次数"));
+          }
+          if (
+            this.weekBuyTicketLimit &&
+            this.ruleForm.cardProductExtVO.ticketLimitWeek &&
+            value.toString().replace(/\s/g, "") * 1 >
+              this.ruleForm.cardProductExtVO.ticketLimitWeek
+          ) {
+            callback(new Error("每日购票上限不能大于每周购票上限"));
+          }
+          if (
+            this.monthBuyTicketLimit &&
+            this.ruleForm.cardProductExtVO.ticketLimitMonth &&
+            value.toString().replace(/\s/g, "") * 1 >
+              this.ruleForm.cardProductExtVO.ticketLimitMonth
+          ) {
+            callback(new Error("每日购票上限不能大于每月购票上限"));
+          } else {
+            callback();
+          }
         } else {
           callback();
         }
@@ -1057,6 +1157,38 @@ export default {
         }
         if (value.toString().replace(/\s/g, "") * 1 > 99999999) {
           callback(new Error("最多不能超过8位数字"));
+        }
+        if (
+          this.watchTimesType == "1" ||
+          this.dayBuyTicketLimit ||
+          this.monthBuyTicketLimit
+        ) {
+          if (
+            this.watchTimesType == "1" &&
+            this.ruleForm.cardProductExtVO.watchTimesIntime &&
+            value.toString().replace(/\s/g, "") * 1 >
+              this.ruleForm.cardProductExtVO.watchTimesIntime
+          ) {
+            callback(new Error("每周购票上限不能大于有效期内观影次数"));
+          }
+          if (
+            this.dayBuyTicketLimit &&
+            this.ruleForm.cardProductExtVO.ticketLimitDay &&
+            value.toString().replace(/\s/g, "") * 1 <
+              this.ruleForm.cardProductExtVO.ticketLimitDay
+          ) {
+            callback(new Error("每周购票上限不能小于每日购票上限"));
+          }
+          if (
+            this.monthBuyTicketLimit &&
+            this.ruleForm.cardProductExtVO.ticketLimitMonth &&
+            value.toString().replace(/\s/g, "") * 1 >
+              this.ruleForm.cardProductExtVO.ticketLimitMonth
+          ) {
+            callback(new Error("每周购票上限不能大于每月购票上限"));
+          } else {
+            callback();
+          }
         } else {
           callback();
         }
@@ -1074,6 +1206,38 @@ export default {
         }
         if (value.toString().replace(/\s/g, "") * 1 > 99999999) {
           callback(new Error("最多不能超过8位数字"));
+        }
+        if (
+          this.watchTimesType == "1" ||
+          this.dayBuyTicketLimit ||
+          this.weekBuyTicketLimit
+        ) {
+          if (
+            this.watchTimesType == "1" &&
+            this.ruleForm.cardProductExtVO.watchTimesIntime &&
+            value.toString().replace(/\s/g, "") * 1 >
+              this.ruleForm.cardProductExtVO.watchTimesIntime
+          ) {
+            callback(new Error("每月购票上限不能大于有效期内观影次数"));
+          }
+          if (
+            this.dayBuyTicketLimit &&
+            this.ruleForm.cardProductExtVO.ticketLimitDay &&
+            value.toString().replace(/\s/g, "") * 1 <
+              this.ruleForm.cardProductExtVO.ticketLimitDay
+          ) {
+            callback(new Error("每月购票上限不能小于每日购票上限"));
+          }
+          if (
+            this.weekBuyTicketLimit &&
+            this.ruleForm.cardProductExtVO.ticketLimitWeek &&
+            value.toString().replace(/\s/g, "") * 1 <
+              this.ruleForm.cardProductExtVO.ticketLimitWeek
+          ) {
+            callback(new Error("每月购票上限不能小于每周购票上限"));
+          } else {
+            callback();
+          }
         } else {
           callback();
         }
@@ -1081,23 +1245,23 @@ export default {
         callback();
       }
     };
-    var checkTicketLimitFilm = (rule, value, callback) => {
-      if (this.filmBuyTicketLimit) {
-        if (value.toString().replace(/\s/g, "") == "") {
-          callback(new Error("请输入数字"));
-        }
-        if (!/^[1-9]\d*$/.test(value.toString().replace(/\s/g, ""))) {
-          callback(new Error("请输入正整数"));
-        }
-        if (value.toString().replace(/\s/g, "") * 1 > 99999999) {
-          callback(new Error("最多不能超过8位数字"));
-        } else {
-          callback();
-        }
-      } else {
-        callback();
-      }
-    };
+    // var checkTicketLimitFilm = (rule, value, callback) => {
+    //   if (this.filmBuyTicketLimit) {
+    //     if (value.toString().replace(/\s/g, "") == "") {
+    //       callback(new Error("请输入数字"));
+    //     }
+    //     if (!/^[1-9]\d*$/.test(value.toString().replace(/\s/g, ""))) {
+    //       callback(new Error("请输入正整数"));
+    //     }
+    //     if (value.toString().replace(/\s/g, "") * 1 > 99999999) {
+    //       callback(new Error("最多不能超过8位数字"));
+    //     } else {
+    //       callback();
+    //     }
+    //   } else {
+    //     callback();
+    //   }
+    // };
     // 验证可售渠道
     var checkSalableChannel = (rule, value, callback) => {
       if (this.checkedChannels.length) {
@@ -1106,7 +1270,6 @@ export default {
         callback(new Error("请选择渠道"));
       }
     };
-
     return {
       uploadHeaders: {
         Authorization: this.$store.state.loginToken,
@@ -1138,6 +1301,7 @@ export default {
       },
       // 添加权益的dialog
       formData: {
+        equalOrNot: true, //需要结果等于equityCategory还是不等于
         equityName: "", //权益名称
         equityType: "", //权益类型
         equityCategory: "", //权益类别
@@ -1159,6 +1323,13 @@ export default {
         { name: "生日赠券", value: "birthday" },
         { name: "代金卷", value: "voucher" }
       ], //权益类别列表
+      equityCategoryList2: [
+        { name: "影票折扣", value: "movie" },
+        { name: "卖品折扣", value: "goods" },
+        { name: "生日赠券", value: "birthday" },
+        { name: "代金卷", value: "voucher" },
+        { name: "次卡", value: "time_card" }
+      ], //次卡卡政策时的权益类别列表
       previewDialog: false, // 预览权益dialog显示/隐藏
       equityDialog: false, // 权益dialog显示/隐藏
       dialogVisible: false,
@@ -1191,8 +1362,10 @@ export default {
       dayBuyTicketLimit: false, //每日购票上限
       weekBuyTicketLimit: false, //每周购票上限
       monthBuyTicketLimit: false, //每月购票上限
-      filmBuyTicketLimit: false, //每部影片上限
+      // filmBuyTicketLimit: false, //每部影片上限
       ruleForm: {
+        salableChannel: "",
+        cardStyle: "enjoy_gold",
         // 新增礼品卡、次卡、月卡字段
         cardProductExtVO: {
           cardValue: "", //卡面值
@@ -1204,12 +1377,12 @@ export default {
           endTime: "", //有效期结束时间
           customTimeNum: "", //	自定义时间数
           customTimeUnit: "day", //自定义时间单位
-          outTicketType: "0", //出票类型
-          outTicketAmount: "", //出票金额
+          // outTicketType: "0", //出票类型
+          // outTicketAmount: "", //出票金额
           ticketLimitDay: "", //每日购票上限
           ticketLimitWeek: "", //每周购票上限
-          ticketLimitMonth: "", //每月购票上限
-          ticketLimitFilm: "" //每部影片上限
+          ticketLimitMonth: "" //每月购票上限
+          // ticketLimitFilm: "" //每部影片上限
         },
         tenantId: this.$store.state.loginUser.consumerId, //租户id
         cardName: "", //卡政策名称
@@ -1245,7 +1418,7 @@ export default {
         // limitNumber: "10000", // 限制开卡数
         workTimeType: "month", //有效期类型
         yearRule: {
-          price: "0", //卡年费
+          price: "", //卡年费
           freeAnnualFee: "", //total_ticket:累计购票，total_consume：消费累计
           freeAnnualNum: "", //免年费次数 或 免年费消费金额
           firstYearFee: 0, // 首年是否免年费
@@ -1286,11 +1459,11 @@ export default {
         "cardProductExtVO.watchTickets": [
           { required: true, validator: checkWatchTickets, trigger: "blur" }
         ],
-        "cardProductExtVO.outTicketAmount": [
-          { required: true, validator: checkOutTicket, trigger: "blur" }
-        ],
+        // "cardProductExtVO.outTicketAmount": [
+        //   { required: true, validator: checkOutTicket, trigger: "blur" }
+        // ],
         "cardProductExtVO.watchTimesIntime": [
-          { required: true, validator: checkOutTicket, trigger: "blur" }
+          { required: true, validator: checkWatchTimesIntime, trigger: "blur" }
         ],
         "cardProductExtVO.validTimeType": [
           { required: true, validator: checkValidTime, trigger: "blur" }
@@ -1304,9 +1477,9 @@ export default {
         "cardProductExtVO.ticketLimitMonth": [
           { required: true, validator: checkTicketLimitMonth, trigger: "blur" }
         ],
-        "cardProductExtVO.ticketLimitFilm": [
-          { required: true, validator: checkTicketLimitFilm, trigger: "blur" }
-        ],
+        // "cardProductExtVO.ticketLimitFilm": [
+        //   { required: true, validator: checkTicketLimitFilm, trigger: "blur" }
+        // ],
         makeUpPrice: [
           { required: true, validator: checkMoney, trigger: "blur" }
         ],
@@ -1340,9 +1513,6 @@ export default {
         ],
         cardTypeCode: [
           { required: true, message: "请选择卡类型", trigger: "change" }
-        ],
-        withCash: [
-          { required: false, message: "请选择方式", trigger: "change" }
         ],
         // integralRule: [
         //   { required: true, validator: checkIntegralRule, trigger: "blur" }
@@ -1390,22 +1560,16 @@ export default {
     }
   },
   mounted() {
-    this.$crmList
-      .channelList({ tenantId: this.$store.state.loginUser.consumerId })
-      .then(res => {
-        this.channels = res;
-        this.allChannels = res;
-        // 添加时的初始化
-        this.checkedChannels = res.map(item => {
-          return item.desc + "," + item.code;
-        });
-        this.$route.query.cardId
-          ? this.getcardTypeInfo(this.$route.query.cardId)
-          : console.log("添加卡");
-      });
+    this.getChannels();
   },
   mixins: [fixStepMixin],
   watch: {
+    "ruleForm.cardTypeCode": {
+      handler(newName, oldName) {
+        this.$refs["ruleForm"].clearValidate();
+      },
+      deep: true
+    },
     "ruleForm.canDelay": {
       handler(newName, oldName) {
         if (newName == "no_delay") {
@@ -1415,22 +1579,28 @@ export default {
       },
       deep: true
     },
+    "ruleForm.merchantList": {
+      handler(newName, oldName) {
+        this.$refs["ruleForm"].clearValidate("merchantList");
+      },
+      deep: true
+    },
     "ruleForm.equityList": {
       handler(newName, oldName) {
         this.$refs["ruleForm"].clearValidate("equityList");
       },
       deep: true
     },
-    "ruleForm.cardProductExtVO.outTicketType": {
-      handler(newType, oldType) {
-        if (newType == "0") {
-          this.$refs["ruleForm"].clearValidate(
-            "cardProductExtVO.outTicketAmount"
-          );
-        }
-      },
-      deep: true
-    },
+    // "ruleForm.cardProductExtVO.outTicketType": {
+    //   handler(newType, oldType) {
+    //     if (newType == "0") {
+    //       this.$refs["ruleForm"].clearValidate(
+    //         "cardProductExtVO.outTicketAmount"
+    //       );
+    //     }
+    //   },
+    //   deep: true
+    // },
     "ruleForm.cardProductExtVO.validTimeType": {
       handler(newType, oldType) {
         if (newType != oldType) {
@@ -1472,17 +1642,53 @@ export default {
         );
       },
       deep: true
-    },
-    filmBuyTicketLimit: {
-      handler(newType, oldType) {
-        this.$refs["ruleForm"].clearValidate(
-          "cardProductExtVO.ticketLimitFilm"
-        );
-      },
-      deep: true
     }
+    // filmBuyTicketLimit: {
+    //   handler(newType, oldType) {
+    //     this.$refs["ruleForm"].clearValidate(
+    //       "cardProductExtVO.ticketLimitFilm"
+    //     );
+    //   },
+    //   deep: true
+    // }
   },
   methods: {
+    // 清空权益类别时的回调
+    handleClearCategory() {
+      this.$set(this.formData, "equityCategory", "");
+    },
+    // 改变权益类型时的回调
+    handleChangeEquityType(val) {
+      if (val != "consumer_type") {
+        this.$set(this.formData, "equityCategory", "");
+      }
+    },
+    // dialog内删除已选权益
+    dialogDeleteEquity(index) {
+      this.multipleSelectionItem.splice(index, 1);
+      this.$refs.multipleTable.clearSelection();
+      this.rowMultipleChecked(this.multipleSelectionItem);
+    },
+    // 清空dialog内已选权益
+    handleEmpty() {
+      this.multipleSelectionItem = [];
+      this.$refs.multipleTable.clearSelection();
+    },
+    getChannels() {
+      this.$crmList
+        .channelList({ tenantId: this.$store.state.loginUser.consumerId })
+        .then(res => {
+          this.channels = res;
+          this.allChannels = res;
+          // 添加时的初始化
+          this.checkedChannels = res.map(item => {
+            return item.code;
+          });
+          this.$route.query.cardId
+            ? this.getcardTypeInfo(this.$route.query.cardId)
+            : console.log("添加卡");
+        });
+    },
     // 有效期
     changeTimeNum(val) {
       this.$set(this.ruleForm.cardProductExtVO, "customTimeNum", val);
@@ -1499,14 +1705,16 @@ export default {
         this.$set(this.ruleForm.cardProductExtVO, "ticketLimitWeek", val);
       } else if (flag == "month") {
         this.$set(this.ruleForm.cardProductExtVO, "ticketLimitMonth", val);
-      } else if (flag == "film") {
-        this.$set(this.ruleForm.cardProductExtVO, "ticketLimitFilm", val);
       }
+      /*  else if (flag == "film") {
+        this.$set(this.ruleForm.cardProductExtVO, "ticketLimitFilm", val);
+      } 
+      */
     },
     // 出票金额
-    changeOutTicketAmount(val) {
-      this.$set(this.ruleForm.cardProductExtVO, "outTicketAmount", val);
-    },
+    // changeOutTicketAmount(val) {
+    //   this.$set(this.ruleForm.cardProductExtVO, "outTicketAmount", val);
+    // },
     // 卡样式上传成功之后
     imgUploaded(response, file, fileList) {
       if (!response.data) {
@@ -1543,16 +1751,24 @@ export default {
     },
     // 点击选择商户dialog的确定、取消按钮
     handleChangeMerchantDialog(status) {
-      this.merchantDialog = false;
       if (status) {
-        this.currentMerchantRow = this.temporaryCurrentMerchantRow;
+        if (JSON.stringify(this.temporaryCurrentMerchantRow) != "{}") {
+          this.merchantDialog = false;
+          this.currentMerchantRow = this.temporaryCurrentMerchantRow;
+        } else {
+          this.merchantDialog = true;
+          this.$message.warning("请选择一个商户");
+          return false;
+        }
       } else {
+        this.merchantDialog = false;
         this.temporaryCurrentMerchantRow = this.currentMerchantRow;
       }
     },
     // 删除商户
-    handleClose(tag) {
+    handleClose() {
       this.currentMerchantRow = {};
+      this.temporaryCurrentMerchantRow = {};
       this.merchantRadio = "";
     },
     // 选择商户时 点击单选按钮
@@ -1623,8 +1839,15 @@ export default {
       }
     },
     // 切换卡类型时
-    handleChangeCardType(formName) {
-      this.$refs[formName].clearValidate();
+    handleChangeCardType(val, formName) {
+      Object.assign(this.$data, this.$options.data.call(this));
+      if (val != "cobranded_card") {
+        this.getChannels();
+      }
+      this.$nextTick(function() {
+        this.$refs["ruleForm"].clearValidate();
+        this.ruleForm.cardTypeCode = val;
+      });
     },
     // 过滤权益类别
     equityCategoryNameShow(row, column, cellValue, index) {
@@ -1636,10 +1859,17 @@ export default {
     },
     // 点击权益dialog的确定、取消按钮
     changeEquityDialog(ok) {
-      this.equityDialog = false;
       if (ok) {
-        this.ruleForm.equityList = new Array(...this.multipleSelectionItem);
+        if (new Array(...this.multipleSelectionItem).length == 0) {
+          this.equityDialog = true;
+          this.$message.warning("请至少选择一项权益");
+          return false;
+        } else {
+          this.equityDialog = false;
+          this.ruleForm.equityList = new Array(...this.multipleSelectionItem);
+        }
       } else {
+        this.equityDialog = false;
         this.multipleSelectionItem = new Array(...this.ruleForm.equityList);
       }
     },
@@ -1738,6 +1968,15 @@ export default {
     // 搜索自有权益
     search() {
       let params = JSON.parse(JSON.stringify(this.formData));
+      if (
+        this.ruleForm.cardTypeCode != "times_card" &&
+        params.equityCategory == ""
+      ) {
+        params.equalOrNot = false;
+        params.equityCategory = "time_card";
+      } else {
+        params.equalOrNot = true;
+      }
       this.$crmList
         .getEquityList(params)
         .then(data => {
@@ -1755,6 +1994,7 @@ export default {
     },
     // 重置
     resetForm(formName) {
+      console.log(this.$refs[formName], this.$refs[formName].resetFields());
       this.$refs[formName].resetFields();
     },
     // 免年费机制类型改变
@@ -1795,7 +2035,7 @@ export default {
         }
       }
       this.checkedChannels = res.map(item => {
-        return item.channelName + "," + item.channelNo;
+        return item.channelNo;
       });
     },
 
@@ -1891,48 +2131,51 @@ export default {
           formatDate.cardProductExtVO.customTimeUnit = "day";
         }
       }
-      // 有效期内观影次数
-      if (
-        formatDate.cardProductExtVO.watchTimesIntime == "-1" ||
-        formatDate.cardProductExtVO.watchTimesIntime == null
-      ) {
-        this.watchTimesType = "0";
-        formatDate.cardProductExtVO.watchTimesIntime = "";
-      } else {
-        this.watchTimesType = "1";
-      }
-      // 购票限制
-      if (
-        formatDate.cardProductExtVO.ticketLimitDay == "" ||
-        formatDate.cardProductExtVO.ticketLimitDay == null
-      ) {
-        this.dayBuyTicketLimit = false;
-      } else {
-        this.dayBuyTicketLimit = true;
-      }
-      if (
-        formatDate.cardProductExtVO.ticketLimitWeek == "" ||
-        formatDate.cardProductExtVO.ticketLimitWeek == null
-      ) {
-        this.weekBuyTicketLimit = false;
-      } else {
-        this.weekBuyTicketLimit = true;
-      }
-      if (
-        formatDate.cardProductExtVO.ticketLimitMonth == "" ||
-        formatDate.cardProductExtVO.ticketLimitMonth == null
-      ) {
-        this.monthBuyTicketLimit = false;
-      } else {
-        this.monthBuyTicketLimit = true;
-      }
-      if (
-        formatDate.cardProductExtVO.ticketLimitFilm == "" ||
-        formatDate.cardProductExtVO.ticketLimitFilm == null
-      ) {
-        this.filmBuyTicketLimit = false;
-      } else {
-        this.filmBuyTicketLimit = true;
+      // 包月卡有效期内观影次数、购票限制
+      if (formatDate.cardTypeCode == "month_card") {
+        // 有效期内观影次数
+        if (
+          formatDate.cardProductExtVO.watchTimesIntime == "-1" ||
+          formatDate.cardProductExtVO.watchTimesIntime == null
+        ) {
+          this.watchTimesType = "0";
+          formatDate.cardProductExtVO.watchTimesIntime = "";
+        } else {
+          this.watchTimesType = "1";
+        }
+        // 购票限制
+        if (
+          formatDate.cardProductExtVO.ticketLimitDay == "" ||
+          formatDate.cardProductExtVO.ticketLimitDay == null
+        ) {
+          this.dayBuyTicketLimit = false;
+        } else {
+          this.dayBuyTicketLimit = true;
+        }
+        if (
+          formatDate.cardProductExtVO.ticketLimitWeek == "" ||
+          formatDate.cardProductExtVO.ticketLimitWeek == null
+        ) {
+          this.weekBuyTicketLimit = false;
+        } else {
+          this.weekBuyTicketLimit = true;
+        }
+        if (
+          formatDate.cardProductExtVO.ticketLimitMonth == "" ||
+          formatDate.cardProductExtVO.ticketLimitMonth == null
+        ) {
+          this.monthBuyTicketLimit = false;
+        } else {
+          this.monthBuyTicketLimit = true;
+        }
+        // if (
+        //   formatDate.cardProductExtVO.ticketLimitFilm == "" ||
+        //   formatDate.cardProductExtVO.ticketLimitFilm == null
+        // ) {
+        //   this.filmBuyTicketLimit = false;
+        // } else {
+        //   this.filmBuyTicketLimit = true;
+        // }
       }
 
       return formatDate;
@@ -1952,17 +2195,22 @@ export default {
     // 表单提交前的 可售渠道处理
     handleSalableChannel(data) {
       data.list = [];
-      if (this.checkedChannels.length == this.channels.length) {
-        this.checkedChannels.push("全选,all_channels");
-        data.list = this.checkedChannels;
-      } else {
-        data.list = this.checkedChannels;
+      for (var i = 0; i < this.checkedChannels.length; i++) {
+        for (var k = 0; k < this.channels.length; k++) {
+          if (this.checkedChannels[i] == this.channels[k].code) {
+            data.list.push(this.channels[k].desc + "," + this.channels[k].code);
+            break;
+          }
+        }
+      }
+      if (data.list.length == this.channels.length) {
+        data.list.push("全选,all_channels");
       }
       return data;
     },
     // 取消提交
     handleCancle(formName) {
-      this.$refs[formName].resetFields();
+      this.$store.commit("tagNav/removeTagNav", this.$route);
       this.$router.push({ path: "/member/cardTypeManagement/list" });
     },
     // 相同权益dialog点击确定时
@@ -1977,6 +2225,10 @@ export default {
       // 处理商户
       if (this.ruleForm.cardTypeCode == "cobranded_card") {
         data.merchantList = [this.currentMerchantRow];
+      }
+      // 处理首充最小金额
+      if (this.ruleForm.cardTypeCode != "stored_card") {
+        data.firstChargeMin = "";
       }
       // 处理礼品卡
       if (this.ruleForm.cardTypeCode == "gift_card") {
@@ -2018,9 +2270,9 @@ export default {
           data.cardProductExtVO.endTime = "";
         }
         // 次卡、包月卡出票金额
-        if (data.cardProductExtVO.outTicketType == "0") {
-          data.cardProductExtVO.outTicketAmount = "";
-        }
+        // if (data.cardProductExtVO.outTicketType == "0") {
+        //   data.cardProductExtVO.outTicketAmount = "";
+        // }
         // 包月卡有效期内观影次数
         if (this.watchTimesType == "0") {
           data.cardProductExtVO.watchTimesIntime = "-1";
@@ -2035,9 +2287,9 @@ export default {
         if (!this.monthBuyTicketLimit) {
           data.cardProductExtVO.ticketLimitMonth = "";
         }
-        if (!this.filmBuyTicketLimit) {
-          data.cardProductExtVO.ticketLimitFilm = "";
-        }
+        // if (!this.filmBuyTicketLimit) {
+        //   data.cardProductExtVO.ticketLimitFilm = "";
+        // }
       }
       // 处理权益
       data.equityList = data.equityList.map(item => {
@@ -2049,33 +2301,13 @@ export default {
           equityCategoryName: item.equityCategoryName
         };
       });
-      // if (this.$route.query.cardId) {
-      //   data.equityList = data.equityList.map(item => {
-      //     return {
-      //       equityId: item.equityId ? item.equityId : item.id,
-      //       equityName: item.equityName,
-      //       equityType: item.equityType,
-      //       equityCategory: item.equityCategory,
-      //       equityCategoryName: item.equityCategoryName
-      //     };
-      //   });
-      // } else {
-      //   data.equityList = data.equityList.map(item => {
-      //     return {
-      //       equityId: item.id,
-      //       equityName: item.equityName,
-      //       equityType: item.equityType,
-      //       equityCategory: item.equityCategory,
-      //       equityCategoryName: item.equityCategoryName
-      //     };
-      //   });
-      // }
 
       if (this.$route.query.cardId) {
         this.$crmList
           .editcardTypeInfo(data)
           .then(res => {
             this.$message.success("修改成功");
+            this.$store.commit("tagNav/removeTagNav", this.$route);
             this.$router.push({
               path: "/member/cardTypeManagement/detail",
               query: { cardProductId: this.$route.query.cardId }
@@ -2090,6 +2322,7 @@ export default {
           .addCardType(data)
           .then(res => {
             this.$message.success("添加成功");
+            this.$store.commit("tagNav/removeTagNav", this.$route);
             this.$router.push({
               path: "/member/cardTypeManagement/detail",
               query: { cardProductId: res.id }
@@ -2105,40 +2338,19 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate(valid => {
         if (valid) {
-          // 查看是否存在相同类别的权益
-          function repeatArray(arr) {
-            var temp = []; //一个新的临时数组
-            var repeatArr = []; // 重复的数组
-            for (var i = 0; i < arr.length; i++) {
-              if (arr[i].equityType == "consumer_type") {
-                if (temp.indexOf(arr[i].equityCategoryName) == -1) {
-                  temp.push(arr[i].equityCategoryName);
-                } else if (
-                  temp.indexOf(arr[i].equityCategoryName) != -1 &&
-                  arr[i].equityCategoryName != null
-                ) {
-                  repeatArr.push(arr[i].equityCategoryName);
-                }
-              }
+          if (this.ruleForm.cardTypeCode == "month_card") {
+            if (
+              !this.dayBuyTicketLimit &&
+              !this.weekBuyTicketLimit &&
+              !this.monthBuyTicketLimit
+            ) {
+              this.$message.warning("请至少选择一种购票限制");
+              return false;
+            } else {
+              this.checkEquity();
             }
-            return repeatArr;
-          }
-          var val = this.ruleForm.equityList;
-          if (repeatArray(val).length > 0) {
-            this.sameCategoryDialog = true;
-            function uniq(array) {
-              var sameArr = [];
-              for (var i = 0; i < array.length; i++) {
-                //如果当前数组的第i项在当前数组中第一次出现的位置是i，才存入数组；否则代表是重复的
-                if (array.indexOf(array[i]) == i) {
-                  sameArr.push(array[i]);
-                }
-              }
-              return sameArr;
-            }
-            this.sameCategory = uniq(repeatArray(val)).join("、");
           } else {
-            this.handleSave();
+            this.checkEquity();
           }
         } else {
           console.log("error submit!!");
@@ -2146,10 +2358,47 @@ export default {
         }
       });
     },
+    checkEquity() {
+      // 查看是否存在相同类别的权益
+      function repeatArray(arr) {
+        var temp = []; //一个新的临时数组
+        var repeatArr = []; // 重复的数组
+        for (var i = 0; i < arr.length; i++) {
+          if (arr[i].equityType == "consumer_type") {
+            if (temp.indexOf(arr[i].equityCategoryName) == -1) {
+              temp.push(arr[i].equityCategoryName);
+            } else if (
+              temp.indexOf(arr[i].equityCategoryName) != -1 &&
+              arr[i].equityCategoryName != null
+            ) {
+              repeatArr.push(arr[i].equityCategoryName);
+            }
+          }
+        }
+        return repeatArr;
+      }
+      var val = this.ruleForm.equityList;
+      if (repeatArray(val).length > 0) {
+        this.sameCategoryDialog = true;
+        function uniq(array) {
+          var sameArr = [];
+          for (var i = 0; i < array.length; i++) {
+            //如果当前数组的第i项在当前数组中第一次出现的位置是i，才存入数组；否则代表是重复的
+            if (array.indexOf(array[i]) == i) {
+              sameArr.push(array[i]);
+            }
+          }
+          return sameArr;
+        }
+        this.sameCategory = uniq(repeatArray(val)).join("、");
+      } else {
+        this.handleSave();
+      }
+    },
     handleCheckAllChange(val) {
       this.checkedChannels = val
         ? this.allChannels.map(item => {
-            return item.desc + "," + item.code;
+            return item.code;
           })
         : [];
       this.isIndeterminateChannel = false;
@@ -2179,6 +2428,8 @@ export default {
     letter-spacing: 0;
     text-align: center;
     cursor: pointer;
+    position: relative;
+    top: 6px;
   }
   .el-form--label-left .el-form-item__label {
     color: #666;
@@ -2211,7 +2462,7 @@ export default {
     }
     //   基础设置
     .card-type-basic-set {
-      padding: 0 15px;
+      padding: 0 15px 0 28px;
       .el-form-item__error {
         top: 40px !important;
       }
@@ -2277,7 +2528,7 @@ export default {
     }
     // 开卡/充值设置
     .open-card-recharge-set {
-      padding: 0 15px;
+      padding: 0 15px 0 28px;
       .el-form-item__error {
         top: 40px !important;
       }
@@ -2298,11 +2549,6 @@ export default {
             top: 40px !important;
           }
         }
-        .first-year-free-fee > .el-form-item__label {
-          line-height: 1;
-          position: relative;
-          top: 10px;
-        }
         .deductions-type {
           .el-form-item__error {
             top: 40px !important;
@@ -2319,7 +2565,7 @@ export default {
     }
     // 会员卡规则
     .card-rule {
-      padding: 0 15px;
+      padding: 0 15px 0 28px;
       .el-input {
         width: 178px;
       }
@@ -2356,10 +2602,24 @@ export default {
           top: 40px !important;
         }
       }
+      .merchant-list {
+        ._merchant-tags {
+          position: relative;
+          top: 5px;
+          left: 15px;
+        }
+        .el-form-item__error {
+          top: 36px;
+        }
+      }
     }
     // 会员卡权益
     .card-equity {
-      padding: 0 15px;
+      // padding: 0 15px;
+      padding: 0 15px 0 28px;
+      .el-form-item__error {
+        top: 36px;
+      }
       .equity-item-wrap {
         display: flex;
         flex-wrap: wrap;
@@ -2379,8 +2639,9 @@ export default {
           }
           .white-dot {
             position: absolute;
-            height: 85px;
-            left: 4px;
+            height: 80px;
+            top: -2px;
+            left: 8px;
           }
           .coupon-item-type {
             font-family: MicrosoftYaHei;
@@ -2455,25 +2716,15 @@ export default {
     }
   }
 }
-// 自有权益dialog样式
-.__equity-dialog {
-  .el-dialog__header {
-    padding: 10px 20px;
-  }
-  .el-dialog__body {
-    padding: 0px 20px;
-  }
-  .el-dialog__footer {
-    text-align: center;
-  }
-  .__table-wrap {
-    border-top: 1px solid #f5f5f5;
-    padding-top: 10px;
-    .el-form-item {
-      margin: 0 5px 5px 0;
-    }
-    .heightBug input {
-      height: 32px !important;
+// 相同权益的dialog
+.__same-equity-dialog {
+  .el-dialog {
+    width: 576px;
+    height: auto !important;
+    .__same-equity-desc {
+      text-align: center;
+      height: 238px;
+      padding-top: 80px;
     }
   }
 }

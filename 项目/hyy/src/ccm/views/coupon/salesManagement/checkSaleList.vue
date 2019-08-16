@@ -1,5 +1,5 @@
 <template>
-<div>
+<div class="coupon-checkSaleList">
     <el-collapse v-model="activeNames">
         <template v-for="item in config">
             <el-collapse-item :key="item.itemName" :title="item.title" :name="item.itemName">
@@ -84,7 +84,7 @@
                 </el-row>
             </template>
         </el-collapse-item>
-        <el-row class="flex-base flex-center">
+        <el-row class="flex-base flex-center fixed-btn">
             <el-button type="primary" @click="returnPath">返回</el-button>
         </el-row>
     </el-collapse>
@@ -99,7 +99,7 @@ export default {
             baseUrl : config.baseURL,
             activeNames: ['baseInfo', 'commonInfo', 'ruleInfo'],
             itemTitle: {
-                width: '120'
+                width: '80'
             },
             config: [{
                     itemName: 'baseInfo',
@@ -273,17 +273,24 @@ export default {
                             isShow:true
                         },
                         {
-                            title: '消费渠道',
+                            title: '交易渠道',
                             value: '',
                             type: 'text',
                             prop: 'consumeWayCode',
                             isShow:true
                         },
                         {
-                            title: '消费者身份',
+                            title: '会员等级',
                             value: '',
                             type: 'text',
-                            prop: 'consumerTypeKey',
+                            prop: 'customerLevelCode',
+                            isShow:true
+                        },
+                        {
+                            title: '会员卡政策',
+                            value: '',
+                            type: 'text',
+                            prop: 'cardRightCode',
                             isShow:true
                         },
                         {
@@ -443,8 +450,12 @@ export default {
         searchAttachFileName(file) {
             let url = this.baseUrl + file.src;
             console.log(url)
-            let headers = {
-                 "Cpm-User-Token": localStorage.getItem("token")
+            let headers = {}
+            if(this.$store.state.CpmUserKey){
+                headers['Cpm-User-Token'] = this.$store.state.CpmUserKey;
+            }
+            if (sessionStorage.getItem('token')) {
+                headers['Cpm-User-Token'] = sessionStorage.getItem('token');
             }
             axios(url, {
                 headers,
@@ -713,40 +724,57 @@ export default {
             let consumeWayCodeVal = commonInfoObj[`consumeWayCode`];
             let consumeWayCodeValue = '不限';
             if (consumeWayCodeVal) {
-                let keysObj = {
-                    0: "柜台",
-                    1: "自助终端",
-                    2: "官方网站",
-                    3: "手机及微信",
-                    4: "电话",
-                    T: "第三方渠道"
-                };
-                let waysArr = consumeWayCodeVal.value.split(',');
-                consumeWayCodeValue = '';
-                waysArr.forEach((item, index) => {
-                    consumeWayCodeValue += `${keysObj[`${item}`]}`;
-                    if (index != waysArr.length - 1) {
-                        consumeWayCodeValue += ', ';
-                    }
-                })
+                console.log("交易渠道",consumeWayCodeVal)
+                // let keysObj = {
+                //     0: "柜台",
+                //     1: "自助终端",
+                //     2: "官方网站",
+                //     3: "手机及微信",
+                //     4: "电话",
+                //     T: "第三方渠道"
+                // };
+                // let waysArr = consumeWayCodeVal.value.split(',');
+                // consumeWayCodeValue = '';
+                // waysArr.forEach((item, index) => {
+                //     consumeWayCodeValue += `${keysObj[`${item}`]}`;
+                //     if (index != waysArr.length - 1) {
+                //         consumeWayCodeValue += ', ';
+                //     }
+                // })
+                consumeWayCodeValue =  consumeWayCodeVal.text
             }
             commonInfoArr[5].value = consumeWayCodeValue;
 
-            // 消费者身份
-            let consumerTypeKeyVal = commonInfoObj[`consumerTypeKey`];
+            let keysObj = {
+                    normalIn: '包含：',
+                    normalNotIn: '不包含：',
+                    AllMember:'全部政策：',
+                    not_memberOperator:'非会员:'
+                }
+            // 会员等级
+            let consumerTypeKeyVal = commonInfoObj[`customerLevelCode`];
             let consumerTypeKeyValue = '不限';
             if (consumerTypeKeyVal) {
                 let opUniqueName = consumerTypeKeyVal.opUniqueName;
-                let keysObj = {
-                    AllMember: '全部会员',
-                    normalIn: '指定会员等级：'
-                }
+                
                 consumerTypeKeyValue = keysObj[`${opUniqueName}`];
-                if (opUniqueName == 'normalIn') {
+                if (opUniqueName == 'normalIn' || opUniqueName == 'normalNotIn') {
                     consumerTypeKeyValue += consumerTypeKeyVal.text;
                 }
             }
             commonInfoArr[6].value = consumerTypeKeyValue;
+            //会员卡政策
+            let cardRightCodeVal = commonInfoObj[`cardRightCode`];
+            let cardRightCodeValue = '不限';
+            if (cardRightCodeVal) {
+                let opUniqueName = cardRightCodeVal.opUniqueName;
+                
+                cardRightCodeValue = keysObj[`${opUniqueName}`];
+                if (opUniqueName == 'normalIn' || opUniqueName == 'normalNotIn') {
+                    cardRightCodeValue += cardRightCodeVal.text;
+                }
+            }
+            commonInfoArr[7].value = cardRightCodeValue;
 
             // 会员生日
             let birthdayVal = commonInfoObj[`birthday`];
@@ -763,7 +791,7 @@ export default {
                     birthdayValue = birthdayValue.replace(/\N/, birthdayVal.value);
                 }
             }
-            commonInfoArr[7].value = birthdayValue;
+            commonInfoArr[8].value = birthdayValue;
 
         },
         /**
@@ -869,7 +897,7 @@ export default {
                         actions,
                         ruleConditions
                     };
-
+                        console.log("actionsObj",actionsObj)
                     // 优惠
                     if (!isShowTotalAddPrice) {
                         tableItem[`count`] = actionsObj[`amount`] ? actionsObj[`amount`].value : '不限';
@@ -1061,13 +1089,14 @@ export default {
 
 .baseItem {
     margin-bottom: 10px;
-
+    display: flex;
     .item-title {
         text-align: right;
         @include font-base;
     }
 
     .item-content {
+        flex: 1;
         margin-left: 16px;
         @include font-base;
     }
@@ -1156,4 +1185,22 @@ export default {
     @include font-base;
     color: #666666;
 }
+.fixed-btn{
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%)
+}
+</style>
+<style lang="scss">
+.coupon-checkSaleList{
+    .el-collapse-item__header::after{
+        display: none
+    }
+    .el-collapse-item__header{
+        display: flex;
+        justify-content:flex-end;
+        flex-direction: row-reverse;
+    }
+}   
 </style>

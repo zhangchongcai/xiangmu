@@ -1,13 +1,13 @@
 <template>
     <div class="content-wrapper">
         <div class="list-wrapper">
-            <el-form :model="ruleForm" :rules="rules" label-width="120px" ref="ruleForm" class="demo-ruleForm">
+            <el-form :model="ruleForm" :rules="rules" label-width="98px" ref="ruleForm">
                 <el-form-item label="客户编码：" prop="code">
                     <el-input v-model="ruleForm.code" :disabled="flag"></el-input>
                 </el-form-item>
                 <el-form-item label="客户类型：" prop="type">
                     <el-input v-model="ruleForm.type" :disabled="true" v-if="flag"></el-input>
-                    <el-select v-model="ruleForm.type" placeholder="请选择" v-else style="width:40%">
+                    <el-select v-model="ruleForm.type" placeholder="请选择" v-else style="width:360px">
                         <el-option
                                 v-for="item in typeArr"
                                 :key="item.propertyCode"
@@ -26,7 +26,7 @@
                 <el-form-item label="社会信用代码：" prop="socialCreditCode" >
                     <el-input v-model="ruleForm.socialCreditCode" :disabled="flag"></el-input>
                 </el-form-item>
-                <el-form-item label="所属城市：" v-if="$route.query.type!=3">
+                <el-form-item label="所属城市：" v-if="$route.query.type!=3" style="height:34px">
                     <el-col :span="4">
                         <el-form-item prop="provinceCode">
                             <el-select
@@ -86,7 +86,7 @@
                             type="textarea"
                             :autosize="{ minRows: 1, maxRows: 2}"></el-input>
                 </el-form-item>
-                <el-form-item prop="remark" label="备注：">
+                <el-form-item prop="remark" label="备注：" style="clear: both">
                     <el-input
                             :disabled="flag"
                             type="textarea"
@@ -95,21 +95,23 @@
                             v-model="ruleForm.remark">
                     </el-input>
                 </el-form-item>
-                <el-form-item label="联系人信息：" prop="" style="margin-bottom:50px" >
-                    <el-button style="float: right;margin-bottom:6px;" type="primary" @click="addContacts" v-if="!flag">增加</el-button>
+                <el-form-item label="联系人信息：" prop="" style="margin-bottom:2px;" >
+                    <el-button style="float: right;" type="primary" @click="addContacts" v-if="!flag">增加</el-button>
+                </el-form-item>
+                <div class="people" style="margin-bottom: 24px;margin-left: 98px">
                     <el-table
                             :data="tableData"
-                            style="width: 100%"
-                            >
+                            style="width: 100%;"
+                    >
                         <el-table-column
                                 prop="name"
                                 label="联系人"
-                                >
+                        >
                         </el-table-column>
                         <el-table-column
                                 prop="mobile"
                                 label="联系电话"
-                                >
+                        >
                         </el-table-column>
                         <el-table-column
                                 prop="job"
@@ -138,7 +140,7 @@
                             </template>
                         </el-table-column>
                     </el-table>
-                </el-form-item>
+                </div>
                 <el-form-item style="display: flex;justify-content: space-between;">
                     <el-button type="primary" @click="submitForm('ruleForm')" v-if="!flag">保存</el-button>
                     <el-button @click="resetForm('ruleForm')" v-if="!flag">取消</el-button>
@@ -146,8 +148,8 @@
                 </el-form-item>
             </el-form>
         </div>
-        <el-dialog :visible.sync="dialogFormVisible" title="新建联系人">
-            <el-form :model="form" ref="form" :rules="userRules" label-width="100px">
+        <el-dialog :visible.sync="dialogFormVisible" title="新建联系人" width="448px" lock-scroll>
+            <el-form :model="form" ref="form" :rules="userRules" label-width="92px" size="mini">
                 <el-form-item label="联系人：" prop="name">
                     <el-input v-model="form.name" ></el-input>
                 </el-form-item>
@@ -165,9 +167,9 @@
                     <el-radio v-model="form.status" label="2">否</el-radio>
                 </el-form-item>
             </el-form>
-            <div slot="footer" class="dialog-footer">
-                <el-button @click="cancelDialogForm('form')">取 消</el-button>
+            <div slot="footer" class="dialog-footer" style="margin-bottom: 32px">
                 <el-button type="primary" @click="dialogSubmit('form')">确 定</el-button>
+                <el-button @click="cancelDialogForm('form')">取 消</el-button>
             </div>
         </el-dialog>
     </div>
@@ -206,7 +208,7 @@
         }
       }
       let consumerFullName = (rule, value, callback) => {
-        let nameReg = /^[\u4E00-\u9FA5A-Za-z0-9]{1,50}$/
+        let nameReg = /^[\u4E00-\u9FA5A-Za-z0-9`~!@#$%^&*()_+<>?:"{},.【】\\/;\-'[\]\s\u3002|\uff1f|\uff01|\uff0c|\u3001|\uff1b|\uff1a|\u201c|\u201d|\u2018|\u2019|\uff08|\uff09|\u300a|\u300b|\u3008|\u3009|\u3010|\u3011|\u300e|\u300f|\u300c|\u300d|\ufe43|\ufe44|\u3014|\u3015|\u2026|\u2014|\uff5e|\ufe4f|\uffe5]{1,50}$/
         if(!value) {
           return callback(new Error('请输入客户全称'));
         }else{
@@ -231,7 +233,7 @@
         }
       }
       let code = (rule, value, callback) => {
-        let nameReg = /^[A-Za-z0-9`~!@#$%^&*()_+<>?:"{},.\\/;'[\]]{1,20}$/
+        let nameReg = /^[\u4E00-\u9FA5A-Za-z0-9`~!@#$%^&*()_+<>?:"{},.【】\\/;\-'[\]\s\u3002|\uff1f|\uff01|\uff0c|\u3001|\uff1b|\uff1a|\u201c|\u201d|\u2018|\u2019|\uff08|\uff09|\u300a|\u300b|\u3008|\u3009|\u3010|\u3011|\u300e|\u300f|\u300c|\u300d|\ufe43|\ufe44|\u3014|\u3015|\u2026|\u2014|\uff5e|\ufe4f|\uffe5]{1,20}$/
         if(!value) {
           return callback(new Error('请输入客户编码'));
         }else{
@@ -256,7 +258,7 @@
         }
       }
       let consumerName = (rule, value, callback) => {
-        let nameReg = /^[\u4E00-\u9FA5A-Za-z0-9]{1,50}$/
+        let nameReg = /^[\u4E00-\u9FA5A-Za-z0-9`~!@#$%^&*()_+<>?:"{},.【】\\/;\-'[\]\s\u3002|\uff1f|\uff01|\uff0c|\u3001|\uff1b|\uff1a|\u201c|\u201d|\u2018|\u2019|\uff08|\uff09|\u300a|\u300b|\u3008|\u3009|\u3010|\u3011|\u300e|\u300f|\u300c|\u300d|\ufe43|\ufe44|\u3014|\u3015|\u2026|\u2014|\uff5e|\ufe4f|\uffe5]{1,50}$/
         if(value) {
           if (!nameReg.test(value)) {
             callback(new Error('请输入数字、字母、或者汉字，长度在50个字符以内'))
@@ -281,7 +283,7 @@
         }
       }
       let name = (rule, value, callback) => {
-        let nameReg = /^[\u4E00-\u9FA5A-Za-z0-9]{1,20}$/
+        let nameReg = /^[\u4E00-\u9FA5A-Za-z0-9`~!@#$%^&*()_+<>?:"{},.【】\\/;\-'[\]\s\u3002|\uff1f|\uff01|\uff0c|\u3001|\uff1b|\uff1a|\u201c|\u201d|\u2018|\u2019|\uff08|\uff09|\u300a|\u300b|\u3008|\u3009|\u3010|\u3011|\u300e|\u300f|\u300c|\u300d|\ufe43|\ufe44|\u3014|\u3015|\u2026|\u2014|\uff5e|\ufe4f|\uffe5]{1,20}$/
         if(!value) {
           return callback(new Error('联系人名称不能为空'));
         }else{
@@ -292,13 +294,26 @@
           }
         }
       }
+      let remark = (rule, value, callback) => {
+        let nameReg = /^[\u4E00-\u9FA5A-Za-z0-9`~!@#$%^&*()_+<>?:"{},.【】\\/;\-'[\]\s\u3002|\uff1f|\uff01|\uff0c|\u3001|\uff1b|\uff1a|\u201c|\u201d|\u2018|\u2019|\uff08|\uff09|\u300a|\u300b|\u3008|\u3009|\u3010|\u3011|\u300e|\u300f|\u300c|\u300d|\ufe43|\ufe44|\u3014|\u3015|\u2026|\u2014|\uff5e|\ufe4f|\uffe5]{1,500}$/
+        if(value){
+          if (!nameReg.test(value)) {
+            callback(new Error('请输入字母、数字或者汉字，长度在500个字符以内'))
+          } else {
+            callback()
+          }
+        }else{
+          callback()
+        }
+      }
       let mobile = (rule, value, callback) => {
-        let phoneReg = /^1[34578]\d{9}$/
+        let phoneReg = /^(0|86|17951)?(13[0-9]|15[012356789]|17[01678]|18[0-9]|14[57])[0-9]{8}$/
+        let mobileReg = /^(0[0-9]{2,3}\-)([2-9][0-9]{6,7})+(\-[0-9]{1,4})?$/
         if(!value) {
           return callback(new Error('手机号不能为空'));
         }else{
-          if (!phoneReg.test(value)) {
-            callback(new Error('手机号格式有误'))
+          if (!phoneReg.test(value)&&!mobileReg.test(value)) {
+            callback(new Error('联系电话格式不正确，请输入正确的手机号或带区号的固定电话'))
           } else {
             callback()
           }
@@ -317,9 +332,9 @@
         }
       }
       let job = (rule, value, callback) => {
-        let jobReg = /^[\u4E00-\u9FA5A-Za-z0-9]{1,20}$/
+        let nameReg = /^[\u4E00-\u9FA5A-Za-z0-9`~!@#$%^&*()_+<>?:"{},.【】\\/;\-'[\]\s\u3002|\uff1f|\uff01|\uff0c|\u3001|\uff1b|\uff1a|\u201c|\u201d|\u2018|\u2019|\uff08|\uff09|\u300a|\u300b|\u3008|\u3009|\u3010|\u3011|\u300e|\u300f|\u300c|\u300d|\ufe43|\ufe44|\u3014|\u3015|\u2026|\u2014|\uff5e|\ufe4f|\uffe5]{1,20}$/
         if(value){
-          if (!jobReg.test(value)) {
+          if (!nameReg.test(value)) {
             callback(new Error('请输入数字、字母、或者汉字,长度在20个字符以内'))
           } else {
             callback()
@@ -329,7 +344,7 @@
         }
       }
       return {
-        // cacheField: ["ruleForm"],
+        cacheField: ["ruleForm",'form'],
         province: [],
         city: [],
         area: [],
@@ -382,7 +397,7 @@
             { validator: social, trigger: 'blur' },
           ],
           remark: [
-            { min: 0, max: 500, message: '长度在 0 到 500 个字符', trigger: 'blur' }
+            {validator: remark, trigger: 'blur' }
           ],
         },
         userRules:{
@@ -400,17 +415,6 @@
           ],
         },
       }
-    },
-    activated () {
-      // this.getData(this.$route.query.code);
-      // if (this.$route.query.id) {
-      //   if (this.$route.query.id != this.dataForm.id) {
-      //     this.getData(this.$route.query.id);
-      //   }
-      // }
-      // this.userDefaultParams = {
-      //   attributeType: this.user.attributeType
-      // }
     },
     created() {
         this.getProvinceData()
@@ -526,6 +530,7 @@
           });
       },
       goBack() {
+        this.$store.commit("tagNav/removeTagNav", this.$route)
         this.$router.push('index')
       },
       getData(val) {
@@ -585,8 +590,10 @@
               addCus(data)
                 .then(ret => {
                   if(ret && ret.code == 200){
-                    this.$router.push('index')
                     _this.success("添加成功")
+                    this.$store.commit("tagNav/removeTagNav", this.$route)
+                    this.$router.push('index')
+
                   }else{
                     _this.error(ret.msg)
                   }
@@ -617,6 +624,7 @@
                 .then(ret => {
                   if(ret && ret.code == 200){
                     _this.success('修改成功')
+                    this.$store.commit("tagNav/removeTagNav", this.$route)
                     this.$router.push('index')
                   }else{
                     _this.error(ret.msg)
@@ -632,6 +640,7 @@
       },
       resetForm(formName) {
         this.$refs[formName].resetFields();
+        this.$store.commit("tagNav/removeTagNav", this.$route)
         this.$router.go(-1)
       },
       handleDelete(index, row) {
@@ -705,25 +714,39 @@
 </script>
 <style lang="scss" scoped>
     .content-wrapper{
-        .el-col-2 {
-            color: #606266;
-        }
-        .el-col-3 {
-            width: 24%;
+        .el-col-4 {
+            width: 115px;
         }
         .el-input {
-            width: 40%;
+            width: 360px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
         .el-textarea{
-            width: 40%;
+            width: 360px;
         }
         .el-col-1{
-            width: 2%;
+            width: 8px;
             text-align: center;
         }
-    }
+        .el-form-item__content {
+            line-height: 34px;
+            height: 34px;
+        }
+        .el-form-item__label {
+            line-height: 34px;
+        }
+        .el-form-item {
+            margin-bottom: 24px;
+            height: 34px;
+        }
 
+    }
+    .el-dialog{
+        .el-input{
+            width:160px;
+            height:32px;
+        }
+    }
 </style>

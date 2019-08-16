@@ -6,7 +6,6 @@ const install = (Vue) => {
         return;
     }
     install.installed = true;
-
     Object.defineProperties(Vue.prototype, {
         //挂载在Vue原型的 $api 对象上
         $camList: {

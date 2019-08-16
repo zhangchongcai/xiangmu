@@ -1,440 +1,440 @@
 {
-	"赠送积分": {
-		"value": "",
-		"text": "",
-		"key": "presentPoint",
-		"groupId": 1,
-		"opUniqueName": "PresentPoint"
-	},
-	"赠送积分倍率": {
-		"value": "",
-		"text": "",
-		"key": "pointPersent",
-		"groupId": 18,
-		"opUniqueName": "PresentPointPersent"
-	},
-	"赠送会员卡储值额": {
-		"value": "",
-		"text": "",
-		"key": "presentMoney",
-		"groupId": 2,
-		"opUniqueName": "PresentMemberCardMoney"
-	},
-	"赠送票券": {
-		"key": "giftTicket",
-		"hasSon":true,
-		"票券名称": {
-			"value": "",
-			"text": "",
-			"key": "couponApplyCode",
-			"groupId": 3,
-			"opUniqueName": "PresentCoupon"
-		},
-		"数量": {
-			"value": "",
-			"text": "",
-			"key": "amount",
-			"groupId": 3,
-			"opUniqueName": "PresentCoupon"
-		},
-		"是否发送短信": {
-			"value": "",
-			"text": "",
-			"key": "isSendSms",
-			"groupId": 3,
-			"opUniqueName": "PresentCoupon"
-		}
-	},
-	"修改单票售价": {
-		"key": "updateTicketPrice",
-		"hasSon":true,
-		"调价方式": {
-			"value": "",
-			"text": "",
-			"key": "modifyWay",
-			"groupId": 15,
-			"opUniqueName": "FilmTicketPriceModify"
-		},
-		"调整额": {
-			"value": "",
-			"text": "",
-			"key": "modifyValue",
-			"groupId": 15,
-			"opUniqueName": "FilmTicketPriceModify"
-		},
-		"折扣后加减N元": {
-			"value": "",
-			"text": "",
-			"key": "addAmountAfterDiscount",
-			"groupId": 15,
-			"opUniqueName": "FilmTicketPriceModify"
-		},
-		"积分定价(分)": {
-			"value": "",
-			"text": "",
-			"key": "integralAmount",
-			"groupId": 15,
-			"opUniqueName": "FilmTicketPriceModify"
-		},
-		"加金额(元)": {
-			"value": "",
-			"text": "",
-			"key": "integralMoney",
-			"groupId": 15,
-			"opUniqueName": "FilmTicketPriceModify"
-		},
-		"折后取整方式": {
-			"value": "",
-			"text": "",
-			"key": "decimalRoundMode",
-			"groupId": 15,
-			"opUniqueName": "FilmTicketPriceModify"
-		},
-		"低于最低价时": {
-			"value": "",
-			"text": "",
-			"key": "lessProcessMethod",
-			"groupId": 15,
-			"opUniqueName": "FilmTicketPriceModify"
-		},
-		"影院补贴N元": {
-			"value": "",
-			"text": "",
-			"key": "cinemaPayAmount",
-			"groupId": 15,
-			"opUniqueName": "FilmTicketPriceModify"
-		},
-		"调价商品数量": {
-			"value": "",
-			"text": "",
-			"key": "modifyAmountMethod",
-			"groupId": 15,
-			"opUniqueName": "FilmTicketPriceModify"
-		},
-		"数量": {
-			"value": "",
-			"text": "",
-			"key": "modifyAmount",
-			"groupId": 15,
-			"opUniqueName": "FilmTicketPriceModify"
-		}
-	},
-	"按座位等级修改票价": {
-		"key": "updateTicketPriceBySeatGrade",
-		"hasSon":true,
-		"调价方式": {
-			"value": "",
-			"text": "",
-			"key": "modifyWay",
-			"groupId": 29,
-			"opUniqueName": "FilmSeatGradePriceModify"
-		},
-		"调整额": {
-			"value": "",
-			"text": "",
-			"key": "modifyValue",
-			"groupId": 29,
-			"opUniqueName": "FilmSeatGradePriceModify"
-		},
-		"折扣后加减N元": {
-			"value": "",
-			"text": "",
-			"key": "addAmountAfterDiscount",
-			"groupId": 29,
-			"opUniqueName": "FilmSeatGradePriceModify"
-		},
-		"积分定价(分)": {
-			"value": "",
-			"text": "",
-			"key": "integralAmount",
-			"groupId": 29,
-			"opUniqueName": "FilmSeatGradePriceModify"
-		},
-		"加金额(元)": {
-			"value": "",
-			"text": "",
-			"key": "integralMoney",
-			"groupId": 29,
-			"opUniqueName": "FilmSeatGradePriceModify"
-		},
-		"折后取整方式": {
-			"value": "",
-			"text": "",
-			"key": "decimalRoundMode",
-			"groupId": 29,
-			"opUniqueName": "FilmSeatGradePriceModify"
-		},
-		"低于最低价时": {
-			"value": "",
-			"text": "",
-			"key": "lessProcessMethod",
-			"groupId": 29,
-			"opUniqueName": "FilmSeatGradePriceModify"
-		},
-		"影院补贴N元": {
-			"value": "",
-			"text": "",
-			"key": "cinemaPayAmount",
-			"groupId": 29,
-			"opUniqueName": "FilmSeatGradePriceModify"
-		},
-		"调价商品数量": {
-			"value": "",
-			"text": "",
-			"key": "modifyAmountMethod",
-			"groupId": 29,
-			"opUniqueName": "FilmSeatGradePriceModify"
-		},
-		"数量": {
-			"value": "",
-			"text": "",
-			"key": "modifyAmount",
-			"groupId": 29,
-			"opUniqueName": "FilmSeatGradePriceModify"
-		},
-		"座位等级": {
-			"value": "",
-			"text": "",
-			"key": "seatGrade",
-			"groupId": 29,
-			"opUniqueName": "FilmSeatGradePriceModify"
-		}
-	},
-	"赠送商品": {
-		"key": "giftGoods",
-		"hasSon":true,
-		"商品": {
-			"value": "",
-			"text": "",
-			"key": "merKey",
-			"groupId": 11,
-			"opUniqueName": "MerchandisePresent"
-		},
-		"商品单价": {
-			"value": "0",
-			"text": "",
-			"key": "price",
-			"groupId": 11,
-			"opUniqueName": "MerchandisePresent"
-		},
-		"赠送数量": {
-			"value": "",
-			"text": "",
-			"key": "amount",
-			"groupId": 11,
-			"opUniqueName": "MerchandisePresent"
-		}
-	},
-	"单品优惠价调整": {
-		"key": "judgeDiscountPrice",
-		"hasSon":true,
-		"商品": {
-			"value": "",
-			"text": "",
-			"key": "merKey",
-			"groupId": 9,
-			"opUniqueName": "MerchandiseModifyPrice"
-		},
-		"调价方式": {
-			"value": "",
-			"text": "",
-			"key": "modifyWay",
-			"groupId": 9,
-			"opUniqueName": "MerchandiseModifyPrice"
-		},
-		"调价值": {
-			"value": "",
-			"text": "",
-			"key": "modifyValue",
-			"groupId": 9,
-			"opUniqueName": "MerchandiseModifyPrice"
-		},
-		"折扣后加减N元": {
-			"value": "",
-			"text": "",
-			"key": "addAmountAfterDiscount",
-			"groupId": 9,
-			"opUniqueName": "MerchandiseModifyPrice"
-		},
-		"积分定价(分)": {
-			"value": "",
-			"text": "",
-			"key": "integralAmount",
-			"groupId": 9,
-			"opUniqueName": "MerchandiseModifyPrice"
-		},
-		"加金额(元)": {
-			"value": "",
-			"text": "",
-			"key": "integralMoney",
-			"groupId": 9,
-			"opUniqueName": "MerchandiseModifyPrice"
-		},
-		"折后取整方式": {
-			"value": "",
-			"text": "",
-			"key": "decimalRoundMode",
-			"groupId": 9,
-			"opUniqueName": "MerchandiseModifyPrice"
-		},
-		"调价商品数量": {
-			"value": "",
-			"text": "",
-			"key": "modifyAmountMethod",
-			"groupId": 9,
-			"opUniqueName": "MerchandiseModifyPrice"
-		},
-		"数量": {
-			"value": "",
-			"text": "",
-			"key": "modifyAmount",
-			"groupId": 9,
-			"opUniqueName": "MerchandiseModifyPrice"
-		}
-	},
-	"以优惠价格增加单品": {
-		"key": "addGoodsWithDiscountPrice",
-		"hasSon":true,
-		"商品": {
-			"value": "",
-			"text": "",
-			"key": "merKey",
-			"groupId": 10,
-			"opUniqueName": "MerchandiseAddWithPrice"
-		},
-		"商品单价": {
-			"value": "",
-			"text": "",
-			"key": "price",
-			"groupId": 10,
-			"opUniqueName": "MerchandiseAddWithPrice"
-		},
-		"增加数量": {
-			"value": "",
-			"text": "",
-			"key": "amount",
-			"groupId": 10,
-			"opUniqueName": "MerchandiseAddWithPrice"
-		}
-	},
-	"卖品分类优惠价调整": {
-		"key": "judgeDiscountPriceByType",
-		"hasSon":true,
-		"商品分类": {
-			"value": "",
-			"text": "",
-			"key": "merCategoryMethod",
-			"groupId": 27,
-			"opUniqueName": "MerchandiseCategoryModifier"
-		},
-		"分类": {
-			"value": "",
-			"text": "",
-			"key": "classCode",
-			"groupId": 27,
-			"opUniqueName": "MerchandiseCategoryModifier"
-		},
-		"调价方式": {
-			"value": "",
-			"text": "",
-			"key": "modifyWay",
-			"groupId": 27,
-			"opUniqueName": "MerchandiseCategoryModifier"
-		},
-		"调价值": {
-			"value": "",
-			"text": "",
-			"key": "modifyValue",
-			"groupId": 27,
-			"opUniqueName": "MerchandiseCategoryModifier"
-		},
-		"折扣后加减N元": {
-			"value": "",
-			"text": "",
-			"key": "addAmountAfterDiscount",
-			"groupId": 27,
-			"opUniqueName": "MerchandiseCategoryModifier"
-		},
-		"折后取整方式": {
-			"value": "",
-			"text": "",
-			"key": "decimalRoundMode",
-			"groupId": 27,
-			"opUniqueName": "MerchandiseCategoryModifier"
-		},
-		"调价商品数量": {
-			"value": "",
-			"text": "",
-			"key": "modifyAmountMethod",
-			"groupId": 27,
-			"opUniqueName": "MerchandiseCategoryModifier"
-		},
-		"数量": {
-			"value": "",
-			"text": "",
-			"key": "modifyAmount",
-			"groupId": 27,
-			"opUniqueName": "MerchandiseCategoryModifier"
-		}
-	},
-	"按品牌优惠价调整": {
-		"key": "judgeDiscountPriceByBrand",
-		"hasSon":true,
-		"商品品牌": {
-			"value": "",
-			"text": "",
-			"key": "merBrandMethod",
-			"groupId": 28,
-			"opUniqueName": "MerchandiseBrandModifier"
-		},
-		"品牌": {
-			"value": "",
-			"text": "",
-			"key": "brandId",
-			"groupId": 28,
-			"opUniqueName": "MerchandiseBrandModifier"
-		},
-		"调价方式": {
-			"value": "",
-			"text": "",
-			"key": "modifyWay",
-			"groupId": 28,
-			"opUniqueName": "MerchandiseBrandModifier"
-		},
-		"调价值": {
-			"value": "",
-			"text": "",
-			"key": "modifyValue",
-			"groupId": 28,
-			"opUniqueName": "MerchandiseBrandModifier"
-		},
-		"折扣后加减N元": {
-			"value": "",
-			"text": "",
-			"key": "addAmountAfterDiscount",
-			"groupId": 28,
-			"opUniqueName": "MerchandiseBrandModifier"
-		},
-		"折后取整方式": {
-			"value": "",
-			"text": "",
-			"key": "decimalRoundMode",
-			"groupId": 28,
-			"opUniqueName": "MerchandiseBrandModifier"
-		},
-		"调价商品数量": {
-			"value": "",
-			"text": "",
-			"key": "modifyAmountMethod",
-			"groupId": 28,
-			"opUniqueName": "MerchandiseBrandModifier"
-		},
-		"数量": {
-			"value": "",
-			"text": "",
-			"key": "modifyAmount",
-			"groupId": 28,
-			"opUniqueName": "MerchandiseBrandModifier"
-		}
-	}
+    "赠送积分": {
+        "value": "",
+        "text": "",
+        "key": "presentPoint",
+        "groupId": 1,
+        "opUniqueName": "PresentPoint"
+    },
+    "赠送积分倍率": {
+        "value": "",
+        "text": "",
+        "key": "pointPersent",
+        "groupId": 18,
+        "opUniqueName": "PresentPointPersent"
+    },
+    "赠送会员卡储值额": {
+        "value": "",
+        "text": "",
+        "key": "presentMoney",
+        "groupId": 2,
+        "opUniqueName": "PresentMemberCardMoney"
+    },
+    "赠送票券": {
+        "key": "giftTicket",
+        "hasSon": true,
+        "票券名称": {
+            "value": "",
+            "text": "",
+            "key": "couponApplyCode",
+            "groupId": 3,
+            "opUniqueName": "PresentCoupon"
+        },
+        "数量": {
+            "value": "",
+            "text": "",
+            "key": "amount",
+            "groupId": 3,
+            "opUniqueName": "PresentCoupon"
+        },
+        "是否发送短信": {
+            "value": "",
+            "text": "",
+            "key": "isSendSms",
+            "groupId": 3,
+            "opUniqueName": "PresentCoupon"
+        }
+    },
+    "修改单票售价": {
+        "key": "updateTicketPrice",
+        "hasSon": true,
+        "调价方式": {
+            "value": "",
+            "text": "",
+            "key": "modifyWay",
+            "groupId": 15,
+            "opUniqueName": "FilmTicketPriceModify"
+        },
+        "调整额": {
+            "value": "",
+            "text": "",
+            "key": "modifyValue",
+            "groupId": 15,
+            "opUniqueName": "FilmTicketPriceModify"
+        },
+        "折扣后加减N元": {
+            "value": "",
+            "text": "",
+            "key": "addAmountAfterDiscount",
+            "groupId": 15,
+            "opUniqueName": "FilmTicketPriceModify"
+        },
+        "积分定价(分)": {
+            "value": "",
+            "text": "",
+            "key": "integralAmount",
+            "groupId": 15,
+            "opUniqueName": "FilmTicketPriceModify"
+        },
+        "加金额(元)": {
+            "value": "",
+            "text": "",
+            "key": "integralMoney",
+            "groupId": 15,
+            "opUniqueName": "FilmTicketPriceModify"
+        },
+        "折后取整方式": {
+            "value": "",
+            "text": "",
+            "key": "decimalRoundMode",
+            "groupId": 15,
+            "opUniqueName": "FilmTicketPriceModify"
+        },
+        "低于最低价时": {
+            "value": "",
+            "text": "",
+            "key": "lessProcessMethod",
+            "groupId": 15,
+            "opUniqueName": "FilmTicketPriceModify"
+        },
+        "影院补贴N元": {
+            "value": "",
+            "text": "",
+            "key": "cinemaPayAmount",
+            "groupId": 15,
+            "opUniqueName": "FilmTicketPriceModify"
+        },
+        "调价商品数量": {
+            "value": "",
+            "text": "",
+            "key": "modifyAmountMethod",
+            "groupId": 15,
+            "opUniqueName": "FilmTicketPriceModify"
+        },
+        "数量": {
+            "value": "",
+            "text": "",
+            "key": "modifyAmount",
+            "groupId": 15,
+            "opUniqueName": "FilmTicketPriceModify"
+        }
+    },
+    "按座位等级修改票价": {
+        "key": "updateTicketPriceBySeatGrade",
+        "hasSon": true,
+        "调价方式": {
+            "value": "",
+            "text": "",
+            "key": "modifyWay",
+            "groupId": 29,
+            "opUniqueName": "FilmSeatGradePriceModify"
+        },
+        "调整额": {
+            "value": "",
+            "text": "",
+            "key": "modifyValue",
+            "groupId": 29,
+            "opUniqueName": "FilmSeatGradePriceModify"
+        },
+        "折扣后加减N元": {
+            "value": "",
+            "text": "",
+            "key": "addAmountAfterDiscount",
+            "groupId": 29,
+            "opUniqueName": "FilmSeatGradePriceModify"
+        },
+        "积分定价(分)": {
+            "value": "",
+            "text": "",
+            "key": "integralAmount",
+            "groupId": 29,
+            "opUniqueName": "FilmSeatGradePriceModify"
+        },
+        "加金额(元)": {
+            "value": "",
+            "text": "",
+            "key": "integralMoney",
+            "groupId": 29,
+            "opUniqueName": "FilmSeatGradePriceModify"
+        },
+        "折后取整方式": {
+            "value": "",
+            "text": "",
+            "key": "decimalRoundMode",
+            "groupId": 29,
+            "opUniqueName": "FilmSeatGradePriceModify"
+        },
+        "低于最低价时": {
+            "value": "",
+            "text": "",
+            "key": "lessProcessMethod",
+            "groupId": 29,
+            "opUniqueName": "FilmSeatGradePriceModify"
+        },
+        "影院补贴N元": {
+            "value": "",
+            "text": "",
+            "key": "cinemaPayAmount",
+            "groupId": 29,
+            "opUniqueName": "FilmSeatGradePriceModify"
+        },
+        "调价商品数量": {
+            "value": "",
+            "text": "",
+            "key": "modifyAmountMethod",
+            "groupId": 29,
+            "opUniqueName": "FilmSeatGradePriceModify"
+        },
+        "数量": {
+            "value": "",
+            "text": "",
+            "key": "modifyAmount",
+            "groupId": 29,
+            "opUniqueName": "FilmSeatGradePriceModify"
+        },
+        "座位等级": {
+            "value": "",
+            "text": "",
+            "key": "seatGrade",
+            "groupId": 29,
+            "opUniqueName": "FilmSeatGradePriceModify"
+        }
+    },
+    "赠送商品": {
+        "key": "giftGoods",
+        "hasSon": true,
+        "商品": {
+            "value": "",
+            "text": "",
+            "key": "merKey",
+            "groupId": 11,
+            "opUniqueName": "MerchandisePresent"
+        },
+        "商品单价": {
+            "value": "0",
+            "text": "",
+            "key": "price",
+            "groupId": 11,
+            "opUniqueName": "MerchandisePresent"
+        },
+        "赠送数量": {
+            "value": "",
+            "text": "",
+            "key": "amount",
+            "groupId": 11,
+            "opUniqueName": "MerchandisePresent"
+        }
+    },
+    "单品优惠价调整": {
+        "key": "judgeDiscountPrice",
+        "hasSon": true,
+        "商品": {
+            "value": "",
+            "text": "",
+            "key": "merKey",
+            "groupId": 9,
+            "opUniqueName": "MerchandiseModifyPrice"
+        },
+        "调价方式": {
+            "value": "",
+            "text": "",
+            "key": "modifyWay",
+            "groupId": 9,
+            "opUniqueName": "MerchandiseModifyPrice"
+        },
+        "调价值": {
+            "value": "",
+            "text": "",
+            "key": "modifyValue",
+            "groupId": 9,
+            "opUniqueName": "MerchandiseModifyPrice"
+        },
+        "折扣后加减N元": {
+            "value": "",
+            "text": "",
+            "key": "addAmountAfterDiscount",
+            "groupId": 9,
+            "opUniqueName": "MerchandiseModifyPrice"
+        },
+        "积分定价(分)": {
+            "value": "",
+            "text": "",
+            "key": "integralAmount",
+            "groupId": 9,
+            "opUniqueName": "MerchandiseModifyPrice"
+        },
+        "加金额(元)": {
+            "value": "",
+            "text": "",
+            "key": "integralMoney",
+            "groupId": 9,
+            "opUniqueName": "MerchandiseModifyPrice"
+        },
+        "折后取整方式": {
+            "value": "",
+            "text": "",
+            "key": "decimalRoundMode",
+            "groupId": 9,
+            "opUniqueName": "MerchandiseModifyPrice"
+        },
+        "调价商品数量": {
+            "value": "",
+            "text": "",
+            "key": "modifyAmountMethod",
+            "groupId": 9,
+            "opUniqueName": "MerchandiseModifyPrice"
+        },
+        "数量": {
+            "value": "",
+            "text": "",
+            "key": "modifyAmount",
+            "groupId": 9,
+            "opUniqueName": "MerchandiseModifyPrice"
+        }
+    },
+    "以优惠价格增加单品": {
+        "key": "addGoodsWithDiscountPrice",
+        "hasSon": true,
+        "商品": {
+            "value": "",
+            "text": "",
+            "key": "merKey",
+            "groupId": 10,
+            "opUniqueName": "MerchandiseAddWithPrice"
+        },
+        "商品单价": {
+            "value": "",
+            "text": "",
+            "key": "price",
+            "groupId": 10,
+            "opUniqueName": "MerchandiseAddWithPrice"
+        },
+        "增加数量": {
+            "value": "",
+            "text": "",
+            "key": "amount",
+            "groupId": 10,
+            "opUniqueName": "MerchandiseAddWithPrice"
+        }
+    },
+    "卖品分类优惠价调整": {
+        "key": "judgeDiscountPriceByType",
+        "hasSon": true,
+        "商品分类": {
+            "value": "",
+            "text": "",
+            "key": "merCategoryMethod",
+            "groupId": 27,
+            "opUniqueName": "MerchandiseCategoryModifier"
+        },
+        "分类": {
+            "value": "",
+            "text": "",
+            "key": "classCode",
+            "groupId": 27,
+            "opUniqueName": "MerchandiseCategoryModifier"
+        },
+        "调价方式": {
+            "value": "",
+            "text": "",
+            "key": "modifyWay",
+            "groupId": 27,
+            "opUniqueName": "MerchandiseCategoryModifier"
+        },
+        "调价值": {
+            "value": "",
+            "text": "",
+            "key": "modifyValue",
+            "groupId": 27,
+            "opUniqueName": "MerchandiseCategoryModifier"
+        },
+        "折扣后加减N元": {
+            "value": "",
+            "text": "",
+            "key": "addAmountAfterDiscount",
+            "groupId": 27,
+            "opUniqueName": "MerchandiseCategoryModifier"
+        },
+        "折后取整方式": {
+            "value": "",
+            "text": "",
+            "key": "decimalRoundMode",
+            "groupId": 27,
+            "opUniqueName": "MerchandiseCategoryModifier"
+        },
+        "调价商品数量": {
+            "value": "",
+            "text": "",
+            "key": "modifyAmountMethod",
+            "groupId": 27,
+            "opUniqueName": "MerchandiseCategoryModifier"
+        },
+        "数量": {
+            "value": "",
+            "text": "",
+            "key": "modifyAmount",
+            "groupId": 27,
+            "opUniqueName": "MerchandiseCategoryModifier"
+        }
+    },
+    "按品牌优惠价调整": {
+        "key": "judgeDiscountPriceByBrand",
+        "hasSon": true,
+        "商品品牌": {
+            "value": "",
+            "text": "",
+            "key": "merBrandMethod",
+            "groupId": 28,
+            "opUniqueName": "MerchandiseBrandModifier"
+        },
+        "品牌": {
+            "value": "",
+            "text": "",
+            "key": "brandId",
+            "groupId": 28,
+            "opUniqueName": "MerchandiseBrandModifier"
+        },
+        "调价方式": {
+            "value": "",
+            "text": "",
+            "key": "modifyWay",
+            "groupId": 28,
+            "opUniqueName": "MerchandiseBrandModifier"
+        },
+        "调价值": {
+            "value": "",
+            "text": "",
+            "key": "modifyValue",
+            "groupId": 28,
+            "opUniqueName": "MerchandiseBrandModifier"
+        },
+        "折扣后加减N元": {
+            "value": "",
+            "text": "",
+            "key": "addAmountAfterDiscount",
+            "groupId": 28,
+            "opUniqueName": "MerchandiseBrandModifier"
+        },
+        "折后取整方式": {
+            "value": "",
+            "text": "",
+            "key": "decimalRoundMode",
+            "groupId": 28,
+            "opUniqueName": "MerchandiseBrandModifier"
+        },
+        "调价商品数量": {
+            "value": "",
+            "text": "",
+            "key": "modifyAmountMethod",
+            "groupId": 28,
+            "opUniqueName": "MerchandiseBrandModifier"
+        },
+        "数量": {
+            "value": "",
+            "text": "",
+            "key": "modifyAmount",
+            "groupId": 28,
+            "opUniqueName": "MerchandiseBrandModifier"
+        }
+    }
 }

@@ -16,7 +16,7 @@ module.exports = {
                 form = JSON.parse(JSON.stringify(pointer.form)),
                 moneyInfo = form[`moneyInfo`],
                 couponType = param[`couponType`];
-                
+            model['isTransfer'] = param.state==10?true:false
             let _baseInfo = [{
                     from: 'simpleRuleGroupStr',
                     to: 'baseInfo',
@@ -311,15 +311,26 @@ module.exports = {
                 commonInfo[`consumeWayCodeOp`].text = consumeWayCodeVal.text;
             }
 
-            // 消费者身份
-            let consumerTypeKey = keysObj[`consumerTypeKey`];
+            // 会员等级
+            let customerLevelCode = keysObj[`customerLevelCode`];
+            if (customerLevelCode) {
+                let opUniqueName = customerLevelCode.opUniqueName;
+                commonInfo[`customerLevelType`].value = opUniqueName;
+                // 指定会员等级
+                if (opUniqueName == 'normalIn' || opUniqueName == 'normalNotIn') {
+                    commonInfo[`customerLevelCode`].value = customerLevelCode.value;
+                    commonInfo[`customerLevelCode`].text = customerLevelCode.text;
+                }
+            }
+            // 会员卡政策
+            let consumerTypeKey = keysObj[`cardRightCode`];
             if (consumerTypeKey) {
                 let opUniqueName = consumerTypeKey.opUniqueName;
-                commonInfo[`consumerTypeKey`].value = opUniqueName;
-                // 指定会员等级
-                if (opUniqueName == 'normalIn') {
-                    commonInfo[`consumerType`].value = consumerTypeKey.value;
-                    commonInfo[`consumerType`].text = consumerTypeKey.text;
+                commonInfo[`cardPolicyType`].value = opUniqueName;
+                // 指定会员卡政策
+                if (opUniqueName == 'normalIn' || opUniqueName == 'normalNotIn') {
+                    commonInfo[`cardPolicyCode`].value = consumerTypeKey.value;
+                    commonInfo[`cardPolicyCode`].text = consumerTypeKey.text;
                 }
             }
 
@@ -561,6 +572,26 @@ module.exports = {
                 }
             }
 
+
+            // 方式处理
+            if(actionsObj[`payer`]){
+                let payerVal = actionsObj[`payer`].value
+                form[`payer`] = payerVal;
+                if (payerVal == 'cinema') {
+                    form[`payerPayAmount`] = actionsObj[`payerPayAmount`].value;
+                }else if (payerVal == 'client'){
+                    if(actionsObj[`payerPayAmount`]){
+                        form[`payerPayAmount`] = actionsObj[`payerPayAmount`].value;
+                    }else{
+                        form[`payer`] = 'clientAll'
+                    }
+                }
+
+            }
+
+
+
+
             // 抵用金额
             let moneyMethod = actionsObj[`moneyMethod`];
 
@@ -578,28 +609,15 @@ module.exports = {
                     form[`moneyMethod`] = 'fix_price'
                         // 抵用金额
                     form[`fixPriceValue`] = actionsObj[`fixPriceValue`].value;
-                    // 抵用金额
-                    let payerVal = actionsObj[`payer`].value
-                    form[`payer`] = payerVal;
-                    // console.log('actionsObj[`payerPayAmount`]',actionsObj[`payerPayAmount`])
-                    if (payerVal == 'cinema') {
-                        form[`payerPayAmount`] = actionsObj[`payerPayAmount`].value;
-                    }else if (payerVal == 'client'){
-                        if(actionsObj[`payerPayAmount`]){
-                            form[`payerPayAmount`] = actionsObj[`payerPayAmount`].value;
-                        }else{
-                            form[`payer`] = 'clientAll'
-                        }
-                    }
                 }
             }
-
-
 
             // 是否高于零售价
             let couponMoneyAsPrice = actionsObj[`couponMoneyAsPrice`];
             if (couponMoneyAsPrice) {
-                form[`couponMoneyAsPriceIn`] = true;
+                if(couponMoneyAsPrice.value){
+                    form[`couponMoneyAsPriceIn`] = true;
+                }
             }
 
             // 折扣后取整方式

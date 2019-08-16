@@ -13,7 +13,7 @@
       :model="queryData"
       label-position="left"
       label-width="85px"
-      label-suffix=":"
+      label-suffix="："
     >
       <!-- 基础信息 start-->
       <!-- {{this.queryData}} -->
@@ -121,7 +121,7 @@
                       { pattern: /^([1-9][0-9]?)$|^([0]\.[0-9]{1,2})$|^([1-9][0-9]?\.[0-9]{1,2})$|^([0])$|^\\./, message: '请输入最多2位数字和2位小数',trigger: 'change' }
                     ]"
                 >
-                  <el-input placeholder class="basic-input widthInput100" v-model="queryData.taxRate" v-if="routeQuery.type != 3"></el-input >
+                  <el-input placeholder class="basic-input200 widthInput100" v-model="queryData.taxRate" v-if="routeQuery.type != 3"></el-input >
                   <span v-if="routeQuery.type == 3">{{queryData.taxRate}}</span>
                   <span>%</span>
                 </el-form-item>
@@ -157,7 +157,7 @@
           <div>
             <template v-model="skuData" v-if="this.skuData.length == 0">
               <el-row>
-                <el-col :span="8">
+                <el-col :span="10">
                   <el-form-item label="SKU编码">
                     <span>{{queryData.skuVoList.code}}</span>
                   </el-form-item>
@@ -173,17 +173,17 @@
                     { pattern: /^([1-9][0-9]{0,5})$|^([0]\.[0-9]{1,2})$|^([1-9][0-9]{0,5}\.[0-9]{1,2})$|^([0])$|^\\./, message: '请输入最多5位数字和2位小数',trigger: 'change' }
                     ]"
                   >
-                    <el-input placeholder class="basic-input widthInput100" v-model="queryData.skuVoList.price" v-if="routeQuery.type != 3"></el-input>
+                    <el-input placeholder class="basic-input200 widthInput100" v-model="queryData.skuVoList.price" v-if="routeQuery.type != 3"></el-input>
                     <span v-if="routeQuery.type == 3">{{queryData.skuVoList.price}}</span>元
                   </el-form-item>
                 </el-col>
                 <el-col :span="10">
                   <el-form-item label="销售状态">
                     <el-radio-group v-model="queryData.canSale" v-if="routeQuery.type != 3">
-                      <el-radio :label="1">允许</el-radio>
-                      <el-radio :label="0">禁止</el-radio>
+                      <el-radio :label="1">允许销售</el-radio>
+                      <el-radio :label="0">禁止销售</el-radio>
                     </el-radio-group>
-                    <span v-if="routeQuery.type == 3">{{queryData.canSale == 1 ? "允许":"禁止"}}</span>
+                    <span v-if="routeQuery.type == 3">{{queryData.canSale == 1 ? "允许销售":"禁止销售"}}</span>
                   </el-form-item>
                 </el-col>
               </el-row>
@@ -211,7 +211,7 @@
                   </el-table-column>
                   <el-table-column label="操作">
                     <template slot-scope="{row,$index}">
-                      <el-button  type="text" size="small" @click.stop="stopskuHandleDlete(row, $index)">{{row.status == 1 ? '停用':'启用'}}</el-button>
+                      <el-button  type="text" size="small" @click.stop="stopskuHandleDlete(row, $index)">{{row.status == 1 ? '禁止销售':'允许销售'}}</el-button>
                     </template>
                   </el-table-column>
                 </el-table>
@@ -245,7 +245,7 @@
               <el-col :span="10">
                 <el-form-item label="上架时间">
                   <el-date-picker
-                    class="date-picker"
+                    class="date-picker widthInput100"
                     v-model="queryData.upTime"
                     type="datetime"
                     format="yyyy-MM-dd HH:mm"
@@ -260,7 +260,7 @@
                 <el-form-item prop="downTime" label="下架时间">
                   <span v-if="routeQuery.type==3">{{queryData.downTime == null || queryData.downTime == "" ? '不限制' : queryData.downTime}}</span>
                   <div v-else>
-                    <el-select v-model="queryData.downTimeType" placeholder="请选择" class="endTime-input" @change="downTimeEvent()">
+                    <el-select v-model="queryData.downTimeType" placeholder="请选择" class="apply-select" @change="downTimeEvent()">
                       <el-option key="0" label="不限制" value="0"></el-option>
                       <el-option key="1" label="指定时间" value="1"></el-option>
                     </el-select>
@@ -268,7 +268,7 @@
                       v-if="queryData.downTimeType==1"
                       format="yyyy-MM-dd HH:mm"
                       value-format="yyyy-MM-dd HH:mm"
-                      class="date-picker"
+                      class="date-picker widthInput100"
                       v-model="queryData.downTime"
                       type="datetime"
                       placeholder="选择日期"
@@ -285,7 +285,16 @@
               </el-col>
               <el-col :span="10">
                 <el-form-item label="适用渠道">
-                  <span v-if="routeQuery.type==3">{{queryData.saleChannel==1?"全部渠道": selectedChannelName}}</span>
+                  <!-- <span v-if="routeQuery.type==3">{{queryData.saleChannel==1?"全部渠道": selectedChannelName}}</span> -->
+                  <template v-if="routeQuery.type==3 && this.queryData.saleChannel === 0">
+                    <div class="see-style">
+                      <span  class="c-type" @click="channelClick()">{{selectedChannelName}}</span>
+                      <span class="c-type" @click="channelClick()">...共{{this.seechannelArr == null || this.seechannelArr == "" ? 0:this.seechannelArr.length}}家</span>
+                    </div>
+                  </template>
+                  <template v-else-if="routeQuery.type==3 && this.queryData.saleChannel === 1">
+                      <span>全部渠道</span>
+                  </template>
                   <div v-else>
                     <el-select v-model="queryData.saleChannel" placeholder="请选择" class="apply-select" @change="saleChannelEvent()">
                       <el-option
@@ -317,7 +326,7 @@
               </el-col>
             </el-row>
             <el-row>
-              <el-col :span="10">
+              <!-- <el-col :span="10">
                 <el-form-item label-width="160px" label="是否只允许套餐内售卖">
                   <el-radio-group v-model="queryData.onlyAllowSetmeal" v-if="routeQuery.type != 3">
                     <el-radio :label="1">是</el-radio>
@@ -325,11 +334,20 @@
                   </el-radio-group>
                   <span v-if="routeQuery.type == 3">{{queryData.onlyAllowSetmeal == 1 ? "是":"否"}}</span>
                 </el-form-item>
-              </el-col>
+              </el-col> -->
               <el-col :span="10">
                 <el-form-item label="销售地点">
-                  <span v-if="routeQuery.type==3">{{queryData.salePlace==1?"全部地点":"指定地点"}}</span>
-                  <span v-if="routeQuery.type==3">{{salesPlaceName}}</span>
+                  <!-- <span v-if="routeQuery.type==3">{{queryData.salePlace==1?"全部地点":"指定地点"}}</span>
+                  <span v-if="routeQuery.type==3">{{salesPlaceName}}</span> -->
+                  <template v-if="routeQuery.type==3 && this.seeplacelArr.length !=0" style="height:40px;">
+                    <div class="see-style">
+                      <span  class="c-type" @click="placeClick()">{{salesPlaceName}}</span>
+                      <span class="c-type" @click="placeClick()">...共{{this.seeplacelArr == null || this.seeplacelArr == "" ? 0:this.seeplacelArr.length}}家</span>
+                    </div>
+                  </template>
+                  <template v-else-if="routeQuery.type==3 && this.seeplacelArr.length ==0">
+                      <span>全部地点</span>
+                  </template>
                   <div v-else>
                     <el-select v-model="queryData.salePlace" placeholder="请选择" class="apply-select" @change="salePlaceEvent()">
                       <el-option
@@ -361,7 +379,7 @@
                   label="安全库存"
                   prop="storeUpLimit"
                   >
-                  <span style="margin-right:20px;">上限</span>
+                  <span style="color: #666;">上限：</span>
                   <el-input placeholder class="basic-input widthInput100" v-model="queryData.storeUpLimit" v-if="routeQuery.type != 3"></el-input>
                   <span v-if="routeQuery.type == 3">{{queryData.storeUpLimit}}</span>
                 </el-form-item>
@@ -369,7 +387,6 @@
               <el-col :span="10">
                 <el-form-item 
                   label="下限"
-                  label-width="50px"
                   prop="storeDownLimit"
                   >
                   <el-input placeholder class="basic-input widthInput100" v-model="queryData.storeDownLimit" v-if="routeQuery.type != 3"></el-input>
@@ -383,17 +400,27 @@
       <!-- 销售信息 end-->
       <div class="submit-box">
         <el-button type="primary" @click="comSingleSubmit()" v-if="routeQuery.type != 3">保 存</el-button>
-        <el-button @click="handleCancel">取 消</el-button>
+        <el-button @click="handleCancel">{{routeQuery.type !=3 ? "取消":"关闭"}}</el-button>
       </div>
     </el-form>
     <!-- 选择影院弹窗 -->
-    <cinemal-dialog ref="myCinemalDialog" @onSumit="onCinemalSumit" multiple :title="'选择适应门店'"></cinemal-dialog>
+    <cinemal-dialog ref="myCinemalDialog" @onSumit="onCinemalSumit" multiple :title="'选择适用门店'"></cinemal-dialog>
     <!-- 选择渠道弹窗 -->
-    <channel-dialog ref="myChannelDialog" @onSumit="onChanneSumit" multiple :title="'选择适用渠道'" :dialogFeedbackData="queryData.saleChannelList"></channel-dialog>
+    <channel-dialog ref="myChannelDialog" @onSumit="onChanneSumit" multiple :title="'选择适用渠道'" :dialogFeedbackData="queryData.saleChannelList" :cinemaUid="routeQuery.cinemaUid"></channel-dialog>
     <!-- 选择销售地点 -->
     <!-- :dialogFeedbackData="queryData.cinemaSalePlaceEntityList" -->
-    <sales-place ref="mySalesPlaceDialog" @onSumit="onSalesPlaceSumit" :dialogFeedbackData="queryData.cinemaSalePlaceEntityList" :cinemaUid="routeQuery.cinemaUid"
+    <sales-place ref="mySalesPlaceDialog" @onSumit="onSalesPlaceSumit" :dialogFeedbackData="queryData.cinemaSalePlaceEntityList" :cinemaUid="queryData.cinemaUid"
                  multiple></sales-place>
+    <seechannel-dialog
+          :dialogVisible.sync="dialogVisibleseechannel"
+          :needData="JSON.stringify(this.seechannelArr)"
+          >
+    </seechannel-dialog>   
+    <seeplace-dialog
+          :dialogVisible.sync="dialogVisibleseeplace"
+          :needData="JSON.stringify(this.seeplacelArr)"
+          >
+    </seeplace-dialog>          
   </div>
 </div>  
 </template>
@@ -406,10 +433,16 @@ import applyChannel from "cim/components/applyChannel/applyChannel.vue";
 import cinemalDialog from "cim/components/cinemalDialog/cinemaDialog.vue";
 import channelDialog from "cim/components/channelDialog/channelDialog.vue";
 import salesPlace from "cim/components/salesPlace/salesPlace.vue";
+import seechannelDialog from "cim/components/seeChannelDialog/seeCinemalDialog.vue";
+import seeplaceDialog from "cim/components/seePlaceDialog/seeCinemalDialog.vue";
 export default {
   mixins: [mixin],
   data() {
     return {
+      dialogVisibleseeplace:false,
+      seeplacelArr:[],
+      dialogVisibleseechannel:false,
+      seechannelArr:[],
       // 品牌弹窗
       branddialog:false,
       skuStart:false,
@@ -603,7 +636,7 @@ export default {
           key: "barCode"
         },
         {
-          label: "SKU商品状态",
+          label: "销售状态",
           key: "active"
         }
       ],// sku属性表头
@@ -621,7 +654,7 @@ export default {
           key: "barCode"
         },
         {
-          label: "SKU商品状态",
+          label: "销售状态",
           key: "active"
         }
       ],
@@ -672,6 +705,12 @@ export default {
           ]
         }
       ],
+      channelClick(){
+        this.dialogVisibleseechannel = true
+      },
+      placeClick(){
+        this.dialogVisibleseeplace = true
+      },
       sourceTreeData: [],
       cinemaOptions: [],
       //修改终端数据
@@ -780,10 +819,10 @@ export default {
       this.setCheckedKys(this.applyStoresRadios);
       this.setCheckedKys(this.applyChannelRadios);
       if(this.$route.query.type == 3){
-        this.seesingleProductGet(JSON.parse(this.$route.query.data))
+        this.seesingleProductGet(JSON.parse(this.$route.query.data),JSON.parse(this.$route.query.cinemaUid))
         this.queryData.cinemaUid = JSON.parse(this.$route.query.cinemaUid)
       }else if(this.$route.query.type == 2){
-        this.seesingleProductGet(JSON.parse(this.$route.query.data))
+        this.seesingleProductGet(JSON.parse(this.$route.query.data),JSON.parse(this.$route.query.cinemaUid))
         this.queryData.cinemaUid = JSON.parse(this.$route.query.cinemaUid)
         this.queryData.skuVoList.code = this.queryData.proCode+Math.ceil(Math.random() * 99)
       }else if(this.$route.query.type == 1){
@@ -794,10 +833,10 @@ export default {
       }
     },
         // 查看原材料
-    seesingleProductGet(val){
+    seesingleProductGet(val1,val2){
       let value = {
-        merUid:val.uid,
-        cinemaUid:val.cinemaUid
+        merUid:val1,
+        cinemaUid:val2
       }
       this.$cimList.storequartersGoods.singleProductGetCinema(value).then( res => {
           if(res.code === 200) {
@@ -857,6 +896,7 @@ export default {
               this.queryData.aliasName = res.data.aliasName
               this.queryData.spec = res.data.spec
               this.queryData.brandUid = res.data.brandUid
+              this.queryData.onlyAllowSetmeal = res.data.isSaleAsSetMeal
               if(res.data.skuVoList[0].skuAttr.length == 0){
                 this.queryData.skuVoList.barCode = res.data.skuVoList[0].barCode
                 this.queryData.skuVoList.code = res.data.skuVoList[0].code
@@ -875,7 +915,8 @@ export default {
               this.queryData.remark = res.data.remark
               this.queryData.imgUrl = res.data.imgUrl
               this.queryData.taxRate = res.data.taxRate
-
+              this.seechannelArr = res.data.cinemaSaleChannelList
+              this.seeplacelArr = res.data.cinemaSalePlaceList === null ? []:res.data.cinemaSalePlaceList
               this.queryData.canSale = res.data.canSale
               this.queryData.downTime = res.data.downTime
               this.queryData.upTime = res.data.upTime
@@ -1035,18 +1076,18 @@ export default {
             this.ressingleProductUpdate()
           }
         } else {
-          this.$message("请输入带*必填项");
+          this.$message("信息填写有误，请按照红色提示修改");
           return false;
         }
       }); 
     },
-    // sku属性停用按钮
+    // sku属性禁止销售按钮
     stopskuHandleDlete(row,index){
       if(row.status == 1){
-        row.active = "停用"
+        row.active = "禁止销售"
         row.status = 0
       }else{
-        row.active = "启用"
+        row.active = "允许销售"
         row.status = 1
       }
       console.log(row)
@@ -1282,7 +1323,7 @@ export default {
           if(res.code === 200) {
             // this.AttributeSkudata = res.data
             this.$message("修改成功");
-            this.$router.go(-1);
+            this.handleCancel();
             }else {
               this.$message(res.msg);
             }
@@ -1308,7 +1349,7 @@ export default {
         valObj.uid = val.skuUid
         valObj.cinemaSkuUid = val.uid
         valObj.status = val.status
-        valObj.active = val.status == 1 ? "启用":"停用"
+        valObj.active = val.status == 1 ? "允许销售":"禁止销售"
         valObj.skuAttr = []
         val.skuAttr.forEach((skuval,skuindex,skuarr)=>{
           let sttrObj = {}
@@ -1345,7 +1386,7 @@ export default {
         valObj.cinemaSkuUid = val.uid
         valObj.barCode = val.barCode
         valObj.status = val.status
-        valObj.active = val.status == 1 ? "启用":"停用"
+        valObj.active = val.status == 1 ? "允许销售":"禁止销售"
 
         valObj.skuAttr = []
         val.skuAttr.forEach((skuval,skuindex,skuarr)=>{
@@ -1383,7 +1424,7 @@ export default {
         valObj.cinemaSkuUid = val.uid
         valObj.barCode = val.barCode
         valObj.status = val.status
-        valObj.active = val.status == 1 ? "启用":"停用"
+        valObj.active = val.status == 1 ? "允许销售":"禁止销售"
 
         valObj.skuAttr = []
         val.skuAttr.forEach((skuval,skuindex,skuarr)=>{
@@ -1505,8 +1546,19 @@ export default {
       console.log(this.recipeGroupList);
     },
     // 取消提交信息
+    // handleCancel() {
+    //   this.handleCancel();
+    // },
     handleCancel() {
-      this.$router.go(-1);
+      this.$store.commit("tagNav/removeTagNav", {
+          name: this.$route.name,
+          path: this.$route.path,
+          title: this.$route.meta.title,
+          query: this.$route.query
+      })
+      this.$router.push({
+          path: "/retail/commodityInformationStore/list",
+      });
     },
     //确认提交修改
     handleModificationSubmit() {
@@ -1670,7 +1722,9 @@ export default {
     applyChannel,
     cinemalDialog,
     channelDialog,
-    salesPlace
+    salesPlace,
+    seechannelDialog,
+    seeplaceDialog
   }
 };
 </script>
@@ -1715,10 +1769,6 @@ export default {
     .el-form-item__content {
       width: 60%;
     }
-  }
-  .el-date-editor.el-input,
-  .el-date-editor.el-input__inner {
-    width: 180px;
   }
   .delete-recipe-group {
     font-size: 20px;

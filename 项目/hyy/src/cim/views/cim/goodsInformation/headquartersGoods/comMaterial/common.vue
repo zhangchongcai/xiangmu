@@ -13,7 +13,7 @@
       ref="ruleForm"
       label-position="left"
       label-width="85px"
-      label-suffix=":"
+      label-suffix="："
       :rules="changeRules"
       >
       <!-- 基础信息 start-->
@@ -150,7 +150,7 @@
                 </el-form-item>
               </el-col>
             </el-row>  
-            <el-row>
+            <el-row style="margin-top: 10px;">
               <el-col :span="8" class="good-img-col">
               <el-form-item prop="imgUrl" label="商品图片" class="good-img-form-item">
                 <img class="upload-img" v-if="routeQuery.type==3" :src="queryData.imgUrl" alt>
@@ -263,7 +263,7 @@
           <div>
             <template v-model="skuData">
               <el-row>
-                <el-col :span="8">
+                <el-col :span="10">
                   <el-form-item label="SKU编码" >
                     <span>
                     {{this.queryData.skuVoList.code}}
@@ -288,10 +288,10 @@
                 <el-col :span="10">
                 <el-form-item label="销售状态">
                   <el-radio-group v-model="queryData.canSale" v-if="routeQuery.type != 3">
-                    <el-radio :label="1">允许</el-radio>
-                    <el-radio :label="0">禁止</el-radio>
+                    <el-radio :label="1">允许销售</el-radio>
+                    <el-radio :label="0">禁止销售</el-radio>
                   </el-radio-group>
-                  <span v-if="routeQuery.type == 3">{{queryData.canSale == 1 ? "允许":"禁止"}}</span>
+                  <span v-if="routeQuery.type == 3">{{queryData.canSale == 1 ? "允许销售":"禁止销售"}}</span>
                 </el-form-item>
               </el-col>
               </el-row>
@@ -299,7 +299,16 @@
             <el-row>
               <el-col :span="10">
                 <el-form-item label="适用门店">
-                  <span v-if="routeQuery.type==3">{{saleCinemaType(queryData.saleCinema)}}{{selectedStoreName}}</span>
+                  <!-- <span v-if="routeQuery.type==3">{{saleCinemaType(queryData.saleCinema)}}{{selectedStoreName}}</span> -->
+                  <template v-if="routeQuery.type==3 && this.queryData.saleCinema === 0">
+                    <div class="see-style">
+                      <span  class="c-type" @click="cinemaClick()">{{selectedStoreName}}</span>
+                      <span class="c-type" @click="cinemaClick()">...共{{this.seecinemalArr == null || this.seecinemalArr == "" ? 0:this.seecinemalArr.length}}家</span>
+                    </div>
+                  </template>
+                  <template v-else-if="routeQuery.type==3 && this.queryData.saleCinema === 1">
+                      <span>全部门店</span>
+                  </template>
                   <div v-else>
                     <el-select v-model="queryData.saleCinema" placeholder="请选择" class="apply-select" @change="saleCinemaEvent()">
                       <el-option
@@ -331,7 +340,16 @@
               </el-col>
               <el-col :span="10">
                 <el-form-item label="适用渠道">
-                  <span v-if="routeQuery.type==3">{{queryData.saleChannel==1?"全部渠道": selectedChannelName}}</span>
+                  <!-- <span v-if="routeQuery.type==3">{{queryData.saleChannel==1?"全部渠道": selectedChannelName}}</span> -->
+                  <template v-if="routeQuery.type==3 && this.queryData.saleChannel === 0">
+                    <div class="see-style">
+                      <span  class="c-type" @click="channelClick()">{{selectedChannelName}}</span>
+                      <span class="c-type" @click="channelClick()">...共{{this.seechannelArr == null || this.seechannelArr == "" ? 0:this.seechannelArr.length}}家</span>
+                    </div>
+                  </template>
+                  <template v-else-if="routeQuery.type==3 && this.queryData.saleChannel === 1">
+                      <span>全部渠道</span>
+                  </template>
                   <div v-else>
                     <el-select v-model="queryData.saleChannel" placeholder="请选择" class="apply-select" @change="saleChannelEvent()">
                       <el-option
@@ -371,20 +389,21 @@
                     { pattern: /^([1-9]\d*|[0]{1,1})$/, message: '请输入大于下限正整数',trigger: 'change' }
                     ]"
                   > 
-                  <span>上限</span>
+                  <span style="color: #666;">上限：</span>
                   <el-input placeholder class="basic-input widthInput100" v-if="routeQuery.type != 3" v-model="queryData.storeUpLimit"></el-input>
                     <span v-if="routeQuery.type == 3">{{queryData.storeUpLimit}}</span>
                 </el-form-item>
               </el-col>
               <el-col :span="10">
-                <el-form-item label=""
+                <el-form-item 
+                  label="下限"
                   prop="storeDownLimit"
                   :rules="[
                     { required: false,trigger: 'change' },
                     { pattern: /^([1-9]\d*|[0]{1,1})$/, message: '请输入小于等于上线限正整数',trigger: 'change' }
                     ]"
                   >
-                  <span>下限</span>
+                  <!-- <span>下限</span> -->
                   <el-input placeholder class="basic-input widthInput100" v-if="routeQuery.type != 3" v-model="queryData.storeDownLimit"></el-input>
                   <span v-if="routeQuery.type == 3">{{queryData.storeDownLimit}}</span>
                 </el-form-item>
@@ -396,7 +415,7 @@
       <!-- 销售信息 end-->
       <div class="submit-box">
         <el-button type="primary" @click="comSingleSubmit()" v-if="routeQuery.type != 3">保 存</el-button>
-        <el-button @click="handleCancel">取 消</el-button>
+        <el-button @click="handleCancel">{{routeQuery.type !=3 ? "取消":"关闭"}}</el-button>
       </div>
     </el-form>
     <!-- 选择影院弹窗cinemas -->
@@ -407,6 +426,16 @@
     <!-- 选择品牌弹窗 -->
     <brand-dialog ref="myBrandDialog" @onSumit="onBrandSumit" :catUid="queryData.catUid"
                   :dialogFeedbackData="[{brandUid:queryData.brandUid,name:selectedBranchName}]"></brand-dialog>
+    <seecinemal-dialog
+          :dialogVisible.sync="dialogVisibleseecinema"
+          :needData="JSON.stringify(this.seecinemalArr)"
+          >
+    </seecinemal-dialog>
+    <seechannel-dialog
+          :dialogVisible.sync="dialogVisibleseechannel"
+          :needData="JSON.stringify(this.seechannelArr)"
+          >
+    </seechannel-dialog>
   </div>
 </div>
 </template>
@@ -422,10 +451,16 @@ import cinemalDialog from "cim/components/cinemalDialog/cinemaDialog.vue";
 import channelDialog from "cim/components/channelDialog/channelDialog.vue";
 import imgUpload from "cim/components/imgUpload/imgUpload.vue";
 import brandDialog  from "cim/components/brandDialog/brandDialog.vue";
+import seecinemalDialog from "cim/components/seeCinemalDialog/seeCinemalDialog.vue";
+import seechannelDialog from "cim/components/seeChannelDialog/seeCinemalDialog.vue";
 export default {
   mixins: [mixin],
   data() {
     return {
+      seecinemalArr:[],
+      seechannelArr:[],
+      dialogVisibleseecinema:false,
+      dialogVisibleseechannel:false,
       // 品牌弹窗
       brandQueryData:{
         list:{id:""}
@@ -563,35 +598,9 @@ export default {
       // 基本单位显示
       basicUnitvalue:"",
       // 基本单位选择框
-      basicUnitArr: [
-        {
-          value: "个",
-          label: "个"
-        },
-        {
-          value: "箱",
-          label: "箱"
-        },
-        {
-          value: "瓶",
-          label: "瓶"
-        }
-      ],
+      basicUnitArr: [],
       // 基本单位选择框
-      buyUnitArr: [
-        {
-          value: "个",
-          label: "个"
-        },
-        {
-          value: "箱",
-          label: "箱"
-        },
-        {
-          value: "瓶",
-          label: "瓶"
-        }
-      ],
+      buyUnitArr: [],
       // 采购单位表头数组
       basicUnitColumn: [
         {
@@ -666,6 +675,13 @@ export default {
         code: [{ required: true, message: "请输入仓库编码", trigger: "blur" }],
         name: [{ required: true, message: "请输入仓库名称", trigger: "blur" }]
       },
+      // 查看影院
+      cinemaClick(){
+          this.dialogVisibleseecinema = true
+      },
+      channelClick(){
+        this.dialogVisibleseechannel = true
+      },
       // 采购单位表格数组
       basicUnitData:[],
       // 创建sku数组
@@ -735,13 +751,14 @@ export default {
   methods: {
     init() {
       console.log(this.$route.query)
+
       this.setCheckedKys(this.applyStoresRadios);
       this.setCheckedKys(this.applyChannelRadios);
       // if (truthis.$route.querye) {}
       if(this.$route.query.type == 3){
-        this.seeMerRawStockQuery(JSON.parse(this.$route.query.data).uid)
+        this.seeMerRawStockQuery(JSON.parse(this.$route.query.data))
       }else if(this.$route.query.type == 2){
-        this.seeMerRawStockQuery(JSON.parse(this.$route.query.data).uid)
+        this.seeMerRawStockQuery(JSON.parse(this.$route.query.data))
       }else if(this.$route.query.type == 1){
         this.resetForm('ruleForm')
         this.queryData.catUid = JSON.parse(this.$route.query.data).uid
@@ -805,7 +822,8 @@ export default {
               this.queryData.channels = channelArr
               this.queryData.channelEntityList = channelArr
             }
-
+              this.seecinemalArr = res.data.cinemaEntityVoList
+              this.seechannelArr = res.data.channelEntityVoList
               this.queryData.unitUid =res.data.unitName
               this.brandQueryData.list.id =res.data.brandId
               this.brandQueryData.list.name =res.data.brandName
@@ -1012,7 +1030,7 @@ export default {
             this.resmerRawStockUpdate()
           }
         }else{
-          this.$message("请输入带*必填项");
+          this.$message("信息填写有误，请按照红色提示修改");
           return false;
         }
       }) 
@@ -1200,7 +1218,7 @@ export default {
         this.$cimList.headquartersGoods.merRawStockSave(resValue).then( res => {
             if(res.code === 200) {
               this.AttributeSkudata = res.data
-              this.$router.go(-1);
+              this.handleCancel();
               this.$message("新增成功");
               }else {
                 this.$message(res.msg);
@@ -1254,7 +1272,7 @@ export default {
         this.$cimList.headquartersGoods.merRawStockUpdate(resValue).then( res => {
             if(res.code === 200) {
               this.AttributeSkudata = res.data
-              this.$router.go(-1)
+              this.handleCancel()
               this.$message("修改成功");
               console.leg(res)
               }else {
@@ -1415,8 +1433,19 @@ export default {
       console.log(this.recipeGroupList);
     },
     // 取消提交信息
+    // handleCancel() {
+    //   this.handleCancel();
+    // },
     handleCancel() {
-      this.$router.go(-1);
+      this.$store.commit("tagNav/removeTagNav", {
+          name: this.$route.name,
+          path: this.$route.path,
+          title: this.$route.meta.title,
+          query: this.$route.query
+      })
+      this.$router.push({
+          path: "/retail/commodityInformation/list",
+      })
     },
     //确认提交修改
     handleModificationSubmit() {
@@ -1636,7 +1665,9 @@ export default {
     cinemalDialog,
     channelDialog,
     imgUpload,
-    brandDialog
+    brandDialog,
+    seecinemalDialog,
+    seechannelDialog
 
   }
 };

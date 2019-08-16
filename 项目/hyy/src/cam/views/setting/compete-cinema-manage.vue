@@ -4,9 +4,9 @@
        <!-- <bread-crumb   :dataList="naveList"></bread-crumb> -->
       <div class="time-wrap">
         <div class="time-item">
-          <div class="label-title reset-button">
-            我的影院：
-              <el-input style="width:180px" size="small" v-model="cinemaName" clearable readonly></el-input>
+          <div class="reset-button">
+              <span class="label-title">我的影院:</span>
+              <el-input style="width:200px" size="small" v-model="cinemaName" clearable readonly></el-input>
               <el-button  style="vertical-align: middle" @click="myCinemaShow">选择</el-button>
           </div>
         </div>
@@ -38,7 +38,7 @@
             </el-table-column>
           </el-table>
         </div>
-        <div class="reset-page" >
+        <div class="reset-page" style="padding:0 auto;">
             <el-pagination  v-if="total > 15" size="mini"
                 layout="total,sizes,prev, pager, next, jumper"
                 @size-change="handleSizeChange"
@@ -67,7 +67,7 @@ export default {
   components: {BreadCrumb, CinemaMySelect,CinemaSelect},
   data() {
     return {
-        naveList:[{name:'竞对影院管理'}],
+      naveList:[{name:'竞对影院管理'}],
       userId:this.$store.state.loginUser?this.$store.state.loginUser.uid:805852,
       cinemaName:null,
       cinemaId:null,
@@ -79,7 +79,7 @@ export default {
     };
   },
   created(){
-    //   this.getAllData();
+      // this.getAllData();
   },
   methods: {
       getAllData(option){

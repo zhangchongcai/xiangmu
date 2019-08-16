@@ -21,16 +21,15 @@ export default {
       "#c4ccd3"
     ];
     return {
-        targetLabel:Global.memberTargetLabel,
-        otherLabel:Global.memberOtherLabel,
-        cinemaBrand:[{id:1,name:'全部'},{id:2,name:'大地'},{id:3,name:'中瑞'}],
+      targetLabel:Global.memberTargetLabel,
+      otherLabel:Global.memberOtherLabel,
+      cinemaBrand:[{id:1,name:'全部'},{id:2,name:'大地'},{id:3,name:'中瑞'}],
       brandId:null,
       orgType:'group',
       orgName:'总部',
-
       currentTime:null,
-	  disabledChain:false, //不显示 环比
-	  disabledSame:false, //不显示 同比
+      disabledChain:false, //不显示 环比
+      disabledSame:false, //不显示 同比
       dateType:['天', '周', '月', '年','自定义'],
       dateTypeActive:'天',
       dateTypeIndex:null,

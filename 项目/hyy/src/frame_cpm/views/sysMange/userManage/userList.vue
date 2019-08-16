@@ -4,10 +4,10 @@
             <div class="form">
                 <el-form :inline="true" :model="formInline" size="mini" label-width="100px">
                     <el-form-item label="用户账号：" prop="loginName">
-                        <el-input v-model="formInline.loginName"></el-input>
+                        <el-input v-model.trim="formInline.loginName"></el-input>
                     </el-form-item>
                     <el-form-item label="用户名称："  prop="fullName">
-                        <el-input v-model="formInline.fullName"></el-input>
+                        <el-input v-model.trim="formInline.fullName"></el-input>
                     </el-form-item>
                     <el-form-item label="用户属性：" prop="attributeType">
                         <el-select v-model="formInline.attributeType" placeholder="请选择">
@@ -32,17 +32,18 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item label="所属组织：" prop="orgName">
-                        <el-input v-model="formInline.orgName" style="width: 55%" disabled></el-input>
-                        <el-button @click='dialogVisible=true' type="primary" plain style="padding:5px 18px 6px;">选择</el-button>
+                        <el-input v-model="formInline.orgName" style="width: 192px" disabled></el-input>
+                        <el-button @click='dialogVisible=true' type="primary" plain>选择</el-button>
                         <i class="el-icon-close"
                            v-if="formInline.orgName"
-                           style="top: 9px;left: 48%;position: absolute;font-weight: bolder;color:#3b74ff;font-size: medium"
+                           style="top: 8px;left: 172px;position: absolute;font-weight: bolder;color:#3b74ff;font-size: medium"
                            @click="clear"></i>
-                        <el-button type="primary" @click="onSubmit" v-auth="'system_userManage_view'" style="padding:5px 18px 6px;">查询</el-button>
+                        <el-button type="primary" @click="onSubmit" style="margin-left:29px">查询</el-button>
                     </el-form-item>
                 </el-form>
             </div>
             <div class="create-wrapper">
+                <p class="tip"><i class="el-icon-warning"></i>用户初始密码：123456</p>
                 <el-button type="primary" @click="to" v-auth="'system_userManage_add'">新建</el-button>
             </div>
             <div class="table">
@@ -54,45 +55,46 @@
                     <el-table-column
                             prop="loginName"
                             label="用户账号"
-
+                            show-overflow-tooltip
                             >
                     </el-table-column>
                     <el-table-column
                             prop="fullName"
                             label="用户名称"
-
+                            show-overflow-tooltip
                            >
                     </el-table-column>
                     <el-table-column
                             prop="phone"
                             label="手机号码"
-
+                            show-overflow-tooltip
                             >
                     </el-table-column>
                     <el-table-column
                             prop="attributeType"
                             label="用户属性"
-
+                            show-overflow-tooltip
                     >
                         <template slot-scope="scope">{{scope.row.attributeType | attributeFilter}}</template>
                     </el-table-column>
                     <el-table-column
                         prop="status"
                         label="状态"
-
+                        show-overflow-tooltip
                     >
                         <template slot-scope="scope">{{scope.row.status==0?'启用':scope.row.status==1?'禁用':'离职'}}</template>
                     </el-table-column>
                     <el-table-column
                         prop="organization"
                         label="所属组织"
-
+                        show-overflow-tooltip
                     >
                         <template slot-scope="scope">{{scope.row.organization.name}}</template>
                     </el-table-column>
-                    <el-table-column label="操作" width="200">
+                    <el-table-column label="操作" width="250" fixed="right">
                         <template slot-scope="scope">
                             <el-button
+                                    v-auth="'system_userManage_see'"
                                     class="table-btn-mini"
                                     @click="handleClick(scope.row)"
                                     type="text"
@@ -127,39 +129,47 @@
                 </div>
             </div>
         </div>
-        <el-dialog title="选择组织" :visible.sync="dialogVisible">
-            <el-tree
-                    :data='orgArr'
-                    ref="tree"
-                    node-key="id"
-                    @node-click="handleNodeClick"
-                    :expand-on-click-node="false"
-                    default-expand-all
-                    :highlight-current="true"
-                    :props="defaultProps"
-            >
+        <div class="diaWindow">
+            <el-dialog title="选择组织" :visible.sync="dialogVisible" width="448px" lock-scroll>
+                <div class="divider"></div>
+                <el-tree
+                        :data='orgArr'
+                        ref="tree"
+                        node-key="id"
+                        @node-click="handleNodeClick"
+                        :expand-on-click-node="false"
+                        default-expand-all
+                        :highlight-current="true"
+                        :props="defaultProps"
+                >
                  <span class="custom-tree-node" slot-scope="{ node, data }">
                   <span class="org-button">
-                    <i class="el-icon-menu" v-if="data.isCinema==0||data.isCinema==null">{{data.text}}</i>
-                    <i class="el-icon-document" v-else>{{data.text}}</i>
+                    <i
+                            class="iconfont"
+                            :class="{'icon-neiye-zongbu':data.text == '总部','icon-neiye-zuzhi':data.isCinema == 0,'icon-neiye-quyu':data.isCinema == 1}"
+                    >
+                              {{data.text}}
+                          </i>
                   </span>
                 </span>
-            </el-tree>
-            <div slot="footer" class="dialog-footer">
-                <el-button @click="dialogVisible = false">取 消</el-button>
-                <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
-            </div>
-        </el-dialog>
+                </el-tree>
+                <div slot="footer" class="dialog-footer">
+                    <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+                    <el-button @click="dialogVisible = false">取 消</el-button>
+                </div>
+                <div class="divider"></div>
+            </el-dialog>
+        </div>
         <el-dialog
-                title="提示"
-                :visible.sync="resetVisible"
-                width="30%"
-               >
-            <i class="el-icon-warning" style="font-size: 30px; color:#3B74FF;"></i>
-            <span>确定重置此员工密码？</span>
-            <span slot="footer" class="dialog-footer">
-                <el-button @click="resetVisible = false">取 消</el-button>
+                    title="提示"
+                    :visible.sync="resetVisible"
+                    width="30%"
+            >
+                <i class="el-icon-warning" style="font-size: 30px; color:#3B74FF;"></i>
+                <span>确定重置此员工密码？</span>
+                <span slot="footer" class="dialog-footer">
                 <el-button type="primary" @click="resetPwd" >确 定</el-button>
+                <el-button @click="resetVisible = false">取 消</el-button>
             </span>
         </el-dialog>
     </div>
@@ -364,37 +374,50 @@
     }
   }
 </script>
+<style lang="scss">
+    .el-input--mini .el-input__inner {
+        height: 32px;
+        line-height: 32px;
+    }
+</style>
 <style lang="scss" scoped>
     .content-wrapper {
         height: 100%;
         .list-wrapper {
             .form{
-                background: #f5f5f5;
-                padding: 20px 0 0;
+                .el-form-item--mini.el-form-item {
+                    margin-bottom: 8px;
+                }
+                .el-input{
+                    width: 192px;
+                    height:32px;
+                }
+                .el-select{
+                    width: 192px;
+                    height:32px;
+                }
+                .el-button {
+                    width:80px;
+                    height:32px;
+                }
+
             }
             .create-wrapper {
                 width: 100%;
                 height: 32px;
                 margin: 10px 0;
                 display: flex;
-                justify-content: flex-end;
+                justify-content: space-between;
                 align-items: center;
+                .tip{
+                    i{
+                        margin-right: 5px;
+                        font-size: 14px;
+                    }
+                    font-size: 14px;
+                    color: #FEC107;
+                }
             }
-            /*.companySpan {*/
-                /*display: inline-block;*/
-                /*width: 40px;*/
-                /*height: 32px;*/
-                /*border-radius: 4px;*/
-                /*line-height: 40px;*/
-                /*text-align: center;*/
-                /*background-color: #3B74FF;*/
-                /*color: #fff;*/
-                /*vertical-align: middle;*/
-                /*i {*/
-                    /*font-size: 30px;*/
-                /*}*/
-            /*}*/
-
             .newBuild {
                 width: 100%;
                 height: 60px;
@@ -403,5 +426,6 @@
             }
 
         }
+
     }
 </style>

@@ -5,7 +5,7 @@
             <div class="header-wrap">
               <div class="search-wrap">
                 <span>查询组织：</span>
-                <el-input size="small" placeholder="请输入查询内容" prefix-icon="el-icon-search" v-model="name"></el-input>
+                <el-input size="small" placeholder="请输入查询内容" prefix-icon="el-icon-search" v-model.trim="name"></el-input>
               </div>
               <div class="button-wrap">
                 <el-button type="primary" size="small" @click="getDatas">搜索</el-button>
@@ -26,9 +26,10 @@
             </div>
           </div>
     </div>
+      <div class="divider"></div>
     <div class="confirm-cancel">
-	    <el-button @click="cancel(false)">取 消</el-button>
 	    <el-button type="primary" @click="chosenOneOrg()">确 定</el-button>
+        <el-button @click="cancel(false)">取 消</el-button>
     </div>
 
   </div>
@@ -134,8 +135,8 @@ export default {
       box-sizing: border-box;
       width: 100%;
       height: 100%;
-      padding-left: 25px;
-      margin-top: 39px;
+      padding-left: 10px;
+
       display: inline-block;
       .header-wrap{
         .search-wrap {
@@ -227,7 +228,7 @@ export default {
   // footer样式
   .role-detail-footer {
     text-align: center;
-    margin: 30px auto;
+    margin: 20px auto;
   }
   .confirm-cancel{
     width: 100%;

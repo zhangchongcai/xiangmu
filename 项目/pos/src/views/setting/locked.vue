@@ -1,20 +1,21 @@
 <template>
   <div class="innerlayer">
     <div class="content">
-      <img src="static/imgs/colorLogo.png" :style="{width : '14.1vw'}" />
+      <img src="/static/imgs/colorLogo.png" :style="{width : '14.1vw'}" />
       <div class="inputLayer">
         <el-input
-          placeholder="请刷卡或输入登录密码解锁"
-          v-model="password">
+          placeholder="输入登录密码解锁"
+          v-model="password"
+          type="password">
           <i slot="prefix" class="iconfont iconsuoji"></i>
         </el-input>
       </div>
     </div>
     <div class="footButtomLayer">
       <el-button size="medium" @click="password=''">清空</el-button>
-      <el-button type="primary" size="medium"  @click="dialogOpen">确定</el-button>
+      <el-button type="primary" size="medium"  @click="onPersonnelAuthorization">确定</el-button>
     </div>
-    <el-dialog title="操作提示" :visible.sync="visible" width="30%">
+    <!-- <el-dialog title="操作提示" :visible.sync="visible" width="30%">
       <div class="dialogContent">
         <span class="iconLayer"><i class="iconfont " :class="dialogType"></i></span> 
 
@@ -23,10 +24,11 @@
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="visible = false">确 定</el-button>
       </div>
-    </el-dialog>
+    </el-dialog> -->
   </div>
 </template>
 <script>
+import {  userCheckUserInfo} from 'http/apis'
 export default {
  
   data(){
@@ -43,7 +45,17 @@ export default {
     dialogOpen(){
         this.dialogType='icontishigantanhao';
         this.visible=true
-      }
+    },
+    async onPersonnelAuthorization(){
+      if(!this.password) return this.$message.warning('请输入登录密码！')
+      const data = await userCheckUserInfo({ 
+        passWord: this.password,
+        userName: localStorage.getItem('userAccount')
+      })
+      if(data.code != 200) return this.$message.error(data.msg);
+      // this.$message.success(data.msg)
+      this.$router.go(-1)
+    }
   }
 }
 </script>

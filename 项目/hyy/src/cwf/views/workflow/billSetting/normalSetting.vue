@@ -1,32 +1,32 @@
 <template>
     <div>
-        <div class="box-item" v-for="(item,index) in resetRenderData" :key="item.id" v-if="resetRenderData.length">
+        <div class="box">
             <el-row :gutter="20">
-                <el-col :span="6" >
-                    <div class="grid-content bg-purple">
-                        <div class="item-title">{{item.businessName}}：</div>
-                    </div>
-                </el-col>
-                <el-col :span="6">
-                    <div class="grid-content bg-purple-light">
-                        <div>
-                            <el-select v-model="optionsValue[`${item.businessNo}`]" placeholder="请选择" v-if="optionsValue" @change="change()">
-                                <el-option
-                                    v-for="items in item.list"
-                                    :key="items.id"
-                                    :label="items.name"
-                                    :value="items.id"
-                                >
-                                </el-option>
-                            </el-select>
+                <el-col class="box-item" :span="12" v-for="item in resetRenderData" :key="item.id" >
+                    <template v-if="resetRenderData.length">
+                        <div >
+                            <div class="" style="float:left;">
+                                <div class="item-title">{{item.businessName}}：</div>
+                            </div>
+                            <div style="float:left;">
+                                <el-select v-model="optionsValue[`${item.businessNo}`]" placeholder="请选择" v-if="optionsValue" @change="change()">
+                                    <el-option
+                                        v-for="items in item.list"
+                                        :key="items.id"
+                                        :label="items.name"
+                                        :value="items.id"
+                                    >
+                                    </el-option>
+                                </el-select>
+                            </div>
                         </div>
-                    </div>
+                    </template>
                 </el-col>
             </el-row>
         </div>
        
         <div class="footer">
-            <el-button class="saveBtn" type="primary" round @click="saveBillNormalSetting">保存按钮</el-button>
+            <el-button class="saveBtn" type="primary" @click="saveBillNormalSetting">保存</el-button>
         </div>
      
     </div>
@@ -60,7 +60,6 @@ export default {
                     this.tableData=data.data.businessTypeList
                     this.options=data.data.workflowList
                     this.resetData(data.data)
-                   
                 } else {
                     this.$message({
                         message: data.msg,
@@ -75,14 +74,18 @@ export default {
         //重组渲染结构
         resetData(data){
             this.resetRenderData=JSON.parse(JSON.stringify(this.tableData)) 
-            let flag=false
+            let flag=false//是否存在无需审批标记
             this.resetRenderData.forEach(item=>{
                 item.list=JSON.parse(JSON.stringify(this.options)) 
+            })
+            //兼容无需选项没有的情况
+            this.options.forEach(item=>{
                 if(item.id==2){
                     flag=true
                 }
             })
-            //兼容无需选项没有的情况
+
+            //兼容无需选项没有的情况        
             if(flag){
                 this.resetRenderData.forEach(item=>{
                     this.optionsValue[`${item.businessNo}`]="2"
@@ -152,22 +155,42 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.box-item{
-    margin-bottom:30px;
-    .item-title{
-        text-align: right;
-        line-height: 32px;
+.box{
+    margin-bottom:24px;
+    min-height: 600px;
+    .box-item{
+        margin-bottom: 24px;
+        .item-title{
+            // font-size: 14px;
+            width:150px;
+            line-height: 32px;
+            height: 32px;
+            text-align: left;
+            padding-right: 5px;
+            color: #666666;
+        }
     }
-
 }
-.footer{
-    width: 100%;
-    text-align: center;
-    margin: 0 auto;
-    .saveBtn{
-        margin-top: 100px;
-        text-align: center;
-        // margin: 0 auto;
+
+.footer {
+    position: fixed;
+    bottom: 0px;
+    height: 56px;
+    width: 90%;
+    background: #ffffff;
+    .saveBtn {
+        width: 80px;
+        padding-left: 0;
+        padding-right: 0;
+        height: 32px;
+        font-size: 12px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        span {
+            text-align: center;
+        }
     }
 }
 

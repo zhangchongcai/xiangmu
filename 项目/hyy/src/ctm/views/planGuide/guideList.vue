@@ -33,8 +33,8 @@
             <div class="btn-tool">
                 <div class="table-top-menu" @click="addGuide">新建</div>
                 <div class="table-top-menu" @click="rateSet">周转率配置</div>
-                <div class="table-top-menu">排片报警日志</div>
-                <div class="table-top-menu" @click="showMonthStatistics">报警次数月度统计</div>
+                <!-- <div class="table-top-menu">排片报警日志</div>
+                <div class="table-top-menu" @click="showMonthStatistics">报警次数月度统计</div> -->
             </div>
         </div>
         <div>
@@ -80,11 +80,12 @@
                 </el-table-column>
                 <el-table-column
                     label="审核人"
-                    prop="approveUesrName"
+                    prop="approveUserName"
                 >
                 </el-table-column>
                 <el-table-column
                     label="审核时间"
+                    prop="approveTime"
                 >
                 </el-table-column>
                 <el-table-column
@@ -94,9 +95,11 @@
                 >
                     <template slot-scope="scope">
                         <el-button type="text" @click="viewGuide(scope.row)">查看</el-button>
-                        <el-button v-if="scope.row.status == 0" type="text" @click="editGuide(scope.row)">编辑</el-button>
-                        <el-button v-if="scope.row.status == 0"  type="text" @click="delGuide(scope.row)">删除</el-button>
-                        <el-button v-if="scope.row.status == 1" type="text" @click="recallGuide">撤回</el-button>
+                        <el-button v-if="scope.row.status == 0 || scope.row.status == 4 || (scope.row.status == 3 && scope.row.isMaxVersion == 1)" type="text" @click="editGuide(scope.row)">编辑</el-button>
+                        <el-button v-if="scope.row.status == 0 || scope.row.status == 4"  type="text" @click="delGuide(scope.row)">删除</el-button>
+                        <!-- <el-button type="text" @click="delGuide(scope.row)">删除</el-button> -->
+                        <el-button v-if="scope.row.status == 1" type="text" @click="approveGuide(scope.row)">审批</el-button>
+                        <el-button v-if="scope.row.status == 1" type="text" @click="recallGuide(scope.row)">撤回</el-button>
                     </template>
                 </el-table-column>
             </el-table> 
@@ -135,7 +138,7 @@
             <div style="padding-bottom: 14px; border-bottom: 1px solid #e5e5e5; margin-bottom: 14px;">
                 <div class="filter-tool">
                     <div class="filter-options">
-                        <span>省市:</span>
+                        <span>省市</span>
                         <el-select v-model="provinceCodeValue" placeholder="请选择" @change="provinceChange">
                             <el-option
                             v-for="item in provinceData"
@@ -152,6 +155,9 @@
                             :value="item.cityCode">
                             </el-option>
                         </el-select>
+                    </div>
+                    <div class="filter-options">
+                        <span>影院</span>
                     </div>
                     <div class="filter-options hall-option" >
                         <el-select v-model="cinemaCodeValue" placeholder="请选择">
@@ -192,10 +198,11 @@
                     </div>
                 </div>
                 <el-table
+                    class="turnover-set-table"
                     ref="treeTable"
                     :data="turnoverRateData"
                     row-key="cinemaUid"
-                    height="277">
+                    height="310">
                     <el-table-column
                             fixed
                             width="150">
@@ -217,7 +224,7 @@
                     </el-table-column>
                     <el-table-column
                             label="影院"
-                            min-width="200"
+                            width="300"
                             fixed
                             show-overflow-tooltip>
                         <template slot-scope="scope">
@@ -244,15 +251,16 @@
                 </el-table>
             </div>
             <span slot="footer" class="dialog-footer">
-                <el-button class="w80-btn" @click="turnoverRateSet = false">取 消</el-button>
                 <el-button class="w80-btn" type="primary" @click="saveRateData">确 定</el-button>
+                <el-button class="w80-btn" @click="turnoverRateSet = false">取 消</el-button>
             </span>
         </el-dialog>
     </div>
 </template>
 
 <script>
-import { getPlanGuiideList, delPlanGuiideDetail, getTurnoverRate, getAreaInfo, getCinemaAreaList, setTurnoverRate } from 'ctm/http/interface'
+import { getPlanGuiideList, delPlanGuiideDetail, getTurnoverRate, getAreaInfo, getCinemaAreaList, setTurnoverRate, planGuideApproveRecall } from 'ctm/http/interface'
+import areaDataOrigin from 'ctm/assets/data/area'
     export default {
         data() {
             return {
@@ -383,8 +391,23 @@ import { getPlanGuiideList, delPlanGuiideDetail, getTurnoverRate, getAreaInfo, g
                     }
                 }) 
             },
-            recallGuide() {
-                
+            recallGuide(data) {
+                planGuideApproveRecall({
+                    uid: data.uid
+                }).then(res => {
+                    if (res.code != 200) return this.error(res.msg)
+                    if (res.code == 200) {
+                        this.success('撤回成功')
+                        this.getTableData()
+                    }
+                })
+            },
+            approveGuide(data) {
+                this.$router.push({path: 'view', query: {
+                    issuesNo: data.issuesNo,
+                    versionNo: data.versionNo,
+                    isAppprove: 1
+                }})
             },
             // 月度警告统计
             showMonthStatistics() {
@@ -469,31 +492,46 @@ import { getPlanGuiideList, delPlanGuiideDetail, getTurnoverRate, getAreaInfo, g
             },
             rateSet() {
                 this.turnoverRateSet = true
-                this.cinemaLoading = true
-                getAreaInfo({}).then(res => {
-                    if (res.code != 200) {
-                        this.cinemaLoading = false
-                        return this.error(res.msg)
-                    }
+                // this.cinemaLoading = true
+                // getAreaInfo({}).then(res => {
+                //     if (res.code != 200) {
+                //         this.cinemaLoading = false
+                //         return this.error(res.msg)
+                //     }
 
-                    if (res.code == 200) {
-                        this.areaData = res.data
-                        this.provinceData = [{
-                            provinceCode: '',
-                            provinceName: '全部'
-                        }].concat(res.data.map(item => {
-                            return {
-                                provinceCode: item.provinceCode,
-                                provinceName: item.provinceName
-                            }
-                        }))
-                        this.cityData =  [{
-                            cityCode: '',
-                            cityName: '全部'
-                        }]
-                        this.getCinemaAreaList()
+                //     if (res.code == 200) {
+                //         this.areaData = res.data
+                //         this.provinceData = [{
+                //             provinceCode: '',
+                //             provinceName: '全部'
+                //         }].concat(res.data.map(item => {
+                //             return {
+                //                 provinceCode: item.provinceCode,
+                //                 provinceName: item.provinceName
+                //             }
+                //         }))
+                //         this.cityData =  [{
+                //             cityCode: '',
+                //             cityName: '全部'
+                //         }]
+                //         this.getCinemaAreaList()
+                //     }
+                // })
+                this.areaData = areaDataOrigin
+                this.provinceData = [{
+                    provinceCode: '',
+                    provinceName: '全部'
+                }].concat(this.areaData.map(item => {
+                    return {
+                        provinceCode: item.provinceCode,
+                        provinceName: item.provinceName
                     }
-                })
+                }))
+                this.cityData =  [{
+                    cityCode: '',
+                    cityName: '全部'
+                }]
+                this.getCinemaAreaList()
             },
             // 搜索影院
             searhCinema() {
@@ -548,7 +586,7 @@ import { getPlanGuiideList, delPlanGuiideDetail, getTurnoverRate, getAreaInfo, g
                         return this.error(res.msg)
                     }
                     if (res.code == 200) {
-                        console.log(res.data)
+                        // console.log(res.data)
                         this.cinemaData = [{
                             cinemaUid: '',
                             cinemaName: '全部'
@@ -613,7 +651,7 @@ import { getPlanGuiideList, delPlanGuiideDetail, getTurnoverRate, getAreaInfo, g
                                     city.children.forEach(cinema => {
                                         ret.data.planWorkingListVoList.list.some(item => {
                                             if (cinema.cinemaUid == item.cinemaUid) {
-                                                console.log(item.planNumLower + '-' + item.planNumUpper)
+                                                // console.log(item.planNumLower + '-' + item.planNumUpper)
                                                 cinema.rate = item.planNumLower || item.planNumUpper ? (item.planNumLower + '-' + item.planNumUpper).toString() : ''
                                                 console.log(cinema.rate)
                                                 return true
@@ -633,7 +671,7 @@ import { getPlanGuiideList, delPlanGuiideDetail, getTurnoverRate, getAreaInfo, g
                                 })
                             }
                         })
-                        console.log(dataArr, 'dataArr')
+                        // console.log(dataArr, 'dataArr')
                         
 
 
@@ -777,7 +815,7 @@ import { getPlanGuiideList, delPlanGuiideDetail, getTurnoverRate, getAreaInfo, g
                     city.isIndeterminate = city.children.filter(cinema => cinema.checked).length != 0 && city.children.filter(cinema => cinema.checked).length != city.children.length
                 })
                 this.checkAll = data.every(city => city.checked)
-                console.log(data)
+                
                 this.isIndeterminate = data.filter(city => city.checked).length != 0 && data.filter(city => city.checked).length != data.length
                 return data
             },
@@ -867,7 +905,6 @@ import { getPlanGuiideList, delPlanGuiideDetail, getTurnoverRate, getAreaInfo, g
             },
 
             handleCheckCityChange(val, cityCode) {
-                console.log(val, cityCode)
                 this.turnoverRateData.some( item => {
                     if(item.cityCode === cityCode) {
                         item.children.forEach( innerItem => {
@@ -1102,10 +1139,16 @@ import { getPlanGuiideList, delPlanGuiideDetail, getTurnoverRate, getAreaInfo, g
                         position: relative;
                         top: -4px;
                     }
+                    .el-range-input, .el-range-separator {
+                        font-size: 12px;
+                    }
                 }
                 
-                .el-select {
+                /deep/ .el-select {
                     width: 192px;
+                    .el-input__inner {
+                        font-size: 12px;
+                    }
                 }
             }
             .filter-btn-con {
@@ -1140,16 +1183,25 @@ import { getPlanGuiideList, delPlanGuiideDetail, getTurnoverRate, getAreaInfo, g
             }
         }
         .guide-status1 {
-            color: rgb(126, 162, 253)
+            color: #666;
+        }
+        .guide-status1 {
+            color: #739BFF;
+        }
+        .guide-status2 {
+            color: #FF8900;
         }
         .guide-status3 {
-            color: rgb(82, 200, 82)
+            color: #2DBC2D;
         }
-        .guide-status3 {
-            color: rgb(243, 65, 61)
+        .guide-status4 {
+            color: #F33430;
         }
     }
-    .turnover-set-dialog {
+    /deep/ .turnover-set-dialog {
+        .el-dialog__body {
+            padding: 0px 20px 20px;
+        }
         .filter-tool {
             height: 36px;
             line-height: 36px;
@@ -1169,10 +1221,13 @@ import { getPlanGuiideList, delPlanGuiideDetail, getTurnoverRate, getAreaInfo, g
                         margin: 0 10px;
                     }
                 }
-                .el-select {
+                /deep/ .el-select {
                     width: 128px;
                     height: 32px;
                     margin-left: 8px;
+                    .el-input__inner {
+                        font-size: 12px;
+                    }
                 }
             }
             
@@ -1180,7 +1235,7 @@ import { getPlanGuiideList, delPlanGuiideDetail, getTurnoverRate, getAreaInfo, g
         .filter-btn {
             text-align: right;
             height: 32px;
-            .el-checkbox {
+            /deep/ .el-checkbox {
                 // float: left;
                 .el-checkbox__label {
                     font-size: 12px;
@@ -1209,7 +1264,7 @@ import { getPlanGuiideList, delPlanGuiideDetail, getTurnoverRate, getAreaInfo, g
             .batch-set {
                 position: absolute;
                 width: 300px;
-                text-align: left;
+                text-align: right;
                 right: 0px;
                 top: 0;
                 .el-input {
@@ -1225,6 +1280,29 @@ import { getPlanGuiideList, delPlanGuiideDetail, getTurnoverRate, getAreaInfo, g
         }
         .cinema-num-span {
             color: rgb(244, 68, 64);
+        }
+        .turnover-set-table.el-table {
+            overflow: auto;
+            /deep/ .el-table__body-wrapper {
+                overflow-y: auto;
+                overflow-x: hidden;
+                .el-input {
+                    width: 140px;
+                    font-size: 12px;
+                    
+                }
+            }
+            // /deep/ .has-gutter tr th {
+            //     height: 32px;
+            // }
+            /deep/ th {
+                height: 32px;
+                line-height: 32px;
+            }
+            /deep/ td {
+                height: 32px;
+                line-height: 32px;
+            }
         }
     }
     

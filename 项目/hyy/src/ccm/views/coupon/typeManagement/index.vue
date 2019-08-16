@@ -32,7 +32,7 @@
                             {{scope.row.couponTypeStatus == '1' ? '无效' : '有效'}}
                         </div>
                         <div v-else-if="item.prop == 'control'">
-                            <el-button type="text" @click="editItem(scope)">修改</el-button>
+                            <el-button type="text" @click="editItem(scope)">编辑</el-button>
                             <el-button type="text" @click="deleteItem(scope)">删除</el-button>
                         </div>
                     </template>
@@ -42,8 +42,15 @@
     </section>
 
     <!-- 分页 -->
-    <section v-if="tableConfig.data.length != 0" class="pagination-section flex-base flex-center">
-        <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="pageConfig.currentPage" :page-sizes="pageConfig.pageSizes" :page-size="pageConfig.pageSize" layout="total, sizes, prev, pager, next, jumper" :total="pageConfig.total">
+    <section v-if="tableConfig.data.length != 0" class="pagination-section flex-base flex-center pageStyle">
+        <el-pagination 
+        @size-change="handleSizeChange" 
+        @current-change="handleCurrentChange" 
+        :current-page="pageConfig.currentPage" 
+        :page-sizes="pageConfig.pageSizes" 
+        :page-size="pageConfig.pageSize" 
+        background layout="total, prev, pager, next, jumper, sizes"                
+        :total="pageConfig.total">
         </el-pagination>
     </section>
 </div>
@@ -229,7 +236,7 @@ export default {
          */
         editItem(scope) {
             this.$router.push({
-                path: 'addTicket',
+                path: 'editTicket',
                 query: {
                     data: scope.row,
                     isChangeType: true
@@ -364,6 +371,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "../../../assets/css/comList.scss";   
+
 .search-lan {
     background: #F5F5F5;
 

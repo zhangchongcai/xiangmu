@@ -87,11 +87,13 @@ export default {
       const data = await movieTicketCheck({
         cinemaTicketCode: this.value
       })
-      if(data.code == 200){
-        this.data = data.data
-      }else{
+      if(data.code !=200){
+        this.data = {};
         this.$message.error(data.msg);
+        return
       }
+      this.data = data.data
+      if(!data.data.id)  this.$alert('影票编码不正确，请重新输入')
     },
     empty(){
       this.value = '';

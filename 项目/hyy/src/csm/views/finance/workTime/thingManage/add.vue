@@ -23,14 +23,19 @@
           </el-col>
         </el-row>
         <el-row :gutter="0">
-          <el-col :span="10">
+          <el-col :span="24">
             <el-form-item label="适用影院:" required>
               <el-radio-group v-model="searchAdition.refcinema" @change="changeCinema">
                 <el-radio label="1">全部影院</el-radio>
                 <el-radio label="0">指定影院</el-radio>
               </el-radio-group>
-              <el-input v-model="cinemaName" v-show="isSome" clearable class="cinema" @focus="selectTreeEvent">
-              </el-input>
+              <div  v-show="isSome" class="cinemaDiv">
+              <el-input v-model="cinemaName" clearable class="cinema">
+                </el-input>
+                 <el-button  @click="selectTreeEvent" style="border:1px solid #3B74FF">选择</el-button>
+              </div>
+
+             
             </el-form-item>
           </el-col>
 
@@ -43,7 +48,7 @@
         ref="tree" highlight-current v-loading="this.loading" :props="defaultProps"></el-tree>
       <span slot="footer" class="dialog-footer">
         <el-button type="primary" @click="confirmTreeBtn">确 定</el-button>
-        <el-button @click="cancelTreeBtn">取 消</el-button>
+        <el-button @click="cancelTreeBtn" style="margin-left:32px;">取 消</el-button>
       </span>
     </el-dialog>
 
@@ -52,7 +57,7 @@
     <div class="bottom-handler-tool">
       <div class="btn-area">
         <el-button type="primary" @click="addOtherthing">添加</el-button>
-        <el-button @click="$router.go(-1)">取消</el-button>
+        <el-button @click="$router.go(-1)" style="margin-left:32px;">取消</el-button>
       </div>
     </div>
   </div>
@@ -65,7 +70,9 @@
       return {
         isSome: false,
         cinemaName:"",
-        searchAdition: {},
+        searchAdition: {
+          refcinema:"1"
+        },
         cinemaValue: this.selectValue && this.selectValue.defVALUE,
         newselectValue: [],
         propSselectValue: this.selectValue,
@@ -135,7 +142,6 @@
             .getCinemaByParam(Object.assign({},limit))
             .then(data => {
               const treeValue = data.data;
-            
               // this.data = changeTreeJson(treeValue.rows);
               self.newselectValue = changeTreeJson(treeValue.rows);
               Vue.nextTick(function () {
@@ -155,20 +161,23 @@
       handleClose() {
         this.selectTreeValue = false;
       },
-      // 添加 
-      addOtherthing() {
-        this.$csmList.addOtherthing(Object.assign({},this.searchAdition))
+     addOtherthing() {   // 添加 
+        if (!this.searchAdition.name) {
+          this.$message('请填写物品名称')
+          return
+        }
+        if (!this.searchAdition.code) {
+          this.$message('请填写管理编号')
+          return
+        }
+        this.$csmList.addOtherthing(Object.assign({}, this.searchAdition))
           .then(data => {
-            this.$confirm('添加成功, 是否继续?', '提示', {
-              confirmButtonText: '确定',
-              cancelButtonText: '取消',
-              type: 'success'
-            }).then(() => {
-              this.searchAdition = {}
-              cinemaName = ""
-            }).catch(() => {
-              this.$router.push("list")      
-            });
+            if (data && data.code == 200) {
+              this.$message(data.msg)
+              this.$router.push("list")
+            } else {
+              this.$message(data.msg)
+            }
           })
           .catch(msg => {
             console.log(msg);
@@ -198,6 +207,13 @@
   }
 </script>
 <style lang="scss" scoped>
+  /deep/ .el-button{
+    padding: 9px 27px;
+  }
+  /deep/ .el-form-item__label{
+    padding-right: 18px;
+    color: #666;
+  }
   .el-tree-node__label {
     font-size: 12px;
   }
@@ -215,10 +231,7 @@
         display: flex;
         align-items: center;
         margin-bottom: 10px;
-
-        .el-input {
-          // height: 32px;
-        }
+        // border: 
       }
     }
 
@@ -229,10 +242,13 @@
         display: flex;
         align-items: center;
       }
-
-      .cinema {
+      .cinemaDiv{
+        display: flex;
+         .cinema {
         margin: 0 10px;
       }
+      }
+     
     }
   }
 
@@ -266,7 +282,7 @@
     }
 
     &::before {
-      content: '';
+      // content: '';
       display: inline-block;
       width: 2px;
       height: 10px;
@@ -393,12 +409,11 @@
     height: 64px;
     width: 100%;
     // position: fixed;
-    position: absolute;
-    z-index: 999;
-    bottom: 0;
-    right: 0;
-    background-color: #f5f5f5;
-
+    // position: absolute;
+    // z-index: 999;
+    // bottom: 0;
+    // right: 0;
+    margin-top: 40px;
     .btn-area {
       width: 500px;
       margin: 0 auto;
@@ -439,7 +454,7 @@
         width:448px;
         height: 1px;
         margin-bottom: 12px;
-        background-color: #E5E5E5;
+        // background-color: #E5E5E5;
       }
     }
     button{

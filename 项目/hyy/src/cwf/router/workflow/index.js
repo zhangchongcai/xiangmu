@@ -17,11 +17,12 @@ const routes = [{
     {
         path: 'checkNormalApproval',
         meta: {
-            title: '查看审批'
+            title: '审批详情'
         },
-        component: (resolve) => require(['../../views/workflow/normalApproval/check.vue'], resolve),
-        name: '查看审批'
+        component: (resolve) => require(['../../views/workflow/normalApproval/checkNormalApproval.vue'], resolve),
+        name: '审批详情'
     },
+    //暂时用不到
     {
         path: 'approvalNormalApproval',
         meta: {
@@ -41,17 +42,17 @@ const routes = [{
     {
         path: 'editApprovalSetting',
         meta: {
-            title: '编辑审批流程设置'
+            title: '操作审批流程设置'
         },
-        component: (resolve) => require(['../../views/workflow/approvalSetting/edit.vue'], resolve),
-        name: '编辑审批流程设置'
+        component: (resolve) => require(['../../views/workflow/approvalSetting/editApprovalSetting.vue'], resolve),
+        name: '操作审批流程设置'
     },
     {
         path: 'checkApprovalSetting',
         meta: {
             title: '查看审批流程设置'
         },
-        component: (resolve) => require(['../../views/workflow/approvalSetting/check.vue'], resolve),
+        component: (resolve) => require(['../../views/workflow/approvalSetting/checkApprovalSetting.vue'], resolve),
         name: '查看审批流程设置'
     },
     {
@@ -65,10 +66,10 @@ const routes = [{
     {
         path: 'editBillSetting',
         meta: {
-            title: '编辑业务单据审批设置'
+            title: '操作业务单据审批设置'
         },
-        component: (resolve) => require(['../../views/workflow/billSetting/edit.vue'], resolve),
-        name: '编辑业务单据审批设置'
+        component: (resolve) => require(['../../views/workflow/billSetting/editBillSetting.vue'], resolve),
+        name: '操作业务单据审批设置'
     }
 ]
 

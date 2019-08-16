@@ -70,7 +70,7 @@ export default {
       default: false
     },
     cinemaUid: {
-      type: String,
+      type: [String, Number],
       default: '',
     },
     // 回选数据
@@ -111,7 +111,7 @@ export default {
   mounted() {},
   methods: {
     init() {
-      console.log(this.dialogFeedbackData)
+      // console.log(this.dialogFeedbackData)
       // debugge
       this.queryData.cinemaUid = this.cinemaUid;
       this.queryData.page = 1;
@@ -192,12 +192,12 @@ export default {
     handleSizeChange(val) {
       this.queryData.pageSize = val;
       this.querySalePlace(this.queryData);
-      console.log(`每页 ${val} 条`);
+      // console.log(`每页 ${val} 条`);
     },
     handleCurrentChange(val) {
       this.queryData.page = val;
       this.querySalePlace(this.queryData);
-      console.log(`当前页: ${val}`);
+      // console.log(`当前页: ${val}`);
     }
   },
   mounted() {}

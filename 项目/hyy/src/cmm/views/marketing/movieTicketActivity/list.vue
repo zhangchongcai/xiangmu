@@ -3,7 +3,54 @@
     <div v-if="pageShow=='actList'" >
         <!-- 搜索栏 -->
         <section>
-            <searchLan :modelName="modelName" :config="searchConfig" :isCache="isCache" @pressSearch="search" @searchValueChange="setSearch"></searchLan>
+            <!-- <searchLan :modelName="modelName" :config="searchConfig" :isCache="isCache" @pressSearch="search" @searchValueChange="setSearch"></searchLan> -->
+            <el-form :inline="true" :model="searchHeaderFormData" ref="searchHeaderFormData" class="cmm_search-header">
+                <el-form-item label="活动名称：" label-width="72px">
+                    <el-input v-model="searchHeaderFormData.searchActivityName" @blur="()=>{searchHeaderFormData.searchActivityName = searchHeaderFormData.searchActivityName.trim();}" placeholder="请输入" clearable></el-input>
+                </el-form-item>
+                <el-form-item label="有效期：" label-width="60px">
+                    <el-date-picker v-model="searchHeaderFormData.validDate" value-format="yyyy-MM-dd" type="daterange" placeholder="选择日期" range-separator="至" start-placeholder="yyyy-MM-dd" end-placeholder="yyyy-MM-dd"></el-date-picker>
+                </el-form-item>
+                <el-form-item label="创建人：" label-width="60px">
+                    <el-input class="input-dialog" v-model="searchHeaderFormData.searchCreaterId" @blur="()=>{searchHeaderFormData.searchCreaterId = searchHeaderFormData.searchCreaterId.trim();}" placeholder="请选择" readonly></el-input>
+                    <i class="el-icon-close close-btn" @click="clearInputValue('searchCreaterId')" v-show="searchHeaderFormData.searchCreaterId"></i>
+                    <el-button type="primary" class="dialogBtn" @click="userCreaterClick({value:searchHeaderDialogData.searchCreaterId,text:searchHeaderFormData.searchCreaterId})" plain>选择</el-button>
+                </el-form-item>
+                <el-form-item label="创建单位：" label-width="72px">
+                    <el-input class="input-dialog" v-model="searchHeaderFormData.searchCreaterArea" @blur="()=>{searchHeaderFormData.searchCreaterArea = searchHeaderFormData.searchCreaterArea.trim();}" placeholder="请选择" readonly></el-input>
+                    <i class="el-icon-close close-btn" @click="clearInputValue('searchCreaterArea')" v-show="searchHeaderFormData.searchCreaterArea"></i>
+                    <el-button type="primary" class="dialogBtn" @click="orgStructureClick({value:searchHeaderDialogData.searchCreaterArea})" plain>选择</el-button>
+                </el-form-item>
+                <el-form-item label="审批人：" label-width="60px">
+                    <el-input class="input-dialog" v-model="searchHeaderFormData.searchApprovalmanId" @blur="()=>{searchHeaderFormData.searchApprovalmanId = searchHeaderFormData.searchApprovalmanId.trim();}" placeholder="请选择" readonly></el-input>
+                    <i class="el-icon-close close-btn" @click="clearInputValue('searchApprovalmanId')" v-show="searchHeaderFormData.searchApprovalmanId"></i>
+                    <el-button type="primary" class="dialogBtn" @click="userApprovalClick({value:searchHeaderDialogData.searchApprovalmanId,text:searchHeaderFormData.searchApprovalmanId})" plain>选择</el-button>
+                </el-form-item>
+                <el-form-item label="适用影院：" label-width="72px">
+                    <el-input class="input-dialog" v-model="searchHeaderFormData.searchBusinessCode" @blur="()=>{searchHeaderFormData.searchBusinessCode = searchHeaderFormData.searchBusinessCode.trim();}" placeholder="请选择" readonly></el-input>
+                    <i class="el-icon-close close-btn" @click="clearInputValue('searchBusinessCode')" v-show="searchHeaderFormData.searchBusinessCode"></i>
+                    <el-button type="primary" class="dialogBtn" @click="cinemaClick({value:searchHeaderDialogData.searchBusinessCode,text:searchHeaderFormData.searchBusinessCode})" plain>选择</el-button>
+                </el-form-item>
+                <el-form-item label="执行策略：" label-width="72px">
+                    <el-select v-model="searchHeaderFormData.executeMode" placeholder="请选择">
+                        <el-option v-for="item in executeModeOptions" :key="item.label" :label="item.label" :value="item.value"></el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="活动类型：" label-width="72px">
+                    <el-select v-model="searchHeaderFormData.ruleTemplateId" placeholder="请选择">
+                        <el-option v-for="item in ruleTemplateOptions" :key="item.label" :label="item.label" :value="item.value"></el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="活动状态：" label-width="72px">
+                    <el-select v-model="searchHeaderFormData.searchState" placeholder="请选择">
+                        <el-option v-for="item in searchStateOptions" :key="item.label" :label="item.label" :value="item.value"></el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item class="btn-wrap">
+                    <el-button type="primary" @click="search">搜索</el-button>
+                    <el-button @click="resetForm()" plain >重置</el-button>
+                </el-form-item>
+            </el-form>
         </section>
 
         <!-- 按钮组 -->
@@ -37,44 +84,103 @@
         </span>
         </el-dialog>
     </div>
+    <!-- <audit-view v-if="pageShow=='auditView'" ref="auditView" @refreshDataList="search"></audit-view> -->
 
-    <add-movie-ticket v-if="pageShow=='addAct'" ref="addOrUpdate" @refreshDataList="search"></add-movie-ticket>
-    <audit-view v-if="pageShow=='auditView'" ref="auditView" @refreshDataList="search"></audit-view>
-    <!-- 查看审批单弹窗 -->
+    <!-- 查询头弹窗 -->
+        <!-- 选择组织结构 -->
+        <orgStructureDialog :title="orgStructureDialog.title" :dialogTableVisible.sync="orgStructureDialog.orgStructureDialogVisible" ref="orgStructureDialog" @callBack="handleOrgStructureBack"></orgStructureDialog>
+        <!-- 选择影院 -->
+        <cinemaDialog :title="cinemaDialog.title" :dialogTableVisible.sync="cinemaDialog.cinemaDialogVisible" ref="cinemaDialog" @callBack="handleCinemaBack"></cinemaDialog>
+        <!-- 选择审批人 -->
+        <userDialog :title="userApprovalDialog.title" :dialogTableVisible.sync="userApprovalDialog.userApprovalDialogVisible" ref="userApprovalDialog" @callBack="handleUserApprovalBack"></userDialog>
+        <!-- 选择创建人 -->
+        <userDialog :title="userCreaterDialog.title" :dialogTableVisible.sync="userCreaterDialog.userCreaterDialogVisible" ref="userCreaterDialog" @callBack="handleUserCreaterBack"></userDialog>
+    <!-- 列表弹窗 -->
+        <!-- 查看审批单弹窗 -->
     <approvalDialog v-if="showApproval"  ref="approvalDialog" :bizNo="bizNo" :dialogFormVisible="showApproval" @close="approvalDetailClose"></approvalDialog>
+    <!-- 打开新建、编辑页 -->
+    <add-movie-ticket v-if="pageShow=='addAct'" ref="addOrUpdate" @refreshDataList="search"></add-movie-ticket>
+
 </div>
 </template>
 
 <script>
-import 'cmm/assets/common.scss';
 import searchLan from 'cmm/components/search/index.vue';
 import commonTable from 'cmm/components/Table/commonTable.vue';
 import AddMovieTicket from './add-or-update'
-import AuditView from './auditView'
+// import AuditView from './auditView'
 import qs from "qs";
 import approvalDialog from '../../../dialogs/approval/approvalDialog.vue';
 import minxins from 'frame_cpm/mixins/cacheMixin.js'
+// 弹窗混入回调方法，注册弹窗和设置回调都在此处
+import searchAlertHandle from 'cmm/mixins/marketing/searchAlertHandle.js';
 export default {
     components: {
         AddMovieTicket,
-        AuditView,
+        // AuditView,
         searchLan,
         commonTable,
         approvalDialog
     },
-    mixins: [minxins.cacheMixin],
+    mixins: [searchAlertHandle,minxins.cacheMixin],
     data() {
-
         return {
-            /* 缓存数据 */
-            cacheField: ["pageConfig","tableLabels","tableData"],
-            subComName:"movieTicketActivity",
+            //缓存对象数据
+            cacheField: ["pageConfig","searchHeaderFormData","searchHeaderDialogData"],
+            subComName:"movieTicketActivity",//缓存数据唯一标识
             bizNo:"",//审批单业务编码
             showApproval:false,//是否显示查看审批单弹窗
             pageShow: 'actList',
             tenantId: JSON.parse(localStorage.getItem('user')).consumerId, //商户id
             modelName: "movieTicketManagement",
             isCache:true,
+            //查询头
+            searchHeaderFormData:{
+                searchActivityName:"",//活动名称
+                validDate:"",//有效期
+                searchCreaterId: "",//创建人
+                searchCreaterArea: "",//创建单位
+                searchApprovalmanId: "",//审批人
+                searchBusinessCode: "",//适用影院
+                executeMode: "",//执行策略
+                searchState: "",//活动状态
+                pageNo: 1,
+                pageSize: 10,
+                ruleTemplateId: "14,15,16",//模板id
+                searchValidDateEnd: "",//有效期开始时间
+                searchValidDateStart: "",//有效期结束时间
+                tenantId: JSON.parse(localStorage.getItem('user')).consumerId,  //租户id
+            },
+            //查询头-弹窗值
+            searchHeaderDialogData:{
+                searchCreaterId:"", //创建人
+                searchCreaterArea:"", //创建单位
+                searchApprovalmanId:"", //审批人
+                searchBusinessCode:"", //适用影院
+            },
+            //执行策略-选项列表
+            executeModeOptions:[
+                { label: '全部', value: '' }, 
+                { label: '自动', value: 'AUTO_MATCH' }, 
+                { label: '推荐', value: 'AUTO_MATCH_RECOMMEND' }
+            ],
+            //活动类型-选项列表
+            ruleTemplateOptions:[
+                { label: '不限', value: '14,15,16' },
+                { label: '影票打折', value: '14' },
+                { label: '影票立减', value: '15' },
+                { label: '影票减至', value: '16' },
+            ],
+            //活动状态-选项列表
+            searchStateOptions:[
+                { label: '全部', value: '' }, 
+                { label: '新建', value: '1' }, 
+                { label: '锁定', value: '2' },
+                { label: '执行中', value: '3' },
+                { label: '暂停', value: '4' },
+                { label: '作废', value: '5' }
+            ],
+
             searchConfig: [{
                     keyName: 'searchActivityName',
                     name: '活动名称',
@@ -179,7 +285,6 @@ export default {
                     ]
                 },
             ],
-
             searchParam: {},
             pageConfig: {
                 start: 0,
@@ -198,12 +303,12 @@ export default {
                 {
                     prop: 'activityName',
                     label: '活动名称',
-                    width: '200'
+                    width: '150'
                 },
                 {
                     prop: 'executeMode',
                     label: '执行策略',
-                    width: '80',
+                    width: '70',
                     hasTemplate: true,
                     formatRole: (scope) => {
                         return scope.row.executeMode == "AUTO_MATCH" ? '自动' : '推荐';
@@ -212,12 +317,12 @@ export default {
                 {
                     prop: 'priority',
                     label: '优先级',
-                    width: '110'
+                    // width: '110'
                 },
                 {
                     prop: 'validDateStart',
                     label: '有效期',
-                    width: '110',
+                    width: '100',
                     hasTemplate: true,
                     formatRole: (scope) => {
                         return scope.row.validDateStart ? scope.row.validDateStart + " 至 " + scope.row.validDateEnd : '';
@@ -226,27 +331,27 @@ export default {
                 {
                     prop: 'createrName',
                     label: '创建人',
-                    width: '100'
+                    // width: '100'
                 },
                 {
                     prop: 'orgName',
                     label: '创建单位',
-                    width: '150'
+                    // width: '150'
                 },
                 {
                     prop: 'createTime',
                     label: '创建日期',
-                    width: '100'
+                    width: '90'
                 },
                 {
                     prop: 'approvalmanName',
                     label: '审批人',
-                    width: '100'
+                    // width: '100'
                 },
                 {
                     prop: 'approvalResult',
                     label: '审批状态',
-                    width: '100',
+                    // width: '100',
                     hasTemplate: true,
                     formatRole: (scope) => {
                         switch (scope.row.approvalResult) {
@@ -271,7 +376,7 @@ export default {
                 {
                     prop: 'activityState',
                     label: '活动状态',
-                    width: '80',
+                    width: '70',
                     hasTemplate: true,
                     formatRole: (scope) => {
                         switch (scope.row.activityState) {
@@ -300,7 +405,7 @@ export default {
             tableOptions: {
                 label: "操作",
                 fixed: "right",
-                width: '250',
+                width: '200',
                 options: [{
                         text: "查看",
                         method: "actDetail",
@@ -325,6 +430,13 @@ export default {
                         }
                     },
                     {
+                        text: "复制",
+                        method: "copyAct",
+                        condition: (scope) => {
+                            return true;
+                        }
+                    },
+                    {
                         text: "作废",
                         method: "cancelAct",
                         condition: (scope) => {
@@ -341,13 +453,7 @@ export default {
                             return scope.row.activityState == 1 && scope.row.approvalResult == 1
                         }
                     },
-                    {
-                        text: "复制",
-                        method: "copyAct",
-                        condition: (scope) => {
-                            return true;
-                        }
-                    },
+                    
                     {
                         text: "启用",
                         method: "openAct",
@@ -395,35 +501,122 @@ export default {
                     message: '备注不能为空',
                     trigger: 'blur'
                 }]
-            }
+            },
+            param:''
         }
     },
     created() {
-        this.search();
+        this.handleSearch();
     },
-   
     methods: {
+        //子组件返回新建、编辑、复制成功结果
+        handleRefreshDataList(status){
+            console.log("status",status)
+            if(status!=false){
+                this.resetCacheInit()
+            }
+            this.handleSearch()
+        },
+        //缓存数据初始化
+        resetCacheInit(){
+            //重置查询头数据
+            this.resetForm()
+            //重置分页配置
+            this.pageConfig = {
+                start: 0,
+                pageSize: 10,
+                pageSizes: [10, 20, 30, 40],
+                currentPage: 1,
+                total: 0
+            }
+        },
+        //查询
+        handleSearch(){
+            console.log(this.searchHeaderFormData)
+            console.log(this.searchHeaderDialogData)
+            
+            if(this.searchHeaderFormData.validDate && this.searchHeaderFormData.validDate.length!=0){
+                this.searchHeaderFormData.searchValidDateStart=this.searchHeaderFormData.validDate[0]
+                this.searchHeaderFormData.searchValidDateEnd=this.searchHeaderFormData.validDate[1]
+            }else{
+                this.searchHeaderFormData.validDate=""
+                this.searchHeaderFormData.searchValidDateStart=""
+                this.searchHeaderFormData.searchValidDateEnd=""
+            }
+           
+            let params={
+                searchActivityName:this.searchHeaderFormData.searchActivityName,//活动名称
+                validDate:this.searchHeaderFormData.validDate,//有效期
+                searchCreaterId: this.searchHeaderDialogData.searchCreaterId,//创建人
+                searchCreaterArea: this.searchHeaderDialogData.searchCreaterArea,//创建单位
+                searchApprovalmanId: this.searchHeaderDialogData.searchApprovalmanId,//审批人
+                searchBusinessCode:this.searchHeaderDialogData.searchBusinessCode,//适用影院
+                executeMode: this.searchHeaderFormData.executeMode,//执行策略
+                searchState: this.searchHeaderFormData.searchState,//活动状态
+                pageNo: this.pageConfig.currentPage || 1,
+                pageSize: this.pageConfig.pageSize || 10,
+                ruleTemplateId: this.searchHeaderFormData.ruleTemplateId || "14,15,16",//模板id
+                searchValidDateEnd: this.searchHeaderFormData.searchValidDateEnd,//有效期开始时间
+                searchValidDateStart: this.searchHeaderFormData.searchValidDateStart,//有效期结束时间
+                tenantId: this.tenantId,  //租户id
+            }
+            this.getDataList(params);
+        },
+        //清除弹窗显示内容
+        clearInputValue(key){
+            this.searchHeaderDialogData[key]=""
+            this.searchHeaderFormData[key]=""
+        },
+        //重置
+        resetForm(){
+            //查询头
+            this.searchHeaderFormData={
+                searchActivityName:"",//活动名称
+                validDate:"",//有效期
+                searchCreaterId: "",//创建人
+                searchCreaterArea: "",//创建单位
+                searchApprovalmanId: "",//审批人
+                searchBusinessCode: "",//适用影院
+                executeMode: "",//执行策略
+                searchState: "",//活动状态
+                pageNo: 1,
+                pageSize: 10,
+                ruleTemplateId: "14,15,16",//模板id
+                searchValidDateEnd: "",//有效期开始时间
+                searchValidDateStart: "",//有效期结束时间
+                tenantId: this.tenantId,  //租户id
+            }
+            //查询头-弹窗值
+            this.searchHeaderDialogData={
+                searchCreaterId:"", //创建人
+                searchCreaterArea:"", //创建单位
+                searchApprovalmanId:"", //审批人
+                searchBusinessCode:"", //适用影院
+            }
+        },
         /* @function search - 搜索
          */
-        search(bool) {
-            if(bool == true){
-                this.isCache = false;
-                this.pageConfig.currentPage = 1;
-                this.pageConfig.pageSize = 10;
-                this.searchParam = {
-                    searchActivityName:"",
-                    validDate:"",
-                    searchCreaterId:"",
-                    searchCreaterArea:"",
-                    searchApprovalmanId:"",
-                    searchBusinessCode:"",
-                    executeMode:"",
-                    ruleTemplateId:"",
-                    searchState:""
-                };
-            }
-            let _param = this.setParam();
-            this.getDataList(_param);
+        search() {
+            // if(bool == true){
+            //     this.isCache = false;
+            //     this.pageConfig.currentPage = 1;
+            //     this.pageConfig.pageSize = 10;
+            //     this.searchParam = {
+            //         searchActivityName:"",
+            //         validDate:"",
+            //         searchCreaterId:"",
+            //         searchCreaterArea:"",
+            //         searchApprovalmanId:"",
+            //         searchBusinessCode:"",
+            //         executeMode:"",
+            //         ruleTemplateId:"",
+            //         searchState:""
+            //     };
+            // }
+            // this.param = this.setParam();
+            // this.getDataList(this.param);
+            this.pageConfig.currentPage = 1;
+            this.handleSearch()
         },
         setParam() {
             console.log(this.searchParam.ruleTemplateId)
@@ -470,20 +663,21 @@ export default {
          * 
          */
         setSearch(param) {
-            this.searchParam = param;
+            console.log(param)
+            this.searchParam = param.form;
             for(let item of this.searchConfig){
                 if(item.keyName == 'searchActivityName'){
                     item.value = this.searchParam.searchActivityName
                 }else if(item.keyName == 'validDate'){
                     item.value = this.searchParam.validDate
                 }else if(item.keyName == 'searchCreaterId'){
-                    item.value = this.searchParam.searchCreaterId
+                    item.value = param.system.find(item=>item.keyName == 'searchCreaterId').value
                 }else if(item.keyName == 'searchCreaterArea'){
-                    item.value = this.searchParam.searchCreaterArea
+                    item.value = param.system.find(item=>item.keyName == 'searchCreaterArea').value
                 }else if(item.keyName == 'searchApprovalmanId'){
-                    item.value = this.searchParam.searchApprovalmanId
+                    item.value = param.system.find(item=>item.keyName == 'searchApprovalmanId').value
                 }else if(item.keyName == 'searchBusinessCode'){
-                    item.value = this.searchParam.searchBusinessCode
+                    item.value = param.system.find(item=>item.keyName == 'searchBusinessCode').value
                 }else if(item.keyName == 'executeMode'){
                     item.value = this.searchParam.executeMode
                 }else if(item.keyName == 'ruleTemplateId'){
@@ -600,7 +794,8 @@ export default {
         },
         /* 查看活动 */
         actDetail(scope) {
-            this.addOrUpdateHandle(scope.row, "detail");
+            this.$router.push({path:'movieTicketActivity/detail',query:{id:scope.row.id}})
+            // this.addOrUpdateHandle(scope.row, "detail");
         },
         /* 复制活动 */
         copyAct(scope) {
@@ -624,16 +819,24 @@ export default {
          * @function handleSizeChange - 修改分页大小
          */
         handleSizeChange(pageSize) {
+            // this.pageConfig.pageSize = pageSize;
+            // this.pageConfig.currentPage = 1;
+            // this.param.pageSize = pageSize;
+            // this.param.pageNo = 1;
+            // this.getDataList(this.param)
             this.pageConfig.pageSize = pageSize;
             this.pageConfig.currentPage = 1;
-            this.search();
+            this.handleSearch()
         },
         /**
          * @function handleCurrentChange - 修改当前显示页
          */
         handleCurrentChange(currentPage) {
+            // this.pageConfig.currentPage = currentPage;
+            // this.param.pageNo = currentPage;
+            // this.getDataList(this.param)
             this.pageConfig.currentPage = currentPage;
-            this.search();
+            this.handleSearch()
         },
 
         addOrUpdateHandle(row, isEdit) {
@@ -656,7 +859,8 @@ export default {
                         type: 'success',
                         duration: 1500,
                         onClose: () => {
-                            this.search()
+                            // this.getDataList(this.param);
+                            this.handleSearch()
                         }
                     })
                 } else {
@@ -695,7 +899,8 @@ export default {
                                 duration: 1500,
                                 onClose: () => {
                                     this.startOrStopShow = false
-                                    this.search();
+                                    // this.getDataList(this.param);
+                                    this.handleSearch()
                                 }
                             })
                         } else {
@@ -724,7 +929,8 @@ export default {
                             type: 'success',
                             duration: 1500,
                             onClose: () => {
-                                this.search();
+                                // this.getDataList(this.param);
+                                this.handleSearch()
                             }
                         })
                     } else {
@@ -782,6 +988,7 @@ export default {
 
 <style lang="scss" scoped>
 @import "../../../assets/comList.scss";
+@import "../../../assets/search-header.scss";
 /deep/.el-select-dropdown{
     .el-scrollbar{
         .el-scrollbar__wrap{

@@ -26,15 +26,8 @@ const cam = {
         }
     },
     mutations: {
-        // updateLoginToken(state, newToken){ //更新token信息
-        //     state.loginToken = newToken ; 
-        // },
-        // updateLoginUser(state, newUserInfor){  //更新登录用户信息
-        //     state.loginUser = newUserInfor ; 
-        // },
         getCategory(state,res){
             state.categoryList = res;
-            console.log(res,'品类arrays')
         },  
     },
     actions:{
@@ -61,7 +54,6 @@ const cam = {
                         }
                     });
                 }
-                // console.log(resData,'品类')
                 commit('getCategory',resData)
             })
         }

@@ -5,9 +5,8 @@
       <el-form
         :inline="true"
         :model="queryData"
-        label-position="right"
-        label-width="100px"
-        label-suffix=":"
+        label-position="left"
+        label-suffix="："
       >
         <el-form-item label="转移门店" class="select-input">
             <el-input
@@ -22,7 +21,7 @@
         <el-form-item label="单据号">
           <el-input
             v-model="queryData.billCode"
-            placeholder="请输内容"
+            placeholder="请输入"
           ></el-input>
         </el-form-item>
         <el-form-item label="制单日期">
@@ -181,7 +180,7 @@ export default {
       
     },
     // 选泽门店回调
-    onCinemalSumit(val = []) {
+    setCinema(val = []) {
       if (val.length > 0) {
         this.queryData.cinemaName = val[0].name;
         this.queryData.cinemaUid = val[0].uid;
@@ -190,6 +189,21 @@ export default {
         this.queryData.cinemaUid = "";
       }
       console.log(val);
+    },
+            // 选泽门店回调
+    onCinemalSumit(val = [],type) {
+      console.log(val," 选泽门店回调",type);
+      if (val.length > 0) {
+        if(type=="default"){
+          if(val.length==1){
+            this.setCinema(val)
+          }
+        }else{
+          this.setCinema(val)
+        }
+      } else {
+        this.setCinema()
+      }
     },
     // 查询
     onQuery() {
@@ -211,8 +225,23 @@ export default {
     },
     // 跳转库存转移
     handleNewPurchaseNote(param) {
+      let router = '';
+      switch (param.type) {
+        case "1":
+          // 新增
+          router = 'add';
+          break;
+        case "2":
+          // 编辑
+          router = 'edit';
+          break;
+        case "3":
+          // 查看
+          router = 'details';
+          break;
+      }
       this.$router.push({
-        path: "common",
+        path: router,
         query: param
       });
     },
@@ -239,11 +268,19 @@ export default {
     },
     // 查看操作
     seetable(row){
-      this.resMoveBillFindMoveDetailInfo(row,"3")
+      this.handleNewPurchaseNote({
+          type:"3",
+          data:JSON.stringify(row.uid)
+        })
+      // this.resMoveBillFindMoveDetailInfo(row,"3")
     },
     // 修改操作
     edirtable(row){
-      this.resMoveBillFindMoveDetailInfo(row,"2")
+       this.handleNewPurchaseNote({
+          type:"2",
+          data:JSON.stringify(row.uid)
+        })
+      // this.resMoveBillFindMoveDetailInfo(row,"2")
     },
     // 提交操作
     tjtable(row){
@@ -277,8 +314,8 @@ export default {
         billUserUid:this.queryData.billUserUid,
         cinemaUid: this.queryData.cinemaUid,
         status: this.queryData.status,
-        pageSize: 10,
-        page: 1
+        pageSize: this.queryData.pageSize,
+        page: this.queryData.page
       }
       this.$cimList.inventoryTransfer
         .moveBillFindMoveList(val)
@@ -324,8 +361,12 @@ export default {
         .then(res => {
           if (res.code == 200) {
             this.$message("提交成功");
+            this.goodsDataQueryGoodsList();
             // this.queryData.billCode = res.data.billCode
             console.log(res)
+          }else {
+            this.$message(res.message);
+            this.$message(res.msg);
           }
         });
       },
@@ -366,12 +407,6 @@ export default {
 @import "../../../../assets/css/common.scss";
 @import "../../../../assets/css/element-common.scss";
 .grTR-style{
-  .select-input {
-    .el-input {
-      width: 70%;
-    }
-  }
-
   .newPro-box {
     .title {
       margin: 10px 0;

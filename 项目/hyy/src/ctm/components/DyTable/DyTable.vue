@@ -2,86 +2,33 @@
 <!--关于2019/1/18的改动说明：某些表格中，接口返回的数据是一个对象，而界面需要展示其中的某一个属性，
     加上template之后，可在template中写一个方法对接口返回的数据进行操作之后，再进行渲染-->
 <template>
-  <el-table
-    ref="table"
-    :data="rows"
-    v-bind="$attrs"
-    v-on="$listeners"
-    :row-key="rowKey"
-    :stripe="stripe"
-    :highlight-current-row="!multi"
-    @current-change="currentChange"
-  >
+  <el-table ref="table" :data="rows" v-bind="$attrs" v-on="$listeners" :row-key="rowKey" :stripe="stripe" :highlight-current-row="!multi" @current-change="currentChange">
     <!-- @row-click="rowClick" -->
-    <!-- <el-table-column type="selection" width="55" v-if="multi" /> -->
-    <el-table-column
-      label="选择"
-      width="50"
-      align="center"
-      v-if="!multi && singleCheck"
-    >
-      <template scope="scope">
-        <el-radio
-          class="radio"
-          :value="currentRow[rowKey]"
-          :label="scope.row[rowKey]"
-        >&nbsp;</el-radio>
-      </template>
-    </el-table-column>
-    <el-table-column
-      type="selection"
-      width="55"
-      v-if="multi"
-    >
+    
+    <el-table-column label="选择" width="50" align="center" v-if="!multi && singleCheck">
       <template slot-scope="scope">
-        <el-checkbox
-          :value="checkState(scope.row)"
-          @change="checkItem(scope.row)"
-        ></el-checkbox>
+        <el-radio class="radio" :value="currentRow[rowKey]" :label="scope.row[rowKey]">&nbsp;</el-radio>
       </template>
     </el-table-column>
+    <el-table-column type="selection" width="55" v-if="multi" />
+    <!-- <el-table-column type="selection" width="55" v-if="multi">
+      <template slot-scope="scope">
+        <el-checkbox :value="checkState(scope.row)" @change="checkItem(scope.row)"></el-checkbox>
+      </template>
+    </el-table-column> -->
     <template v-for="(column, index) in columns">
-      <el-table-column
-        v-if="column.type=='index'"
-        width="50"
-        align="center"
-        type="index"
-        :label="column.label||'序号'"
-        :key="index"
-      ></el-table-column>
-      <el-table-column
-        v-else
-        v-bind="column"
-        :showOverflowTooltip="column|isShowTooltip"
-        :key="index"
-      >
+      <el-table-column v-if="column.type=='index'" width="50" align="center" type="index" :label="column.label||'序号'" :key="index"></el-table-column>
+      <el-table-column v-else v-bind="column" :showOverflowTooltip="column|isShowTooltip" :key="index">
         <template slot-scope="scope">
-          <div
-            v-if="column.btns"
-            class="action"
-          >
-            <span
-              v-for="(btn, index) in column.btns"
-              :key="index"
-            >
-              <el-button
-                plain
-                size="mini"
-                type="primary"
-                :icon="btn.icon"
-                v-bind="btn.props"
-                @click.stop="btn.cb({value: scope.row[scope.column['property']], row: scope.row, index: scope.$index})"
-              >{{btn.text}}</el-button>
+          <div v-if="column.btns" class="action">
+            <span v-for="(btn, index) in column.btns" :key="index">
+              <el-button plain size="mini" type="primary" :icon="btn.icon" v-bind="btn.props" @click.stop="btn.cb({value: scope.row[scope.column['property']], row: scope.row, index: scope.$index})">{{btn.text}}</el-button>
             </span>
           </div>
           <div v-else-if="column.template">
             {{ column.template ? column.template(scope.row[column.key]) : scope.row[column.key] }}
           </div>
-          <dy-render
-            :column="column"
-            :scope="scope"
-            v-else
-          ></dy-render>
+          <dy-render :column="column" :scope="scope" v-else></dy-render>
         </template>
       </el-table-column>
       <!--<el-table-column v-bind="column" v-else/>-->
@@ -220,8 +167,16 @@ export default {
       })
       return ret;
     },
-    checkItem (row) {
+    checkItem (row,e) {
+
       this.$emit('checkItem', row)
+      // if (e && e.stopPropagation){
+      //   //因此它支持W3C的stopPropagation()方法 
+      //   e.stopPropagation(); 
+      // }else{
+      //   //否则，我们需要使用IE的方式来取消事件冒泡 
+      //   window.event.cancelBubble = true; 
+      // }
     },
     clearSelection () {
       this.$refs.table.clearSelection()

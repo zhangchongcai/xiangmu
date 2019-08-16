@@ -1,8 +1,9 @@
 <template>
   <el-time-picker
+    class="rpt-time-picker"
     unlink-panels
     is-range
-    v-model="time"
+    v-model="timeSelectObj.time"
     range-separator="至"
     start-placeholder="开始时间"
     end-placeholder="结束时间"
@@ -14,20 +15,14 @@
 
 <script>
 import Moment from "moment";
-import mixins from "src/frame_cpm/mixins/cacheMixin.js";
 export default {
-  mixins: [mixins.cacheMixin],
   props: {
     resetStatus: Boolean,
-    queryName: String
+    queryName: String,
+    timeSelectObj: Object
   },
   data() {
     return {
-      cacheField: [
-        "time"
-      ],
-      subComName: "timeSelect",
-      time: []
     };
   },
   methods: {
@@ -35,9 +30,8 @@ export default {
       this.getStrTime();
     },
     getStrTime() {
-      let currentTime = this.time;
+      let currentTime = this.timeSelectObj.time;
       if (currentTime != null) {
-        console.log(this.time);
         this.$emit("selectTimeData", currentTime.join(","), this.queryName);
       } else {
         this.$emit("selectTimeData", "", this.queryName);
@@ -45,13 +39,13 @@ export default {
     }
   },
   mounted() { 
-    this.time = ["00:00:00", "23:59:59"];
+    this.timeSelectObj.time = ["00:00:00", "23:59:59"];
     this.getStrTime();
   },
   watch: {
     resetStatus(newVal) {
       if (newVal === true) {
-        this.time = ["00:00:00", "23:59:59"];
+        this.timeSelectObj.time = ["00:00:00", "23:59:59"];
         this.getStrTime();
       }
     }
@@ -59,7 +53,15 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
+.rpt-time-picker {
+  width: 256px !important;
+    .el-input__icon,
+    .el-range-separator,
+    .el-range-input {
+      font-size: 12px;
+    }
+}
 </style>
 
 

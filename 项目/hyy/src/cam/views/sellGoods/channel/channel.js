@@ -2,17 +2,104 @@ import Global from "../../../util/global.js";
 import AuthorityName from "../../partical/authorityName"
 import CalendarView from "../../../components/calendar/calendar"
 import TargetLabel from "../../partical/targetLabel"
+import TreeGrid from "../../partical/TreeGrid"
+import config from "frame_cpm/http/config";
+import {getOrgInfo} from '../../../http/interface'
 
 export default {
   components: { 
     AuthorityName,
     CalendarView,
-    TargetLabel
+    TargetLabel,
+    TreeGrid
   },
   data() {
     return {
+      columns: [
+        {
+          text: '渠道名称',
+          dataIndex: 'channelName',
+          width: 130,
+          fixed: true,
+          isNotFormat: true,
+          isNotSort: true
+        },
+        {
+          text: '销售额(元)',
+          dataIndex: 'salesVolume',
+          fixed: true,
+          // isSlot: true
+        },
+        {
+          text: '销售额占比(%)',
+          dataIndex: 'salesVolumePercent',
+          width: 130,
+        },
+
+        {
+          text: '销售单量',
+          dataIndex: 'salesOrders'
+        },
+        {
+          text: '销售数量',
+          dataIndex: 'salesCount'
+        },
+        {
+          text: '客单价(元)',
+          dataIndex: 'unitPrice'
+        },
+        {
+          text: '件单价(元)',
+          dataIndex: 'piecePrice'
+        },
+        {
+          text: '客单量',
+          dataIndex: 'unitCount'
+        },
+        {
+          text: '购买率(%)',
+          dataIndex: 'buyRate'
+        },
+        {
+          text: '人均卖品金额(元)',
+          dataIndex: 'sppPrice',
+          width: 150
+        },
+        {
+          text: '销售成本(元)',
+          dataIndex: 'sellingCost',
+          width: 130
+        },
+        // {
+        //   text: '成本价(元)',
+        //   dataIndex: 'avgPlanShowCount'
+        // }
+        // ,
+        {
+          text: '销售毛利',
+          dataIndex: 'salesGrossProfit'
+        },
+        {
+          text: '销售毛利率(%)',
+          dataIndex: 'salesGrossProfitRate',
+          width: 130
+        },
+        {
+          text: '会员消费占比(%)',
+          dataIndex: 'memberSalesVolumePercent',
+          width: 150
+        },
+        // {
+        //   text: '套餐消费占比(%)',
+        //   dataIndex: 'setmealSalesVolumePercent',
+        //   width: 140
+        // }
+      ],
+      dataSource: [],
       orgType: Global.judgeOrgType,
       orgName: '总部',
+      startTime: new Date().formatDate("yyyy-MM-dd"),
+      endTime: new Date().formatDate("yyyy-MM-dd"),
       time: new Date(),
       dateType: ["天", "周", "月", "年", "自定义"],
       dateTypeActive: "天",
@@ -23,21 +110,16 @@ export default {
       activeType: 'xse',
       targetLabel: Global.categoryTrend,   // 趋势指标
       otherLabel: Global.categoryTrendOther, // 趋势指标 -其他
-      trendIndicatorType: "xse", // 品类指标
-      isNumber: true, // 是数值还是占比
+      trendIndicatorType: "xse", // 渠道趋势指标
+      isNumber: 0, // 0是数值1是占比
       isHistogram: false, // 是否显示柱形图
       chartSettings: {
-        stack: { '用户': ['自有渠道', '第三方渠道'] }
+        stack: { 'date': [] }
       },
+      stackArr: [],
       chartData: {
-        columns: ['日期', '自有渠道', '第三方渠道'],
+        columns: [],
         rows: [
-          { '日期': '2019年2月', '自有渠道': 1393, '第三方渠道': 1093 },
-          { '日期': '2019年3月', '自有渠道': 3530, '第三方渠道': 3230 },
-          { '日期': '2019年4月', '自有渠道': 2923, '第三方渠道': 2623 },
-          { '日期': '2019年5月', '自有渠道': 1723, '第三方渠道': 1423 },
-          { '日期': '2019年6月', '自有渠道': 3792, '第三方渠道': 3492 },
-          { '日期': '2019年7月', '自有渠道': 4593, '第三方渠道': 4293 }
         ]
       },
       tableData: [
@@ -46,7 +128,7 @@ export default {
       
       tableSortMsg: null, //表格排序信息
       sizes: Global.pageSizes,
-      size: 10,
+      size: Global.pageSize,
       page: 1,
       total: 0,
     }
@@ -90,67 +172,107 @@ export default {
   },
   watch: {
     isNumber(val) {
-      console.log('是否是数值',val)
+      this.getTargetTrend()  
     }
   },
   created() {
-    
+    this.getOrgType()
+    this.getAllData()
   },
   methods: {
-    //获取时间类型  --待定
+    getOrgType() {
+      getOrgInfo({body:{}}).then(response =>{
+        if(response.data){
+          this.orgType = response.data.orgType
+          this.orgName = response.data.orgName
+        }
+      }) 
+    },
+    // all api
+    getAllData() {
+      this.getTargetTrend()   
+      this.getTableData()
+    },
+    //获取时间类型  
     getTimeType(type) {
       this.timeType = type;
-      if (this.timeType == "year") {
-        
-      } else if (this.timeType == "custom") {
-        
-      } else {
-        
-      }
     },
     //改变时间
     changeTime(option) {
-
+      if (option.startTime) {
+        this.startTime = option.startTime;
+        this.endTime = option.endTime;
+        this.dateTypeIndex = option.index;
+      } else {
+        this.startTime = option.formatDate("yyyy-MM-dd");
+        this.endTime = option.formatDate("yyyy-MM-dd");
+      }
+      this.page = 1;
     },
     // 查询
     search() {
-      // this.getAllData();
+      this.getAllData()
     },
     // 改变/会员
     changeMemberType() {
       this.memberTypeVal = +this.memberType;
       if(this.memberTypeVal) { //仅会员
-        
-        
+        this.$refs.targetLabel.resetSelect()
+        this.getTableData()
       }else {
-        
+        this.getAllData()
       }
     },
     // 改变/指标趋势类型
     changeTrendType(id) {
       this.isHistogram = Global.categoryTrendOther.findIndex(item=>item.id === id) > -1
       if(this.isHistogram) {
-        this.chartSettings = {}
+        this.chartSettings = {
+          tiled: {
+            'date': this.stackArr
+          }
+        }
       }else {
         this.chartSettings = {
-          stack: { '用户': ['自有渠道', '第三方渠道'] }
+          stack: {
+            'date': this.stackArr
+          }
         }
       }
       this.trendIndicatorType = id;
-      // this.getTargetTrend()
+      this.getTargetTrend()
+    },
+    //查询趋势图信息
+    getTargetTrend() {
+      let params = {
+          body: {
+            bsiCode: this.trendIndicatorType,
+            dateType: this.timeType,
+            startDate: this.startTime,
+            endDate: this.endTime,
+            member: this.memberTypeVal,
+            searchType: this.isNumber
+          }
+        }
+      this.$camList.queryChannelTrend(params).then((res)=>{
+        if(res.data && res.data.list.length > 0) {
+          this.lineChartEmpty = false
+          this.chartData.columns = ['date'].concat(res.data.columns)
+          this.stackArr = res.data.columns
+          this.chartSettings.stack && (this.chartSettings.stack.date = res.data.columns)
+          this.chartData.rows = res.data.list
+        }else {
+          this.lineChartEmpty = true
+        }
+      })
     },
     // 渠道明细导出
     getChannelOut() {
-      // let baseURL = config.baseURL;
-      // let downUrl = `${baseURL}/analysis/boxOffice/exportRegionData?userId=${
-      //   this.userId
-      // }&startDate=${this.startTime}&endDate=${this.endTime}&dateType=${
-      //   this.timeType
-      // }&member=${this.memberTypeVal}&token=${this.$store.state.loginToken}`;
-      // if(this.cinemaId) {
-      //   downUrl += `&brandId=${this.cinemaId}`
-      // }
-      // window.location.href = downUrl;
+      let baseURL = config.baseURL;
+      let downUrl = `${baseURL}/analysis/channel/downloadSellGoodsDetails?startDate=${this.startTime}&endDate=${this.endTime}&dateType=${
+        this.timeType
+      }&member=${this.memberTypeVal}&token=${this.$store.state.loginToken}`;
+      window.location.href = downUrl;
     },
     // 列表排序
     tableSortChange(column) {
@@ -164,17 +286,40 @@ export default {
       }else {
         this.tableSortMsg = null
       }
-      // this.getTableData(orderObj)
+      this.getTableData(orderObj)
     },
-    // 去往品类详情页面
-    goDetail(id) {
-      return
-      this.$router.push({
-        path: "/analysis/area/boxOffice/total",
-        query: {
-          id: id,
+    // 查询渠道明细
+    getTableData(orderObj) {
+      let params = {
+        body: {
+          dateType: this.timeType,
+          startDate: this.startTime,
+          endDate: this.endTime,
+          pageNo: this.page,
+          pageSize:  this.size,
+          member: this.memberTypeVal,
         }
-      });
+      }
+      orderObj = orderObj || this.tableSortMsg
+      if(orderObj) {
+        params.body = Object.assign({},orderObj,params.body)
+      }
+      this.$camList.queryChannelDetails(params).then(res => {
+        if(res.data && res.data.list.length > 0) {
+          this.dataSource = res.data.list
+          this.total = res.data.total
+        }
+      })
     },
+    // 分页/大小
+    handleSizeChange(num) {
+      this.size = num;
+      this.getTableData();
+    },
+    //分页/页码
+    handleCurrentChange(num) {
+      this.page = num;
+      this.getTableData();
+    }
   }
 }

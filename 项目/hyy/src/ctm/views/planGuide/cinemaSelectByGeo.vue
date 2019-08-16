@@ -73,6 +73,7 @@
 
 <script>
 import { getCinemaAreaList, getAreaInfo } from 'ctm/http/interface'
+import areaDataOrigin from 'ctm/assets/data/area'
     export default {
         props: {
             // 已提交的影城数据
@@ -118,31 +119,47 @@ import { getCinemaAreaList, getAreaInfo } from 'ctm/http/interface'
                 this.dataInit()
             },
             saveSelectCinemaData() {
-               this.$emit('changeCurCheckedCinema', this.curCtrlCinema)
-               this.cinemaSelDialog = false 
+                console.log(this.curCtrlCinema)
+                this.$emit('changeCurCheckedCinema', this.curCtrlCinema)
+                this.cinemaSelDialog = false 
             },
             dataInit() {
                 this.curCtrlCinema = JSON.parse(JSON.stringify(this.curCheckedCinema))
-                getAreaInfo({}).then(res => {
-                    if (res.code != 200) return this.error(res.msg)
-                    if (res.code == 200) {
-                        this.areaData = res.data
-                        this.provinceData = [{
-                            provinceCode: '',
-                            provinceName: '全部'
-                        }].concat(res.data.map(item => {
-                            return {
-                                provinceCode: item.provinceCode,
-                                provinceName: item.provinceName
-                            }
-                        }))
-                        this.cityData =  [{
-                            cityCode: '',
-                            cityName: '全部'
-                        }]
-                        this.getCinemaAreaList()
+                // getAreaInfo({}).then(res => {
+                //     if (res.code != 200) return this.error(res.msg)
+                //     if (res.code == 200) {
+                //         this.areaData = res.data
+                //         this.provinceData = [{
+                //             provinceCode: '',
+                //             provinceName: '全部'
+                //         }].concat(res.data.map(item => {
+                //             return {
+                //                 provinceCode: item.provinceCode,
+                //                 provinceName: item.provinceName
+                //             }
+                //         }))
+                //         this.cityData =  [{
+                //             cityCode: '',
+                //             cityName: '全部'
+                //         }]
+                //         this.getCinemaAreaList()
+                //     }
+                // })
+                this.areaData = areaDataOrigin
+                this.provinceData = [{
+                    provinceCode: '',
+                    provinceName: '全部'
+                }].concat(this.areaData.map(item => {
+                    return {
+                        provinceCode: item.provinceCode,
+                        provinceName: item.provinceName
                     }
-                })
+                }))
+                this.cityData =  [{
+                    cityCode: '',
+                    cityName: '全部'
+                }]
+                this.getCinemaAreaList()
             },
             provinceChange(val) {
                 if (val == '') {
@@ -154,7 +171,7 @@ import { getCinemaAreaList, getAreaInfo } from 'ctm/http/interface'
                 }
                 let cityData
                 this.areaData.some(province => {
-                    console.log(province)
+                    // console.log(province)
                     if (province.provinceCode == val) {
                         cityData = province.cityVoList.map(item => {
                             return {
@@ -321,7 +338,7 @@ import { getCinemaAreaList, getAreaInfo } from 'ctm/http/interface'
                 })
             },
             closeCb() {
-                console.log('clear')
+                // console.log('clear')
                 this.provinceData = []
                 this.cityData = []
                 this.curCtrlCinema = []

@@ -30,7 +30,7 @@
       <div style="height:24px;background:transparent;"></div>
       <div class="btn-area">
         <el-button type="primary" @click="addressUpdata">确定</el-button>
-        <el-button type="primary" @click="dialogTableVisible = false">关闭</el-button>
+        <el-button type="primary" @click="dialogTableVisible = false" style="margin-left:32px">关闭</el-button>
       </div>
     </el-dialog>
   </div>
@@ -96,8 +96,7 @@
               }
             })
           } else {
-            this.$notify({
-              title: '失败',
+            this.$message({
               message: `${data.msg}`,
               type: 'error',
               duration: '1000',
@@ -131,7 +130,10 @@
     width: 214px;
     font-size: 12px;
   }
-
+  .el-button{
+    height: 32px;
+    min-width: 80px;
+  }
   .div_title {
     // padding: 1em;
     // overflow: hidden;

@@ -97,14 +97,14 @@
         <!-- 套餐信息 start-->
         <el-collapse-item title="套餐信息" name="2">
           <div>
-            <div class="clearfix">
-              <el-button v-if="routeQuery.type!=3" @click="handleAddGoods" type="primary" plain>添加商品</el-button>
+            <div class="clearfix add-btn">
+              <el-button v-if="routeQuery.type!=3" class="right" @click="handleAddGoods" type="primary" plain>添加商品</el-button>
             </div>
             <div
                     class="recipe-box"
                     v-for="(item,groupIndex) in formattingDataList"
                     :key="item.id"
-                    v-show="item.options.length>0"
+                    v-show="(item.isOption==0 && item.options.length==0) || item.options.length>0"
             >
               <div class="add-material clearfix">
                 <div class="left" v-if="item.isOption != 0">{{item.merName}} 可替换为以下商品</div>
@@ -158,12 +158,14 @@
                               type="text"
                               size="small"
                               @click.stop="handleAddOptionalItems(row, $index)"
-                      >添加可选商品</el-button>
+                      >添加可选商品
+                      </el-button>
                       <el-button
                               type="text"
                               size="small"
                               @click.stop="handleRecipeTableDlete(groupIndex,row, $index)"
-                      >删除</el-button>
+                      >删除
+                      </el-button>
                     </template>
                   </el-table-column>
                 </el-table>
@@ -189,10 +191,10 @@
               </div>
               <div class="form-item-box left">
                 <el-form-item label="销售状态" prop="canSale">
-                  <span v-if="routeQuery.type==3">{{queryData.canSale == 1 ? '允许':'禁止'}}</span>
+                  <span v-if="routeQuery.type==3">{{queryData.canSale == 1 ? '允许销售':'禁止销售'}}</span>
                   <el-radio-group v-model="queryData.canSale" v-else>
-                    <el-radio label="1">允许</el-radio>
-                    <el-radio label="0">禁止</el-radio>
+                    <el-radio label="1">允许销售</el-radio>
+                    <el-radio label="0">禁止销售</el-radio>
                   </el-radio-group>
                 </el-form-item>
               </div>
@@ -262,7 +264,7 @@
                                   @clear="handleDeleteCinemas"
                           >
                          </el-input>
-                         <el-button type="primary" plain @click.stop="handleDialog('myCinemalDialog')">{{selectedStoreName?"编辑":"选择"}}</el-button>
+                         <el-button type="primary" plain @click.stop="handleDialog('myCinemalDialog')">选择</el-button>
                      </span>
                   </div>
                 </el-form-item>
@@ -297,7 +299,7 @@
                                 type="primary" plain
                                 v-if="routeQuery.type!=3"
                                 @click.stop="handleDialog('myChannelDialog')"
-                        >{{selectedChannelName?"编辑":"选择"}}</el-button>
+                        >选择</el-button>
                 </span>
                   </div>
                 </el-form-item>
@@ -516,7 +518,7 @@
           return item.cinemaName || item.name ;
         })
         .join(",");
-      console.log("门店数据", data);
+      // console.log("门店数据", data);
     },
     // 渠道
     onChanneSumit(data) {
@@ -533,7 +535,7 @@
           return item.channelName || item.name;
         })
         .join(",");
-      console.log("渠道数据", data);
+      // console.log("渠道数据", data);
     },
     //删除门店
     handleDeleteCinemas() {
@@ -577,6 +579,10 @@
               .join(",");
             this.queryData.cinemas = this.queryData.cinemas.map(item => {
               item.name = item.cinemaName;
+              item.code = item.cinemaCode;
+              if(!item.areaName){
+                item.areaName = item.area;
+              }
               return item
             })
             this.queryData.channels = this.queryData.channels.map(item => {
@@ -591,9 +597,6 @@
             if (this.queryData.saleCinema != null) {
               this.queryData.saleCinema = this.queryData.saleCinema.toString();
             }
-
-
-            console.log("data", this.queryData);
           }
         })
         .catch(err => {});
@@ -633,11 +636,11 @@
     },
     // 确定提交信息
     handleSubmit() {
-      console.log(this.queryData);
+      // console.log(this.queryData);
+      // console.log(this.formattingDataList);
+      // console.log(this.requestDataList(this.formattingDataList));
       this.$refs["ruleForm"].validate(valid => {
         if (valid) {
-          console.log(this.formattingDataList);
-          console.log(this.requestDataList(this.formattingDataList));
           if(this.queryData.downTimeType == 0){
             this.queryData.downTime = null;
           }
@@ -698,7 +701,15 @@
     },
     // 取消提交信息
     handleCancel() {
-      this.$router.go(-1);
+      this.$store.commit("tagNav/removeTagNav", {
+        name: this.$route.name,
+        path: this.$route.path,
+        title: this.$route.meta.title,
+        query: this.$route.query
+      })
+      this.$router.push({
+        path: "/retail/commodityInformation/list",
+      });
     },
 
     //选择商品确认
@@ -728,7 +739,6 @@
         }
         this.queryData.dataList.push(...tempArr);
         this.queryData.dataList = this.unRepeat(this.queryData.dataList);
-        console.log("sadsa啊实打实", this.queryData.dataList);
       }
     },
     //去重
@@ -759,7 +769,6 @@
     //添加可选商品
     handleAddOptionalItems(row, index) {
       this.goodList = [];
-      console.log(this.goodList);
       this.isMaySelected = row;
       this.selectedGoodsDialogVisible = true;
     },
@@ -788,8 +797,6 @@
       this.checkedNodes(this.applyChannelRadios, checkedValue);
     },
     checkedNodes(radios = [], checkedValue) {
-      // console.log(radios);
-      console.log(checkedValue);
       radios.forEach(item => {
         if (item.type == checkedValue.type) {
           if (checkedValue.value) {
@@ -941,6 +948,9 @@
 @import "../../../../../assets/css/element-common.scss";
 @import "../../../../../assets/css/common.scss";
 .set-meal{
+  .add-btn{
+    padding: 5px 10px;
+  }
   .both-edit-inp {
     width: 80px;
   }

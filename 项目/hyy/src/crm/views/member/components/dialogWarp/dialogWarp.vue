@@ -60,24 +60,24 @@ export default {
   left: 0;
   min-height: 100vh;
   min-width: 100vw;
-  z-index: 2001;
+  z-index: 2000;
   overflow: auto;
   .bottom-warp {
     position: absolute;
     width: 100%;
     overflow: hidden;
-    z-index: 2001;
+    z-index: 2000;
     .bottom {
       position: relative;
       margin: 0 auto;
       margin-top: 15vh;
       margin-bottom: 15vh;
-      z-index: 2001;
-      width: 892px;
+      z-index: 2000;
+      width: 896px;
       background: #ffffff;
       box-shadow: rgba(0, 0, 0, 0.1);
       border-radius: 2px;
-      padding: 10px 20px 20px;
+      padding: 4px 20px 10px;
       .header {
         width: 100%;
         height: 40px;
@@ -85,21 +85,22 @@ export default {
         font-size: 16px;
         line-height: 40px;
         font-size: 14px;
-        border-bottom: 1px solid #f5f5f5;
-        margin-bottom: 8px;
+        border-bottom: 1px solid #e5e5e5;
+        color: #333;
+        // margin-bottom: 8px;
       }
       .contetn {
         width: 100%;
         background: #ffffff;
-        margin: 10px 0 20px;
+        margin: 4px 0 10px;
       }
       .btnwarp {
         text-align: center;
       }
       .iconBox {
         position: absolute;
-        right: 2vw;
-        top: 3vh;
+        right: 20px;
+        top: 14px;
         .el-icon-close {
           cursor: pointer;
           color: #999;

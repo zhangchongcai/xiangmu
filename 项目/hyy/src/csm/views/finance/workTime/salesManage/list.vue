@@ -3,9 +3,13 @@
     <div class="cinemaList">
       <el-form :inline="true" :model="queryData" label-position="right" class="demo-form-inline search-form"
         label-width="100px" label-suffix=":">
-        <el-form-item label="门店名称">
+        <!-- <el-form-item label="门店名称">
           <el-input v-model="cinemaName" @focus="openCinema"></el-input>
-        </el-form-item>
+        </el-form-item> -->
+        <el-form-item label="影院名称：">
+            <el-button @click="singleCinemaVisible = true, $refs.frameSingleCinema.listAuthCommCinemas()" style="width:176px;height:32px;">
+                {{ cinemaName }}</el-button>
+          </el-form-item>
         <el-form-item label="终端名称">
           <el-input v-model="queryData.tername" placeholder="请输内容"></el-input>
         </el-form-item>
@@ -51,21 +55,35 @@
           layout="total, sizes, prev, pager, next, jumper" :total="total" :hide-on-single-page="true"></el-pagination>
       </div>
     </div>
-    <singeCinema ref="singeCinema" @callback="callback"></singeCinema>
+    <singleCinema ref="frameSingleCinema" :framedialogVisible.sync="singleCinemaVisible" :type="singleCinemaType"
+      :innerData="innerData" @callBackSingle="callBackSingle">
+      <div slot="footerId">
+        <el-button @click="singleCinemaVisible = false">取 消</el-button>
+        <el-button type="primary" @click="$refs.frameSingleCinema.confirmData(), singleCinemaVisible = false">确
+          定</el-button>
+      </div>
+    </singleCinema>
+    <!-- <singeCinema ref="singeCinema" @callback="callback"></singeCinema> -->
     <showDialog ref="showDialog" @changeData="changeData"></showDialog>
   </div>
 </template>
 
 <script>
-  import singeCinema from '../publicModule/singeCinema'
+  import singleCinema from "frame_cpm/dialogs/cinemaDialog/singleCinema"
+  // import singeCinema from '../publicModule/singeCinema'
   import showDialog from './showDialog'
   export default {
     components: {
-      singeCinema,
+      singleCinema,
       showDialog
     },
     data() {
       return {
+        singleCinemaVisible: false,
+        singleCinemaType: 2,
+        innerData: {
+            id: '',
+        },
         cinemaName: "", //影院名字
         checkDialog: false,
         addTerminal: false,
@@ -142,9 +160,7 @@
     methods: {
       //查询
       search() {
-        !this.cinemaName ? this.$alert('请先选择影院', '提示', {
-          confirmButtonText: '确定',
-        }) : this.queryStoreEvent(this.queryData);
+        !this.cinemaName ? this.$message('请先选择影院'): this.queryStoreEvent(this.queryData);
       },
       // 查询列表数据
       queryStoreEvent(data) {
@@ -173,8 +189,29 @@
           })
       },
       // 打开影院
-      openCinema() {
-        this.$refs.singeCinema.opendialog = true;
+      callBackSingle(data) {
+          console.log(data, '-----> data')
+          this.queryData.cinemaUid = data.data.id
+          this.cinemaName = data.data.name
+           this.cinemaName = this.cinemaName.length> 10?this.cinemaName.substring(0,9)+"...": this.cinemaName
+          this.innerData.id = data.data.id
+          this.singleCinemaVisible = data.framedialogVisible
+          // this.search() 
+      },
+      getUserInfo() {
+          this.$ctmList.getUserInfo().then(res => {
+              console.log(res)
+              if (res.code === 200) {
+                  this.cinemaName = res.data.cinemaName
+                  this.queryData.cinemaUid = res.data.cinemaUid
+                  this.innerData.id = Number(res.data.cinemaUid)
+
+                  this.search()
+
+              } else {
+                  this.error(res.msg)
+              }
+          })
       },
       callback(val) {
         console.log(val)
@@ -278,6 +315,9 @@
         this.current = valua;
         this.queryStoreEvent(this.queryData)
       }
+    },
+    mounted(){
+      this.getUserInfo()
     }
   };
 </script>

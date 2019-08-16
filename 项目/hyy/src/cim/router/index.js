@@ -129,12 +129,60 @@ let routes = [
             name: '合成品'
         },
         {
+            path: 'comPositeadd',
+            meta: {
+                title: '新增合成品'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/headquartersGoods/comPosite/common.vue'], resolve),
+            name: '新增合成品'
+        },
+        {
+            path: 'comPositeedit',
+            meta: {
+                title: '编辑合成品'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/headquartersGoods/comPosite/common.vue'], resolve),
+            name: '编辑合成品'
+        },
+        {
+            path: 'comPositedetails',
+            meta: {
+                title: '查看合成品'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/headquartersGoods/comPosite/common.vue'], resolve),
+            name: '查看合成品'
+        },
+        {
             path: 'comSingle',
             meta: {
                 title: '单品'
             },
             component: (resolve) => require(['cim/views/cim/goodsInformation/headquartersGoods/comSingle/common.vue'], resolve),
             name: '单品'
+        },
+        {
+            path: 'comSingleadd',
+            meta: {
+                title: '新增单品'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/headquartersGoods/comSingle/common.vue'], resolve),
+            name: '新增单品'
+        },
+        {
+            path: 'comSingleedit',
+            meta: {
+                title: '编辑单品'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/headquartersGoods/comSingle/common.vue'], resolve),
+            name: '编辑单品'
+        },
+        {
+            path: 'comSingledetails',
+            meta: {
+                title: '查看单品'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/headquartersGoods/comSingle/common.vue'], resolve),
+            name: '查看单品'
         },
         {
             path: 'serveGood',
@@ -145,12 +193,60 @@ let routes = [
             name: '服务商品'
         },
         {
+            path: 'serveGoodadd',
+            meta: {
+                title: '新增服务商品'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/headquartersGoods/serveGood/common.vue'], resolve),
+            name: '新增服务商品'
+        },
+        {
+            path: 'serveGoodedit',
+            meta: {
+                title: '编辑服务商品'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/headquartersGoods/serveGood/common.vue'], resolve),
+            name: '编辑服务商品'
+        },
+        {
+            path: 'serveGooddetails',
+            meta: {
+                title: '查看服务商品'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/headquartersGoods/serveGood/common.vue'], resolve),
+            name: '查看服务商品'
+        },
+        {
             path: 'comMaterial',
             meta: {
                 title: '原材料'
             },
             component: (resolve) => require(['cim/views/cim/goodsInformation/headquartersGoods/comMaterial/common.vue'], resolve),
             name: '原材料'
+        },
+        {
+            path: 'comMaterialadd',
+            meta: {
+                title: '新增原材料'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/headquartersGoods/comMaterial/common.vue'], resolve),
+            name: '新增原材料'
+        },
+        {
+            path: 'comMaterialedit',
+            meta: {
+                title: '编辑原材料'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/headquartersGoods/comMaterial/common.vue'], resolve),
+            name: '编辑原材料'
+        },
+        {
+            path: 'comMaterialdetails',
+            meta: {
+                title: '查看原材料'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/headquartersGoods/comMaterial/common.vue'], resolve),
+            name: '查看原材料'
         },
         {
             path: 'setMeal',
@@ -160,6 +256,119 @@ let routes = [
             component: (resolve) => require(['cim/views/cim/goodsInformation/headquartersGoods/setMeal/common.vue'], resolve),
             name: '套餐'
         },
+        {
+            path: 'setMealadd',
+            meta: {
+                title: '新增套餐'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/headquartersGoods/setMeal/common.vue'], resolve),
+            name: '新增套餐'
+        },
+        {
+            path: 'setMealedit',
+            meta: {
+                title: '编辑套餐'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/headquartersGoods/setMeal/common.vue'], resolve),
+            name: '编辑套餐'
+        },
+        {
+            path: 'setMealdetails',
+            meta: {
+                title: '查看套餐'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/headquartersGoods/setMeal/common.vue'], resolve),
+            name: '查看套餐'
+        },
+    ],
+},
+
+//商品调价单管理
+{
+    path: 'changePriceBill',
+    name: '商品调价单管理',
+    meta: {
+        title: '商品调价单管理'
+    },
+    component: (resolve) => require(['cim/views/cim/goodsInformation/changePriceBill/index'], resolve),
+    redirect: 'changePriceBill/list',
+    children: [
+        // 调价单管理列表
+        {
+            path: 'list',
+            meta: {
+                title: '商品调价单管理'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/changePriceBill/list'], resolve),
+            name: '商品调价单管理'
+        },
+        // （指定门店）调整商品售价
+        {
+            path: 'forGoods',
+            meta: {
+                title: '调整商品售价'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/changePriceBill/forGoods/common.vue'], resolve),
+            name: '调整商品售价'
+        },
+        {
+            path: 'forGoodsadd',
+            meta: {
+                title: '新增调整商品售价'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/changePriceBill/forGoods/common.vue'], resolve),
+            name: '新增调整商品售价'
+        },
+        {
+            path: 'forGoodsedit',
+            meta: {
+                title: '修订调整商品售价'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/changePriceBill/forGoods/common.vue'], resolve),
+            name: '修订调整商品售价'
+        },
+        {
+            path: 'forGoodsdetails',
+            meta: {
+                title: '查看调整商品售价'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/changePriceBill/forGoods/common.vue'], resolve),
+            name: '查看调整商品售价'
+        },
+        // （指定商品）调整门店售价
+        {
+            path: 'forCinema',
+            meta: {
+                title: '调整门店售价'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/changePriceBill/forCinema/common.vue'], resolve),
+            name: '调整门店售价'
+        },
+        {
+            path: 'forCinemaadd',
+            meta: {
+                title: '新增调整门店售价'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/changePriceBill/forCinema/common.vue'], resolve),
+            name: '新增调整门店售价'
+        },
+        {
+            path: 'forCinemaedit',
+            meta: {
+                title: '修订调整门店售价'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/changePriceBill/forCinema/common.vue'], resolve),
+            name: '修订调整门店售价'
+        },
+        {
+            path: 'forCinemadetails',
+            meta: {
+                title: '查看调整门店售价'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/changePriceBill/forCinema/common.vue'], resolve),
+            name: '查看调整门店售价'
+        },
+
     ],
 },
 // 商品资料---门店商品管理
@@ -191,12 +400,44 @@ let routes = [
             name: '合成品'
         },
         {
+            path: 'comPositeedit',
+            meta: {
+                title: '编辑合成品'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/storequartersGoods/comPosite/common.vue'], resolve),
+            name: '编辑合成品'
+        },
+        {
+            path: 'comPositedetails',
+            meta: {
+                title: '查看合成品'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/storequartersGoods/comPosite/common.vue'], resolve),
+            name: '查看合成品'
+        },
+        {
             path: 'comSingle',
             meta: {
                 title: '单品'
             },
             component: (resolve) => require(['cim/views/cim/goodsInformation/storequartersGoods/comSingle/common.vue'], resolve),
             name: '单品'
+        },
+        {
+            path: 'comSingleedit',
+            meta: {
+                title: '编辑单品'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/storequartersGoods/comSingle/common.vue'], resolve),
+            name: '编辑单品'
+        },
+        {
+            path: 'comSingledetails',
+            meta: {
+                title: '查看单品'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/storequartersGoods/comSingle/common.vue'], resolve),
+            name: '查看单品'
         },
         {
             path: 'serveGood',
@@ -207,6 +448,22 @@ let routes = [
             name: '服务商品'
         },
         {
+            path: 'serveGoodedit',
+            meta: {
+                title: '编辑服务商品'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/storequartersGoods/serveGood/common.vue'], resolve),
+            name: '编辑服务商品'
+        },
+        {
+            path: 'serveGooddetails',
+            meta: {
+                title: '查看服务商品'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/storequartersGoods/serveGood/common.vue'], resolve),
+            name: '查看服务商品'
+        },
+        {
             path: 'comMaterial',
             meta: {
                 title: '原材料'
@@ -215,12 +472,44 @@ let routes = [
             name: '原材料'
         },
         {
+            path: 'comMaterialedit',
+            meta: {
+                title: '编辑原材料'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/storequartersGoods/comMaterial/common.vue'], resolve),
+            name: '编辑原材料'
+        },
+        {
+            path: 'comMaterialdetails',
+            meta: {
+                title: '查看原材料'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/storequartersGoods/comMaterial/common.vue'], resolve),
+            name: '查看原材料'
+        },
+        {
             path: 'setMeal',
             meta: {
                 title: '套餐'
             },
             component: (resolve) => require(['cim/views/cim/goodsInformation/storequartersGoods/setMeal/common.vue'], resolve),
             name: '套餐'
+        },
+        {
+            path: 'setMealedit',
+            meta: {
+                title: '编辑套餐'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/storequartersGoods/setMeal/common.vue'], resolve),
+            name: '编辑套餐'
+        },
+        {
+            path: 'setMealdetails',
+            meta: {
+                title: '查看套餐'
+            },
+            component: (resolve) => require(['cim/views/cim/goodsInformation/storequartersGoods/setMeal/common.vue'], resolve),
+            name: '查看套餐'
         },
     ],
 },
@@ -253,6 +542,30 @@ let routes = [
                     name: '供应商管理'
                 },
                 {
+                    path: 'add',
+                    meta: {
+                        title: '新建供应商'
+                    },
+                    component: (resolve) => require(['cim/views/cim/procurement/suppliers/add'], resolve),
+                    name: '新建供应商'
+                },
+                {
+                    path: 'edit',
+                    meta: {
+                        title: '编辑供应商'
+                    },
+                    component: (resolve) => require(['cim/views/cim/procurement/suppliers/edit'], resolve),
+                    name: '编辑供应商'
+                },
+                {
+                    path: 'details',
+                    meta: {
+                        title: '查看供应商'
+                    },
+                    component: (resolve) => require(['cim/views/cim/procurement/suppliers/details'], resolve),
+                    name: '查看供应商'
+                },
+                {
                     path: 'common',
                     meta: {
                         title: '供应商管理'
@@ -260,6 +573,7 @@ let routes = [
                     component: (resolve) => require(['cim/views/cim/procurement/suppliers/common'], resolve),
                     name: '供应商管理'
                 },
+
             ]
         },
         // 采购协议管理
@@ -279,6 +593,30 @@ let routes = [
                     },
                     component: (resolve) => require(['cim/views/cim/procurement/purchaseProtocol/list'], resolve),
                     name: '采购协议管理'
+                },
+                {
+                    path: 'add',
+                    meta: {
+                        title: '新建协议管理'
+                    },
+                    component: (resolve) => require(['cim/views/cim/procurement/purchaseProtocol/add'], resolve),
+                    name: '新建协议管理'
+                },
+                {
+                    path: 'edit',
+                    meta: {
+                        title: '编辑协议管理'
+                    },
+                    component: (resolve) => require(['cim/views/cim/procurement/purchaseProtocol/edit'], resolve),
+                    name: '编辑协议管理'
+                },
+                {
+                    path: 'details',
+                    meta: {
+                        title: '查看协议管理'
+                    },
+                    component: (resolve) => require(['cim/views/cim/procurement/purchaseProtocol/details'], resolve),
+                    name: '查看协议管理'
                 },
                 {
                     path: 'common',
@@ -308,9 +646,33 @@ let routes = [
                     name:"采购单管理"
                 },
                 {
+                    path: 'add',
+                    meta: {
+                        title: '新建采购单'
+                    },
+                    component: (resolve) => require(['cim/views/cim/procurement/purchaseNote/add'], resolve),
+                    name: '新建采购单'
+                },
+                {
+                    path: 'edit',
+                    meta: {
+                        title: '编辑采购单'
+                    },
+                    component: (resolve) => require(['cim/views/cim/procurement/purchaseNote/edit'], resolve),
+                    name: '编辑采购单'
+                },
+                {
+                    path: 'details',
+                    meta: {
+                        title: '查看采购单'
+                    },
+                    component: (resolve) => require(['cim/views/cim/procurement/purchaseNote/details'], resolve),
+                    name: '查看采购单'
+                },
+                {
                     path: 'common',
                     meta: {
-                        title: ''
+                        title: '采购单管理'
                     },
                     component: (resolve) => require(['cim/views/cim/procurement/purchaseNote/common'], resolve),
                     name:""
@@ -321,27 +683,51 @@ let routes = [
         {
             path: 'purchaseStorage',
             meta: {
-                title: '采购入库单管理'
+                title: '入库单管理'
             },
             component: (resolve) => require(['cim/views/cim/procurement/purchaseStorage/index'], resolve),
-            name: '采购入库单管理',
+            name: '入库单管理',
             redirect: 'purchaseStorage/list',
             children: [
                 {
                     path: 'list',
                     meta: {
-                        title: '采购入库单管理'
+                        title: '入库单管理'
                     },
                     component: (resolve) => require(['cim/views/cim/procurement/purchaseStorage/list'], resolve),
-                    name: '采购入库单管理'
+                    name: '入库单管理'
+                },
+                {
+                    path: 'add',
+                    meta: {
+                        title: '新建入库单'
+                    },
+                    component: (resolve) => require(['cim/views/cim/procurement/purchaseStorage/add'], resolve),
+                    name: '新建入库单'
+                },
+                {
+                    path: 'edit',
+                    meta: {
+                        title: '编辑入库单'
+                    },
+                    component: (resolve) => require(['cim/views/cim/procurement/purchaseStorage/edit'], resolve),
+                    name: '编辑入库单'
+                },
+                {
+                    path: 'details',
+                    meta: {
+                        title: '查看入库单'
+                    },
+                    component: (resolve) => require(['cim/views/cim/procurement/purchaseStorage/details'], resolve),
+                    name: '查看入库单'
                 },
                 {
                     path: 'common',
                     meta: {
-                        title: '采购入库单管理'
+                        title: '入库单管理'
                     },
                     component: (resolve) => require(['cim/views/cim/procurement/purchaseStorage/common'], resolve),
-                    name: '采购入库单管理'
+                    name: '入库单管理'
                 },
             ]
         },
@@ -358,10 +744,34 @@ let routes = [
                 {
                     path: 'list',
                     meta: {
-                        title: '采购单退货管理'
+                        title: '采购退货单管理'
                     },
                     component: (resolve) => require(['cim/views/cim/procurement/purchaseReturn/list'], resolve),
                     name: '采购退货单管理'
+                },
+                {
+                    path: 'add',
+                    meta: {
+                        title: '新建采购退货单'
+                    },
+                    component: (resolve) => require(['cim/views/cim/procurement/purchaseReturn/add'], resolve),
+                    name: '新建采购退货单'
+                },
+                {
+                    path: 'edit',
+                    meta: {
+                        title: '编辑采购退货单'
+                    },
+                    component: (resolve) => require(['cim/views/cim/procurement/purchaseReturn/edit'], resolve),
+                    name: '编辑采购退货单'
+                },
+                {
+                    path: 'details',
+                    meta: {
+                        title: '查看采购退货单'
+                    },
+                    component: (resolve) => require(['cim/views/cim/procurement/purchaseReturn/details'], resolve),
+                    name: '查看采购退货单'
                 },
                 {
                     path: 'common',
@@ -378,9 +788,9 @@ let routes = [
 //零售POS设置
 {
     path: 'retailPosSetting/terminalGoods/index',
-    name: '零售终端常用商品设置',
+    name: 'POS常用商品设置',
     meta: {
-        title: '零售终端常用商品设置'
+        title: 'POS常用商品设置'
     },
     component: (resolve) => require(['cim/views/cim/retailPosSetting/terminalGoods/index'], resolve),
     // redirect: 'terminalGoods/index',
@@ -391,9 +801,9 @@ let routes = [
 //零售POS设置
 {
     path: 'retailPosSetting/terminalClassify/index',
-    name: '零售终端分类商品设置',
+    name: 'POS商品分类设置',
     meta: {
-        title: '零售终端分类商品设置'
+        title: 'POS商品分类设置'
     },
     component: (resolve) => require(['cim/views/cim/retailPosSetting/terminalClassify/index'], resolve),
     // redirect: 'terminalGoods/index',
@@ -420,6 +830,25 @@ let routes = [
     ]
 },
 //商品积分兑换设置  path: 'retailPosSetting/creditsExchange'
+    {
+        path: 'retailPosSetting/creditsExchange',
+        name: '商品积分兑换设置',
+        meta: {
+            title: '商品积分兑换设置'
+        },
+        component: (resolve) => require(['cim/views/cim/retailPosSetting/creditsExchange/index'], resolve),
+        redirect: 'retailPosSetting/creditsExchange/list',
+        children: [
+            {
+                path: 'list',
+                meta: {
+                    title: '商品积分兑换设置'
+                },
+                component: (resolve) => require(['cim/views/cim/retailPosSetting/creditsExchange/list'], resolve),
+                name: '商品积分兑换设置'
+            },
+        ]
+    },
 // 库存管理
 {
     path: 'InventoryManagement',
@@ -458,6 +887,30 @@ let routes = [
                     name: '领用退回入库'
                 },
                 {
+                    path: 'returnadd',
+                    meta: {
+                        title: '新增领用退回入库'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingIn/return'], resolve),
+                    name: '新增领用退回入库'
+                },
+                {
+                    path: 'returnedit',
+                    meta: {
+                        title: '编辑领用退回入库'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingIn/return'], resolve),
+                    name: '编辑领用退回入库'
+                },
+                {
+                    path: 'returndetails',
+                    meta: {
+                        title: '查看领用退回入库'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingIn/return'], resolve),
+                    name: '查看领用退回入库'
+                },
+                {
                     path: 'inventory',
                     meta: {
                         title: '盘点赔偿入库'
@@ -466,12 +919,60 @@ let routes = [
                     name: '盘点赔偿入库'
                 },
                 {
+                    path: 'inventoryadd',
+                    meta: {
+                        title: '新增盘点赔偿入库'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingIn/inventory'], resolve),
+                    name: '新增盘点赔偿入库'
+                },
+                {
+                    path: 'inventoryedit',
+                    meta: {
+                        title: '编辑盘点赔偿入库'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingIn/inventory'], resolve),
+                    name: '编辑盘点赔偿入库'
+                },
+                {
+                    path: 'inventorydetails',
+                    meta: {
+                        title: '查看盘点赔偿入库'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingIn/inventory'], resolve),
+                    name: '查看盘点赔偿入库'
+                },
+                {
                     path: 'warehousing',
                     meta: {
                         title: '调拨入库'
                     },
                     component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingIn/warehousing'], resolve),
                     name: '调拨入库'
+                },
+                {
+                    path: 'warehousingadd',
+                    meta: {
+                        title: '新增调拨入库'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingIn/warehousing'], resolve),
+                    name: '新增调拨入库'
+                },
+                {
+                    path: 'warehousingedit',
+                    meta: {
+                        title: '编辑调拨入库'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingIn/warehousing'], resolve),
+                    name: '编辑调拨入库'
+                },
+                {
+                    path: 'warehousingdetails',
+                    meta: {
+                        title: '查看调拨入库'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingIn/warehousing'], resolve),
+                    name: '查看调拨入库'
                 },
             ]
         },
@@ -503,6 +1004,30 @@ let routes = [
                     name: '领用出库'
                 },
                 {
+                    path: 'returnadd',
+                    meta: {
+                        title: '新增领用出库'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingOut/return'], resolve),
+                    name: '新增领用出库'
+                },
+                {
+                    path: 'returnedit',
+                    meta: {
+                        title: '编辑领用出库'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingOut/return'], resolve),
+                    name: '编辑领用出库'
+                },
+                {
+                    path: 'returndetails',
+                    meta: {
+                        title: '查看领用出库'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingOut/return'], resolve),
+                    name: '查看领用出库'
+                },
+                {
                     path: 'inventory',
                     meta: {
                         title: '报损出库'
@@ -511,12 +1036,60 @@ let routes = [
                     name: '报损出库'
                 },
                 {
+                    path: 'inventoryadd',
+                    meta: {
+                        title: '新增报损出库'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingOut/inventory'], resolve),
+                    name: '新增报损出库'
+                },
+                {
+                    path: 'inventoryedit',
+                    meta: {
+                        title: '编辑报损出库'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingOut/inventory'], resolve),
+                    name: '编辑报损出库'
+                },
+                {
+                    path: 'inventorydetails',
+                    meta: {
+                        title: '查看报损出库'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingOut/inventory'], resolve),
+                    name: '查看报损出库'
+                },
+                {
                     path: 'warehousing',
                     meta: {
                         title: '调拨出库'
                     },
                     component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingOut/warehousing'], resolve),
                     name: '调拨出库'
+                },
+                {
+                    path: 'warehousingadd',
+                    meta: {
+                        title: '新增调拨出库'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingOut/warehousing'], resolve),
+                    name: '新增调拨出库'
+                },
+                {
+                    path: 'warehousingedit',
+                    meta: {
+                        title: '编辑调拨出库'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingOut/warehousing'], resolve),
+                    name: '编辑调拨出库'
+                },
+                {
+                    path: 'warehousingdetails',
+                    meta: {
+                        title: '查看调拨出库'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingOut/warehousing'], resolve),
+                    name: '查看调拨出库'
                 },
             ]
         },
@@ -546,6 +1119,30 @@ let routes = [
                     },
                     component: (resolve) => require(['cim/views/cim/InventoryManagement/inventoryTransfer/common'], resolve),
                     name: '库存转移管理'
+                },
+                {
+                    path: 'add',
+                    meta: {
+                        title: '新增库存转移管理'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/inventoryTransfer/common'], resolve),
+                    name: '新增库存转移管理'
+                },
+                {
+                    path: 'edit',
+                    meta: {
+                        title: '编辑库存转移管理'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/inventoryTransfer/common'], resolve),
+                    name: '编辑库存转移管理'
+                },
+                {
+                    path: 'details',
+                    meta: {
+                        title: '查看库存转移管理'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/inventoryTransfer/common'], resolve),
+                    name: '查看库存转移管理'
                 }
             ]
         },
@@ -575,6 +1172,30 @@ let routes = [
                     },
                     component: (resolve) => require(['cim/views/cim/InventoryManagement/inventoryPlan/common'], resolve),
                     name: '盘点方案'
+                },
+                {
+                    path: 'add',
+                    meta: {
+                        title: '新增盘点方案'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/inventoryPlan/common'], resolve),
+                    name: '新增盘点方案'
+                },
+                {
+                    path: 'edit',
+                    meta: {
+                        title: '编辑盘点方案'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/inventoryPlan/common'], resolve),
+                    name: '编辑盘点方案'
+                },
+                {
+                    path: 'details',
+                    meta: {
+                        title: '查看盘点方案'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/inventoryPlan/common'], resolve),
+                    name: '查看盘点方案'
                 }
             ]
         },
@@ -600,10 +1221,10 @@ let routes = [
                 {
                     path: 'common',
                     meta: {
-                        title: '盘点单'
+                        title: '新建盘点单'
                     },
                     component: (resolve) => require(['cim/views/cim/InventoryManagement/inventoryManagement/common'], resolve),
-                    name: '盘点单'
+                    name: '新建盘点单'
                 },
                 {
                     path: 'commonSee',
@@ -612,6 +1233,30 @@ let routes = [
                     },
                     component: (resolve) => require(['cim/views/cim/InventoryManagement/inventoryManagement/commonSee'], resolve),
                     name: '盘点单'
+                },
+                {
+                    path: 'commonSeedetails',
+                    meta: {
+                        title: '查看盘点单'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/inventoryManagement/commonSee'], resolve),
+                    name: '查看盘点单'
+                },
+                {
+                    path: 'commonSeehandle',
+                    meta: {
+                        title: '处理盘点单'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/inventoryManagement/commonSee'], resolve),
+                    name: '处理盘点单'
+                },
+                {
+                    path: 'commonPrint',
+                    meta: {
+                        title: '打印空白盘点单'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/inventoryManagement/commonPrint'], resolve),
+                    name: '打印空白盘点单'
                 }
             ]
         },        
@@ -662,6 +1307,30 @@ let routes = [
                     },
                     component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingApply/common'], resolve),
                     name: '调拨申请单'
+                },
+                {
+                    path: 'add',
+                    meta: {
+                        title: '新增调拨申请单'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingApply/common'], resolve),
+                    name: '新增调拨申请单'
+                },
+                {
+                    path: 'edit',
+                    meta: {
+                        title: '编辑调拨申请单'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingApply/common'], resolve),
+                    name: '编辑调拨申请单'
+                },
+                {
+                    path: 'details',
+                    meta: {
+                        title: '查看调拨申请单'
+                    },
+                    component: (resolve) => require(['cim/views/cim/InventoryManagement/goodsWarehousingApply/common'], resolve),
+                    name: '查看调拨申请单'
                 }
             ]
         },

@@ -1,0 +1,88 @@
+.ccm_dialog {
+    /deep/ .el-dialog {
+        width: 576px;
+        font-size: 12px;
+        font-family: MicrosoftYaHei;
+        color: #666666;
+        width: 576px;
+        height: 576px;
+        border-radius: 4px;
+        overflow: hidden;
+        .el-dialog__header {
+            padding: 14px 20px 10px;
+        }
+        .el-dialog__title {
+            color: #333333;
+            letter-spacing: 0;
+            line-height: 28px;
+        }
+        .el-dialog__headerbtn .el-dialog__close {
+            color: #979797;
+            font-size: 16px; 
+        }
+        .el-icon-close {
+            font-size: 8px;
+        }
+        .el-button {
+            display: inline-block;
+            width: 80px;
+            height: 32px;
+            line-height: 15px;
+            vertical-align: middle;
+        }
+        .el-form{
+            position: relative;
+        }
+        .el-form-item {
+            margin-bottom: 0;
+            margin-right: 16px;
+        }
+        .el-dialog__header::after {
+            content: "";
+            display: block;
+            width: 100%;
+            height: 1px;
+            background: #e5e5e5;
+        }
+        span {
+            font-family: MicrosoftYaHei;
+            font-size: 12px;
+            letter-spacing: 0;
+        }
+        .choose-body {
+            margin-top: 11px;
+            border: 1px solid #E5E5E5;
+            .el-table{
+                height: 331px
+            }
+        }
+        .el-dialog__body {
+            padding: 0 20px;
+            tr th,
+            tr td {
+                height: 30px;
+                line-height: 30px;
+            }
+            .block {
+                padding: 20px;
+                .el-pagination {
+                    padding: 0;
+                    text-align: center;
+                }
+            }
+        }
+        .page-wrap{
+            padding-top: 5px;
+            padding-bottom: 10px;
+        }
+        .success,
+        .danger,
+        .info {
+            font-size: 12px;
+        }
+        /deep/ .content .el-input {
+            width: 50px;
+        }
+    }
+    
+}

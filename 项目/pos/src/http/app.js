@@ -4,7 +4,8 @@ util.member_card_kind_code="STAR"; //EMP_WRITE_PWD 员工卡写卡  EMP_READ_PWD
 
 let readCardStatus =true; //读卡状态
 let readKeyBoardStatus =true; //密码键盘状态
-// let readTicketStatus =true; //打票状态
+let readCashBoxStatus = true; //钱箱状态
+let readTicketStatus =true; //打票状态
 
 //退出软件
 util.quit=function (){
@@ -181,12 +182,12 @@ util.secKeyBoard= function(type,configData,callback){
 			return;
 		}
 	}
-	if(readKeyBoardStatus){
-		readKeyBoardStatus=false
-	}else{
-		callback("密码键盘开启中");
-		return
-	}
+	// if(readKeyBoardStatus){
+	// 	readKeyBoardStatus=false
+	// }else{
+	// 	callback("密码键盘开启中");
+	// 	return
+	// }
 	if(!type && (type!="open"||type!="close")){
 		callback("操作键盘类型有误");
 		return;
@@ -217,11 +218,11 @@ util.secKeyBoard= function(type,configData,callback){
 
 	try {
 		app.setMessageCallback(callbackName, function (name, args){
-			readKeyBoardStatus=true
+			// readKeyBoardStatus=true
 			callback(args)
 		})
 	} catch (error) {
-		readKeyBoardStatus=true
+		// readKeyBoardStatus=true
 		callback(error)
 	}
 	
@@ -362,12 +363,12 @@ util.readCard = function (configData,callBack){
 			return;
 		}
 	}
-	if(readCardStatus){
-		readCardStatus=false
-	}else{
-		callback("正在读卡中");
-		return
-	}
+	// if(readCardStatus){
+	// 	readCardStatus=false
+	// }else{
+	// 	callback("正在读卡中");
+	// 	return
+	// }
 	if (!configData){
 		callBack("终端数据为空");
 		return;
@@ -394,11 +395,11 @@ util.readCard = function (configData,callBack){
 
 	try {
 		app.setMessageCallback(callbackName, function (name, args) {
-			readCardStatus=true
+			// readCardStatus=true
 			callBack(args);
 		});
 	} catch (error) {
-		readCardStatus=true
+		// readCardStatus=true
 		callBack(error);
 	}
 		
@@ -918,7 +919,8 @@ util.readTerminalParameter=function(callback){
 			,meal_preparation:[{"code":"0","selected":false},{"code":"1","selected":true}],"pos_show_type":[{"code":" ","name":"无客显","selected":true},{"code":"ZHONGQI","name":"中崎","selected":false},{"code":"XINGQIAO","name":"星乔","selected":false}]
 			,pos_show_type:[{"code":"ZHONGQI","name":"中崎","selected":false},{"code":"XINGQIAO","name":"星乔","selected":false}]
 			,pos_type:[{"code":"2","name":"不对接","selected":true},{"code":"0","name":"快钱POS机","selected":false},{"code":"1","name":"杉德POS机","selected":false}]
-			,print_voucher:[{"code":"0","selected":false},{"code":"1","selected":true}]
+			,print_voucher:[{"code":"0","selected":false},{"code":"1","selected":true}],
+			isBrowser:true
 		};
 		callback(result);
 	}
@@ -959,6 +961,35 @@ util.writeTerminalParameter=function(json,callback){
 }
 
 /**
+ * 获取影院编码信息
+ * @param json 保存数据对象
+ * @param callback 接收参数的回调方法
+ */
+util.getCinemaInfoParameter=function(callback){
+	if (typeof(app) == 'undefined'){
+		callback("浏览器不支持此功能");
+		return;
+	}else{
+		if(!app.sendMessage){
+			callback("浏览器不支持此功能");
+			return;
+		}
+	}
+	var callbackname='License_Read_Reponse_'+newGuid();//回调名
+	//向外壳发送数据
+	app.sendMessage('License_Read_REQUEST', [callbackname]);
+	
+	app.setMessageCallback(callbackname, function (name, args) {
+		if(args[0]==0){
+			callback(args);
+		}else{
+			callback(args);
+		}
+	});
+	
+}
+
+/**
  * 开钱箱方法
  * @param configData object //终端配置
  * @callback function //回调函数
@@ -973,12 +1004,12 @@ util.openCashBox = function (configData,callback) {
 			return;
 		}
 	}
-	if(readCashBoxStatus){
-		readCashBoxStatus=false
-	}else{
-		callback("钱箱开启中");
-		return
-	}
+	// if(readCashBoxStatus){
+	// 	readCashBoxStatus=false
+	// }else{
+	// 	callback("钱箱开启中");
+	// 	return
+	// }
 	if (!configData){
 		callback("终端数据为空");
 		return;
@@ -1002,11 +1033,11 @@ util.openCashBox = function (configData,callback) {
 
 	try {
 		app.setMessageCallback(callbackName, function (name, args){
-			readCashBoxStatus=true
+			// readCashBoxStatus=true
 			callback(args)
 		})
 	} catch (error) {
-		readCashBoxStatus=true
+		// readCashBoxStatus=true
 		callback(error)
 	}
 };

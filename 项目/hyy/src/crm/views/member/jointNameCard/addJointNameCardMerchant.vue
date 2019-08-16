@@ -1,7 +1,7 @@
 <template>
   <div class="add-jointNameCard-merchant">
     <!-- 表单区 -->
-    <el-form :model="ruleForm" :rules="rules" ref="ruleForm" size="medium" label-width="100px" label-position="right"
+    <el-form :model="ruleForm" :rules="rules" ref="ruleForm" size="medium" label-width="100px" label-position="left"
       class="add-joint-name-card-form">
       <el-form-item label="商户名称：" prop="merchantName">
         <el-input v-model="ruleForm.merchantName" placeholder="请输入商户名称"></el-input>
@@ -116,7 +116,8 @@ export default {
               .editjointNameCardInfo(data)
               .then(() => {
                 this.$message.success("修改成功");
-                this.$router.go(-1);
+                this.$store.commit("tagNav/removeTagNav", this.$route);
+                this.$router.push({ path: "/member/jointNameCard/list" });
               })
               .catch(err => {
                 console.log(err);
@@ -127,7 +128,8 @@ export default {
               .addjointNameCardMerchant(data)
               .then(() => {
                 this.$message.success("添加成功");
-                this.$router.go(-1);
+                this.$store.commit("tagNav/removeTagNav", this.$route);
+                this.$router.push({ path: "/member/jointNameCard/list" });
               })
               .catch(err => {
                 console.log(err);
@@ -141,7 +143,7 @@ export default {
     },
     // 取消
     resetForm(formName) {
-      this.$refs[formName].resetFields();
+      this.$store.commit("tagNav/removeTagNav", this.$route);
       this.$router.push({ path: "/member/jointNameCard/list" });
     },
     handleChange(value) {

@@ -12,15 +12,18 @@
         <el-col :span="24">
           <div class="good-trees-box">
             <el-tree
-              :data="categoryTrees"
-              ref="categoryTrees"
-              icon-class="iconfont icon-neiye-zhankaijiantou"
-              :props="defaultProps"
-              highlight-current
-              node-key="uid"
-              show-checkbox
-              :default-expanded-keys="defaultExpanded"
-              @node-click="handleaCtegoryTrees"
+                    :data="categoryTrees"
+                    ref="refCategoryTrees"
+                    icon-class="iconfont icon-neiye-zhankaijiantou"
+                    :props="defaultProps"
+                    highlight-current
+                    check-on-click-node
+                    check-strictly
+                    node-key="code"
+                    show-checkbox
+                    v-loading="categoryTableLoding"
+                    :default-expanded-keys="defaultExpanded"
+                    @node-click="handleaCtegoryTrees"
             >
             </el-tree>
           </div>
@@ -89,8 +92,16 @@ export default {
       categoryTrees: [], //商品分类树
       defaultProps: {
         children: "children",
-        label: "name"
+        label: "name",
+        disabled: (data, node) => {
+          if (data.uid == "0") {
+            return true
+          } else {
+            return false
+          }
+        }
       },
+      categoryTableLoding: false,
       isOpen: true,
     };
   },
@@ -103,34 +114,45 @@ export default {
     openCallBack() {
       this.queryData.classUid = "";
       this.init();
-      console.log(this.dialogFeedbackData, "this.dialogFeedbackData");
+      // console.log(this.dialogFeedbackData, "this.dialogFeedbackData");
     },
     init() {
       this.selectProductClass({ uid: "" });
     },
     // 查询树
     handleaCtegoryTrees(data) {
-      console.log(data)
+      // console.log(data)
       if (data.uid == "0") {
         this.queryData.classUid = "";
       } else {
         this.queryData.classUid = data.uid;
       }
       this.customTree = data.uid;
-      this.$refs.categoryTrees.setChecked("c9cf8231-a11c-49d6-aabd-876e0f209e6f");
     },
     // 请求商品分类树接口
     selectProductClass(param) {
+      this.categoryTableLoding = true;
       this.$cimList
         .getCategoryTrees(param)
         .then(res => {
           if (res.code === 200) {
-            this.categoryTrees = [res.data];
+            this.$refs.refCategoryTrees.setCheckedKeys(this.selectedGoodsCheckedKeys, true);
+            this.categoryTrees =  [res.data];
+            // setTimeout(()=>{
+            //   if(this.selectedGoodsCheckedKeys){
+            //
+            //   }else{
+            //     this.$refs.refCategoryTrees.setCheckedKeys(this.selectedGoodsCheckedKeys,false);
+            //   }
+            // })
           } else {
             this.error(res.msg);
           }
+          this.categoryTableLoding = false;
         })
-        .catch(err => {});
+              .catch(err => {
+                this.categoryTableLoding = false;
+              });
     },
     isDisabled(row) {
       return !row.isDisabled;
@@ -145,8 +167,8 @@ export default {
     },
     //确定
     handleSubmit() {
-      let categoryNodes = this.$refs.categoryTrees.getCheckedNodes();
-      console.log(categoryNodes)
+      let categoryNodes = this.$refs.refCategoryTrees.getCheckedNodes();
+      // console.log(categoryNodes)
       this.$emit("cimCategoryDialogCallBack", {
         btnType: 1,
         data: categoryNodes
@@ -157,9 +179,25 @@ export default {
     }
   },
   computed: {
+    selectedGoodsCheckedKeys(){
+      if (this.dialogFeedbackData) {
+        let tempArr = this.dialogFeedbackData.map(item => {
+          return item.code;
+        })
+        return tempArr
+      }else{
+        return [];
+      }
+
+    },
     defaultExpanded() {
       return this.categoryTrees.map(item => {
-        return item.uid;
+        if(!item.code){
+          item.code = "0"
+        }
+        if(item.code){
+          return item.code;
+        }
       });
     }
   },

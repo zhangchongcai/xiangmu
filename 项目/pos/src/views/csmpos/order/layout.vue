@@ -13,13 +13,13 @@
                     <Goods  :goodTitleshow="false" 
                     :goodsList='goodsList'
                     :cartData='cartData'
-                    :modifyPrice= 'modifyPr'
+                    :modifyPrice='modifyPr'
                     ></Goods>
                 </div>
                 <div class="goods-btn">
                     <div class="paginaButtoms">
-                        <span class="previous">&lt;</span>
-                        <span class="next">&gt;</span>
+                        <span class="previous el-icon-arrow-down "></span>
+                        <span class="next el-icon-arrow-up" ></span>
                     </div>
                 </div>
             </div>
@@ -55,7 +55,7 @@
                             <span class="bold">{{cartData.payAmount?cartData.payAmount:0}}元</span>
                         </div>
                         <div>
-                            <span>(影院补贴15元)</span>
+                            <!-- <span>(影院补贴15元)</span> -->
                         </div>
                     </div>
                     <div class="row-item">
@@ -73,10 +73,10 @@
                         <div></div>
                     </div>
                     <div class="menue-btn" v-if="!modifyPr">
-                        <span class="" type="primary" plain size="mini" @click="give">赠送</span>
-                        <span class="" type="primary" plain @click="lost">报损</span>
-                        <span class="" type="primary" plain @click="empty">清空购物车</span>
-                        <span class="" type="primary" @click="modifyPrice">调价</span>
+                        <!-- <span class="" type="primary" plain size="mini" @click="give">赠送</span>
+                        <span class="" type="primary" plain @click="lost">报损</span> -->
+                        <span class="" type="primary" plain @click="emptyCart">清空购物车</span>
+                        <!-- <span class="" type="primary" @click="modifyPrice">调价</span> -->
                     </div>
                     <div class="menue-btn" v-else >
                         <span class="" type="primary" plain size="mini" @click="handerModify(false)">取消</span>
@@ -100,8 +100,9 @@ import SettlementWindow from 'components/settlement/SettlementWindow'
 import KeyNumberBoard from 'components/dialog/CartNumberKeyBoard'
 
 import {mapGetters,mapMutations} from 'vuex'
-import {RENDER_SELECTION_AFTER_RELEASE,GET_CART_DATA,GET_CART_BILLCODE,CLEAR_SELECTION} from 'src/newVuex/types'
-import {clearAllTicket,releaseSeat} from 'src/http/apis.js'
+import {RENDER_SELECTION_AFTER_RELEASE,GET_CART_DATA,GET_CART_BILLCODE,CLEAR_SELECTION, CART_SET_GOODS_DATA} from 'src/newVuex/types'
+import { VM_CART_MODEFY_PRICE_START,VM_CART_MODEFY_PRICE_REFER } from 'types/vmOnType'
+import {clearAllCart,releaseSeat} from 'src/http/apis.js'
 
 export default {
     name:'order',
@@ -126,7 +127,8 @@ export default {
             'channelCode',
             'cinemaCode',
             'currentPlanCode',   //放映编码
-            'changingTicket'
+            'changingTicket',
+            'cartDatalist'  //卖品数组
         ])
     },
     methods: {
@@ -134,13 +136,59 @@ export default {
             RENDER_SELECTION_AFTER_RELEASE,
             GET_CART_DATA,
             GET_CART_BILLCODE,
-            CLEAR_SELECTION
+            CLEAR_SELECTION,
+            CART_SET_GOODS_DATA
         ]),
         give() {},
         lost() {},
-        empty() {
-            if(this.cartData.goodsList.length){
-                clearAllTicket({"billCode":this.cartData.billCode}).then(res => {
+        // empty() {
+        //     if(this.cartData.goodsList.length){
+        //         clearAllCart({"billCode":this.cartData.billCode}).then(res => {
+        //             if(res.code==200){
+        //                 //释放座位
+        //                 let dataArr = []
+        //                 this.cartData.goodsList.forEach(item => {
+        //                     let {timeSeat} = item
+        //                     let ticket = {
+        //                         "cinemaCode":this.cinemaCode,
+        //                         "planCode":this.currentPlanCode,
+        //                         "lockSeatKey":timeSeat.lockSeatKey,
+        //                         "seatCode":timeSeat.seatCode,
+        //                         "groupCode":timeSeat.groupCode,
+        //                     }
+        //                     dataArr.push(ticket)
+        //                 })
+        //                 let datas = {
+        //                     channelCode: this.channelCode,
+        //                     cinemaCode: this.cinemaCode,
+        //                     saleBillCode: this.cartData.billCode,
+        //                     timeSeatList: dataArr
+        //                 }
+        //                 //释放座位
+        //                 releaseSeat(datas).then(res => {
+        //                     if(res.code == 200) {
+        //                         this.RENDER_SELECTION_AFTER_RELEASE(res.data)
+        //                         this.GET_CART_DATA({goodsList:[]})   //置空购物车vuex的数据
+        //                         this.GET_CART_BILLCODE('')
+        //                         this.CLEAR_SELECTION()
+        //                     }
+        //                 })
+
+        //                 this.CART_SET_GOODS_DATA([])
+        //             }
+        //         })  //清空
+        //     }else{
+        //         this.$message({
+        //             type:'warning',
+        //             message:'已清空购物车',
+        //             duration:1000
+        //         })
+        //     }
+        // },
+        //清空
+        emptyCart() {
+            if(this.cartData.goodsList.length || this.cartDatalist.length){
+                clearAllCart({"billCode":this.cartData.billCode}).then(res => {
                     if(res.code==200){
                         //释放座位
                         let dataArr = []
@@ -170,6 +218,8 @@ export default {
                                 this.CLEAR_SELECTION()
                             }
                         })
+
+                        this.CART_SET_GOODS_DATA([])
                     }
                 })  //清空
             }else{
@@ -182,18 +232,16 @@ export default {
         },
         handerModify(yse) {
             if(yse){
-                if(this.cartData.goodsList.length) {
-
-                }else {
-                    this.modifyPr = false
-                }
+               this.$vm.$emit(VM_CART_MODEFY_PRICE_REFER);
             }else{
-                this.modifyPr = false
+                this.$vm.$emit(VM_CART_MODEFY_PRICE_START,false)
             }
+            this.modifyPr = false
         },
         modifyPrice() {
             console.log('调价')
             this.modifyPr = true
+            this.$vm.$emit(VM_CART_MODEFY_PRICE_START,true)
         },
         toBack() {
             this.$router.go(-1)
@@ -266,6 +314,7 @@ export default {
                         border-radius: 0.2vw;
                         margin-left: 1.5vw;
                         cursor: pointer;
+                        color:#3B74FF;
                     }
                 }
             }
@@ -355,7 +404,10 @@ export default {
                     font-size: $font-size12;
                     border-radius: 2px; 
                     cursor: pointer;
-                    &:active{background:$btn-background-color-theme;color: #FFFFFF }
+                    &:active{background:$btn-background-color-theme;color: #FFFFFF };
+                    background: #fff;
+                    color:$btn-background-color-theme;
+
                 }
             }
 

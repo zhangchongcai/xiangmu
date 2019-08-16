@@ -1,5 +1,5 @@
 <template>
-<div>
+<div class="coupon-addNumber">
     <!-- 面包屑 -->
     <!-- <curmbs :address="address"></curmbs> -->
     <!-- 基本信息 -->
@@ -34,7 +34,7 @@
                         :list-type="'excel'"
                         :file-list="fileList"
                         >
-                            <el-button slot="trigger" size="small" type="primary">选择文件</el-button>
+                            <el-button slot="trigger" size="small" type="primary" ><span style="color:#FFFFFF;font-size:12px">选择文件</span> </el-button>
                         </el-upload>
                         <div>
                             <el-button type="text" @click="downLoadTem">下载模板</el-button>
@@ -56,7 +56,7 @@
     <section class="flex-base flex-center">
         <el-row>
             <el-button type="primary" @click="addNumber">确定</el-button>
-            <el-button @click="cancle">取消</el-button>
+            <el-button @click="cancle" style="margin-left:27px">取消</el-button>
         </el-row>
     </section>
 </div>
@@ -158,8 +158,12 @@ export default {
          */
         downLoadTem() {
             let url = this.baseUrl + "/coupon/prebuild/exportTemplate";
-            let headers = {
-                 "Cpm-User-Token": localStorage.getItem("token")
+            let headers = {}
+            if(this.$store.state.CpmUserKey){
+                headers['Cpm-User-Token'] = this.$store.state.CpmUserKey;
+            }
+            if (sessionStorage.getItem('token')) {
+                headers['Cpm-User-Token'] = sessionStorage.getItem('token');
             }
             axios(url, {
                 headers,
@@ -295,6 +299,12 @@ export default {
             
         },
         cancle() {
+            this.$store.commit("tagNav/removeTagNav", {
+                name: this.$route.name,
+                path: this.$route.path,
+                title: this.$route.meta.title,
+                query: this.$route.query
+            })
             this.$router.push({
                 path: 'numberCreate'
             })
@@ -327,6 +337,28 @@ export default {
     }
     .el-upload-list .el-upload-list--excel{
         display: inline-block!important;
+    }
+}
+</style>
+<style lang="scss">
+.coupon-addNumber{
+    .el-collapse-item__header::after{
+        display: none
+    }
+    .el-collapse-item__header{
+        display: flex;
+        justify-content:flex-end;
+        flex-direction: row-reverse;
+    }
+    li{
+        span{
+            color:#666666;
+            font-size:12px;
+        }
+    }
+    .el-form-item__label{
+        color:#666666;
+        font-size:12px;
     }
 }
 </style>

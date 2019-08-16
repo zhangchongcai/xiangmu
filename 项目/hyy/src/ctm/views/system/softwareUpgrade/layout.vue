@@ -53,18 +53,16 @@ export default {
         },
         getData(cinemaUid) {
             this.$ctmList.systemCinemaUiduUdate({"cinemaUid":cinemaUid}).then(res => {
-                let type = "success"
-                let message = "查询成功"
                 if(res.code == 200 ){
                     this.info = res.data
                 }else{
-                    type = "error"
-                    message = res.msg
+                    let type = "error"
+                    let message = res.msg?res.msg:'查询失败'
+                    this.$message({
+                        type,
+                        message
+                    })
                 }
-                this.$message({
-                    type,
-                    message
-                })
             })
         }
     },

@@ -7,6 +7,7 @@
       label-width="80px"
       label-suffix=":"
     >
+
       <!-- <el-form-item label="渠道名称">
         <el-input v-model="queryData.cinemaName" placeholder="请输入渠道名称"></el-input>
       </el-form-item>
@@ -50,8 +51,8 @@
       <el-col :span="6" v-if="multiple">
         <div class="empty-box">
           <div class="clearfix">
-            <span class="selected-content left">已选内容</span>
-            <el-button type="text" class="right" @click="handleEmptyMaterials">清 空</el-button>
+            <span class="selected-content left">已选渠道</span>
+            <el-button type="text" class="right empty-btn" @click="handleEmptyMaterials">清 空</el-button>
           </div>
           <ul class="empty-content">
             <li :key="item.merCode" v-for="(item) in selectedData" class="clearfix">
@@ -93,7 +94,7 @@ export default {
       default: false
     },
     cinemaUid: {
-      type: String,
+      type: [String, Number],
       default: '',
     },
     // 回选数据
@@ -143,7 +144,8 @@ export default {
   },
   methods: {
     init() {
-      console.log(this.dialogFeedbackData)
+      // console.log(this.dialogFeedbackData)
+      // console.log(this.queryData)
       this.queryData.page = 1;
       if(this.check){
         this.tableData = this.dialogFeedbackData.slice(this.queryData.page-1,this.queryData.pageSize);
@@ -201,7 +203,7 @@ export default {
     },
     //选中渠道
     handleSelectionchannel(rows) {
-      console.log("选中渠道", rows)
+      // console.log("选中渠道", rows)
       this.selectedData = rows;
       //不是多选
       if (!this.multiple) {
@@ -226,7 +228,7 @@ export default {
     },
     //删除选择
     deleteSelected(row, flag) {
-      console.log(row)
+      // console.log(row)
       this.$refs.channelTable.toggleRowSelection(row, false);
     },
     // 清空选择
@@ -240,7 +242,7 @@ export default {
       }else{
         this.queryBaseChannel(this.queryData);
       }
-      console.log(`每页 ${val} 条`);
+      // console.log(`每页 ${val} 条`);
     },
     handleCurrentChange(val) {
       this.queryData.page = val;
@@ -250,7 +252,7 @@ export default {
       }else{
         this.queryBaseChannel(this.queryData);
       }
-      console.log(`当前页: ${val}`);
+      // console.log(`当前页: ${val}`);
     }
   },
   mounted() {}
@@ -282,9 +284,11 @@ export default {
       padding-left: 0;
       padding-right: 0;
     }
-
+    .empty-btn{
+      margin-top: 4px;
+    }
     .empty-content {
-      height: 354px;
+      height: 352px;
       overflow-y: auto;
       border-top: 1px solid #F5F5F5;
       padding: 5px 0;

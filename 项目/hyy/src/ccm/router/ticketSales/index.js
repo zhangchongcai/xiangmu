@@ -46,8 +46,15 @@ const couponSalesRoutes = [{
         title: '新建票券分类'
     },
     name: 'addTicket',
-    component: (resolve) => require(['../../views/coupon/typeManagement/addTicket.vue'], resolve),
-}, {
+    component: (resolve) => require(['../../views/coupon/typeManagement/ticketType.vue'], resolve),
+},{
+    path: 'editTicket',
+    meta: {
+        title: '编辑票券分类'
+    },
+    name: 'editTicket',
+    component: (resolve) => require(['../../views/coupon/typeManagement/ticketType.vue'], resolve),
+},{
     path: 'numberCreate',
     meta: {
         title: '票券编号预生成'
@@ -117,6 +124,27 @@ const couponSalesRoutes = [{
     },
     name: 'couponTemplate',
     component: (resolve) => require(['ccm/views/coupon/templateManagement/couponTemplate.vue'], resolve)
-}];
+}, {
+    path: 'checkCouponTemplate',
+    meta: {
+        title: '查看票券模板'
+    },
+    name: 'checkCouponTemplate',
+    component: (resolve) => require(['ccm/views/coupon/templateManagement/checkCouponTemplate.vue'], resolve)
+}, {
+    path: 'receivableManagement',
+    meta: {
+        title: '应收款管理'
+    },
+    name: 'receivableManagement',
+    component: (resolve) => require(['ccm/views/coupon/receivableManagement'], resolve)
+}, {
+    path: 'creatReceivable',
+    meta: {
+        title: '应收款查看'
+    },
+    name: 'creatReceivable',
+    component: (resolve) => require(['ccm/views/coupon/receivableManagement/create.vue'], resolve)
+}]
 
 export default couponSalesRoutes;

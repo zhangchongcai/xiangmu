@@ -129,9 +129,14 @@
         methods: {
 
             callBackSingle(data) {
+                this.singleCinemaVisible = data.framedialogVisible
+
+                if(data.isCloseWindow) return
+
                 console.log(data, '-----> data')
                 this.formData.cinemaUid = data.data.id
                 this.cinemaName = data.data.name
+                this.cinemaName = this.cinemaName.length> 10?this.cinemaName.substring(0,9)+"...": this.cinemaName
                 this.innerData.id = data.data.id
 
                 this.search()

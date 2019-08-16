@@ -1,64 +1,76 @@
 <template>
-  <el-dialog id="cinema-dialog" :width="multiple ?'896px': '576px'" :title="title" :visible.sync="cinemalDialog"
-             @open="openCallBack">
+  <el-dialog
+    id="cinema-dialog"
+    :width="multiple ?'900px': '600px'"
+    :title="title"
+    :visible.sync="cinemalDialog"
+    @open="openCallBack"
+  >
     <el-form
       :inline="true"
       :model="queryData"
       label-position="left"
-      label-width="80px"
       label-suffix=":"
       class="query-box"
     >
-      <el-form-item label="影院名称">
-        <el-input v-model="queryData.cinemaName" placeholder="请输入影院名称"></el-input>
+      <el-form-item label="门店名称">
+        <el-input v-model="queryData.cinemaName" placeholder="请输入门店名称"></el-input>
       </el-form-item>
-      <el-button @click="handleCinemalDialogQuery"  type="primary" class="query-btn">搜索</el-button>
+      <el-button @click="handleCinemalDialogQuery" type="primary" class="query-btn">搜索</el-button>
     </el-form>
     <el-row>
       <el-col :span="multiple  ? 19 : 24">
-        <el-table class="table-box"
-                  ref="cinemalTable"
-                  :data="cinemalTableData"
-                  row-key="cinemaUid"
-                  height="400"
-                  v-loading="tableLoding"
-                  @selection-change="handleSelectionCinemal"
+        <el-table
+          class="table-box"
+          ref="cinemalTable"
+          :data="cinemalTableData"
+          row-key="cinemaUid"
+          height="400"
+          v-loading="tableLoding"
+          @selection-change="handleSelectionCinemal"
         >
           <div v-if="!check">
             <el-table-column type="selection" width="40" reserve-selection v-if="multiple"></el-table-column>
             <el-table-column width="40" v-else>
               <template slot-scope="scope">
-                <el-radio
-                        v-model="selectRadio"
-                        :label="scope.row.id"></el-radio>
+                <el-radio v-model="selectRadio" :label="scope.row.cinemaUid"></el-radio>
               </template>
             </el-table-column>
           </div>
           <el-table-column
-                  v-for="item in cinemalTableColumn"
-                  :key="item.key"
-                  :prop="item.key"
-                  :label="item.label"
-                  :formatter="item.formatter"
-          ></el-table-column>
+            v-for="item in cinemalTableColumn"
+            :key="item.key"
+            :prop="item.key"
+            :label="item.label"
+          >
+            <template slot-scope="{row}" name="header">
+              <div v-if="item.key=='areaName'" class="area-name">
+                <span v-if="row['provinceName']">{{row['provinceName']}}</span>
+                <span v-if="row['cityName']">{{row['cityName']}}</span>
+                <span v-if="row['areaName'] && row['areaName'] !='null'">{{row['areaName']}}</span>
+                <!--                <span>{{row['address']}}</span>-->
+              </div>
+              <div v-else>{{row[item.key]}}</div>
+            </template>
+          </el-table-column>
         </el-table>
         <div class="page-wrap">
           <el-pagination
-                  background
-                  :current-page="queryData.page"
-                  :page-size="queryData.pageSize"
-                  @size-change="handleSizeChange"
-                  @current-change="handleCurrentChange"
-                  :total="cinemalTotal"
-                  layout="total, prev, pager, next, jumper"
+            background
+            :current-page="queryData.page"
+            :page-size="queryData.pageSize"
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+            :total="cinemalTotal"
+            layout="total, prev, pager, next, jumper"
           ></el-pagination>
         </div>
       </el-col>
       <el-col :span="5" v-if="multiple">
         <div class="empty-box">
           <div class="clearfix">
-            <span class="selected-content left">已选内容</span>
-            <el-button type="text" class="right" @click="handleEmptyMaterials">清 空</el-button>
+            <span class="selected-content left">已选门店</span>
+            <el-button type="text" class="right empty-btn" @click="handleEmptyMaterials">清 空</el-button>
           </div>
           <ul class="empty-content">
             <li :key="item.merCode" v-for="(item) in selectedData" class="clearfix">
@@ -70,12 +82,12 @@
       </el-col>
     </el-row>
     <span slot="footer">
-       <div v-if="check">
-          <el-button @click="handleDialog(false)">关 闭</el-button>
-       </div>
+      <div v-if="check">
+        <el-button @click="handleDialog(false)">关 闭</el-button>
+      </div>
       <div v-else>
-         <el-button type="primary" @click="handleSubmit">确 定</el-button>
-         <el-button @click="handleDialog(false)">取 消</el-button>
+        <el-button type="primary" @click="handleSubmit">确 定</el-button>
+        <el-button @click="handleDialog(false)">取 消</el-button>
       </div>
     </span>
   </el-dialog>
@@ -87,7 +99,7 @@ export default {
     //是否多选
     title: {
       type: String,
-      default: "选择影院"
+      default: "选择门店"
     },
     //是否多选
     multiple: {
@@ -103,11 +115,11 @@ export default {
     dialogFeedbackData: {
       type: [Array],
       default: () => []
-    },
+    }
   },
   data() {
     return {
-      selectRadio:"",
+      selectRadio: "",
       cinemalDialog: false,
       //门店弹窗查询数据
       queryData: {
@@ -118,11 +130,11 @@ export default {
       cinemalTotal: 0,
       cinemalTableColumn: [
         {
-          label: "影院名称",
+          label: "门店名称",
           key: "name"
         },
         {
-          label: "专资编码",
+          label: "门店编码",
           key: "code"
         },
         {
@@ -132,70 +144,91 @@ export default {
       ],
       cinemalTableData: [],
       selectedData: [],
-      tableLoding:false,
+      tableLoding: false
     };
   },
-  created() {
-
-  },
+  created() {},
   mounted() {
-
+    this.init();
   },
   methods: {
-    init() {
-      console.log(this.dialogFeedbackData)
+    init(type) {
       this.queryData.page = 1;
-      if (this.check) {
-        this.cinemalTableData = this.dialogFeedbackData.slice(this.queryData.page - 1, this.queryData.pageSize);
-        this.cinemalTotal = this.dialogFeedbackData.length;
-      } else {
-        this.getMerCinemaList(this.queryData, 'open');
-      }
-      //单选去掉表头的全选
-      if (!this.multiple) {
-
+      if (!this.check) {
+        this.getMerCinemaList(this.queryData, type);
       }
     },
     openCallBack() {
-      this.init();
+      //解决多选回选问题
+      if (this.multiple) {
+        this.init("open");
+      }
+      if (this.check) {
+        this.cinemalTableData = this.dialogFeedbackData.slice(
+          this.queryData.page - 1,
+          this.queryData.pageSize
+        );
+        this.cinemalTotal = this.dialogFeedbackData.length;
+      }
+    },
+
+    setCinemalTableChecked() {
+      this.$nextTick(() => {
+        if (this.$refs.cinemalTable) {
+          this.$refs.cinemalTable.clearSelection();
+          if (this.dialogFeedbackData.length > 0) {
+            this.dialogFeedbackData.forEach(row => {
+              if (row.cinemaUid) {
+                this.$refs.cinemalTable.toggleRowSelection(row, true);
+              }
+            });
+          }
+        }
+      });
     },
     handleDialog(flag) {
       this.cinemalDialog = flag;
     },
     // 获取门店列表
     getMerCinemaList(param = {}, type) {
-      this.tableLoding =true;
-      this.$cimList.merCinemaList(param).then(resData => {
-        if (resData.code == 200) {
-          if (type == "open") {
-            this.$nextTick(() => {
-              this.$refs.cinemalTable.clearSelection();
-              if (this.dialogFeedbackData.length > 0) {
-                this.dialogFeedbackData.forEach(row => {
-                  this.$refs.cinemalTable.toggleRowSelection(row, true);
-                });
+      this.tableLoding = true;
+      this.$cimList
+        .merCinemaList(param)
+        .then(resData => {
+          if (resData.code == 200) {
+            // resData.data.list =  [resData.data.list[0]]
+            if (type == "open") {
+              this.setCinemalTableChecked();
+            }
+            this.cinemalTableData = resData.data.list.map(item => {
+              item.cinemaUid = item.uid || item.id;
+              item.uid = item.uid || item.id;
+              item.extend = null;
+              return item;
+            });
+            this.cinemalTotal = resData.data.total;
+            if (!this.multiple) {
+              if (this.cinemalTableData.length == 1) {
+                this.selectRadio = this.cinemalTableData[0].cinemaUid;
+              } else {
+                this.selectRadio = this.dialogFeedbackData[0].cinemaUid;
               }
-            })
+              this.$emit("onSumit", this.cinemalTableData, "default");
+            }
           }
-          this.cinemalTableData = resData.data.list.map(item => {
-            item.cinemaUid = item.uid || item.id;
-            item.uid = item.uid || item.id;
-            return item;
-          })
-          this.cinemalTotal = resData.data.total;
-        }
-        this.tableLoding =false;
-      }) .catch(err => {
-        this.tableLoding =false;
-      });
+          this.tableLoding = false;
+        })
+        .catch(err => {
+          this.tableLoding = false;
+        });
     },
-    //影院弹窗搜索
+    //门店弹窗搜索
     handleCinemalDialogQuery() {
       if (this.check) {
         if (this.queryData.cinemaName) {
           this.cinemalTableData = this.dialogFeedbackData.filter(item => {
-            return item.name.indexOf(this.queryData.cinemaName) > -1
-          })
+            return item.name.indexOf(this.queryData.cinemaName) > -1;
+          });
         } else {
           this.cinemalTableData = this.dialogFeedbackData;
         }
@@ -204,24 +237,24 @@ export default {
       }
     },
 
-    //影院弹窗选择确定
+    //门店弹窗选择确定
     handleSubmit() {
-      if(!this.multiple) {
+      if (!this.multiple) {
         this.selectedData = this.cinemalTableData.filter(item => {
-          return item.id == this.selectRadio
+          return item.cinemaUid == this.selectRadio;
         });
       }
       this.$emit("onSumit", this.selectedData);
       this.handleDialog(false);
     },
-    //选中影院
+    //选中门店
     handleSelectionCinemal(rows) {
-      console.log("选中影院",rows);
+      // console.log("选中门店",rows);
       this.selectedData = rows;
     },
     //删除选择
     deleteSelected(row, flag) {
-      console.log(row)
+      // console.log(row)
       this.$refs.cinemalTable.toggleRowSelection(row, false);
     },
     // 清空选择
@@ -231,56 +264,65 @@ export default {
     handleSizeChange(val) {
       this.queryData.pageSize = val;
       if (this.check) {
-        this.cinemalTableData = this.dialogFeedbackData.slice(0, this.queryData.pageSize);
+        this.cinemalTableData = this.dialogFeedbackData.slice(
+          0,
+          this.queryData.pageSize
+        );
       } else {
         this.getMerCinemaList(this.queryData);
       }
-      console.log(`每页 ${val} 条`);
+      // console.log(`每页 ${val} 条`);
     },
     handleCurrentChange(val) {
       this.queryData.page = val;
       if (this.check) {
         let pageNum = (this.queryData.page - 1) * this.queryData.pageSize;
-        this.cinemalTableData = this.dialogFeedbackData.slice(pageNum, pageNum + this.queryData.pageSize);
+        this.cinemalTableData = this.dialogFeedbackData.slice(
+          pageNum,
+          pageNum + this.queryData.pageSize
+        );
       } else {
         this.getMerCinemaList(this.queryData);
       }
 
-      console.log(`当前页: ${val}`);
+      // console.log(`当前页: ${val}`);
     }
-  },
-  mounted() {}
+  }
 };
 </script>
 
 <style lang="scss">
 #cinema-dialog {
-  .query-box{
-    .el-input{
-      /*width: 152px;*/
-    }
-  }
-  .el-radio__label{
+  .el-radio__label {
     display: none;
   }
-  .query-btn{
-    margin-top: 5px;
+  .query-btn {
+    margin-top: 6px;
+  }
+  .area-name {
+    span {
+      float: left;
+    }
   }
   .empty-box {
     padding: 0 10px 10px 10px;
-    border: 1px solid #E5E5E5;
+    border: 1px solid #e5e5e5;
     border-left: none;
     .selected-content {
       padding: 10px 0;
     }
-    .el-icon-close{
-      cursor:pointer;
+    .empty-btn {
+      margin-top: 4px;
     }
-    .title{
+    .el-icon-close {
+      cursor: pointer;
+    }
+    .title {
       width: 85%;
       overflow: hidden; /*超出部分隐藏*/
       white-space: nowrap; /*不换行*/
       text-overflow: ellipsis; /*超出部分文字以...显示*/
+      font-size: 12px;
     }
     .el-button {
       padding-left: 0;
@@ -288,9 +330,9 @@ export default {
     }
 
     .empty-content {
-      height: 354px;
+      height: 352px;
       overflow-y: auto;
-      border-top: 1px solid #F5F5F5;
+      border-top: 1px solid #f5f5f5;
       padding: 5px 0;
       li {
         padding: 6px 0;

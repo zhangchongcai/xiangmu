@@ -1,18 +1,16 @@
 <template>
   <div class="grTR-style">
-    <!-- {{this.queryData}} -->
     <div class="common-header">
       <el-form
         :inline="true"
         :model="queryData"
-        label-position="right"
-        label-width="100px"
-        label-suffix=":"
+        label-position="left"
+        label-suffix="："
       >
         <el-form-item label="调拨单号">
           <el-input
             v-model="queryData.billCode"
-            placeholder="请输内容"
+            placeholder="请输入"
           ></el-input>
         </el-form-item>
         <el-form-item label="调入门店" class="select-input">
@@ -52,8 +50,8 @@
             <el-option label="全部" value></el-option>
             <el-option label="未提交" value="1"></el-option>
             <el-option label="已提交" value="2"></el-option>
-            <el-option label="完成出库" value="3"></el-option>
-            <el-option label="完成入库" value="4"></el-option>
+            <!-- <el-option label="完成出库" value="3"></el-option> -->
+            <el-option label="调拨完成" value="4"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="审核状态">
@@ -63,7 +61,7 @@
             <el-option label="待审核" value="1"></el-option>
             <el-option label="审核通过" value="2"></el-option>
             <el-option label="审核不通过" value="3"></el-option>
-            <el-option label="无需审核" value="4"></el-option>
+            <!-- <el-option label="无需审核" value="4"></el-option> -->
           </el-select>
         </el-form-item>
 
@@ -179,10 +177,10 @@ export default {
                 result = "已提交";
                 break;
               case "3":
-                result = "完成出库";
+                result = "已提交";
                 break; 
               case "4":
-                result = "完成入库";
+                result = "调拨完成";
                 break;    
             }
             return result;
@@ -241,7 +239,7 @@ export default {
     },
 
     // 调入门店回调
-    onCinemalSumit(val = []) {
+    setCinema(val = []) {
       if(val.length == 0){
         this.$nextTick(() => { 
           this.goodList = []
@@ -262,12 +260,27 @@ export default {
       }
       console.log(val);
     },
+    // 选泽门店回调
+    onCinemalSumit(val = [],type) {
+      console.log(val," 选泽门店回调",type);
+      if (val.length > 0) {
+        if(type=="default"){
+          if(val.length==1){
+            this.setCinema(val)
+          }
+        }else{
+          this.setCinema(val)
+        }
+      } else {
+        this.setCinema()
+      }
+    },
     // 关闭调入门店
     selectCinemalDialog() {
       this.$refs.myCinemalDialog.handleDialog(true);
     },
     // 调出门店回调
-    onCinemalSumit1(val = []) {
+    setCinema1(val = []) {
       if(val.length == 0){
         this.$nextTick(() => { 
           this.goodList = []
@@ -287,6 +300,20 @@ export default {
         this.queryData.outCinemaUid = "";
       }
       console.log(val);
+    },
+    onCinemalSumit1(val = [],type) {
+        console.log(val," 选泽门店回调",type);
+        if (val.length > 0) {
+            if(type=="default"){
+                if(val.length==1){
+                    this.setCinema1(val)
+                }
+            }else{
+                this.setCinema1(val)
+            }
+        } else {
+            this.setCinema1()
+        }
     },
     // 关闭调出门店
     selectCinemalDialog1() {
@@ -315,7 +342,7 @@ export default {
               val.status = val.status.toString()
               val.approvalStatus = val.approvalStatus.toString()
             })
-            this.total = res.total
+            this.total = res.data.total
             console.log(res)
           } else {
             this.$message(res.msg);
@@ -331,8 +358,23 @@ export default {
 
     // 跳转库存转移
     handleNewPurchaseNote(param) {
+      let router = '';
+      switch (param.type) {
+        case "1":
+          // 新增
+          router = 'add';
+          break;
+        case "2":
+          // 编辑
+          router = 'edit';
+          break;
+        case "3":
+          // 查看
+          router = 'details';
+          break;
+      }
       this.$router.push({
-        path: "common",
+        path: router,
         query: param
       });
     },
@@ -360,7 +402,8 @@ export default {
     seetable(row){
       this.handleNewPurchaseNote({
           type:"3",
-          data:JSON.stringify(row.uid)
+          data:JSON.stringify(row.uid),
+          approvalStatus:JSON.stringify(row.approvalStatus)
         })
     },
     // 编辑操作
@@ -385,6 +428,7 @@ export default {
     resAllotBillRefer(row) {
       let val = {
         uid:row.uid
+        // status:2
       }
       this.$cimList.goodsWarehousingApply
         .allotBillRefer(val)
@@ -416,13 +460,13 @@ export default {
       // 分页
       handleSizeChange(val) {
         this.queryData.pageSize = val;
-        this.goodsDataQueryGoodsList();
+        this.goodsDataQueryGoodsList(this.queryData);
         console.log(`每页 ${val} 条`);
       },
       // 分页
       handleCurrentChange(val) {
         this.queryData.page = val;
-        this.goodsDataQueryGoodsList();
+        this.goodsDataQueryGoodsList(this.queryData);
         console.log(`当前页: ${val}`);
       },
   },
@@ -436,12 +480,6 @@ export default {
 @import "../../../../assets/css/common.scss";
 @import "../../../../assets/css/element-common.scss";
 .grTR-style{
-  .select-input {
-    .el-input {
-      width: 70%;
-    }
-  }
-
   .newPro-box {
     .title {
       margin: 10px 0;

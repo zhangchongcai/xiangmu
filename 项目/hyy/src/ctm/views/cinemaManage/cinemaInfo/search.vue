@@ -4,8 +4,8 @@
             <el-collapse-item title="基础信息" name="1" margi>
                 <el-row :gutter="5">
                     <el-col :span="9">
-                        <el-col :span="6" class="name">影院编码：</el-col>
-                        <el-col :span="10">{{cinemaData.code}}</el-col>
+                        <el-col :span="6" class="name m-l-17" >影院编码：</el-col>
+                        <el-col :span="16">{{cinemaData.code}}</el-col>
                     </el-col>
                     <el-col :span="9"><div class="row-item">
                         <el-col :span="6">联系人手机：</el-col>
@@ -14,18 +14,18 @@
                 </el-row>
                 <el-row :gutter="5">
                     <el-col :span="9">
-                        <el-col :span="6">影院名称：</el-col>
-                        <el-col :span="10">{{cinemaData.name}}</el-col>
+                        <el-col :span="6" class="m-l-17">影院名称：</el-col>
+                        <el-col :span="16">{{cinemaData.name}}</el-col>
                     </el-col>
                     <el-col :span="9"><div class="row-item">
                         <el-col :span="6">联系人固话：</el-col>
-                        <el-col :span="10">{{cinemaData.tphone}}</el-col></div>
+                        <el-col :span="16">{{cinemaData.tphone}}</el-col></div>
                     </el-col>
                 </el-row>
                 <el-row :gutter="5">
                     <el-col :span="9">
-                        <el-col :span="6">内部管理编号：</el-col>
-                        <el-col :span="10">{{cinemaData.mgCode}}</el-col>
+                        <el-col :span="6" class="m-l-17">内部管理编号：</el-col>
+                        <el-col :span="16">{{cinemaData.mgCode}}</el-col>
                     </el-col>
                     <el-col :span="9"><div class="row-item">
                         <el-col :span="6">影院邮编：</el-col>
@@ -34,8 +34,8 @@
                 </el-row>
                 <el-row :gutter="5">
                     <el-col :span="9">
-                        <el-col :span="6">开业时间：</el-col>
-                        <el-col :span="10">{{cinemaData.openTime}}</el-col>
+                        <el-col :span="6" class="m-l-17">开业时间：</el-col>
+                        <el-col :span="16">{{cinemaData.openTime}}</el-col>
                     </el-col>
                     <el-col :span="9"><div class="row-item">
                         <el-col :span="6">影院传真：</el-col>
@@ -44,7 +44,7 @@
                 </el-row>
                 <el-row :gutter="5">
                     <el-col :span="9">
-                        <el-col :span="6">公司名称：</el-col>
+                        <el-col :span="6" class="m-l-17">公司名称：</el-col>
                         <el-col :span="16">{{cinemaData.company}}</el-col>
                     </el-col>
                     <el-col :span="9"><div class="row-item">
@@ -54,8 +54,8 @@
                 </el-row>
                 <el-row :gutter="5">
                     <el-col :span="9">
-                        <el-col :span="6">所属影院：</el-col>
-                        <el-col :span="10">{{cinemaData.cinemas}}</el-col>
+                        <el-col :span="6" class="m-l-17">所属影院：</el-col>
+                        <el-col :span="16">{{cinemaData.cinemas}}</el-col>
                     </el-col>
                     <el-col :span="9"><div class="row-item">
                         <el-col :span="6">所属城市：</el-col>
@@ -64,7 +64,7 @@
                 </el-row>
                 <el-row :gutter="5">
                     <el-col :span="9">
-                        <el-col :span="6">影院联系人：</el-col>
+                        <el-col :span="6" class="m-l-17">影院联系人：</el-col>
                         <el-col :span="16">{{cinemaData.contactMan}}</el-col>
                     </el-col>
                     <el-col :span="9"><div class="row-item">
@@ -74,7 +74,7 @@
                 </el-row>
                 <el-row :gutter="5">
                     <el-col :span="9">
-                        <el-col :span="6">状态：</el-col>
+                        <el-col :span="6" class="m-l-17">状态：</el-col>
                         <el-col :span="16">{{cinemaData.status==1?'营业':'测试'}}</el-col>
                     </el-col>
                     <el-col :span="9">
@@ -84,7 +84,7 @@
                 </el-row>
                 <el-row :gutter="5">
                     <el-col :span="9">
-                        <el-col :span="6">影院介绍：</el-col>
+                        <el-col :span="6" class="m-l-17">影院介绍：</el-col>
                         <el-col :span="16">{{cinemaData.intro}}</el-col>
                     </el-col>
                     
@@ -93,7 +93,7 @@
             <div class="line" v-if="activeNames != 1"></div>
         </el-collapse>
         <div class="footer">
-            <el-button type="primary"  @click="edit" style="margin-right:14px;width:80px;height:32px;font-size:12px">修改</el-button>
+            <el-button type="primary"  @click="edit" style="margin-right:14px;width:80px;height:32px;font-size:12px">编辑</el-button>
             <el-button  plain @click="goBack" style="width:80px;height:32px;font-size:12px">返回</el-button>
         </div>
     </div>
@@ -144,24 +144,13 @@ export default {
     },
     methods:{
         getInfo() {
-            var getname = this.getname;
             this.$ctmList.cinemaGetInfo(this.$route.query.uid).then((response)=> {
                 //城市名字分割
-                let data = response.data//获得数据
-                var code = data.areaCode
-                code = code.split(':')
-                var erea = data.areaName;
-                erea = erea.split(':')
-                data.area = data.area || {}
-                data.area.pcode = code[0]
-                data.area.ccode = code[1]
-                data.area.pname = erea[0]
-                data.area.cname = erea[1]
+                let data = response.data.cinemaInfo//获得数据
                 this.cinemaData = data
                 this.cinemaData.usbkey = data.usbkey? data.usbkey : ''
                 this.status = data.status==1?true : false
                 this.cinemaData.status= Number(data.status)
-                getname(code[0]);
 
             })
             .catch(function (error) {
@@ -194,8 +183,6 @@ export default {
         text-align: center;
     }
     .cinemaInfo{
-        padding: 0 15px;
-
         .el-col{
             font-size: 12px;
             height: 26px;
@@ -221,6 +208,17 @@ export default {
         }
         .el-collapse{
             padding: 0;
+        }
+        .el-collapse-item__header{
+            display: flex;
+            justify-content:flex-end;
+            flex-direction: row-reverse;
+        }
+        .el-collapse-item__header::after{
+            display: none
+        }
+        .el-collapse-item__arrow{
+            margin: 0 8px 0px 0;
         }
     }
 </style>

@@ -3,15 +3,19 @@
     <div class="member-home-title">{{$attrs.titleText}}</div>
     <div
       class="Search"
-      v-if="searchData.length !== 0">
+      v-if="searchData.length !== 0"
+    >
       <el-form
         :inline="true"
         :model="searchDataObj"
-        class="demo-form-inline">
+        class="row-line-center"
+      >
         <el-form-item
           v-for="(item,index) in searchData"
           :key='index'
-          :label="item.label">
+          :label="item.label"
+          class="row-line-center"
+        >
           <template v-if="item.type === 'date'">
             <el-date-picker
               v-model="searchDataObj[item.prop]"
@@ -19,17 +23,18 @@
               range-separator="至"
               start-placeholder="开始日期"
               end-placeholder="结束日期"
-              value-format='yyyy-MM-dd'>
+              value-format='yyyy-MM-dd'
+            >
             </el-date-picker>
           </template>
           <template v-else-if="item.type === 'select'">
-            <el-select 
-              v-model="searchDataObj[item.prop]">
+            <el-select v-model="searchDataObj[item.prop]">
               <el-option
                 v-for="(val,i) in item.option"
                 :key="i"
                 :label="val.label"
-                :value="val.value">
+                :value="val.value"
+              >
               </el-option>
             </el-select>
           </template>
@@ -57,7 +62,7 @@
           :width="item.width"
         >
           <template slot-scope="scope">
-            {{scope.row[item.prop] | formateData(scope.row,item)}}
+            <em :title="scope.row[item.prop] | formateData(scope.row,item)">{{scope.row[item.prop] | formateData(scope.row,item)}}</em>
           </template>
         </el-table-column>
         <slot name="append"></slot>
@@ -66,16 +71,19 @@
         v-if="$attrs.totalData > 0"
         background
         layout="prev, pager, next"
-        :page-size="10"
+        :page-size="8"
         :total="Number($attrs.totalData)"
         @current-change='handleCurrentChange'
-        :current-page="$attrs.pageNo"
+        :current-page.sync="$attrs.pageNo"
         class="pagination"
       >
       </el-pagination>
     </div>
     <div class="back">
-      <el-button @click="back">返回</el-button>
+      <el-button
+        @click="back"
+        class="common-btn"
+      >返回</el-button>
     </div>
   </div>
 </template>
@@ -91,8 +99,9 @@
       @currentPage 当前页码
       @getDate 子组件显示date组件选择时间传给自组件给接口参数使用
  * */
-import { toFormModel , formatMemberInfo} from "../util/utils";
-import { mapState } from 'vuex';
+import { toFormModel, formatMemberInfo ,getPayMethodName } from "../util/utils";
+import pageData from "./bindTicket/config";
+import { mapState } from "vuex";
 export default {
   props: {
     searchData: {
@@ -108,11 +117,11 @@ export default {
       searchDataObj: toFormModel(this.searchData) //搜索对象
     };
   },
-  computed:{
-    ...mapState(['member'])
+  computed: {
+    ...mapState(["member"])
   },
   watch: {
-    'searchDataObj': {
+    searchDataObj: {
       handler: function(val, oldVal) {
         this.$emit("getDate", oldVal);
       },
@@ -134,62 +143,105 @@ export default {
     handleCurrentChange(val) {
       this.$emit("currentPage", val);
     },
-    back(){
+    back() {
       this.$router.push({
-        name:'queryDetails',
-        query:this.$route.query
-      })
+        name: "queryDetails",
+        query: this.$route.query
+      });
     }
   },
   filters: {
     formateData: function(value, initialRow, item) {
-      if (item.prop === "startTimeAndEndTime") {
-        if (!!initialRow["startTime"] && !!initialRow["endTime"]) {
-          return initialRow["startTime"] + "至" + initialRow["endTime"];
+      if (item.prop === "activeTimeAndexpireTime") {
+        if (!!initialRow["activeTime"] && !!initialRow["expireTime"]) {
+          return initialRow["activeTime"] + "至" + initialRow["expireTime"];
         } else {
           return "--";
         }
       } else {
         switch (true) {
-          case value == null:
+          case !value:
             return "--";
             break;
-          case value === "UNUSED":
-            return "未使用";
+          case !!pageData.textShow[value] && item.prop === "status":
+            return pageData.textShow[value];
             break;
-          case value === "USED":
-            return "已使用";
-            break;
-            case value instanceof Object && !!value:
+          case value instanceof Object && !!value:
             return formatMemberInfo(value);
+            break;
+          case !!getPayMethodName(value):
+            return getPayMethodName(value);
             break;
           default:
             return value;
         }
-      };
+      }
     }
   }
 };
 </script>
-<style scoped lang='scss'>
+<style lang='scss'>
 .contentWrap {
   .Search {
     padding-left: 3vw;
     margin-top: 3vh;
+    .el-form-item{
+      margin-bottom:0;
+    }
   }
-}
-.pagination {
-  text-align: right;
-  margin: 3vh 1.5vw 3vh 0;
-}
-.back {
-  text-align: right;
-  margin: 4vh 1.5vw 2.5vh 0;
-}
-.table {
-  width: 95vw;
-  margin: auto;
-  min-height: 65vh;
-  margin-top:3vh
+  .pagination {
+    text-align: right;
+    margin: 3vh 1.5vw 3vh 0;
+  }
+  .back {
+    text-align: right;
+    margin: 4vh 1.5vw 2.5vh 0;
+    button {
+      padding: 0.8vw 1.5vw;
+    }
+    span {
+      font-size: $font-size12;
+    }
+  }
+  .table {
+    width: 95vw;
+    margin: auto;
+    min-height: 68vh;
+    margin-top: 3vh;
+  }
+  .el-table .cell {
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-all;
+    white-space: nowrap;
+    line-height: 23px;
+  }
+  /deep/ .cell {
+    font-size: $font-size12;
+    em {
+      font-size: inherit;
+    }
+  }
+  .el-form-item__label {
+    line-height: 3.5vw;
+    width: auto;
+  }
+  .el-date-editor {
+    input {
+      font-size: $font-size12;
+    }
+    .el-range-separator {
+      font-size: $font-size12;
+      line-height: 5vh;
+    }
+  }
+  .el-table__empty-text {
+    font-size: $font-size12;
+  }
+  .el-input__inner{
+    padding-top:0;
+    padding-bottom:0;
+  }
 }
 </style>

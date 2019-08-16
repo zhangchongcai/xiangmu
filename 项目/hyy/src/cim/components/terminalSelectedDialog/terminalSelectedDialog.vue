@@ -1,6 +1,6 @@
 <template>
     <div>
-        <el-dialog class="terminal-good-select-dialog" width="950px" :title="title" :visible.sync="visibleDialog"
+        <el-dialog id="terminal-good-select-dialog" width="950px" :title="title" :visible.sync="visibleDialog"
                    @open="openCallBack">
             <div>
                 <el-row>
@@ -10,6 +10,7 @@
                                 :data="categoryTrees"
                                 show-checkbox
                                 node-key="code"
+                                v-loading="categoryTableLoding"
                                 default-expand-all
                                 :props="defaultProps"
                                 @check="handleaCtegoryTrees"
@@ -18,16 +19,17 @@
                     <el-col :span="18">
                         <div>
                             <el-form :inline="true" label-position="right" label-width="100px" label-suffix=":">
-                                <el-form-item label="商品设置">
+                                <el-form-item label="常用商品设置">
                                     <el-button @click="addBlankBlock" v-if="type=='userGood'">添加空白块</el-button>
-                                    <el-button @click="handleUsedGoodEvent" v-if="type=='userGood'">添加常用商品</el-button>
+                                    <el-button @click="handleUsedGoodEvent" v-if="type=='userGood'">{{preType==2?'添加推荐商品':'添加常用商品'}}</el-button>
                                     <el-button @click="handleClassifyDialogVisible" v-else>添加商品分类</el-button>
                                     <el-button @click="handleSubmit()" v-if="type=='userGood'">保存</el-button>
                                 </el-form-item>
                             </el-form>
                         </div>
                         <div>
-                            <div class="draggable-box">
+                            <div class="terminal-draggable-box">
+                                <div class="common-goods left" v-if="type=='classifyGood'">常用商品</div>
                                 <draggable-goods v-model="userGoodlist" :dialogFeedbackData="dialogFeedbackData"></draggable-goods>
                             </div>
                         </div>
@@ -42,12 +44,15 @@
         <!-- 选择商品 -->
         <selected-goods
                 :dialogVisible.sync="selectedGoodsDialogVisible"
+                :cinemaUid="cinemaUid"
                 @cimSelectedGoodsDialogCallBack="selectedGoodsDialogCallBack"
                 :dialogFeedbackData="selectedGoodsCheckedKeys"
         ></selected-goods>
         <!-- 选择商品分类弹窗 -->
         <goods-classify-dialog
                 :dialogVisible.sync="selectedsClassifyDialogVisible"
+                @cimCategoryDialogCallBack="cimCategoryDialogCallBack"
+                :dialogFeedbackData="userGoodlist"
         ></goods-classify-dialog>
     </div>
 </template>
@@ -56,11 +61,12 @@
     import selectedGoods from "cim/dialogs/cimSelectedGoods/index.vue";
     import draggableGoods from "cim/components/draggableGoods/draggableGoods.vue";
     import goodsClassifyDialog from "cim/components/goodsClassifyDialog/index.vue";
+
     export default {
         props: {
             title: {
                 type: String,
-                default: "选择商品"
+                default: ""
             },
             cinemaUid: {
                 type: [String, Number],
@@ -73,6 +79,10 @@
             type: {
                 type: String,
                 default: "userGood"
+            },
+            preType: {
+                type: [String, Number],
+                default: "1" //1-常用商品 2-推荐商品 3-终端常用商品 4-终端推荐商品
             },
         },
         data() {
@@ -91,18 +101,7 @@
                     page: 1,
                     pageSize: 10
                 },
-                categoryTrees: [
-                    {
-                        tername: "全选终端",
-                        type: 'all',
-                        children: [
-                            // {
-                            //     terminalName: "100011[1-1]",
-                            //     terminalCode: "01",
-                            // },
-                        ]
-                    }
-                ],
+                categoryTrees: [],
                 defaultProps: {
                     children: "children",
                     label: "tername",
@@ -110,6 +109,7 @@
                 },
                 selecteTerminals: [],
                 selectedgoods: [],
+                categoryTableLoding: false,
             };
         },
         mounted() {
@@ -138,10 +138,11 @@
             //添加商品分类弹窗
             handleClassifyDialogVisible() {
                 this.selectedsClassifyDialogVisible = true;
+
             },
             // 查询
             onQuery() {
-                console.log(this.queryData);
+                // console.log(this.queryData);
             },
             // 提交
             handleSubmit() {
@@ -165,13 +166,14 @@
                     return item.code
                 })
 
-                console.log(tempObj)
+                // console.log(tempObj)
                 this.$emit("onSumit", tempObj);
                 this.handleDialog(false)
             },
             // 获取终端列表
             userProTerminalList(param) {
-                this.$cimList.procurement
+                this.categoryTableLoding = false;
+                this.$cimList.posSetting
                     .userProTerminalList(param)
                     .then(resData => {
                         if (resData.code == 200) {
@@ -184,17 +186,33 @@
                                 }
                                 this.handleaCtegoryTrees();
                             })
-                            this.categoryTrees[0].children = resData.data;
+                            if(resData.data.length==0){
+                                this.categoryTrees = [];
+                            }else{
+                                this.categoryTrees = [
+                                    {
+                                        tername: "全选终端",
+                                        type: 'all',
+                                        children: resData.data
+                                    }
+                                ];
+                            }
+                        } else {
+
                         }
-                    });
+                        this.categoryTableLoding = false;
+                    }).catch(req => {
+                    this.categoryTableLoding = false;
+                })
             },
             // 查询树
             handleaCtegoryTrees(data) {
-                console.log(data)
+                // console.log(data)
                 this.selecteTerminals = this.$refs.refCategoryTrees.getCheckedNodes();
 
                 // this.findSemifinishedMater(this.queryData);
             },
+            //商品选择
             selectedGoodsDialogCallBack(value) {
                 value.data = value.data.map(item => {
                     //正常商品
@@ -211,12 +229,27 @@
                 } else {
                 }
             },
+            //分类选择
+            cimCategoryDialogCallBack(value){
+                if (value.btnType == 1) {
+                    value.data.map(item=>{
+                        item.categoryUid = item.uid;
+                        item.uid = "";
+                        return item;
+                    })
+                    let tempArr = JSON.parse(JSON.stringify(this.userGoodlist));
+                    tempArr.push(...value.data);
+                    this.userGoodlist  = this.unRepeat(tempArr);
+                    this.dialogFeedbackData.terminalList = this.userGoodlist;
+                } else {
+                }
+            },
             //去重(根据uid相同，避免数据问题)
             unRepeat(arr) {
                 let hash = {};
                 return arr.reduce((item, next) => {
-                    if (!hash[next.merCode]) {
-                        hash[next.merCode] = true;
+                    if (!hash[next.skuUid || next.merCode || next.categoryUid]) {
+                        hash[next.skuUid || next.merCode|| next.categoryUid] = true;
                         item.push(next);
                     }
                     return item;
@@ -231,9 +264,9 @@
                 return [this.dialogFeedbackData.code]
             },
             selectedGoodsCheckedKeys(){
-                if( this.dialogFeedbackData.terminalList){
-                    return  this.dialogFeedbackData.terminalList.filter(item=>{
-                        return item.skuUid
+                if(this.userGoodlist.length>0){
+                    return  this.userGoodlist.filter(item=>{
+                        return item.merCode
                     })
                 }else{
                     return [];
@@ -256,49 +289,24 @@
     @import "../../assets/css/common.scss";
     @import "../../assets/css/element-common.scss";
 
-    .terminal-good-select-dialog {
+    #terminal-good-select-dialog {
         .category-trees{
-            max-height: 400px;
+            height: 500px;
             overflow-y: scroll;
         }
-        .el-form-item__content {
-            // width: 200px;
+        .el-tree{
+            height: 500px;
         }
-
-        .draggable-box {
+        .el-form-item {
+            margin-bottom: 0;
+        }
+        .terminal-draggable-box {
             width: 100%;
+            height: 460px;
+            overflow-y: scroll;
             padding-bottom: 10px;
+            border: 1px solid #ccc;
         }
 
-        .empty-box {
-            padding: 10px;
-
-            .selected-content {
-                margin-top: 6px;
-            }
-
-            .el-button {
-                padding-left: 0;
-                padding-right: 0;
-            }
-
-            .empty-content {
-                height: 300px;
-                overflow-y: auto;
-
-                li {
-                    margin-top: 5px;
-                }
-            }
-
-            .el-tag {
-                width: 100%;
-            }
-
-            .el-tag .el-icon-close {
-                float: right;
-                top: 4px;
-            }
-        }
     }
 </style>

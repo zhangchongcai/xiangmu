@@ -1,42 +1,42 @@
 <template>
-    <div class="diydialog-filmsingle">
+    <div class="ccm_dialog">
         <el-dialog
         title="选择预生成编号"
         :visible.sync="framedialogVisible"
-        :show-close="false"
-        width="62%"
+        width="576px"
         :close-on-click-modal="false"
         >
-        <div class="film-top">
+        <div class="search-header" style="margin-bottom:20px;">
             <el-form :inline="true" ref="ruleForm" label-width="120px" size="small"  class="film-search" :model="searchAdition">
                 <el-form-item label="起始票券流水号：" prop="startId" :rules="[{required:true,message:'输入流水号'}]">
 					<el-input v-model="searchAdition.startId"></el-input>
 				</el-form-item>
                 <!-- <el-form-item label="数量：" prop="pageSize" :rules="[{required:true,validator:checkPageSize}]">
-					<el-input v-model="searchAdition.pageSize" ></el-input>
+					<el-input v-model="searchAdition.pageSize" ></el-input> icon="el-icon-search"
 				</el-form-item> -->
-                <el-button type="primary" @click="searchFunc" icon="el-icon-search" style="margin-top: 1px;margin-left:8px;">添加</el-button>
+                <el-button type="primary" @click="searchFunc"  style="margin-left:8px;">添加</el-button>
             </el-form>
         </div>
-        <div class="ccm-dialog-body">
-                <el-table :data="tableData" @row-click= "showRow"   height="308px" ref="filmListRef" highlight-current-row>
-                    <template v-for="(item,index) in tableConfig" >
-                        <el-table-column :key="index" v-if="item.hasTemplate" 
-                        :prop="item.prop?item.prop:''" 
-                        :label="item.label?item.label:''" 
-                        :width="item.width?item.width:''" >
-                            <div slot-scope="scope">
-                                {{formatStatus(scope.row.stockStatus)}}
-                            </div>
-                        </el-table-column>
-                        <el-table-column :key="index" v-else :prop="item.prop?item.prop:''" :label="item.label?item.label:''" :width="item.width?item.width:''"></el-table-column> -->
-                    </template>
-				</el-table>
+        <div class="choose-body">
+            <el-table :data="tableData" height="400px"  ref="table" highlight-current-row>
+                <template v-for="(item,index) in tableConfig" >
+                    <el-table-column :key="index" v-if="item.hasTemplate" 
+                    :prop="item.prop?item.prop:''" 
+                    :label="item.label?item.label:''" 
+                    :width="item.width?item.width:''" >
+                        <div slot-scope="scope">
+                            {{formatStatus(scope.row.stockStatus)}}
+                        </div>
+                    </el-table-column>
+                    <el-table-column :key="index" v-else :prop="item.prop?item.prop:''" :label="item.label?item.label:''" :width="item.width?item.width:''"></el-table-column> -->
+                </template>
+            </el-table>
+            <span v-show="tableData.length">数量:{{tableData.length}}</span>
         </div>
          <span slot="footer" class="dialog-footer">
               <slot name="footerId"></slot>
-            <el-button @click="closeDialog(false)">取 消</el-button>
             <el-button type="primary" @click="confirmData()">确 定</el-button>
+            <el-button @click="closeDialog(false)">取 消</el-button>
         </span>
         
     </el-dialog>
@@ -124,20 +124,7 @@ export default {
             this.framedialogVisible = true
         },
         closeDialog() {
-            this.$emit('batchTicketIdsCancel','')
             this.framedialogVisible = false
-        },
-        showRow(row){
-            //赋值给radio
-            let _this = this;
-            let selectedRowsIndex = this.tableData.indexOf(row);
-            this.selectedRows = row;
-            this.selectedId=this.selectedRows.id;
-            _this.$nextTick(function () { 
-                if(selectedRowsIndex != -1){
-                    _this.$refs.filmListRef.setCurrentRow(_this.tableData[selectedRowsIndex]);
-                }
-            })
         },
         confirmData(){
             this.$refs.ruleForm.validate((valid) => {
@@ -145,10 +132,15 @@ export default {
                     return this.$message('请先添加票券','提示',{type:'warning'})
                 }
                 if(valid) {
-                    let _this = this;
-                    let cinemaIdss = !!this.selectedRows?this.selectedRows:{}
-                    _this.$emit('batchTicketIdsCallBack',this.tableData) 
-                    this.framedialogVisible =false
+                    if(this.tableData.length < Number(this.couponCount) ){
+                        this.$confirm('票券编号数量小票券数量是否继续添加？','提示',{type:'warning'}).then(_=>{
+                            this.$emit('batchTicketIdsCallBack',this.tableData) 
+                            this.framedialogVisible =false
+                        })
+                    }else{
+                        this.$emit('batchTicketIdsCallBack',this.tableData) 
+                        this.framedialogVisible 
+                    }
                 }
             })
         },
@@ -195,29 +187,6 @@ export default {
 }
 </script>
 
-<style lang="scss">
-    .diydialog-filmsingle{
-        .film-top{
-            margin-left:8px;
-        }
-        .el-dialog__header{
-            .el-dialog__title{
-                padding-bottom: 5px;
-                width: 100%;
-                display: inline-block;
-                border-bottom: 1px solid #e5e5e5;
-            }
-        }
-        .ccm-dialog-body{
-            border:1px solid #e5e5e5;
-            .selected-ul{
-                .li-item{
-                    width: 100%;
-                    clear: both;
-                    display: block;
-                }
-            }
-            
-        }
-    }
+<style lang="scss" scoped>
+@import '../../assets/css/dialogs.scss'
 </style>

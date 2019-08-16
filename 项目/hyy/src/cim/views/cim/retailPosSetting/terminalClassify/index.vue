@@ -1,11 +1,10 @@
 <template>
-    <div class="retail-style terminal-goods">
+    <div class="retail-style" id="terminal-classify-goods">
         <div class="common-header">
             <el-form
                     :inline="true"
                     :model="queryData"
-                    label-position="right"
-                    label-width="80px"
+                    label-position="left"
                     label-suffix="："
             >
                 <el-form-item label="门店名称" class="select-input">
@@ -16,14 +15,15 @@
                             @focus="handleDialogEvent('refCinemalDialog')"
                             placeholder="请选择门店"
                     ></el-input>
-                    <el-button @click="handleDialogEvent('refCinemalDialog')" type="primary" plain>{{queryData.cinemaName?"编辑":"选择"}}</el-button>
+                    <el-button @click="handleDialogEvent('refCinemalDialog')" type="primary" plain>选择</el-button>
                 </el-form-item>
             </el-form>
         </div>
         <div class="good-setting">
             <div class="good-setting-title clearfix">
                 <div class="left">
-                    <span>常用商品设置</span>
+                    <span>商品分类设置</span>
+                    <span class="hint">操作提示: 可通过鼠标拖拽排序</span>
                 </div>
                 <div class="right">
                     <el-button @click="handleUsedGoodEvent(1)">添加商品分类</el-button>
@@ -48,7 +48,7 @@
                     ></el-table-column>
                     <el-table-column label="操作" style="width:180px;">
                         <template slot-scope="{row}">
-                            <el-button type="text" size="small" @click.stop="handleOperateEvent('1',row)">修改</el-button>
+                            <el-button type="text" size="small" @click.stop="handleOperateEvent('1',row)">编辑</el-button>
                             <el-button type="text" size="small" @click.stop="handleOperateEvent('2',row)">删除</el-button>
                         </template>
                     </el-table-column>
@@ -57,13 +57,13 @@
         </div>
 
         <!-- 选择影院弹窗 -->
-        <cinemal-dialog ref="refCinemalDialog" @onSumit="onCinemalSumit" :dialogFeedbackData="[{ cinemaUid : queryData.cinemaUid,cinemaName:queryData.cinemaName }]"></cinemal-dialog>
+        <cinemal-dialog ref="refCinemalDialog" title="选择门店" @onSumit="onCinemalSumit" :dialogFeedbackData="[{ cinemaUid : queryData.cinemaUid,cinemaName:queryData.cinemaName }]"></cinemal-dialog>
         <!-- 选择供应商弹窗 -->
         <!-- 选择商品分类弹窗 -->
         <goods-classify-dialog
                 :dialogVisible.sync="selectedGoodsDialogVisible"
                 :cinemaUid="queryData.cinemaUid"
-                :dialogFeedbackData="useVoListCheckedKeys"
+                :dialogFeedbackData="queryData.useVoList"
                 @cimCategoryDialogCallBack="cimCategoryDialogCallBack"
         ></goods-classify-dialog>
         <!-- 选择终端弹窗 -->
@@ -85,6 +85,7 @@
     import terminalSelectedDialog from "cim/components/terminalSelectedDialog/terminalSelectedDialog.vue";
     import draggableGoods from "cim/components/draggableGoods/draggableGoods.vue";
     import mixins from "frame_cpm/mixins/cacheMixin";
+
     export default {
         mixins: [mixins.cacheMixin],
         data() {
@@ -93,11 +94,11 @@
                 queryData: {
                     cinemaUid: "", //门店id
                     cinemaName: "", //门店名称
-                    type: "0", //1-常用商品 2-门店推荐商品 3-终端常用商品 4-终端推荐商品
-                    useVoList: [], //常用商品列表
-                    terminaInfoList: [], //终端常用商品列表
-                    recomuseVoList: [], //推荐商品列表
-                    recomterminaInfoList: [] //终端推荐商品列表
+                    type: "0", //1-常用商品 2-推荐商品 3-终端常用商品 4-终端推荐商品
+                    useVoList: [], //常用分类列表
+                    terminaInfoList: [], //终端分类商品列表
+                    recomuseVoList: [], //推荐分类列表
+                    recomterminaInfoList: [] //终端分类商品列表
                 },
                 selectedGoodsDialogVisible: false,
                 preType: 1, //1常用商品，2推荐商品
@@ -124,40 +125,34 @@
         },
         methods: {
             onQuery() {
-                this.userProQueryUseInfo({cinemaUid:this.queryData.cinemaUid})
+                this.categoryUserQuery({cinemaUid: this.queryData.cinemaUid})
             },
             //设置保存
             handleSave(type) {
                 this.queryData.type = type;
-                console.log(this.queryData);
+                // console.log(this.queryData);
                 this.userProSaveUseInfo(this.queryData,type);
             },
-            // 查询商品设置
-            userProQueryUseInfo(param){
+            // 查询商品分类设置
+            categoryUserQuery(param) {
                 // debugger
-                this.$cimList.procurement.userProQueryUseInfo(param).then(resData => {
+                this.$cimList.posSetting.categoryUserQuery(param).then(resData => {
                     if (resData.code == 200) {
-                        this.queryData.useVoList = resData.data.useVoList.map(item=>{
+                        this.queryData.useVoList = resData.data.merCategoryUserVoList.map(item=>{
                             item.preType  = 1
-                            return item
-                        })
-                        this.queryData.recomuseVoList = resData.data.recomuseVoList.map(item=>{
-                            item.preType  = 2
                             return item
                         })
                         this.queryData.terminaInfoList = resData.data.terminaInfoList.map(item=>{
                             item.preType  = 1
                             return item
                         })
-                        this.queryData.recomterminaInfoList = resData.data.recomterminaInfoList.map(item=>{
-                            item.preType  = 2
-                            return item
-                        })
                     } else {
 
                     }
                 });
+
             },
+
             // 保存商品设置
             userProSaveUseInfo(param,type) {
                 if (!this.queryData.cinemaUid) {
@@ -166,25 +161,64 @@
                     });
                     return;
                 }
-                this.$cimList.procurement.userProSaveUseInfo(param).then(resData => {
+                let tempParams = {
+                    cinemaUid: this.queryData.cinemaUid
+                };
+                if(type==1){
+                    //常用商品分类保存
+                    tempParams.categoryUseEntityList = param.useVoList.map(item => {
+                        return {
+                            categoryUid: item.categoryUid,
+                            cinemaUid: this.queryData.cinemaUid,
+                            color: item.color,
+                            uid: item.uid,
+                        }
+                    })
+                    this.categoryUserSave(tempParams);
+                } else if (type == 3) {
+                    //终端分类保存
+                    tempParams.cinemaUid = this.queryData.cinemaUid;
+                    tempParams.cinemaName = this.queryData.cinemaName;
+                    tempParams.terminaInfoList = this.queryData.terminaInfoList;
+                    // console.log(param)
+                    this.categoryUserTerminalSave(tempParams);
+                }
+            },
+            //常用商品分类保存
+            categoryUserSave(param) {
+                this.$cimList.posSetting.categoryUserSave(param).then(resData => {
                     if (resData.code == 200) {
                         this.$message({
                             type: "success",
                             message: "保存成功!"
                         });
-                        if(type==3 || type==4){
-                            this.onQuery()
-                        }
+                        this.onQuery()
                     } else {
                         this.$message({
                             message: resData.msg
                         });
                     }
-                });
+                })
+            },
+            //终端商品分类保存
+            categoryUserTerminalSave(param) {
+                this.$cimList.posSetting.categoryUserTerminalSave(param).then(resData => {
+                    if (resData.code == 200) {
+                        this.$message({
+                            type: "success",
+                            message: "保存成功!"
+                        });
+                        this.onQuery()
+                    } else {
+                        this.$message({
+                            message: resData.msg
+                        });
+                    }
+                })
             },
             // 删除终端商品
             userProDelterminal(param) {
-                this.$cimList.procurement.userProDelterminal(param).then(resData => {
+                this.$cimList.posSetting.categoryUserDelterminal(param).then(resData => {
                     if (resData.code == 200) {
                         this.$message({
                             type: "success",
@@ -226,13 +260,7 @@
                 }
                 this.preType = preType;
                 if (preType == 1) {
-                    this.useVoListCheckedKeys = this.queryData.useVoList.filter(item => {
-                        return item.merCode
-                    })
-                } else {
-                    this.useVoListCheckedKeys = this.queryData.recomuseVoList.filter(item => {
-                        return item.merCode
-                    })
+                    this.useVoListCheckedKeys = this.queryData.useVoList;
                 }
                 this.selectedGoodsDialogVisible = true;
             },
@@ -251,38 +279,15 @@
                 this.handleDialogEvent("refTerminalSelectedDialog");
             },
             cimCategoryDialogCallBack(value) {
-                console.log(value);
                 if (value.btnType == 1) {
                     value.data = value.data.map(item => {
-                        //正常商品
-                        if (item.merCode) {
-                            item.merUid = item.uid;
-                        }
+                        item.categoryUid = item.uid;
+                        item.uid = "";
                         return item;
                     });
-                    this.queryData.useVoList = value.data
-                    // if (this.preType == 1) {
-                    //     //常用商品
-                    //     let tempArr = JSON.parse(JSON.stringify(this.queryData.useVoList));
-                    //     tempArr.push(...value.data);
-                    //     this.queryData.useVoList = this.unRepeat(tempArr);
-                    // } else {
-                    //     //推荐商品
-                    //     let tempArr = JSON.parse(
-                    //         JSON.stringify(this.queryData.recomuseVoList)
-                    //     );
-                    //     tempArr.push(...value.data);
-                    //     tempArr = this.unRepeat(tempArr);
-                    //     let flag = tempArr.filter(item=>item.merCode);
-                    //     if(flag.length>4){
-                    //         this.$message({
-                    //             message: "最多只能设置4种推荐商品！"
-                    //         });
-                    //         return
-                    //     }
-                    //     this.queryData.recomuseVoList = tempArr;
-                    // }
-                    // this.selectedGoodsDialogVisible = false;
+                    let tempArr = JSON.parse(JSON.stringify(this.queryData.useVoList));
+                    tempArr.push(...value.data);
+                    this.queryData.useVoList = this.unRepeat(tempArr);
                 } else {
                 }
             },
@@ -290,8 +295,8 @@
             unRepeat(arr) {
                 let hash = {};
                 return arr.reduce((item, next) => {
-                    if (!hash[next.skuUid || next.merCode]) {
-                        hash[next.skuUid || next.merCode] = true;
+                    if (!hash[next.categoryUid]) {
+                        hash[next.categoryUid] = true;
                         item.push(next);
                     }
                     return item;
@@ -303,7 +308,6 @@
             handleOperateEvent(type, row) {
                 // debugger
                 this.terminaCheckedKeys = row;
-                console.log(row);
                 if (type == 1) {
                     //修改
                     if (row.preType == 1) {
@@ -312,39 +316,50 @@
                         this.handleTerminalGoodEvent(2,'upDate')
                     }
                 } else {
-                    this.$confirm("确认删除吗, 是否继续?", "提示", {
-                        confirmButtonText: "确定",
+                    this.$confirm("<i class='el-icon-circle-close'></i><span>确定删除吗?</span>", {
+                        customClass: "retail-style",
+                        dangerouslyUseHTMLString: true,
                         cancelButtonText: "取消",
-                        type: "warning"
+                        confirmButtonText: "确定",
+                        center: true,
                     })
-                        .then(() => {
-                            //删除
-                            if (row.preType == 1) {
-                                this.userProDelterminal({cinemaUid:this.queryData.cinemaUid,code:row.code,useType:1})
-                            } else {
-                                this.userProDelterminal({cinemaUid:this.queryData.cinemaUid,code:row.code,useType:2})
-                            }
-                        })
-                        .catch(() => {
-                        });
+                    .then(() => {
+                        //删除
+                        this.userProDelterminal({cinemaUid:this.queryData.cinemaUid,code:row.code})
+                    })
+                    .catch(() => {
+                    });
                 }
             },
             // 选泽门店回调
-            onCinemalSumit(val = []) {
+            onCinemalSumit(val = [],type) {
+                // console.log(val," 选泽门店回调",type);
                 if (val.length > 0) {
-                    this.queryData.cinemaName = val[0].name || val[0].cinemaName;
-                    this.queryData.cinemaUid = val[0].uid || val[0].cinemaUid;
-                    this.onQuery();
+                    if(type=="default"){
+                        if(val.length==1){
+                            this.setCinema(val);
+                            this.onQuery();
+                        }
+                    }else{
+                        this.setCinema(val)
+                        this.onQuery();
+                    }
                 } else {
+                    this.setCinema()
+                }
+            },
+            setCinema(val=[]){
+                if(val.length>0){
+                    this.queryData.cinemaName =  val[0].name || val[0].cinemaName ;
+                    this.queryData.cinemaUid =  val[0].uid || val[0].cinemaUid;
+                }else{
                     this.queryData.cinemaName = "";
                     this.queryData.cinemaUid = "";
                 }
-
-                console.log(this.queryData);
             },
             //终端商品设置
             onTerminalSumit(val) {
-                console.log(val);
+                // console.log(val);
                 val = JSON.parse(JSON.stringify(val));
                 if (this.preType == 1) {
                     //常用商品
@@ -359,15 +374,14 @@
                         item.preType = 2;
                         return item;
                     });
-                    this.handleSave(4);
+
                 }
             }
         },
         watch: {
-            // useVoList: function (newVal) {
-            //     console.log(newVal);
-            // }
+
         },
+        computed: {},
         components: {
             draggable,
             sortable,
@@ -381,14 +395,13 @@
 <style lang="scss">
     @import "../../../../assets/css/common.scss";
     @import "../../../../assets/css/element-common.scss";
-   .terminal-goods{
-
+   #terminal-classify-goods{
        .common-goods{
            position: relative;
            width: 120px;
            height: 100px;
            line-height: 100px;
-           background: #ffd300;
+           background: #fffec2;
            border-radius: 5px;
            text-align: center;
            margin-left: 10px;
@@ -401,16 +414,20 @@
            margin-bottom: 20px;
        }
 
-       .draggable-box {
-           min-height: 300px;
+       .name-box {
+           height: 50px;
        }
-
        .good-setting-title {
            border-bottom: 1px solid #ccc;
            padding: 10px;
            line-height: 35px;
        }
 
+       .draggable-box {
+           min-height: 300px;
+           max-height: 600px;
+           overflow: scroll;
+       }
        .own-terminal-header {
            border-top: 1px solid #ccc;
            margin-top: 10px;
@@ -419,6 +436,14 @@
        .own-terminal {
            /*margin-bottom: 20px;*/
            padding: 10px;
+       }
+
+       .hint {
+           color: #E6A23C;
+           margin-left: 10px;
+       }
+       .draggable-box-li .name {
+           margin-top: 20px;
        }
    }
 </style>

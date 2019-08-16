@@ -22,7 +22,7 @@
                         width="55">
                     </el-table-column> -->
             <el-table-column label="选择" width="50" align="center">
-              <template scope="scope">
+              <template slot-scope="scope">
                 <el-radio class="radio" :value="selectedId" :label="scope.row.movieId">&nbsp;</el-radio>
               </template>
             </el-table-column>

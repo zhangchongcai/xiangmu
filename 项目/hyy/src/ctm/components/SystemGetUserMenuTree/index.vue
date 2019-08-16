@@ -1,25 +1,31 @@
 <template>
     <div class="systemStree">
-        <aside>
-            <el-tree
-                ref="treeBox" 
-                :data="dataTree" 
-                :props="defaultProps" 
-                @node-click="handleNodeClick" 
-                highlight-current
-                node-key="menuName"
-                :default-expanded-keys="defaulKeyMerk"
-                :default-checked-keys="defaulKey"
-                :render-content="renderContent"
-            >
-            </el-tree>
-        </aside>
+        <el-tree
+            ref="treeBox" 
+            :data="dataTree" 
+            :props="defaultProps" 
+            @node-click="handleNodeClick" 
+            highlight-current
+            node-key="menuName"
+            :default-expanded-keys="defaulKeyMerk"
+            :default-checked-keys="defaulKey"
+        >
+            <span style="padding:0px" slot-scope="{ node, data }" v-if="data.applicableobj">
+                <el-radio v-model="customTree" :label="data.applicableobj">
+                    {{ node.label }}
+                </el-radio>
+            </span>
+            <span style="padding:0px" slot-scope="{ node }" v-else>
+                {{ node.label }}
+            </span>
+        </el-tree>
     </div>
 </template>
 <script>
 export default {
     data(){
         return{
+            customTree:'',
             dataTree: [],
             defaultProps: {
                 label: 'menuName',
@@ -38,6 +44,7 @@ export default {
             if(item.applicableobj){
                 this.applicableobj = item.applicableobj
                 this.$emit('choseCinema',this.applicableobj);
+                this.customTree = item.applicableobj
             }
         },
         
@@ -58,23 +65,6 @@ export default {
                 this.dataTree = arr
                 // console.log(arr,'--------------')
             })
-        },
-         renderContent(h, { node, data, store }) {
-            if(data.applicableobj){
-                // console.log(data)
-                return (
-                <span >
-                    <i class="el-icon-menu"></i>
-                    {node.label}
-                </span>);
-            }else{
-                return (
-                <span >
-                    <span>
-                        <span>{node.label}</span>
-                    </span>
-                </span>);
-            }
         },
         //递归重组后台返回的菜单树
         formData(obj,defaulKey) {
@@ -110,23 +100,19 @@ export default {
 </script>
 <style lang="scss">
 .systemStree{
-    .el-radio{
-        margin: 0;
-    }
-    .el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content{
-        background: #3B74FF;
-        color: #fff;
-    }
     .tree{
         overflow-x: scroll;
-        // width:80px;
-        // height: 500px;
     }
     .el-tree {
         min-width: 100%;
         display:inline-block !important;
     }
-
+    .el-radio__label{
+        padding: 0;
+    }
+    .el-tree-node{
+        background: #f5f5f5;
+    }
 }
 
 </style>

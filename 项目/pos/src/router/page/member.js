@@ -108,13 +108,13 @@ const memberRouters = [
     {
         path: 'records',
         meta: {
-            title: '交易记录'
+            title: '交易记录',
         },
         name: 'records',
         component: () => import('views/member/checkPagers/TransactionRecords/index'),
     },
     {
-        path: 'recordDetail/:flowNo',
+        path: 'recordDetail',
         meta: {
             title: '交易详情'
         },

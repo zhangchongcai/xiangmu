@@ -1,6 +1,7 @@
 <template>
 <div class="grIn-style">
   <!-- {{this.goodList}} -->
+  <!-- {{"111111111111111"+this.queryData.storehouseCode}} -->
   <div class="content">
     <!-- <div class="breadcrumb">
       <el-breadcrumb separator-class="el-icon-arrow-right">
@@ -15,7 +16,7 @@
       :model="queryData"
       label-position="left"
       label-width="100px"
-      label-suffix=":"
+      label-suffix="："
       >
       <el-collapse  v-model="activeNames">
         <!-- 基础信息 start-->
@@ -60,13 +61,13 @@
                   prop="storehouseCode"
                   :rules="[{ required: true, message: '选择出库仓库或货架',trigger: 'change' }]"
                   >
-                  <span v-if="routeQuery.type=='3'">{{this.queryData.storeType == "1" ? '入库仓库' : '入库货架'}}</span>
+                  <span v-if="routeQuery.type=='3'" class="wid100">{{this.queryData.storeType == "1" ? '入库仓库：' : '入库货架：'}}</span>
                   <el-select v-model="queryData.storeType" @focus="ckhjEvent()" v-else>
                     <!-- <el-option label="全部" value></el-option> -->
                     <el-option label="入库仓库" value="1" key="1"></el-option>
                     <el-option label="入库货架" value="2" key="2"></el-option>
                   </el-select>
-                  <span>:</span>
+                  <!-- <span>:</span> -->
                   <span v-if="routeQuery.type=='3'">{{this.queryData.storehouseName}}</span>
                   <el-select v-model="queryData.storehouseCode" @focus="storeSelEvent()" @change="changeStoreEvent()" v-else>
                     <el-option 
@@ -154,7 +155,7 @@
       <div class="submit-box">
         <el-button type="primary" @click="ThandleSubmit" v-if="this.routeQuery.type!='3'">保存并提交</el-button>
         <el-button type="primary" @click="ChandleSubmit" v-if="this.routeQuery.type!='3'">保存为草稿</el-button>
-        <el-button @click="handleCancel">{{routeQuery.type !="3" ? "取消":"关闭"}}</el-button>
+        <el-button @click="fanhuihandleCancel">{{routeQuery.type !="3" ? "取消":"关闭"}}</el-button>
       </div>
     </el-form>
   </div>
@@ -280,28 +281,45 @@ export default {
           break;
         case "2":
           //编辑
-          this.queryData = JSON.parse(this.$route.query.data)
-          this.queryData.storeType =this.queryData.storeType.toString()
-          this.goodList = JSON.parse(this.$route.query.data).detailVoList
-          this.queryData.addDetailList = JSON.parse(this.$route.query.data).detailVoList
-          let newArr = []
-          let newObj = {}
-          newObj.label = this.queryData.storehouseName
-          newObj.value = this.queryData.storehouseCode
-          newArr.push(newObj)
-          this.storeData = newArr
-          this.queryData.cinemaUid = JSON.parse(this.$route.query.cinema).cinemaUid
-          this.queryData.cinemaName = JSON.parse(this.$route.query.cinema).cinemaName
+          this.resStoreInDetail(JSON.parse(this.$route.query.data))
           break;
         case "3":
           //查看
-          this.queryData = JSON.parse(this.$route.query.data)
-          this.goodList = JSON.parse(this.$route.query.data).detailVoList
-          this.queryData.addDetailList = JSON.parse(this.$route.query.data).detailVoList
-          this.queryData.cinemaUid = JSON.parse(this.$route.query.cinema).cinemaUid
-          this.queryData.cinemaName = JSON.parse(this.$route.query.cinema).cinemaName
+          this.resStoreInDetail(JSON.parse(this.$route.query.data))
           break;
       }
+    },
+        // 查看修改进入详情页请求
+    resStoreInDetail(row){
+      let val = {
+        uid:row
+      }
+      this.$cimList.goodsWarehousingIn
+        .storeInDetail(val)
+        .then(res => {
+          if (res.code === 200) {
+            if(this.routeQuery.type == "3"){
+              this.queryData = res.data
+              this.goodList = this.queryData.detailVoList
+              this.queryData.addDetailList = this.queryData.detailVoList
+            }else if(this.routeQuery.type == "2"){
+              this.queryData =  res.data
+              this.queryData.storeType =this.queryData.storeType.toString()
+              this.goodList = this.queryData.detailVoList
+              this.queryData.addDetailList = this.queryData.detailVoList
+              let newArr = []
+              let newObj = {}
+              newObj.label = this.queryData.storehouseName
+              newObj.value = this.queryData.storehouseCode
+              newArr.push(newObj)
+              this.storeData = newArr
+            }
+               
+          } else {
+            this.$message(res.msg);
+          }
+        })
+        .catch(err => {});
     },
     // 查询
     onQuery() {
@@ -314,7 +332,7 @@ export default {
       if(row.price == null || row.price == ""){
         row.price = 0
       }
-      row.amount = row.storeinCount * row.price    
+      row.amount = (parseInt(row.storeinCount) * row.price).toFixed(4)   
     },
     // 获取分类列表
     getCategoryTrees(param) {
@@ -328,12 +346,31 @@ export default {
     },
     // 选择商品回调
     selectedGoodsDialogCallBack(value) {
-      this.goodList = value.data;
+      let newData = value.data
+      this.goodList.forEach((val1)=>{
+        newData.forEach((val2)=>{
+          if(val2.merCode == val1.merCode){
+            val2.storeinCount = val1.storeinCount
+          }
+        })
+      })
+      this.goodList = newData
       this.queryData.addDetailList = this.goodList
+    },
+    //去重
+    unRepeat(arr) {
+        let hash = {};
+        return arr.reduce((item, next) => {
+            if (!hash[next.merCode]) {
+                hash[next.merCode] = true;
+                item.push(next);
+            }
+            return item;
+        }, []);
     },
     // 入库选择事件
     ckhjEvent(){
-      this.resetForm('ruleForm')
+      // this.resetForm('ruleForm')
       this.queryData.storehouseName = ""
       this.queryData.storehouseCode = ""
     },
@@ -367,6 +404,17 @@ export default {
         }
         this.selectedGoodsDialogVisible = true
     },
+    fanhuihandleCancel() {
+      this.$store.commit("tagNav/removeTagNav", {
+          name: this.$route.name,
+          path: this.$route.path,
+          title: this.$route.meta.title,
+          query: this.$route.query
+      })
+      this.$router.push({
+          path: "/retail/InventoryManagement/goodsWarehousingIn/list",
+      });
+    },
     // 根据仓库code获取名字
     changeStoreEvent(){
       let selectedWorkName = {};
@@ -376,23 +424,42 @@ export default {
        this.queryData.storehouseName = selectedWorkName.label
     },
         // 选泽门店回调
-    onCinemalSumit(val = []) {
+    setCinema(val = []) {
       if(val.length == 0){
         this.$nextTick(() => {
           this.queryData.storehouseCode = ""
-          this.queryData.storehouseName = ""  
+          this.queryData.storehouseName = ""
+          this.queryData.addDetailList = []
+          this.goodList = []
         })
       }
       if (val.length > 0) {
         this.queryData.cinemaName = val[0].name;
         this.queryData.cinemaUid = val[0].uid;
+        // this.queryData.storehouseCode = ""
+        // this.queryData.storehouseName = ""
+        // this.queryData.addDetailList = []
+        // this.goodList = []
       } else {
         // debugger
         this.queryData.cinemaName = "";
         this.queryData.cinemaUid = "";
       }
-      console.log(val);
-      
+    },
+        // 选泽门店回调
+    onCinemalSumit(val = [],type) {
+      console.log(val," 选泽门店回调",type);
+      if (val.length > 0) {
+        if(type=="default"){
+          if(val.length==1){
+            this.setCinema(val)
+          }
+        }else{
+          this.setCinema(val)
+        }
+      } else {
+        this.setCinema()
+      }
     },
     selectCinemalDialog() {
       this.$refs.myCinemalDialog.handleDialog(true);
@@ -423,7 +490,7 @@ export default {
               }else{
                 if(this.routeQuery.type == "1"){
                         this.queryData.status = 2
-                        this.queryData.storeType = parseInt(this.queryData.storeType)
+                        // this.queryData.storeType = parseInt(this.queryData.storeType)
                         this.queryData.addDetailList.forEach((val,index,arr)=>{
                           val.merUid = val.merUid
                           val.baseUnitUid = val.unitUid
@@ -432,7 +499,6 @@ export default {
                           delete val.unitUid
                         })
                         this.resStoreInBillRegisterSave(this.queryData)
-                        this.handleCancel()
                 }else if(this.routeQuery.type == "2"){
                         let newArr = []
                         this.goodList.forEach((val,index,arr)=>{
@@ -481,7 +547,6 @@ export default {
                           uid:this.queryData.uid
                         }
                         this.resStoreInUpdate(val)
-                        this.handleCancel()
                 }
               }
             }
@@ -513,7 +578,7 @@ export default {
               }else{
                 if(this.routeQuery.type == "1"){
                         this.queryData.status = 1
-                        this.queryData.storeType = parseInt(this.queryData.storeType)
+                        // this.queryData.storeType = parseInt(this.queryData.storeType)
                         this.queryData.addDetailList.forEach((val,index,arr)=>{
                           val.merUid = val.merUid
                           val.baseUnitUid = val.unitUid  
@@ -522,7 +587,6 @@ export default {
                           delete val.unitUid
                         })
                         this.resStoreInBillRegisterSave(this.queryData)
-                        this.handleCancel()
                 }else if(this.routeQuery.type == "2"){
                         let newArr = []
                         this.goodList.forEach((val,index,arr)=>{
@@ -571,7 +635,6 @@ export default {
                           uid:this.queryData.uid
                         }
                         this.resStoreInUpdate(val)
-                        this.handleCancel()
                 }
               }
             }
@@ -582,10 +645,19 @@ export default {
       }
     },
     handleCancel() {
-      console.log(JSON.stringify(this.queryData))
+      this.$store.commit("tagNav/removeTagNav", {
+          name: this.$route.name,
+          path: this.$route.path,
+          title: this.$route.meta.title,
+          query: this.$route.query
+      })
+      let queryData = {
+        cinemaUid:this.queryData.cinemaUid,
+        cinemaName:this.queryData.cinemaName
+      }
       this.returnList({
         returnType:true,
-        cinema: JSON.stringify(this.queryData)
+        cinema: JSON.stringify(queryData)
       });
     },
     returnList(param) {
@@ -693,6 +765,7 @@ export default {
         .then(res => {
           if (res.code === 200) {
             console.log(res)
+            this.handleCancel()
             this.$message("新增成功");
           } else {
             this.$message(res.msg);
@@ -707,6 +780,7 @@ export default {
         .then(res => {
           if (res.code === 200) {
             console.log(res)
+            this.handleCancel()
             this.$message("修改成功");
           } else {
             this.$message(res.msg);

@@ -58,7 +58,7 @@ export default {
         getOrderList(vo){
             this.member.loading = true;
             let paramsObj = {
-                cardProductId:sessionStorage['cardProductId'],
+                cardProductId:this.member.cardProductId,
                 tenantId:this.tenantId
             };
             let params = {
@@ -83,7 +83,7 @@ export default {
             return emptyArr
         },
         spliceArr(i){
-           return this.sumCinemaList.slice((i-1)*10,10*i)
+           return this.sumCinemaList.slice((i-1)*8,8*i)
         }
     },
     components:{
@@ -91,8 +91,3 @@ export default {
     }
 }
 </script>
-<style scoped>
-.otherBtn{
-    display:inline;
-}
-</style>

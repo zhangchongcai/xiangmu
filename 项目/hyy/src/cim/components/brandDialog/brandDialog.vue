@@ -87,6 +87,7 @@ export default {
       //品牌弹窗查询数据
       queryData: {
         name: "",
+        brandName:"",
         catUid: "",
         page: 1,
         pageSize: 10
@@ -115,6 +116,7 @@ export default {
   methods: {
     init() {
       this.queryData.catUid = this.catUid;
+      this.queryData.brandName = this.queryData.name
       this.getMerCinemaList(this.queryData,"open");
     },
     openCallBack() {
@@ -151,6 +153,7 @@ export default {
     },
     //影院弹窗搜索
     handleCinemalDialogQuery() {
+      this.queryData.brandName = this.queryData.name
       this.getMerCinemaList(this.queryData);
     },
 

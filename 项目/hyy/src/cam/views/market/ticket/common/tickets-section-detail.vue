@@ -24,16 +24,29 @@
                         {{scope.row.ticketValidTimeStart + '~' + scope.row.ticketValidTimeEnd}}
                     </template>   
                 </el-table-column>
-                <el-table-column align="center" min-width="120" prop="sendCounts" label="发放数量"></el-table-column>
-                <el-table-column align="center" min-width="120" prop="useCounts" label="使用数量"></el-table-column>
-                <el-table-column align="center" min-width="120" prop="useRate" label="使用率"></el-table-column>
-                <el-table-column align="center" min-width="120" prop="consumeAmount" label="带动消费金额"></el-table-column>
+                <el-table-column align="center" min-width="120" prop="sendCounts" label="发放数量(张)" >
+                    <template slot-scope="scope">
+                        {{scope.row.sendCounts | formatNum(0)}}
+                    </template>
+                </el-table-column>
+                <el-table-column align="center" min-width="120" prop="useCounts" label="使用数量(张)">
+                    <template slot-scope="scope">
+                        {{scope.row.useCounts | formatNum(0)}}
+                    </template>
+                </el-table-column>
+                <el-table-column align="center" min-width="120" prop="useRate" label="使用率(%)"></el-table-column>
+                <el-table-column align="center" min-width="120" prop="consumeAmount" label="带动消费金额(元)">
+                     <template slot-scope="scope">
+                        {{scope.row.consumeAmount | formatNum(2)}}
+                    </template>
+                </el-table-column>
             </el-table>
         </div>
         <slot></slot>
     </div>
 </template>
 <script>
+import Global from "../../../../util/global.js";
 const statusMap = {
     0: "未提交",
     1: "新建",
@@ -75,8 +88,10 @@ export default {
         },
         transType(val){
              return typeMap[val] ? typeMap[val] : val
+        },
+        formatNum(value,count){
+            return Global.formatNum(value,count)
         }
-        
     }
 
 }

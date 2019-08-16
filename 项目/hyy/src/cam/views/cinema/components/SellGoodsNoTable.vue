@@ -5,7 +5,7 @@
       <div class="BoxTitle flex" height="40">
         <div class="left">
           <span class="iconfont icon-shouye-maipin"></span>
-          <span>卖品</span>
+          <span class="title">卖品</span>
         </div>
         <div class="right">
           <span class="tip cursor" @click="clickPush()">详情</span>
@@ -61,11 +61,11 @@
               <div slot="content" style="width:300px">
                 <ul id="ulMain">
                   <li>人均卖品收入当日达成 : <span>{{CurrentSellKPIDataCine.sppCurrent | capitalizeOne}}{{CurrentSellKPIDataCine.sppCurrent | foo}}</span></li>
-                  <li>环比前一日 : <span :class="[CurrentSellKPIDataCine.sppChainDay > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[CurrentSellKPIDataCine.sppChainDay > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{CurrentSellKPIDataCine.sppChainDay | woo}}%</span></li>
+                  <li>环比前一日 : <span :class="[CurrentSellKPIDataCine.sppChainDay > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[CurrentSellKPIDataCine.sppChainDay > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{CurrentSellKPIDataCine.sppChainDay | woo(true)}}%</span></li>
                   <li>月至今达成 : <span>{{CurrentSellKPIDataCine.sppMonthToNow | capitalizeOne}}{{CurrentSellKPIDataCine.sppMonthToNow | foo}}</span></li>
-                  <li>环比上月 : <span :class="[CurrentSellKPIDataCine.sppChainMonth > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[CurrentSellKPIDataCine.sppChainMonth > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{CurrentSellKPIDataCine.sppChainMonth | woo}}%</span></li>
+                  <li>环比上月 : <span :class="[CurrentSellKPIDataCine.sppChainMonth > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[CurrentSellKPIDataCine.sppChainMonth > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{CurrentSellKPIDataCine.sppChainMonth | woo(true)}}%</span></li>
                   <li>本月目标为 : <span>{{CurrentSellKPIDataCine.sppTarget | capitalizeOne}}</span>{{CurrentSellKPIDataCine.sppTarget | foo}}</li>
-                  <li>距目标额差距 : <span :class="[CurrentSellKPIDataCine.sppGap > 0? 'green':'red']">{{CurrentSellKPIDataCine.sppGap | woo}}</span>%</li>
+                  <li>距目标额差距 : <span :class="[CurrentSellKPIDataCine.sppGap > 0? 'green':'red']">{{CurrentSellKPIDataCine.sppGap | woo}}</span></li>
                 </ul>
               </div>
               <i class="iconfont icon-danchuang-tishi"></i>
@@ -385,9 +385,9 @@ export default {
     }
   },
   filters: {
-    woo(value){
+    woo(value,isPositive){
       if (!value) return "--"
-      return value.toFixed(2)
+      return isPositive ? Math.abs(value).toFixed(2): value.toFixed(2) 
     },
     //处理万元单位
     capitalizeOne(value) {
@@ -396,10 +396,10 @@ export default {
       //判断逻辑
       if(newValue.indexOf('.') != -1){
         
-        if(newValue.length < 7){
+        if(newValue.length <= 7){
           return Number(newValue + '0').toFixed(2)
         }
-        else if(newValue.length >= 7 && newValue.length <= 11){
+        else if(newValue.length > 7 && newValue.length <= 11){
           return (newValue / 10000).toFixed(2)
         }
         else if(newValue.length >= 12){
@@ -443,11 +443,11 @@ export default {
       let foo = ''
 
       if(newValue.indexOf('.') != -1){
-        if(newValue.length < 7){
+        if(newValue.length <= 7){
           foo = '元'
           return foo
         }
-        else if(newValue.length >= 7 && newValue.length <= 11){
+        else if(newValue.length > 7 && newValue.length <= 11){
           foo = '万元'
           return foo
         }
@@ -728,8 +728,11 @@ export default {
       width: 100%;
       line-height: 40px;
       padding: 0 16px;
-      font-size: 16px;
-      font-weight: bold;
+      .title{
+        font-family: PingFangSC-Medium;
+        font-size: 14px;
+        color:#333;
+      }
       .iconfont {
         margin-right: 5px;
         color: #1296db;
@@ -745,7 +748,6 @@ export default {
       .tip {
         font-size: 12px;
         color: #3b74ff;
-        font-weight: normal;
         vertical-align: middle;
       }
     }
@@ -776,6 +778,7 @@ export default {
             text-align: center;
             display: block;
             margin-top:13px;
+            font-weight:bold;
           }
           p {
             font-size: 12px;
@@ -879,6 +882,7 @@ export default {
 }
 .icon-shouye-maipin {
   color: #f79414 !important;
+  font-size:16px;
 }
 .page {
   text-align: center;
@@ -902,6 +906,11 @@ export default {
   margin:0px;
   li{
     line-height:23px;
+  }
+}
+@media screen and (max-width: 1500px) {
+  .BoxContainer .right-col .listUl li.first-li .cont h1 {
+    transform: scale(.8)
   }
 }
 </style>

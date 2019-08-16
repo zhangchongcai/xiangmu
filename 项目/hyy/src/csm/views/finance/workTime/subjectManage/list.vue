@@ -37,7 +37,7 @@
           <el-table-column label="操作" width="150" fixed="right">
             <template slot-scope="scope">
               <el-button size='small' type="text" @click="changeThis(scope.row)">修改</el-button>
-              <el-button size='small' type="text" @click="delateThis(scope.row.subjectCode)">删除</el-button>
+              <el-button size='small' type="text" @click="delateThis(scope.row.uid)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -119,7 +119,12 @@
         this.getList();
       },
       delateThis(subjectCode){  // 删除该条数据
-        this.$csmList.delateSubject(subjectCode)
+        this.$confirm('此操作将永久删除该记录, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$csmList.delateSubject(subjectCode)
           .then(data => {
             console.log(data)
             if (data && data.code === 200) {
@@ -131,11 +136,19 @@
                   this.getList()
                 }
               });
+            }else{
+              this.$message(data.msg)
             }
           })
           .catch(err => {
             console.log(err);
           })
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });          
+        });
       }
     },
     mounted(){
@@ -157,11 +170,17 @@
         width: 176px;
       }
     }
+    /deep/ .el-form-item__label{
+      color: #666;
+      font-size: 12px;
+    }
   }
 
   .el-button--primary {
-    // width: 80px;
+   
     padding: 8px 25px;
+    width: 80px;
+    height: 32px;
   }
 
   .el-form-item {
@@ -225,7 +244,7 @@
     height: 576px;
 
     .el-dialog__header::after {
-      content: "";
+      // content: "";
       display: block;
       width: 536px;
       height: 1px;

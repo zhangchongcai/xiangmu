@@ -48,7 +48,7 @@ export const cardflowList = params => {
     });
 };
 export const cardbatchList = params => {
-    //会员卡交易记录
+    //实体卡列表
     return axios({
         url: modelUrl + "/cardbatch/list",
         method: "get",
@@ -113,7 +113,14 @@ export const memberLogListPage = params => {
         params
     });
 };
-
+export const getLevelEquityByLevelCode = data => {
+    //根据等级编号获取等级权益
+    return axios({
+        url: modelUrl + "/levelEquity/getLevelEquityByLevelCode",
+        method: "post",
+        data
+    });
+};
 /* --------- 卡政策管理 start ---------- */
 export const setDefaultCard = params => {
     //设置储值卡默认卡政策
@@ -696,6 +703,51 @@ export const getIntegralTradeRecordDetail = params => {
     });
 };
 /* --------- 积分交易记录 end --------- */
+/* --------- 创建积分获取规则 start --------- */
+export const getIntegralRulesList = params => {
+    //获取创建积分获取规则列表
+    return axios({
+        url: modelUrl + "/integral/rule/getDetail",
+        method: "post",
+        params
+    });
+};
+export const commitIntegralRulesList = data => {
+    //保存创建积分获取规则列表
+    return axios({
+        url: modelUrl + "/integral/rule/save",
+        method: "post",
+        data
+    });
+};
+
+/* --------- 创建积分获取规则 end --------- */
+/* --------- 领用会员卡 start ------------ */ 
+export const receiveList = params => {
+    //领用会员卡批次列表
+    return axios({
+        url: modelUrl + "/cardbatch/receiveList",
+        method: "get",
+        params
+    });
+};
+export const receiveCardPoolList = params => {
+    //领用会员卡池列表
+    return axios({
+        url: modelUrl + "/cardbatch/receiveCardPoolList",
+        method: "get",
+        params
+    });
+};
+export const receiveBtach = data => {
+    //领用退还会员卡
+    return axios({
+        url: modelUrl + "/cardbatch/receiveBtach",
+        method: "post",
+        data
+    });
+};
+/* --------- 领用会员卡 end -------------- */ 
 
 export default {
     setDefaultCard,
@@ -780,4 +832,11 @@ export default {
     //积分交易记录
     getIntegralTradeRecordList,
     getIntegralTradeRecordDetail,
+    //创建积分获取规则
+    getIntegralRulesList,
+    commitIntegralRulesList,
+    receiveList,
+    receiveCardPoolList,
+    receiveBtach,
+    getLevelEquityByLevelCode
 };

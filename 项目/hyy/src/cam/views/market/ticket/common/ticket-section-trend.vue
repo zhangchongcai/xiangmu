@@ -30,54 +30,54 @@
             </div>
             <el-table border :data="allData.models" height="380" class="mt10">
                 <el-table-column prop="dateKey" label="日期" min-width="100" fixed></el-table-column>
-                <el-table-column prop="sendCounts" label="发放数量" min-width="140" fixed>
+                <el-table-column prop="sendCounts" label="发放数量(张)" min-width="100" fixed>
                     <template slot-scope="scope">
                         {{scope.row.sendCounts | formatNum(0)}}
                     </template>
                 </el-table-column>
-                <el-table-column prop="useCounts" label="使用数量" min-width="100" fixed>
+                <el-table-column prop="useCounts" label="使用数量(张)" min-width="100" fixed>
                     <template slot-scope="scope">
                         {{scope.row.useCounts | formatNum(0)}}
                     </template>
                 </el-table-column>
-                <el-table-column prop="useRate" label="使用率" min-width="100" fixed >
+                <el-table-column prop="useRate" label="使用率(%)" min-width="90" fixed >
                     <template slot-scope="scope">
                         {{scope.row.useRate | formatNum}}
                     </template>
                 </el-table-column>
-                <el-table-column prop="consumeAmount" label="带动消费额" min-width="100" >
+                <el-table-column prop="consumeAmount" label="带动消费额(元)" min-width="110" >
                     <template slot-scope="scope">
                         {{scope.row.consumeAmount | formatNum}}
                     </template>
                 </el-table-column>
-                <el-table-column prop="consumeOrders" label="带动销售单量" min-width="100">
+                <el-table-column prop="consumeOrders" label="带动销售单量(元)" min-width="120">
                     <template slot-scope="scope">
                         {{scope.row.consumeOrders | formatNum(0)}}
                     </template>
                 </el-table-column>
-                <el-table-column prop="unitPrice" label="客单价" min-width="100" >
+                <el-table-column prop="unitPrice" label="客单价(元)" min-width="100" >
                      <template slot-scope="scope">
-                        {{scope.row.consumeOrders | formatNum}}
+                        {{scope.row.unitPrice | formatNum}}
                     </template>
                 </el-table-column>
-                <el-table-column prop="budgetTicketCost" label="发放票劵成本" min-width="120" >
+                <el-table-column prop="budgetTicketCost" label="发放票劵成本(元)" min-width="120" >
                      <template slot-scope="scope">
-                        {{scope.row.consumeOrders | formatNum}}
+                        {{scope.row.budgetTicketCost | formatNum}}
                     </template>
                 </el-table-column>
-                <el-table-column prop="useTicketCost" label="使用票劵成本" min-width="120" >
+                <el-table-column prop="useTicketCost" label="使用票劵成本(元)" min-width="120" >
                      <template slot-scope="scope">
-                        {{scope.row.consumeOrders | formatNum}}
+                        {{scope.row.useTicketCost | formatNum}}
                     </template>
                 </el-table-column>
-                <el-table-column prop="memberUserCounts" label="参与会员数量" min-width="100" >
+                <el-table-column prop="memberUserCounts" label="参与会员数量(人)" min-width="120" >
                     <template slot-scope="scope">
-                        {{scope.row.consumeOrders | formatNum(0)}}
+                        {{scope.row.memberUserCounts | formatNum(0)}}
                     </template>
                 </el-table-column>
-                <el-table-column prop="memberConsumePer" label="会员消费占比" min-width="100" >
+                <el-table-column prop="memberConsumePer" label="会员消费占比(%)" min-width="120" >
                      <template slot-scope="scope">
-                        {{scope.row.consumeOrders | formatNum}}
+                        {{scope.row.memberConsumePer | formatNum}}
                     </template>
                 </el-table-column>
             </el-table>
@@ -97,7 +97,7 @@ export default {
             let len = this.allData[this.targetType].length;
             let num = 0;
             if(len>20){
-                num = 20;
+                num = parseInt(len*1/12);
             }else{
                 num = 0;
             }
@@ -106,6 +106,7 @@ export default {
     },
     data(){
         return {
+            unitNum:2,
             isLine:true,
             tableData:[],
             targetType:'ffsl',
@@ -144,13 +145,36 @@ export default {
                 tooltip: {
                     formatter: params => {
                         let date = params[0].name;
-                        let value = this.formatNum(params[0].value[1]);
-                        let str = date + "<br>" + value;
+                        let value = this.formatNum(params[0].value[1],this.unitNum) + this.unit;
+                        let str = params[0].marker + date + "<br>" + '&nbsp;&nbsp;&nbsp' + value;
                         return str;
                     }
+                },
+                grid:{
+                    left:'30',
+                    right:'30'
                 }
             },
         }
+    },
+    computed:{
+        // 折线图上指标单位
+        unit(){
+            let type = this.targetType;
+            if(type){
+                // 保留小数点位数
+                if(Global.targetNum.includes(type)){
+                    this.unitNum = 0;
+                }else{
+                    this.unitNum = 2;
+                }
+                // 单位
+                return Global.ticketTargetUnitMap[type]
+            }else{
+                return ''
+            }
+        },
+       
     },
     filters:{
         formatNum(value,count){
@@ -159,15 +183,14 @@ export default {
     },
     methods:{
         changeType(id){
-            console.log(456)
             this.targetType = id
             this.$set(this.lineData,'rows',this.allData[id])
         },
         getOut(){
             this.$emit('getOut')
         },
-        formatNum(value){
-            return Global.formatNum(value)
+        formatNum(value,count){
+            return Global.formatNum(value,count)
         }
     }
 }

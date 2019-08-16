@@ -174,6 +174,8 @@ export default {
         },
         handleClose(){
             this.calendarShow = false ; 
+            // 周 子组件 定位功能
+            this.$children[1] && this.$children[1].initPosition && this.$children[1].initPosition()
         }, 
         changeValueReturn(val,index){
             let startTime = null;

@@ -5,7 +5,7 @@
       <div class="BoxTitle flex" height="40">
         <div class="left">
           <span class="iconfont icon-shouye-huiyuan"></span>
-          <span>会员</span>
+          <span class="title">会员</span>
         </div>
         <div class="right">
           <span class="tip cursor" @click="goDetail">详情</span>
@@ -26,7 +26,7 @@
         <li @click="MeClick('1')" :class="{active:cur==1}">
           <div>会员消费金额</div>
           <div>
-             <span>{{MemberTop.memberConsumeAmount | capitalizeOne}}</span>{{MemberTop.memberConsumeAmount | foo}}
+             <span>{{MemberTop.memberConsumeAmount | capitalizePerson}}</span>{{MemberTop.memberConsumeAmount | foo}}
           </div>
         </li>
         <li @click="MeClick('2')" :class="{active:cur==2}">
@@ -44,7 +44,7 @@
         <li @click="MeClick('4')" :class="{active:cur==4}">
           <div>储值金额</div>
           <div>
-            <span>{{MemberTop.totalStoreAmount | capitalizeOne}}</span>{{MemberTop.totalStoreAmount | foo}}
+            <span>{{MemberTop.totalStoreAmount | capitalizePerson}}</span>{{MemberTop.totalStoreAmount | foo}}
           </div>
         </li>
       </ul>
@@ -61,14 +61,14 @@
                 <div slot="content" style="width:300px">
                   <ul id="ulMain">
                     <li>新增会员人数当日达成 : <span>{{CurrentMemberKPIDataCine.newMemberCurrent | capitalizePerson}}{{CurrentMemberKPIDataCine.newMemberCurrent | too}}</span></li>
-                    <li>环比前一日 : <span :class="[CurrentMemberKPIDataCine.memberChainDay > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[CurrentMemberKPIDataCine.memberChainDay > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{CurrentMemberKPIDataCine.memberChainDay | woo}}%</span></li>
+                    <li>环比前一日 : <span :class="[CurrentMemberKPIDataCine.memberChainDay > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[CurrentMemberKPIDataCine.memberChainDay > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{CurrentMemberKPIDataCine.memberChainDay | woo(true)}}%</span></li>
                     <li>月至今达成 : <span>{{CurrentMemberKPIDataCine.memberMonthToNow | capitalizePerson}}{{CurrentMemberKPIDataCine.memberMonthToNow | too}}</span></li>
-                    <li>环比上月 : <span :class="[CurrentMemberKPIDataCine.memberChainMonth > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[CurrentMemberKPIDataCine.memberChainMonth > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{CurrentMemberKPIDataCine.memberChainMonth | woo}}%</span></li>
+                    <li>环比上月 : <span :class="[CurrentMemberKPIDataCine.memberChainMonth > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[CurrentMemberKPIDataCine.memberChainMonth > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{CurrentMemberKPIDataCine.memberChainMonth | woo(true)}}%</span></li>
                     <li>本月目标为 : <span>{{CurrentMemberKPIDataCine.newMemberTarget | capitalizePerson}}</span>{{CurrentMemberKPIDataCine.newMemberTarget | too}}</li>
                     <li>达成率 : <span>{{CurrentMemberKPIDataCine.newMemberRate | woo}}</span>%</li>
                     <li>与时间进度差距为 : <span :class="[CurrentMemberKPIDataCine.timeRateGap > 0? 'green':'red']">{{CurrentMemberKPIDataCine.timeRateGap | woo}}%</span></li>
                     <li>按目前进度,预计月底达成率为 : <span>{{CurrentMemberKPIDataCine.memberExpect | woo}}</span>%</li>
-                    <li>与目标额差距 : <span :class="[CurrentMemberKPIDataCine.memberGap > 0? 'green':'red']">{{CurrentMemberKPIDataCine.memberGap | woo}}</span>%</li>
+                    <li>与目标额差距 : <span :class="[CurrentMemberKPIDataCine.memberGap > 0? 'green':'red']">{{CurrentMemberKPIDataCine.memberGap | woo}}%</span></li>
                   </ul>
                 </div>
                 <i class="iconfont icon-danchuang-tishi"></i>
@@ -342,54 +342,38 @@ export default {
     }
   },
   filters: {
-    woo(value){
+    woo(value,isPositive){
       if (!value) return "--"
-      return value.toFixed(2)
+      return isPositive ? Math.abs(value).toFixed(2): value.toFixed(2) 
     },
-    //处理万元单位
-    capitalizeOne(value) {
+    //处理万人计算保留两位小数
+    capitalizePerson(value) {
       if (!value) return "--"
       let newValue = value.toString();
-      //判断逻辑
+      
       if(newValue.indexOf('.') != -1){
-        
-        if(newValue.length < 7){
-          return Number(newValue + '0').toFixed(2)
+        if(newValue.length <= 7){
+          return newValue
         }
-        else if(newValue.length >= 7 && newValue.length <= 11){
+        else if(newValue.length >= 8 && newValue.length <= 11){
+
           return (newValue / 10000).toFixed(2)
         }
         else if(newValue.length >= 12){
           return ((newValue / 10000) / 10000).toFixed(2)
         }
       }
-      else
-      {
+      else{
         if(newValue.length < 5){
-          return Number(newValue + '.00').toFixed(2)
+          return newValue
         }
         else if(newValue.length >= 5 && newValue.length <= 8){
+
           return (newValue / 10000).toFixed(2)
         }
         else if(newValue.length >= 9){
           return ((newValue / 10000) / 10000).toFixed(2)
         }
-      }
-    },
-    //处理万人计算保留两位小数
-    capitalizePerson(value) {
-      if (!value) return "--"
-      let newValue = value.toString();
-
-      if(newValue.length < 5){
-        return newValue
-      }
-      else if(newValue.length >= 5 && newValue.length <= 8){
-
-        return (newValue / 10000).toFixed(2)
-      }
-      else if(newValue.length >= 9){
-        return ((newValue / 10000) / 10000).toFixed(2)
       }
     },
     //处理万元计算
@@ -400,11 +384,11 @@ export default {
       let foo = ''
 
       if(newValue.indexOf('.') != -1){
-        if(newValue.length < 7){
+        if(newValue.length < 8){
           foo = '元'
           return foo
         }
-        else if(newValue.length >= 7 && newValue.length <= 11){
+        else if(newValue.length >= 8 && newValue.length <= 11){
           foo = '万元'
           return foo
         }
@@ -700,8 +684,11 @@ export default {
       width: 100%;
       line-height: 40px;
       padding: 0 16px;
-      font-size: 16px;
-      font-weight: bold;
+      .title{
+        font-family: PingFangSC-Medium;
+        font-size: 14px;
+        color:#333;
+      }
       .iconfont {
         margin-right: 5px;
         color: #1296db;
@@ -717,7 +704,6 @@ export default {
       .tip {
         font-size: 12px;
         color: #3b74ff;
-        font-weight: normal;
         vertical-align: middle;
       }
     }
@@ -748,6 +734,7 @@ export default {
             text-align: center;
             display: block;
             margin-top:13px;
+            font-weight:bold;
           }
           p {
             font-size: 12px;
@@ -846,6 +833,7 @@ export default {
 }
 .icon-shouye-huiyuan {
   color: #eb76ff !important;
+  font-size:16px;
 }
 
 .page {
@@ -870,6 +858,11 @@ export default {
   margin:0px;
   li{
     line-height:23px;
+  }
+}
+@media screen and (max-width: 1500px) {
+  .BoxContainer .right-col .listUl li.first-li .cont h1 {
+    transform: scale(.8)
   }
 }
 </style>

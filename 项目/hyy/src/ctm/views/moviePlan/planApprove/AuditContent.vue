@@ -117,7 +117,20 @@
                         label="增值服务费"
                         show-overflow-tooltip>
                     <template slot-scope="scope">
-                        0.00
+                        <el-popover
+                                trigger="hover"
+                                placement="bottom"
+                                v-if="(scope.row.baseTicketList && scope.row.baseTicketList.length > 0) || (scope.row.favTicketList && scope.row.favTicketList.length > 0)">
+                            <div style="padding: 10px" v-for="(item, index) in scope.row.baseTicketList" :key="item.ticketName">
+                                <span style="display: inline-block; min-width: 70px">{{item.ticketName}}</span>
+                                <span>￥{{item.addFee}}</span>
+                            </div>
+                            <div style="padding: 10px" v-for="(item, index) in scope.row.favTicketList" :key="item.channelName">
+                                <span style="display: inline-block; min-width: 70px">{{item.channelName}}</span>
+                                <span>￥{{item.addFee}}</span>
+                            </div>
+                            <el-button type="text" slot="reference">查看</el-button>
+                        </el-popover>
                     </template>
                 </el-table-column>
                 <el-table-column
@@ -475,7 +488,7 @@
 <style lang="scss">
     .audit-content {
         /*height: 100%;*/
-        padding: 20px;
+        /*padding: 20px;*/
         .audit-content-title {
             width: 100%;
             padding: 12px 16px;

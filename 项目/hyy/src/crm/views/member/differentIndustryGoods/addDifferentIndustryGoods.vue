@@ -1,6 +1,6 @@
 <template>
   <div class="_add-different-industry-goods">
-    <el-form :model="ruleForm" :rules="rules" ref="ruleForm" size="medium" label-width="120px" label-position="right">
+    <el-form :model="ruleForm" :rules="rules" ref="ruleForm" size="medium" label-width="120px" label-position="left">
       <el-collapse v-model="activeNames" class="different-industry-goods-content">
         <!-- 商品信息 -->
         <el-collapse-item title="商品信息" name="1">
@@ -486,6 +486,7 @@ export default {
     },
     // 取消
     handleCancle() {
+      this.$store.commit("tagNav/removeTagNav", this.$route);
       this.$router.push({ path: "/member/differentIndustryGoods/list" });
     },
     //   提交表单前的校验
@@ -516,6 +517,7 @@ export default {
               .editDiffGoods(data)
               .then(res => {
                 this.$message.success("修改成功");
+                this.$store.commit("tagNav/removeTagNav", this.$route);
                 this.$router.push({
                   path: "/member/differentIndustryGoods/list"
                 });
@@ -529,6 +531,7 @@ export default {
               .addDiffGoods(data)
               .then(res => {
                 this.$message.success("添加成功");
+                this.$store.commit("tagNav/removeTagNav", this.$route);
                 this.$router.push({
                   path: "/member/differentIndustryGoods/list"
                 });

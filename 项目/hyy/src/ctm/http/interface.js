@@ -190,9 +190,37 @@ export const delRegionType = params => {
   })
 }
 
-export const getRegionInfoList = params => {
+// 添加影厅座位分区
+export const saveSeatRegion = data => {
   return axios({
-    url: '/ticket/ciseat/load',
+    url: '/ticket/region/save',
+    method: 'post',
+    data
+  })
+}
+
+// 修改影厅座位分区
+export const updateSeatRegion = data => {
+  return axios({
+    url: '/ticket/region/update',
+    method: 'post',
+    data
+  })
+}
+
+// 删除影厅座位分区
+export const removeSeatRegion = params => {
+  return axios({
+    url: '/ticket/region/remove',
+    method: 'post',
+    params
+  })
+}
+
+// 获取影厅座位分区列表
+export const getSeatRegionList = params => {
+  return axios({
+    url: '/ticket/region/list',
     method: 'get',
     params
   })
@@ -271,11 +299,11 @@ export const schGuideInfoApprove = data => {
 }
 
 // 排片信息审核撤回
-export const schGuideInfoRecall = params => {
+export const schGuideInfoRecall = data => {
   return axios({
     url: '/ticket/schGuide/info/recall',
-    method: 'get',
-    params
+    method: 'post',
+    data
   })
 }
 
@@ -310,6 +338,24 @@ export const getPrimeTimeList = data => {
 export const setPrimeTimeList = data => {
   return axios({
     url: '/ticket/schGuide/primeTime/setTime',
+    method: 'post',
+    data
+  })
+}
+
+// 获取源影院和目标影院影厅
+export const getCinemaPlanHallList = data => {
+  return axios({
+    url: '/ticket/plan/cinemaPlan/hallList',
+    method: 'post',
+    data
+  })
+}
+
+// 导入排期接口
+export const copyCinemaPlan = data => {
+  return axios({
+    url: '/ticket/plan/cinemaPlan/copy',
     method: 'post',
     data
   })
@@ -431,6 +477,13 @@ export const ticketSampleUpdata = data => {
     data
   })
 }
+export const fileUpload = data => {
+  return axios({
+    url: '/ticket/file/upload',
+    method: 'post',
+    data
+  })
+}
 //渠道
 export const ticketGetChannelList = params => {
   return axios({
@@ -462,10 +515,11 @@ export const importTicketFile = data => {
 }
 //------影厅管理接口-------
 //影厅类型
-export const cinemagetByName = (params) => {
+export const cinemagetByName = params => {
   return axios({
-    url: '/ticket/dictionary/getByName' + params,
+    url: '/ticket/dictionary/getByName' ,
     method: 'get',
+    params
   })
 }
 //查询列表
@@ -547,23 +601,22 @@ export const cinemaList = (params, data) => {
     url: '/ticket/cinema/list',
     method: 'post',
     params,
-    data,
+    data
   })
 }
 //-----影厅座位图--------
-export const ciseatMap = (params, data) => {
+export const ciseatLoad = (params) => {
   return axios({
-    url: '/ticket/ciseat/map',
-    method: 'post',
-    params,
-    data,
+    url: '/ticket/ciseat/get',
+    method: 'get',
+    params
   })
 }
 //-----保存影厅座位图--------
-export const ciseatDesign = data => {
+export const ciseatSave = data => {
   let datas = JSON.stringify(data)
   return axios({
-    url: '/ticket/ciseat/design',
+    url: '/ticket/ciseat/add',
     method: 'post',
     headers: {
       'Content-Type': 'application/json;charset=utf-8'
@@ -590,6 +643,14 @@ export const cinemaSave = data => {
     },
     dataType: "json",
     data: datas
+  })
+}
+//获取影院信息字典
+export const getCenameDictionary = params => {
+  return axios({
+    url: '/ticket/cinema/findGradeInfo',
+    method: 'post',
+    params
   })
 }
 //城市查询
@@ -741,6 +802,13 @@ export const priceprogramScan = params => {
     params
   })
 }
+export const priceprogramScan1 = params => {
+  return axios({
+    url: '/ticket/priceprogram/getByUid',
+    method: 'get',
+    params
+  })
+}
 export const deletePricePlan = params => {
   return axios({
     url: '/ticket/priceprogram/delete',
@@ -790,6 +858,23 @@ export const getPriceAddChannelList = params => {
     排片管理
     影厅列表
 */
+// 查询是否可以进行排片操作
+export const getPlanCtrlPerson = params => {
+  return axios({
+    url: '/ticket/plan/decide',
+    method: 'post',
+    params
+  })
+}
+// 锁定当前日期当前影院操作人
+export const lockPlanCtrlPerson = params => {
+  return axios({
+    url: '/ticket/plan/timing',
+    method: 'post',
+    params
+  })
+}
+
 export const cinemaRoomList = data => {
   return axios({
     url: '/ticket/cihall/findAllHall',
@@ -798,10 +883,10 @@ export const cinemaRoomList = data => {
   })
 }
 
-// 排片页影片列表查询
+// 排片页影片列表查询(修改影片接口)
 export const getPlanMovieList = data => {
   return axios({
-    url: '/ticket/schmovie/findByCinemaUid',
+    url: '/ticket/schmovie/planMovie',
     method: 'post',
     data
   })
@@ -812,6 +897,14 @@ export const getPlanMovieList = data => {
 export const getmoviePlanDetail = params => {
   return axios({
     url: '/ticket/schplan/priceDetail',
+    method: 'get',
+    params
+  })
+}
+// 排片页根据 id 查询排片详情(单场)
+export const getmoviePlanDetail1 = params => {
+  return axios({
+    url: '/ticket/plan/priceDetail',
     method: 'get',
     params
   })
@@ -846,7 +939,7 @@ export const getRefTip = data => {
 // 获取排片页 左侧指导数据
 export const getPlanAdvice = data => {
   return axios({
-    url: '/ticket/schGuide/list',
+    url: '/ticket/schGuide/guidance/tip',
     method: 'post',
     data
   })
@@ -905,6 +998,16 @@ export const getPlanGuiideDetail = data => {
   })
 }
 
+// 获取排片指导详情
+export const getIssuesNo = params => {
+  return axios({
+    url: '/ticket/schGuide/guidance/newIssuesNo',
+    method: 'get',
+    params
+  })
+}
+
+
 // 获取排片指导省市详情
 export const getAreaInfo = params => {
   return axios({
@@ -923,6 +1026,39 @@ export const savePlanGuide = data => {
   })
 }
 
+// 排片指导提交审核
+export const subPlanGuideApprove = data => {
+  return axios({
+    url: '/ticket/schGuide/guidance/submit',
+    method: 'post',
+    data
+  })
+}
+// 排片指导撤回审核
+export const planGuideApproveRecall = data => {
+  return axios({
+    url: '/ticket/schGuide/guidance/recall',
+    method: 'post',
+    data
+  })
+}
+
+// 排片指导审核通过/驳回
+export const approvePlanGuide = data => {
+  return axios({
+    url: '/ticket/schGuide/guidance/approve',
+    method: 'post',
+    data
+  })
+}
+// 获取排片页当天的黄金时段
+export const getGoldTime = data => {
+  return axios({
+    url: '/ticket/schGuide/primeTime/goldTime',
+    method: 'post',
+    data
+  })
+}
 // 查询周转率
 export const getTurnoverRate = data => {
   return axios({
@@ -984,6 +1120,15 @@ export const copySinglePlan = data => {
   })
 }
 
+// 复制排片
+export const directApprove = data => {
+  return axios({
+    url: '/ticket/schplan/toApprove',
+    method: 'post',
+    data
+  })
+}
+
 // 查询票房数据
 export const getDecision = data => {
   return axios({
@@ -1027,7 +1172,7 @@ export const setBatchPirce = data => {
     data
   })
 }
-
+// const devhttp = 'http://192.168.101.83:2301'
 // 保存排片信息
 export const saveMoviePlan = data => {
   return axios({
@@ -1036,10 +1181,25 @@ export const saveMoviePlan = data => {
     data
   })
 }
+export const saveMoviePlan1 = data => {
+  return axios({
+    url: '/ticket/plan/save',
+    method: 'post',
+    data
+  })
+}
 // 更新排片信息
 export const updateMoviePlan = data => {
   return axios({
     url: '/ticket/schplan/update',
+    method: 'post',
+    data
+  })
+}
+// 更新排片信息
+export const updateMoviePlan1 = data => {
+  return axios({
+    url: '/ticket/plan/update',
     method: 'post',
     data
   })
@@ -1177,6 +1337,117 @@ export const queryAreaByParent = params => {
   })
 }
 
+
+//增值服务价格方案管理 http://192.168.101.83:2301
+//查询列表  /valueaddedProgram/findPage
+export const queryExtraPriceList = data => {
+  return axios({
+    url: '/ticket/valueaddedProgram/findPage',
+    method: 'post',
+    data
+  })
+}
+//启用 禁用方案 valueaddedProgram/updateState
+export const updateExtraPriceState = params => {
+  return axios({
+    url: '/ticket/valueaddedProgram/updateState',
+    method: 'get',
+    params
+  })
+}
+//删除 增值价格方案 /valueaddedProgram/delete
+export const deleteExtraPrice = params => {
+  return axios({
+    url: '/ticket/valueaddedProgram/delete',
+    method: 'get',
+    params
+  })
+}
+// 获取增值价格方案详情 valueaddedProgram/find
+export const queryExtraPriceDetail = params => {
+  return axios({
+    url: '/ticket/valueaddedProgram/find',
+    method: 'get',
+    params
+  })
+}
+// 新建增值价格方案  /valueaddedProgram/save
+export const saveExtraPrice = data => {
+  return axios({
+    url: '/ticket/valueaddedProgram/save',
+    method: 'post',
+    data
+  })
+}
+// 修改增值价格方案   /valueaddedProgram/update
+export const updateExtraPrice = data => {
+  return axios({
+    url: '/ticket/valueaddedProgram/update',
+    method: 'post',
+    data
+  })
+}
+//获取适用渠道 分页
+export const queryChannelList = params => {
+  return axios({
+    url: '/ticket/base/channel/findChannelPageList',
+    method: 'get',
+    params
+  })
+}
+//获取适用渠道 已拥有 列表页适用
+export const queryMyChannelList = data => {
+  return axios({
+    url: '/ticket/priceprogram/find',
+    method: 'post',
+    data
+  })
+}
+//获取分页影院列表 /cinema/cinemaList
+// export const fetchCinemaList = data => {
+//   return axios({
+//     url: '/ticket/cinema/cinemaList',
+//     method: 'post',
+//     data
+//   })
+// }
+
+//获取分页影院列表
+export const fetchCinemaList = (params) => {
+  return axios({
+    url:'/ticket/cinema/list',
+    method: 'post',
+    params,
+    data:params
+  })
+}
+
+//获取使用影厅
+export const fetchCinameHallByType = data => {
+  return axios({
+    url: '/ticket/cihall/findHallByType',
+    method: 'post',
+    data
+  })
+}
+
+//获取列表页 渠道列表
+export const getExtraPriceChannelList = params => {
+  return axios({
+    url: '/ticket/base/channel/findByChannelNature',
+    method: 'get',
+    params
+  })
+}
+//增值价格方案 获取编辑页渠道
+export const getEditChannelList = params => {
+  return axios({
+    url: '/ticket/base/channel/list',
+    method: 'get',
+    params
+  })
+}
+
 /*
     排片管理
     打开时间轴
@@ -1226,6 +1497,169 @@ export const systemCinemaUiduUdate = params => {
     params
   })
 }
+
+
+//新增价格方案
+export const insertPriceProgram = data => {
+  return axios({
+    url: '/ticket/priceprogram/insertPriceProgram',
+    method: 'post',
+    data
+  })
+}
+//查询价格方案
+export const findPriceProgram = params => {
+  return axios({
+    url: '/ticket/priceprogram/findPriceProgram',
+    method: 'get',
+    params
+  })
+}
+//修改价格方案
+export const updatePriceProgram = data => {
+  return axios({
+    url: '/ticket/priceprogram/updatePriceProgram',
+    method: 'post',
+    data
+  })
+}
+//影片分页查询
+export const findMovieByCinemaUids = data => {
+  return axios({
+    url: '/ticket/schmovie/findMovieByCinemaUids',
+    method: 'post',
+    data
+  })
+}
+//影院分页查询
+export const cinemaFindList = data => {
+  return axios({
+    url: '/ticket/cinema/cinemaList',
+    method: 'post',
+    data
+  })
+}
+//影厅查询
+export const findHallByType = data => {
+  return axios({
+    url: '/ticket/cihall/findHallByType',
+    method: 'post',
+    data
+  })
+}
+//价格方案查询
+export const priceprogramFind = data => {
+  return axios({
+    url: '/ticket/priceprogram/find',
+    method: 'post',
+    data
+  })
+}
+
+// 排期展示页面的接口
+export const ossUpdata = data => {  // 上传oss
+  return axios({
+    url: '/ticket/file/upload',
+    method: 'post',
+    data
+  })
+}
+
+export const getFilmList = params => {  // 后台获取排期首页
+  return axios({
+    url: '/ticket/plan_display/display_template/list',
+    method: 'get',
+    params
+  })
+}
+
+export const terminalList = data => {  // 显示用户下面的终端
+  return axios({
+    url: '/ticket/plan_display/terminal/page',
+    method: 'post',
+    data
+  })
+}
+
+export const openTerminal = data => {  // 切换终端开启状态
+  return axios({
+    url: '/ticket/plan_display/terminal/active',
+    method: 'put',
+    data
+  })
+}
+
+export const saveSwiperSet = data => {  // 保存轮播图的设置
+  return axios({
+    url: '/ticket/plan_display/display_template/edit',
+    method: 'post',
+    data
+  })
+}
+
+
+export const getSwiperSet = params => {  // 轮播图设置的初始值
+  return axios({
+    url: '/ticket/plan_display/display_template/detail',
+    method: 'get',
+    params
+  })
+}
+
+export const getPhotoList = params => {  // 轮播图的初始值
+  return axios({
+    url: '/ticket/plan_display/advertise_pic/list',
+    method: 'get',
+    params
+  })
+}
+export const deletePhoto = data => {  // 删除图片
+  return axios({
+    url: '/ticket/plan_display/advertise_pic/delete',
+    method: 'post',
+    data
+  })
+}
+
+export const getSwiperList = data => {  // 获取轮播图页面的详情
+  return axios({
+    url: '/ticket-gd/display_template/show',
+    method: 'post',
+    data
+  })
+}
+
+export const filmLogin = data => {  // 注册终端
+  return axios({
+    url: '/ticket-gd/display_terminal/register',
+    method: 'post',
+    data
+  })
+}
+
+export const templateDetail = data => {  // 模版的详细
+  return axios({
+    url: '/ticket-gd/display_template/plan_show',
+    method: 'post',
+    data
+  })
+}
+
+export const templatecinemaUid	 = params => {  // 后台模版的详细
+  return axios({
+    url: '/ticket/plan_display/template/show',
+    method: 'get',
+    params
+  })
+}
+
+export const savePhoto = data => {  // 保存图片
+  return axios({
+    url: '/ticket/plan_display/advertise_pic/add',
+    method: 'post',
+    data
+  })
+}
 export default {
   //影片管理接口**start*/
   DownloadmovieList,
@@ -1248,6 +1682,7 @@ export default {
   priceprogramUpdate,
   getPriceAddChannelList,
   priceprogramScan,
+  priceprogramScan1,
   deletePricePlan,
   //****end */
   testGet,
@@ -1273,7 +1708,10 @@ export default {
   saveRegionType,
   updateRegionType,
   delRegionType,
-  getRegionInfoList,
+  saveSeatRegion,
+  updateSeatRegion,
+  removeSeatRegion,
+  getSeatRegionList,
   findSchApprove,
   schApproveDetails,
   schApprove,
@@ -1287,6 +1725,8 @@ export default {
   schGuideInfoDetails,
   getPrimeTimeList,
   setPrimeTimeList,
+  getCinemaPlanHallList,
+  copyCinemaPlan,
   getCinemaTree,
   getUserInfo,
   authQueryUserCinemas,
@@ -1304,6 +1744,7 @@ export default {
   checkChannelExsit,
   ticketGetChannelList,
   ticketSampleUpdata,
+  fileUpload,
   exportTicketFile,
   importTicketFile,
   //影厅管理
@@ -1320,22 +1761,29 @@ export default {
   cinemaList,
   cinemaGetInfo,
   getPname,
-  ciseatMap,
-  ciseatDesign,
+  ciseatLoad,
+  ciseatSave,
   cinemaDownload,
   cinemaBindUSBKey,
+  getCenameDictionary,
   // 排片指导
+  getIssuesNo,
   getPlanGuiideList,
   getPlanGuiideDetail,
   getBaseMovieInfo,
   getCinemaAreaList,
   getAreaInfo,
   savePlanGuide,
+  subPlanGuideApprove,
+  approvePlanGuide,
+  planGuideApproveRecall,
   delPlanGuiideDetail,
   updatePlanGuiideDetail,
   getTurnoverRate,
   setTurnoverRate,
   // 排片
+  getPlanCtrlPerson,
+  lockPlanCtrlPerson,
   cinemaSave,
   getPlanMovieList,
   getPlanRoomData,
@@ -1343,6 +1791,7 @@ export default {
   cinemaRoomList,
   cinemaMovieList,
   datePlanList,
+  directApprove,
   deletePlan,
   editTimeLine,
   initTimeLine,
@@ -1350,6 +1799,7 @@ export default {
   getPlanReference,
   getgoldTimeSet,
   setgoldTimeSet,
+  getGoldTime,
   getRefTip,
   getDecision,
   getPlanAdvice,
@@ -1358,12 +1808,15 @@ export default {
   importBatchPricePlan,
   // 放映计划详情
   getmoviePlanDetail,
+  getmoviePlanDetail1,
   getmoviePlanDetails,
   getPricePlan,
   getSchPlanLang,
   exportMoviePlan,
   saveMoviePlan,
   updateMoviePlan,
+  saveMoviePlan1,
+  updateMoviePlan1,
   subApproves,
   importPricePlan,
   copySinglePlan,
@@ -1374,5 +1827,27 @@ export default {
   systemParamSaveBasic,
   systemGetUserMenuTree,
   //软件升级信息
-  systemCinemaUiduUdate
+  systemCinemaUiduUdate,
+  //新价格方案
+  insertPriceProgram,
+  findPriceProgram,
+  updatePriceProgram,
+  findMovieByCinemaUids,
+  cinemaFindList,
+  findHallByType,
+  priceprogramFind,
+  // 排期展示
+  ossUpdata,
+  getFilmList,
+  filmLogin,
+  terminalList,
+  openTerminal,
+  getSwiperList,
+  saveSwiperSet,
+  getSwiperSet,
+  getPhotoList,
+  deletePhoto,
+  templateDetail,
+  templatecinemaUid,
+  savePhoto
 };

@@ -96,7 +96,7 @@
     </div>
     <!-- 分页 end -->
     <!--  查看短信内容的dialog -->
-    <el-dialog title="短信内容" class="__view-msg-dialog" :visible.sync="viewMsgDialog">
+    <el-dialog title="短信内容" class="__view-msg-dialog" :visible.sync="viewMsgDialog" width="448px">
       <div class="_view-msg-content-wrap">
         <span style="font-size:12px;" v-html="formatRemark(viewMsgContent)"></span>
       </div>
@@ -400,9 +400,9 @@ export default {
     top: 13px;
   }
   ._view-msg-content-wrap {
-    margin-top: 10px;
+    margin-top: 20px;
     padding: 0 50px;
-    min-height: 200px;
+    min-height: 194px;
   }
 }
 </style>

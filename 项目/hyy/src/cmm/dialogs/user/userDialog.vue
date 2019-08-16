@@ -1,15 +1,19 @@
 <template>
   <div class="my_dialog">
     <el-dialog :title="title" :close-on-click-modal="false" :visible.sync="mydialogTableVisible">
+      <!-- 查询 -->
       <el-form label-width="" :inline="true">
         <div style="position:relative">
-            <el-form-item label="用户账号:" class="two_search">
+            <el-form-item label="用户账号:" label-width="80px" class="two_search">
                 <el-input v-model="userId" style="width:152px"  placeholder="请输入"></el-input>
             </el-form-item>
-            <el-form-item label="用户名称:">
+            <el-form-item label="用户名称:" label-width="80px">
                 <el-input v-model="userName" style="width:184px"  placeholder="请输入"></el-input>
             </el-form-item>
-            <el-form-item label="状态:">
+            <el-form-item label="所属组织ID:" label-width="92px">
+                <el-input v-model="orgUid" style="width:184px"  placeholder="请输入"></el-input>
+            </el-form-item>
+            <el-form-item label="状态:" label-width="55px">
                 <el-select v-model="userStatus" style="width:184px">
                     <el-option label="全部" value>全部</el-option>
                     <el-option label="启用" value="0">启用</el-option>
@@ -17,20 +21,15 @@
                     <el-option label="离职" value="2">离职</el-option>
                 </el-select>
             </el-form-item>
-          <el-button type="primary" style="margin:4px 0;" @click="searchUser">查询</el-button>
+          <el-button type="primary" style="margin:4px 0;" @click="search">查询</el-button>
         </div>
       </el-form>
-      <!-- highlight-current-row  -->
+      <!-- 列表区域 -->
       <div class="choose_table">
         <div>
+          <!-- 列表 -->
           <el-table :data="tableList" :cell-style={padding:0} :row-style={height:30} :header-cell-style={padding:0}
-             ref="multipleTable" @select-all="selectAll"  :row-key="getRowKeys" @selection-change="select">
-            <!-- <el-table-column width="39">
-              <template slot-scope="scope">
-                <el-checkbox v-model="scope.checked"></el-checkbox>
-                <el-radio v-model="templateRadio" :label="scope.$index">&nbsp;</el-radio>
-              </template>
-            </el-table-column> -->
+             ref="multipleTable" @select-all="handleSelect"  :row-key="getRowKeys" @select="handleSelect">
             <el-table-column type="selection" width="40" :reserve-selection="true"></el-table-column>
             <el-table-column property="loginName" label="用户账号" width="250"></el-table-column>
             <el-table-column property="fullName" label="用户名称" width="250"></el-table-column>
@@ -55,6 +54,7 @@
             </el-pagination>
           </div>
         </div>
+        <!-- 选中内容 -->
         <div class="choose_ul">
           <p class="ul_header">
             <span>已选内容：</span>
@@ -67,12 +67,11 @@
             </li>
           </ul>
         </div>
-
       </div>
-
       <div style="height:12px;background:transparent;"></div>
+      <!-- 底部按钮 -->
       <div class="btn-area">
-        <el-button type="primary" @click="chooseUser" style="margin-right:22px;">确定</el-button>
+        <el-button type="primary" @click="chooseCommit" style="margin-right:22px;">确定</el-button>
         <el-button @click="mydialogTableVisible = false">取消</el-button>
       </div>
     </el-dialog>
@@ -80,7 +79,7 @@
 
 </template>
 <script>
-import {getUser} from "frame_cpm/http/interface.js"
+import {getUser} from "cmm/http/interface.js"
   export default {
     props: {
       dialogTableVisible: {
@@ -96,101 +95,202 @@ import {getUser} from "frame_cpm/http/interface.js"
       return {
         userId:"",
         userName:"",
-        userStatus:"",
+        userStatus:"0",
+        orgUid:"",
         mydialogTableVisible: this.dialogTableVisible,
         chooseItem: [],
-        rows:[],
         tableList:[],
         pageData:{
           pageNum:1,
           total:0,
           size:10,
         },
-       
+        tenantId:JSON.parse(localStorage.getItem('user')).consumerId
       }
-    },
-    methods: {
-        //获取row的key值
-        getRowKeys(row){
-            return row.id
-        },
-        // 点击选择数据（暂时储存的数据）
-        select(selection,row) {
-            console.log(selection)
-            if (selection && selection instanceof Array) {
-                this.chooseItem=selection;
-            }
-        },
-        // 全选
-        selectAll(selection){
-            if (selection && selection instanceof Array) {
-            this.chooseItem = selection;
-            }
-        },
-        // 确定选择
-        chooseUser() {
-            this.$emit("callBack", this.chooseItem);
-            this.mydialogTableVisible = false;
-        },
-        //打开弹窗
-        openDialog(val){
-            this.mydialogTableVisible=val
-            this.getUserList()
-
-        },
-        // 页面改变
-        handleCurrentChange(val) {
-            this.pageData.pageNum=val
-            console.log(val)
-            this.getUserList()
-        },
-        // 查询
-        searchUser() {
-            this.getUserList()
-        },
-        // 删除
-        delateSpan(item){
-            console.log(item)
-            if (item) {
-                this.$refs.multipleTable.toggleRowSelection(item);
-            }
-        },
-        clearSelection(){
-            this.$refs.multipleTable.clearSelection();
-            this.chooseItem = []
-        },
-        //获取用户列表
-        getUserList(){
-            let params={
-                fullName:this.userName,
-                loginName: this.userId,
-                pageNum: this.pageData.pageNum,
-                pageSize: this.pageData.size,
-                status:this.userStatus
-            }
-            getUser(params).then(res=>{
-                if(res.data&&res.code==200){
-                    this.tableList=res.data.rows
-                    this.pageData.total=res.data.total
-                }
-
-            })
-        },
     },
     watch: {
       dialogTableVisible(val) {
         this.mydialogTableVisible = val;
         this.userId = "";
         this.userName = "";
-        this.userStatus = "";
-        // this.chooseItem = [];
-        console.log(this.rows)
+        this.userStatus = "0";
+        this.orgUid = "";
+        this.chooseItem = [];
+        this.tableList= [];
+        try{
+          this.$refs.multipleTable.clearSelection();
+        }catch(error){
+          console.log(error)
+        }
       },
-      
-      mydialogTableVisible(val) {
-        this.$emit("changeDialogTableVisible", val)
-      }
-    }
+    },
+    methods: {
+        //获取row的key值
+        getRowKeys(row){
+          return row.id
+        },
+        //查询
+        search() {
+          this.getUserList()
+        },
+        //获取用户列表
+        getUserList(){
+          let params={
+            fullName:this.userName,
+            loginName: this.userId,
+            pageNum: this.pageData.pageNum,
+            pageSize: this.pageData.size,
+            status:this.userStatus,
+            orgUid:this.orgUid,
+            tenantId:this.tenantId
+          }
+          getUser(params).then(res=>{
+            if(res.data&&res.code==200){
+              this.tableList=res.data.rows || []
+              this.pageData.total=res.data.total || 0
+              this.rowMultipleChecked(this.chooseItem)
+            }
+          }).catch(err => {
+            console.log(err)
+          })
+        },
+        //回显
+        rowMultipleChecked(selectedArr) {
+          if (selectedArr.length != 0) {
+            for (let i = 0; i < selectedArr.length; i++) {
+              for (let k = 0; k < this.tableList.length; k++) {
+                if (selectedArr[i].id == this.tableList[k].id) {
+                  if(selectedArr[i].reviewFlag=="review"){
+                    this.$refs.multipleTable.toggleRowSelection(
+                      this.tableList[k],
+                      true
+                    );
+                  }
+                  selectedArr[i]=this.tableList[k]
+                  break;
+                }
+              }
+            }
+          }else{
+            try{
+              this.$refs.multipleTable.clearSelection();
+            }catch(error){
+              console.log(error)
+            }
+          }
+        },
+        //手动选择
+        handleSelect(selection, row) {
+          if (row) {
+            //点击单选
+            this.rowOneToggle(row);
+          } else {
+            //点击全选
+            if (selection.length == 0) {
+              for (let index = 0; index < this.tableList.length; index++) {
+                const item = this.tableList[index];
+                this.rowOneRemove(item);
+              }
+            } else {
+              for (let j = 0; j < selection.length; j++) {
+                const selectionItem = selection[j];
+                this.rowOneAdde(selectionItem);
+              }
+            }
+          }
+          console.log("this.choose",this.chooseItem)
+        },
+        //手动选择-单一数据toggle
+        rowOneToggle(row) {
+          for (let index = 0; index < this.chooseItem.length; index++) {
+            if (row.id == this.chooseItem[index].id) {
+              this.chooseItem.splice(index, 1);
+              return;
+            }
+          }
+          this.chooseItem.push(row);
+        },
+        //手动选择-单一数据add
+        rowOneAdde(row) {
+          for (let index = 0; index < this.chooseItem.length; index++) {
+            if (row.id == this.chooseItem[index].id) {
+              return;
+            }
+          }
+          this.chooseItem.push(row);
+        },
+        //手动选择-单一数据reomove
+        rowOneRemove(row) {
+          for (let index = 0; index < this.chooseItem.length; index++) {
+            if (row.id == this.chooseItem[index].id) {
+              this.chooseItem.splice(index, 1);
+              return;
+            }
+          }
+        },
+        // 确定选择
+        chooseCommit() {
+          this.$emit("callBack", this.chooseItem);
+          this.mydialogTableVisible = false;
+        },
+        //打开弹窗
+        openDialog(val,reviewList){
+          //初始化页面
+          this.pageData={
+            pageNum:1,
+            total:0,
+            size:10,
+          },
+          //显示弹窗
+          this.mydialogTableVisible=val
+          //回显
+          if(reviewList){
+            this.chooseItem= (reviewList.length==0)? [] :JSON.parse(JSON.stringify(reviewList)) 
+          }else{
+            this.chooseItem=[]
+          }
+          //清除以前选项
+          try{
+            if(this.$refs.multipleTable){
+              this.$refs.multipleTable.clearSelection();
+            }
+          }catch(error){
+            console.log(error)
+          }
+          //请求
+          this.getUserList()
+        },
+        // 页面改变
+        handleCurrentChange(val) {
+          this.pageData.pageNum=val
+          console.log(val)
+          this.getUserList()
+        },
+        //删除
+        delateSpan(item){
+          console.log(item)
+          if (item) {
+            this.$refs.multipleTable.toggleRowSelection(item,false);
+            for (let i=this.chooseItem.length-1;i>=0;i--) {
+              if(this.chooseItem[i].id==item.id){
+                this.chooseItem.splice(i,1)
+                break;
+              }
+            }
+          }
+        },
+        //清除
+        clearSelection(){
+          try{
+            this.$refs.multipleTable.clearSelection();
+          }catch(error){
+            console.log(error)
+          }
+          this.chooseItem = []
+        },
+        
+    },
+   
   }
 </script>
 

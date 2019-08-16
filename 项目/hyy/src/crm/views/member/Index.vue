@@ -1,5 +1,5 @@
 <template>
-  <div class="member-wrap">
+  <div class="_crm-member-wrap">
     <router-view></router-view>
   </div>
 </template>
@@ -11,7 +11,7 @@ export default {
 </script>
 
 <style lang='scss'>
-.member-wrap {
+._crm-member-wrap {
   padding: 0 14px 0 14px;
   ._fixsteptool-member {
     right: 100px;
@@ -33,9 +33,19 @@ export default {
   .cursor {
     cursor: pointer;
   }
+  // 所有弹窗的title字体颜色
+  .el-dialog__header {
+    .el-dialog__title {
+      color: #333;
+      font-weight: normal;
+    }
+  }
   .el-form-item__label {
     font-size: 12px;
     color: #666 !important;
+    line-height: 1.4;
+    text-indent: -0.75em;
+    margin-top: 12px;
   }
   .el-checkbox__label {
     font-size: 12px;
@@ -76,10 +86,278 @@ export default {
       padding-left: 36px;
     }
   }
+  // 自有权益dialog样式
+  .__equity-dialog {
+    .el-dialog {
+      height: 576px;
+      .el-dialog__header {
+        padding: 10px 20px;
+        .el-dialog__headerbtn {
+          top: 12px;
+          .el-dialog__close {
+            color: #979797;
+            font-size: 14px;
+          }
+        }
+      }
+      .el-dialog__body {
+        padding: 0px 20px;
+      }
+      .el-dialog__footer {
+        text-align: center;
+      }
+      .__table-wrap {
+        border-top: 1px solid #e5e5e5;
+        padding-top: 4px;
+        // dialog内部表格公共样式
+        .__dialog-search-bar-btn-wrap {
+          margin-right: 0 !important;
+        }
+        .has-gutter tr th {
+          height: 31px;
+          line-height: 31px;
+        }
+        .el-table__body-wrapper {
+          overflow-y: auto;
+          height: 352px;
+          .el-table__body {
+            border-collapse: collapse;
+            tbody {
+              tr:last-child {
+                border-bottom: 1px solid #f0f0f0;
+              }
+            }
+          }
+        }
+        td {
+          height: 32px;
+          line-height: 32px;
+        }
+        .is-leaf {
+          padding: 0;
+          border-bottom: 0;
+          .cell {
+            color: #333;
+            height: 30px;
+            line-height: 30px;
+          }
+        }
+        .cell {
+          font-size: 12px;
+          padding-left: 8px;
+          padding-right: 0;
+          height: 32px;
+          line-height: 32px;
+        }
+        ._equity-dialog-paginatioin {
+          padding: 6px 0;
+          border: 1px solid #e5e5e5;
+          border-top: 0;
+        }
+        .__dialog-table-form {
+          display: flex;
+          flex-wrap: wrap;
+          .el-input__inner {
+            width: 160px;
+            line-height: 32px;
+            height: 32px;
+          }
+          .el-form-item {
+            margin: 0 14px 5px 0;
+            .el-form-item__label {
+              text-indent: 0;
+              padding: 0 4px 0 0;
+            }
+          }
+          .heightBug input {
+            height: 32px !important;
+          }
+        }
+        .__equity-dialog-content-wrap {
+          display: flex;
+          .__equity-dialog-content-left {
+            width: 632px;
+            .__equity-dialog-table {
+              width: 632px;
+            }
+          }
+          .__equity-dialog-content-right {
+            width: 224px;
+            border: 1px solid #e5e5e5;
+            border-left: 0;
+            padding: 12px 16px;
+            .__content-right-wrap {
+              display: flex;
+              justify-content: space-between;
+              padding: 0 0 12px;
+              border-bottom: 1px solid #f5f5f5;
+              .__content-right-title {
+                font-size: 10px;
+                color: #666666;
+                letter-spacing: 0;
+              }
+              .__clear-btn {
+                font-size: 12px;
+                color: #3b74ff;
+                letter-spacing: 0;
+                cursor: pointer;
+              }
+            }
+            .__selected-equity-wrap {
+              height: 375px;
+              overflow-y: auto;
+              display: flex;
+              flex-direction: column;
+              .__selected-equity-item-inner {
+                padding-top: 10px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                .__selected-equity-name-desc {
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  display: -webkit-box;
+                  -webkit-box-orient: vertical;
+                  -webkit-line-clamp: 2;
+                  font-size: 12px;
+                  color: #666666;
+                }
+                .__dialog-icon-delete {
+                  margin-left: 14px;
+                  cursor: pointer;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  // 提供给外部弹窗的样式
+  .__crm-available-coupon-wrap {
+    // border-top: 1px solid #e5e5e5;
+    .__crm-available-coupon-search {
+      .el-form-item {
+        margin-bottom: 7px;
+        .el-form-item__label {
+          margin-left: 0;
+        }
+        .el-input__inner {
+          width: 160px;
+          line-height: 32px;
+          height: 32px;
+          font-size: 12px;
+        }
+      }
+    }
+    ._custom-search-item {
+      .el-form-item__label {
+        text-indent: 0;
+      }
+    }
+    .__crm-available-coupon-dialog-content-wrap {
+      display: flex;
+      .__crm-available-coupon-dialog-content-left {
+        width: 632px;
+        .__crm-available-coupon-dialog-table {
+          width: 632px;
+          .has-gutter tr th {
+            height: 31px;
+            line-height: 31px;
+          }
+          .el-table__body-wrapper {
+            overflow-y: auto;
+            height: 352px;
+            .el-table__body {
+              border-collapse: collapse;
+              tbody {
+                tr:last-child {
+                  border-bottom: 1px solid #f0f0f0;
+                }
+              }
+            }
+          }
+          td {
+            height: 32px;
+            line-height: 32px;
+          }
+          .is-leaf {
+            padding: 0;
+            border-bottom: 0;
+            .cell {
+              color: #333;
+              height: 30px;
+              line-height: 30px;
+            }
+          }
+          .cell {
+            font-size: 12px;
+            padding-left: 8px;
+            padding-right: 0;
+            height: 32px;
+            line-height: 32px;
+          }
+          .__crm-available-coupon-paginatioin {
+            padding: 6px 0;
+            border: 1px solid #e5e5e5;
+            border-top: 0;
+          }
+        }
+      }
+      .__crm-available-coupon-dialog-content-right {
+        width: 224px;
+        border: 1px solid #e5e5e5;
+        border-left: 0;
+        padding: 12px 16px;
+        .__content-right-wrap {
+          display: flex;
+          justify-content: space-between;
+          padding: 0 0 12px;
+          border-bottom: 1px solid #f5f5f5;
+          .__content-right-title {
+            font-size: 10px;
+            color: #666666;
+            letter-spacing: 0;
+          }
+          .__clear-btn {
+            font-size: 12px;
+            color: #3b74ff;
+            letter-spacing: 0;
+            cursor: pointer;
+          }
+        }
+        .__selected-equity-wrap {
+          height: 375px;
+          overflow-y: auto;
+          display: flex;
+          flex-direction: column;
+          .__selected-equity-item-inner {
+            padding-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            .__selected-equity-name-desc {
+              overflow: hidden;
+              text-overflow: ellipsis;
+              display: -webkit-box;
+              -webkit-box-orient: vertical;
+              -webkit-line-clamp: 2;
+              font-size: 12px;
+              color: #666666;
+            }
+            .__dialog-icon-delete {
+              margin-left: 14px;
+              cursor: pointer;
+            }
+          }
+        }
+      }
+    }
+  }
   // 所有列表页筛选项的样式
   ._member-search-area-custom {
     .el-form-item {
-      margin-right: 30px !important;
+      margin-right: 32px !important;
       .el-input__inner {
         width: 192px !important;
       }
@@ -209,15 +487,53 @@ export default {
     .el-dialog__header {
       padding: 20px 20px 5px 20px;
     }
+    .el-input {
+      .el-input__inner {
+        font-size: 12px !important;
+      }
+    }
+    .el-select-dropdown__item {
+      > span {
+        font-size: 12px !important;
+      }
+    }
   }
+  // 积分查询
+  ._member-integral-query {
+    .el-input {
+      .el-input__inner {
+        font-size: 12px !important;
+      }
+    }
+    .el-select-dropdown__item {
+      > span {
+        font-size: 12px !important;
+      }
+    }
+  }
+
   // 创建积分获取规则
   ._edit-member-integral-rules {
     .el-input {
-      width: 192px;
-      height: 32px;
       .el-input__inner {
         font-size: 12px !important;
         padding-right: 0;
+      }
+    }
+    .label-content-item {
+      .el-input {
+        width: 100px !important;
+        .el-input__inner {
+          width: 100px !important;
+        }
+      }
+      .el-select {
+        .el-input {
+          width: 192px !important;
+          .el-input__inner {
+            width: 192px !important;
+          }
+        }
       }
     }
     .el-form-item__label {
@@ -227,10 +543,11 @@ export default {
     .el-collapse-item__content {
       padding: 0 20px;
     }
-  }
-  // 会员等级权益管理
-  ._member-level-equity-detail {
-
+    .channel-selection {
+      .el-form-item__content {
+        padding-left: 50px;
+      }
+    }
   }
 }
 </style>

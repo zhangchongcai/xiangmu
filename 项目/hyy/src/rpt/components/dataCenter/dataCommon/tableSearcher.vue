@@ -8,7 +8,7 @@
       :show-close="false"
     >
       <div class="input-wrapper">
-        <el-select popper-class="rpt-select" v-model="value" placeholder="请选择条件">
+        <el-select popper-class="rpt-select" v-model="tableSearcherObj.value" placeholder="请选择条件">
           <el-option
             v-for="item in options"
             :key="item.value"
@@ -16,7 +16,7 @@
             :value="item.value"
           ></el-option>
         </el-select>
-        <el-input v-model="input" placeholder="请输入筛选内容"></el-input>
+        <el-input v-model="tableSearcherObj.input" placeholder="请输入筛选内容"></el-input>
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button type="primary" @click="handleSubmitClick">确 定</el-button>
@@ -28,21 +28,17 @@
 
 <script>
 import datacenterBus from "src/rpt/util/datacenterBus.js";
-import mixins from "src/frame_cpm/mixins/cacheMixin.js";
 
 export default {
-  mixins: [mixins.cacheMixin],
   props: {
     dialogVisible: Boolean,
     colKey: String,
-    colData: Array
+    colData: Array,
+    tableSearcherObj: Object
   },
   data() {
     return {
-      cacheField: ["input", "value"],
-      subComName: "tableSearcher",
       visible: false,
-      input: "",
       options: [
         {
           value: "=",
@@ -69,7 +65,6 @@ export default {
           label: "包含"
         }
       ],
-      value: ""
     };
   },
   methods: {
@@ -78,18 +73,18 @@ export default {
     },
     handleSubmitClick() {
       let colItem;
-      if (this.value == "like") {
+      if (this.tableSearcherObj.value == "like") {
         colItem = {
           queryColKey: this.colKey,
-          queryColValue: this.input + "%",
-          operation: this.value,
+          queryColValue: this.tableSearcherObj.input + "%",
+          operation: this.tableSearcherObj.value,
           isAdvanced: true
         };
       } else {
         colItem = {
           queryColKey: this.colKey,
-          queryColValue: this.input,
-          operation: this.value,
+          queryColValue: this.tableSearcherObj.input,
+          operation: this.tableSearcherObj.value,
           isAdvanced: true
         };
       }
@@ -106,7 +101,6 @@ export default {
       }
       colList.push(colItem);
       if (colList[0].queryColValue != "" && colList[0].queryColValue != []) {
-        console.log(colList);
         this.$store.commit("sendSearchData", colList);
         this.$emit("sendSelectStatus", selectStatus);
         this.$emit("sendDialog1Visible");
@@ -144,6 +138,9 @@ export default {
     height: 157px;
     .el-dialog__header {
       padding: 16px 20px 0 20px;
+      &::after {
+        width: 332px;
+      }
       .el-dialog__title {
         font-size: 14px;
         font-family: "MicrosoftYaHei";
@@ -153,7 +150,7 @@ export default {
       padding: 0 20px;
     }
     .el-dialog__footer {
-      padding: 25px 0 16px 0;
+      padding: 20px 0 16px 0;
       .el-button {
         width: 80px;
         height: 32px;
@@ -169,7 +166,7 @@ export default {
     .input-wrapper {
       display: flex;
       justify-content: space-between;
-      margin-top: 20px;
+      margin-top: 16px;
       .el-select {
         .el-input {
           margin-left: 0;

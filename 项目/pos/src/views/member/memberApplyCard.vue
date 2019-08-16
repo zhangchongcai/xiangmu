@@ -1,6 +1,6 @@
 <template>
   <div class="_member-apply-card">
-    <div class="member-home-title">开卡</div>
+    <div class="member-home-title">开卡/激活</div>
     <div style="position:relative">
       <CardReading @queryData="queryData"/>
       <div v-show="ruleForm.cardName && member.cardNoOrphoneNumState" class="cardNoNameStyle">
@@ -13,7 +13,6 @@
       :model="ruleForm" 
       :rules="rules" 
       ref="ruleForm" 
-      label-width="100px" 
       class="demo-ruleForm"
       v-show="member.cardNoOrphoneNumState"
       >
@@ -23,140 +22,125 @@
         <div class="member-info-content">
           <el-row>
             <el-col :span="11" v-if="requireShow('user_name')">
-              <div class="grid-content bg-purple">
-                <el-form-item label="姓名：" prop="name">
-                  <el-input v-model="ruleForm.name"></el-input>
-                </el-form-item>
-              </div>
+              <el-form-item label="姓名：" prop="name" class="row-line-center">
+                <el-input v-model="ruleForm.name"></el-input>
+              </el-form-item>
             </el-col>
             <el-col :span="11" v-if="requireShow('sex')">
-              <div class="grid-content bg-purple-light el-radio-group-style">
-                <el-form-item label="性别：" prop="sex">
-                  <el-radio-group v-model="ruleForm.sex">
-                    <el-radio label="male">男</el-radio>
-                    <el-radio label="female">女</el-radio>
-                  </el-radio-group>
-                </el-form-item>
-              </div>
+              <el-form-item label="性别：" prop="sex" class="row-line-center">
+                <el-radio-group v-model="ruleForm.sex">
+                  <el-radio label="male">男</el-radio>
+                  <el-radio label="female">女</el-radio>
+                </el-radio-group>
+              </el-form-item>
             </el-col>
             <el-col :span="11" v-if="requireShow('phone_number')">
-              <div class="grid-content bg-purple">
-                <el-form-item label="手机号码：" prop="mobileNum">
-                  <el-input v-model="ruleForm.mobileNum"></el-input>
-                </el-form-item>
-              </div>
+              <el-form-item label="手机号码：" prop="mobileNum" class="row-line-center">
+                <el-input v-model="ruleForm.mobileNum"></el-input>
+              </el-form-item>
             </el-col>
             <el-col :span="11" v-if="requireShow('email')">
-              <div class="grid-content bg-purple-light">
-                <el-form-item label="电子邮箱：" prop="email">
-                  <el-input v-model="ruleForm.email"></el-input>
-                </el-form-item>
-              </div>
+              <el-form-item label="电子邮箱：" prop="email" class="row-line-center"> 
+                <el-input v-model="ruleForm.email"></el-input>
+              </el-form-item>
             </el-col>
             <el-col :span="11" v-if="requireShow('id_card')">
-              <div class="grid-content bg-purple">
-                <el-form-item label="身份证号：" prop="creditNum">
-                  <el-input v-model="ruleForm.creditNum"></el-input>
-                </el-form-item>
-              </div>
+              <el-form-item label="身份证号：" prop="creditNum" class="row-line-center">
+                <el-input v-model="ruleForm.creditNum"></el-input>
+              </el-form-item>
             </el-col>
             <el-col :span="11" v-if="requireShow('birthday')">
-              <div class="grid-content bg-purple-light applcard_time">
-                <el-form-item label="生日：" prop="birthday">
-                  <el-date-picker v-model="ruleForm.birthday" format="yyyy-MM-dd" type="date" placeholder="选择日期时间" :picker-options="pickerOptions">
-                  </el-date-picker>
-                </el-form-item>
-              </div>
+              <el-form-item label="生日：" prop="birthday" class="row-line-center">
+                <el-date-picker v-model="ruleForm.birthday" format="yyyy-MM-dd" type="date" placeholder="选择日期时间" :picker-options="pickerOptions">
+                </el-date-picker>
+              </el-form-item>
             </el-col>
             <el-col :span="11">
-              <div class="grid-content bg-purple" style="position:relative">
-                <el-form-item label="消费密码：" prop="consumePassword">
+              <div class="grid-content bg-purple row-line-center" style="position:relative">
+                <el-form-item label="消费密码：" prop="consumePassword" class="row-line-center">
                   <el-input type="password" v-model="ruleForm.consumePassword"></el-input>
                 </el-form-item>
-                <div class="password">
-                  <button @click="startKeyBorad">启动密码输入</button>
-                </div>
+                  <div class="password">
+                    <button @click="startKeyBorad" class="start-btn">启动密码输入</button>
+                  </div>
               </div>
             </el-col>
             <el-col :span="11">
-              <div class="grid-content bg-purple-light">
-                <el-form-item label="ID物理卡号：">
-                  <el-input v-model="ruleForm.realCardNo"></el-input>
-                </el-form-item>
-              </div>
+              <el-form-item label="ID物理卡号：" class="row-line-center">
+                <el-input v-model="ruleForm.realCardNo"></el-input>
+              </el-form-item>
             </el-col>
           </el-row>
 
         </div>
-        <div class="member-info-title">收费充值</div>
-        <div class="member-info-content">
-          <el-row v-if="ruleForm.cardType != '联名卡' && ruleForm.cardType != '权益卡'">
-            <el-col :span="7">
-              <div class="grid-content bg-purple-light">
-                  <el-form-item label="充值金额：" prop="basicAmount">
+        <div v-if="chargeBlock">
+          <div class="member-info-title">收费充值</div>
+          <div class="member-info-content">
+            <el-row 
+              v-if="ruleForm.cardType != '联名卡' && ruleForm.cardType != '权益卡' && ruleForm.cardType != '次卡' "
+              class="row-line-center">
+              <el-col :span="7">
+                <el-form-item label="充值金额：" prop="basicAmount" class="row-line-center">
                   <el-input v-model="ruleForm.basicAmount" @input="input(ruleForm.basicAmount)"></el-input>
                 </el-form-item>
-              </div>
-            </el-col>
-            <el-col :span="1">
-              <div style="height:40px;line-height: 40px;">元</div>
-            </el-col>
-            <el-col :span="12">
-              <div class="grid-content bg-purple-light">
-                <el-radio-group v-model="ruleForm.basicAmount" style="display:flex">
-                  <div style="margin-left: 10px;">
-                    <el-radio-button :label="!!ruleForm.chargeMin ? ruleForm.chargeMin : 50"></el-radio-button>
-                  </div>
-                  <div style="margin-left: 10px;" v-if="!ruleForm.chargeMax && (ruleForm.chargeMax >= 100)">
-                    <el-radio-button label="100"></el-radio-button>
-                  </div>
-                  <div style="margin-left: 10px;" v-if="!ruleForm.chargeMax && (ruleForm.chargeMax >= 200)">
-                    <el-radio-button label="200"></el-radio-button>
-                  </div>
-                  <div style="margin-left: 10px;" v-if="!ruleForm.chargeMax && (ruleForm.chargeMax >= 1000)">
-                    <el-radio-button label="1000"></el-radio-button>
-                  </div>
-                  <div class="myfont">（单次充值限额:{{ruleForm.chargeMin | firstChargeMin}}元—{{ruleForm.chargeMax | firstChargeMx}}元）</div>
-                </el-radio-group>
-              </div>
-            </el-col>
-          </el-row>
-          <el-row>
-            <el-col :span="4">
-              <div style="padding-left:2vw">
-                <span class="lable-font">{{member.cardTypeCode === 'equity_card' ? '权益卡售价':'开卡手续费'}}：</span><span class="lable-font2">{{ruleForm.openPrice | empty_Price}}元</span>
-              </div>
+              </el-col>
+              <el-col :span="1">
+                <div style="height:2.5vw;line-height:2.5vw;font-size:1.04vw">&nbsp;&nbsp;元</div>
+              </el-col>
+              <el-col :span="16">
+                  <el-radio-group v-model="ruleForm.basicAmount" class="price-btn-group">
+                    <div style="margin-left: 10px;" v-show="ruleForm.chargeMin && ruleForm.chargeMin < 100">
+                      <el-radio-button :label="!!ruleForm.chargeMin ? ruleForm.chargeMin : 50"></el-radio-button>
+                    </div>
+                    <div style="margin-left: 10px;" v-if="!!ruleForm.chargeMax && (ruleForm.chargeMax >= 100)">
+                      <el-radio-button label="100"></el-radio-button>
+                    </div>
+                    <div style="margin-left: 10px;" v-if="!!ruleForm.chargeMax && (ruleForm.chargeMax >= 200)">
+                      <el-radio-button label="200"></el-radio-button>
+                    </div>
+                    <div style="margin-left: 10px;" v-if="!!ruleForm.chargeMax && (ruleForm.chargeMax >= 1000)">
+                      <el-radio-button label="1000"></el-radio-button>
+                    </div>
+                    <div class="myfont">（单次充值限额:{{ruleForm.chargeMin | firstChargeMin}}元—{{ruleForm.chargeMax | firstChargeMx}}元）</div>
+                  </el-radio-group>
+              </el-col>
+            </el-row>
+            <el-row style="margin-top:1vw">
+              <el-col :span="4">
+                <div style="padding-left:3vw">
+                  <span class="lable-font">{{member.cardTypeCode === 'equity_card' ? '权益卡售价':'开卡手续费'}}：</span><span class="lable-font2">{{ruleForm.openPrice | empty_Price}}元</span>
+                </div>
 
-            </el-col>
-            <el-col :span="6">
-              <span class="lable-font">应收金额：</span><span class="lable-font2">{{allPrice | empty_Price}}元</span>
-            </el-col>
-          </el-row>
-        </div>
-        <div class="select-warp-padding" v-if="activeShow">
-          <moreSelectOne 
-            @selectData="selectData"
-            ref="moreSelectOne" 
-            :dataListAll="dataListAll"/>
-        </div>
-        <div class="pay" v-if="allPrice != 0">
-          <el-form-item label="支付方式：" prop="payWayCode">
-            <el-radio-group v-model="ruleForm.payWayCode">
-              <el-radio label="cash">现金</el-radio>
-              <el-radio label="alimicropay">支付宝</el-radio>
-              <el-radio label="wxmicropay">微信</el-radio>
-            </el-radio-group>
-          </el-form-item>
+              </el-col>
+              <el-col :span="6">
+                <span class="lable-font">应收金额：</span><span class="lable-font2">{{allPrice | empty_Price}}元</span>
+              </el-col>
+            </el-row>
+          </div>
+          <div class="select-warp-padding" v-if="activeShow">
+            <moreSelectOne 
+              @selectData="selectData"
+              ref="moreSelectOne" 
+              :dataListAll="dataListAll"
+              :openCard='true'/>
+          </div>
+          <div class="pay" v-if="allPrice != 0">
+            <el-form-item label="支付方式：" prop="payWayCode">
+              <el-radio-group v-model="ruleForm.payWayCode">
+                <el-radio :label="item.label" v-for="(item,index) in payWayCode" :key="index">{{item.value}}</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </div>
         </div>
       </div>
     </el-form>
       <div class="bottom-btn-warp">
-        <el-button @click="back()" class="button">返回</el-button>
-        <el-button v-show="ruleForm.cardProductId" @click="clearRuleForm()">清空</el-button>
-        <el-button v-show="ruleForm.cardProductId" @click="submit" type="primary">确定</el-button>
+        <el-button @click="back()" v-text='ruleForm.cardProductId ? "取消" :"返回"' class="common-btn"></el-button>
+        <el-button v-show="ruleForm.cardProductId" @click="clearRuleForm()" class="common-btn">清空</el-button>
+        <el-button v-show="ruleForm.cardProductId" @click="submit" type="primary" class="common-btn">确定</el-button>
       </div>
 
-    <pay-loading v-model="ruleForm.barCode" :visible.sync="centerDialogVisible"></pay-loading>
+    <pay-loading v-model="ruleForm.barCode" :visible.sync="centerDialogVisible" :payMethod='ruleForm.payWayCode'></pay-loading>
   </div>
 </template>
 
@@ -189,7 +173,11 @@ export default {
         realCardNo: "", //物理卡号
         activityId: "", //营销活动ID
         activityName: "", //营销活动ID
-        activityStatus: "", //营销活动ID
+        couponAmount:"",//票券数量
+        couponApplyCode:"",//票券编码
+        couponApplyCodeLabel:"",//票券名称
+        presentMoney:"",//赠送金额
+        presentPoint:"",//赠送积分数
         sex: "", //性别
         payWayCode: "", //支付方式名称
         cardType: "", //会员卡类型
@@ -220,7 +208,7 @@ export default {
         ],
         consumePassword: [
           { required: true, message: '密码不能为空，请输入密码', trigger: "change" },
-          { min:6,max:6, validator: customPasswordReg, trigger: "change",passwordkType:''}
+          { min:6,max:6, validator: customPasswordReg, trigger: "change",passwordkType:1}
         ],
         basicAmount: [
           { required: true, validator: num10_999float2, trigger: "change" }
@@ -238,18 +226,16 @@ export default {
         barCode: [{ required: true, message: "支付凭证必填", trigger: "blur" }]
       },
       dataListAll:[],//获取优惠信息列表
-      activeShow:false,//优惠活动组件显隐
+      activeShow:true,//优惠活动组件显隐
       pickerOptions:{
-            disabledDate(time){
-                let _now = Date.now();
-                return time.getTime() > _now;
+        disabledDate(time){
+            let _now = Date.now();
+            return time.getTime() > _now;
 　　　　　　　　　　　　　　//大于当前的禁止
-            }
         }
+      },
+      chargeBlock:true,//为礼品卡不展示收费区域
     };
-  },
-  created() {
-    this.getActivityList();
   },
   filters: {
     empty_Price: function(price) {
@@ -303,24 +289,36 @@ export default {
     selectData(data) {
       console.log(data, "返回值");
       if (data) {
-        this.ruleForm.activityName = data.acticityName;
-        this.ruleForm.activityId = data.activityId;
-        this.ruleForm.activityStatus = data.acticityStatus;
+        this.ruleForm = Object.assign({},this.ruleForm,data,{
+          activityAmount:data.amount
+        })
       } else {
-        this.ruleForm.activityName = "";
-        this.ruleForm.activityId = "";
-        this.ruleForm.activityStatus = "";
+        this.ruleForm.activityId = ""; //营销活动ID
+        this.ruleForm.activityName = ""; //营销活动ID
+        this.ruleForm.couponAmount="";//票券数量
+        this.ruleForm.couponApplyCode="";//票券编码
+        this.ruleForm.couponApplyCodeLabel="";//票券名称
+        this.ruleForm.presentMoney="";//赠送金额
+        this.ruleForm.presentPoint="";//赠送积分数
+        // this.basicAmount = "";
       }
     },
     queryData(data) {
       this.$refs['ruleForm'].resetFields();
       this.ruleForm.cardNo = data.phoneOrCard;
     },
-    getActivityList() {
-      MemberAjax.getActivityList({ tenantId: this.tenantId, action: "MEMBER_ACTIVE_CARD" ,channelNo:localStorage['channelNo'],cinemaId:localStorage['cinemaId']}).then(res => {
-        var activeList = res.data;
+    getActivityList(cardTypeCode) {
+      MemberAjax.getActivityList({cardNo:this.ruleForm.cardNo, tenantId: this.tenantId, action: "MEMBER_ACTIVE_CARD" ,channelNo:localStorage['channelNo'],cinemaId:localStorage['cinemaId'],cinemaCode:localStorage['cinemaCode'],cardProductId:this.ruleForm.cardProductId,cardTypeCode:cardTypeCode,levelId:'1'}).then(res => {
+        var activeList = res.data || [];
+        //过滤调非储值卡情况下 选取充值活动
+        if(this.member.cardTypeCode != 'stored_card'){
+          activeList = activeList.filter(item => {
+            return !item.presentMoney;
+          })
+        }
         this.dataListAll = activeList;
-        this.activeShow = true;
+        this.activeShow = false;
+        this.$nextTick(()=>{this.activeShow = true;})
       });
     },
     applyCardNoInfo(cardNo) {
@@ -333,30 +331,53 @@ export default {
           this.ruleForm.cardProductId = '';
           this.$message.error(res.msg)
         } else {
-          var res = res.data;
-          if (res.isBinding) {
+          var _res = res.data;
+          //迁移卡开卡处理
+          if(!_res.mustFill){
+            this.$message.warning("未查询到卡信息");
+            return;
+          }
+          if (_res.isBinding) {
             this.$message.warning("此卡已绑定");
             this.ruleForm.cardProductId = '';
           } else {
-            if(res.cardType === '联名卡' || res.cardTypeCode === 'cobranded_card'){
+            if(_res.cardType === '联名卡' || _res.cardTypeCode === 'cobranded_card'){
               this.$message.warning('联名卡暂不支持开卡');
               return;
             }
-            if(res.cardTypeCode === 'equity_card'){
-              this.ruleForm.openPrice = res.price;
-            }else{
-              this.ruleForm.openPrice = res.openPrice; //开卡
+            //判断此卡是否可以在柜台开卡
+            let flag = _res.channelList.some((item,index)=>{
+              if(item.channelNo == 0){
+                return true;
+              }
+            })
+            if(!flag){
+              this.ruleForm.cardProductId = '';
+              this.$message.warning('此卡政策柜台不可用');
+              return;
             }
-            this.member.cardTypeCode = res.cardTypeCode;
-            this.ruleForm.cardProductId = res.id;
-            this.ruleForm.cardName = res.cardName;
-            this.ruleForm.cardType = res.cardType;
-            this.ruleForm.chargeMax = res.chargeMax;
-            this.ruleForm.chargeMin = res.firstChargeMin;
-            this.mustFill = res.mustFill;
-            this.rules['consumePassword'][1]['passwordkType'] = res.weakPassword    //是否为若类型密码格式
-            sessionStorage['chargeMin'] = res.firstChargeMin;
-            sessionStorage['chargeMax'] = res.chargeMax;
+            if(_res.cardTypeCode === 'equity_card'){
+              this.ruleForm.openPrice = _res.price;
+            }else{
+              this.ruleForm.openPrice = _res.openPrice; //开卡
+            }
+            this.member.cardTypeCode = _res.cardTypeCode;
+            this.ruleForm.cardProductId = _res.id;
+            this.ruleForm.cardName = _res.cardName;
+            this.ruleForm.cardType = _res.cardType;
+            this.ruleForm.chargeMax = _res.chargeMax;
+            this.ruleForm.chargeMin = _res.firstChargeMin;
+            this.mustFill = _res.mustFill;
+            this.rules['consumePassword'][1].passwordkType = _res.weakPassword    //是否为若类型密码格式
+            sessionStorage['chargeMin'] = _res.firstChargeMin;
+            sessionStorage['chargeMax'] = _res.chargeMax;
+            //礼品卡
+            console.log(_res.cardTypeCode)
+            if(_res.cardTypeCode === 'gift_card'){
+              this.chargeBlock = false;
+            } else {
+              this.getActivityList(_res.cardTypeCode);
+            } 
           }
         }
       }).catch(err => {
@@ -385,25 +406,23 @@ export default {
 
 <style lang="scss" scope>
 ._member-apply-card {
-  min-width: 1024px;
   position: relative;
-  .el-form-item__label {
-    width: 11vw !important;
-  }
   .el-form-item__content {
-    margin-left: 11vw !important;
+    margin-left: 0 !important;
   }
   .cardNoNameStyle {
     position: absolute;
-    padding: 2.7vh 2vw;
+    margin: 2.7vh;
+    height:5vh;
+    line-height:5vh;
     width: 39.4vw;
     right: 0px;
     top: 0px;
-    height: 40px;
-    line-height: 40px;
+    text-indent: 18px;
+    box-shadow: 0 0  1px  1px #BCBCBC inset;
+    border-radius:2px;
     span {
-      font-family: MicrosoftYaHei;
-      font-size: $font-size13;
+      font-size: $font-size12;
       color: #666666;
       letter-spacing: 0;
     }
@@ -420,16 +439,12 @@ export default {
     }
   }
   .password {
-    position: absolute;
-    right: 4vw;
-    top: 0;
-    height: 40px;
-    width: 11.7vw;
+    height:5vh;
+    margin-left:.6vw;
     button {
-      height: 40px;
-      width: 11.7vw;
+      height: 5vh;
       cursor: pointer;
-      line-height: 40px;
+      font-size:$font-size12;
       border: none;
       background: #ffffff;
       border: 1px solid #3b74ff;
@@ -438,31 +453,15 @@ export default {
       color: #3b74ff;
     }
   }
-  .member-info-title {
-    font-size: $font-size14;
-    color: #333;
-    font-weight: bold;
-    text-indent: 2vw;
-  }
   .member-info-content {
-    padding: 2vw 0vw;
-    .el-input {
-      width: 17.6vw;
+    padding: 1vw 0vw;
+    .el-col-11{
+      height:8vh;
+      // margin-bottom:3vw;
     }
-    .el-input__inner {
-      width: 17.6vw;
-    }
-  }
-
-  .el-form-item__label {
-    font-size: $font-size13;
-    color: #666666;
   }
   .pay {
     margin-top: 1%;
-    .el-form-item__label {
-      color: #333333;
-    }
     .el-form-item__error {
       top: 26%;
       left: auto;
@@ -473,24 +472,20 @@ export default {
     padding-left: 2vw;
   }
   .myfont {
-    font-size: $font-size13;
-    height: 40px;
-    line-height: 40px;
-    font-family: MicrosoftYaHei;
-    font-size: 13px;
+    font-size: $font-size12;
+    height: 2.5vw;
+    line-height: 2.5vw;
     color: #3b74ff;
     letter-spacing: 0;
     text-indent: 10px;
   }
   .lable-font {
-    font-family: MicrosoftYaHei;
-    font-size: $font-size13;
+    font-size: $font-size12;
     color: #666666;
     letter-spacing: 0;
   }
   .lable-font2 {
-    font-family: Arial-BoldMT;
-    font-size: $font-size13;
+    font-size: $font-size12;
     color: #ff7b03;
     letter-spacing: 0;
   }

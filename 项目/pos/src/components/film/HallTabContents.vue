@@ -1,20 +1,25 @@
 <template>
-    <div :class="['hall-order-container', currentFilmId == filmInfo.id ? 'selected' : '']" @click="setFilmId(filmInfo.id, filmInfo.plan_code, filmInfo.allow_single_sold)">
+    <div :class="['hall-order-container', currentFilmId == filmInfo.id ? 'selected' : '']" @click="setFilmId(filmInfo.id, filmInfo.plan_code, filmInfo.allow_single_sold, filmInfo.min_price)">
         <div class="detail">
            <div class="detail-name">
-              <span :class="['film-name',  currentFilmId == filmInfo.id ? 'font-selected' : '']">
-                   {{filmInfo.name}}
-              </span>
+               <el-tooltip effect="dark" :content="filmInfo.join_flag == 1 ? filmInfo.display_name : filmInfo.name" placement="bottom">
+                <span :class="['film-name',  currentFilmId == filmInfo.id ? 'font-selected' : '']">
+                   {{filmInfo.join_flag == 1 ? filmInfo.display_name : filmInfo.name}}
+                </span>
+               </el-tooltip>
               <span :class="['film-time',  currentFilmId == filmInfo.id ? 'font-selected' : '']">
-                  {{filmInfo.show_time.substring(10, 16)}}
+                  {{filmInfo.next_day + filmInfo.show_time.substring(10, 16)}}
               </span>
            </div>
            <div class="detail-info">
                <span style="display: flex">
-                   <span v-show="filmInfo.play_effect" class="film-tip">{{filmInfo.play_effect}}</span>
-                   <span v-show="filmInfo.language" class="film-tip">{{filmInfo.language}}</span>
+                   <span :title="filmInfo.play_effect" v-show="filmInfo.play_effect" class="film-tip">{{filmInfo.play_effect}}</span>
+                   <span :title="filmInfo.language"  v-show="filmInfo.language" class="film-tip">{{filmInfo.language}}</span>
                </span>
-               <span :class="['sell', currentFilmId == filmInfo.id ? 'font-selected' : '']">{{"已售" + filmInfo.soldnum + "/"  + filmInfo.seatnum}}</span>
+               <span :class="['sell', currentFilmId == filmInfo.id ? 'font-selected' : '']">
+                   <!-- {{"已售" + filmInfo.soldnum + "/"  + filmInfo.seatnum}} -->
+                   {{'共' + filmInfo.seatnum +  '座'}}
+               </span>
            </div>
         </div>
         <img v-show="currentFilmId == filmInfo.id" class="selection-pos" src="/static/imgs/selected.png" alt="选中">
@@ -24,7 +29,7 @@
 
 <script>
 import {mapGetters, mapMutations} from 'vuex'
-import {SET_FILM_CURRENT_SEL_ID, SET_CURRENT_FILM_TITLE, SET_CURRENT_PLANCODE} from 'types'
+import {SET_FILM_CURRENT_SEL_ID, SET_CURRENT_FILM_TITLE, SET_CURRENT_PLANCODE, SET_CURRENT_TICKET_MINPRICE} from 'types'
 export default {
     props: {
         filmInfo: {
@@ -34,7 +39,8 @@ export default {
 
     computed: {
         ...mapGetters([
-            'currentFilmId'
+            'currentFilmId',
+            'seatSelection'
         ])
     },
 
@@ -42,16 +48,25 @@ export default {
         ...mapMutations([
             SET_FILM_CURRENT_SEL_ID,
             SET_CURRENT_FILM_TITLE,
-            SET_CURRENT_PLANCODE
+            SET_CURRENT_PLANCODE,
+            SET_CURRENT_TICKET_MINPRICE
         ]),
-        setFilmId(id, code, allowSingle) {
-            let codeAndSingle = {
-                code,
-                allowSingleSold: parseInt(allowSingle) ? true : false
+        setFilmId(id, code, allowSingle, minPrice) {
+
+            if(this.seatSelection.length) {
+               this.$alert('请取消当前场次的影票及座位后再切换场次', {
+                 confirmButtonText: '确定'
+               });
+            }else {
+               let codeAndSingle = {
+                    code,
+                    allowSingleSold: parseInt(allowSingle) ? true : false
+                }
+                this.SET_FILM_CURRENT_SEL_ID(id)
+                this.SET_CURRENT_PLANCODE(codeAndSingle)
+                this.SET_CURRENT_FILM_TITLE()
+                this.SET_CURRENT_TICKET_MINPRICE(minPrice)
             }
-            this.SET_FILM_CURRENT_SEL_ID(id)
-            this.SET_CURRENT_PLANCODE(codeAndSingle)
-            this.SET_CURRENT_FILM_TITLE()
         },
     }
 }
@@ -81,7 +96,7 @@ export default {
           position: absolute;
           top: 0;
           right: 0;
-          width: 1.4vw;
+          width: 2.2vw;
       }
 
       .detail {
@@ -91,6 +106,7 @@ export default {
           flex-direction: column;
           justify-content: center;
           padding: 0 1.2vw;
+          overflow: hidden;
 
           .detail-name {
               display: flex;
@@ -98,8 +114,12 @@ export default {
               align-items: center;
               
               .film-name {
-                  font-size: $font-size13;
+                  font-size: $font-size12;
                   color: $font-color3;
+                  text-align: left;
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
               }
 
               .film-time {
@@ -116,15 +136,15 @@ export default {
               .film-tip {
                 display: block;
                 padding: 0 0.6vw;
-                height: 2.4vh;
-                line-height: 2.4vh;
+                height: 2.1vh;
+                line-height: 2.1vh;
                 background: $btn-background-color-lightblue;
                 border-radius: 1.2vh;
                 color: $font-color-white;
                 margin-right: 2px;
                 margin-top: 2px;
                 text-align: center;
-                font-size: $font-size12;
+                font-size: $font-size10;
                 overflow: hidden;
             }
 

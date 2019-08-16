@@ -1,39 +1,59 @@
 <template>
   <div>
-    <dialogWarp :dialogVisible="dialogVisible" name="会员等级" @crmDialogOutputFlag="handleCrmDialogFlag">
-      <el-form :inline="true" :model="formData" ref="formData" class="form-data-wrap">
-        <el-form-item label="等级名称：" prop="levelName">
-          <el-input v-model="formData.levelName" placeholder="等级名称" clearable maxlength="30"></el-input>
-        </el-form-item>
-        <el-form-item label="等级编号：" prop="levelNo">
-          <el-input v-model="formData.levelNo" placeholder="等级编号" clearable maxlength="30"></el-input>
-        </el-form-item>
-        <el-form-item class="btn-wrap">
-          <el-button type="primary" @click="handleSearch" class="_el-btn-custom">搜索</el-button>
-          <el-button @click="resetForm('formData')" class="_el-btn-custom">重置</el-button>
-        </el-form-item>
-      </el-form>
-      <div class="_crm-member-level-dialog-wrap">
-        <div class="_m-member-table-custom">
-          <el-table ref="multipleTable" :empty-text="tipMessage" :data="tableData" stripe style="width: 100%" @select="handleSelect"
-            @select-all="handleSelect" :row-key="getRowKeys">
-            <el-table-column type="selection" width="55" :reserve-selection="true">
-            </el-table-column>
-            <el-table-column prop="levelNo" :formatter="emptyShow" label="会员等级编号" min-width="80" show-overflow-tooltip></el-table-column>
-            <el-table-column prop="levelName" :formatter="emptyShow" label="会员等级名称" min-width="80"
-              show-overflow-tooltip></el-table-column>
-            <el-table-column :formatter="emptyShow" label="会员升级规则" min-width="230" show-overflow-tooltip>
-              <template slot-scope="scope">
-                <span v-if="scope.row.levelNo == '1'" class="ordinary">
-                  当前等级为最低，无法添加升级规则
-                </span>
-                <span v-else class="no-ordinary">
-                  升级标准：定级周期内成长值达到{{scope.row.levelupGrowth}}点;
-                  保级标准：定级周期内成长值达到{{scope.row.saveGrowth}}点
-                </span>
-              </template>
-            </el-table-column>
-          </el-table>
+    <dialogWarp :dialogVisible="dialogVisible" :name="customTitle" @crmDialogOutputFlag="handleCrmDialogFlag">
+      <div class="__crm-available-coupon-wrap">
+        <el-form :inline="true" :model="formData" ref="formData"
+          class="__crm-available-coupon-search _custom-search-item">
+          <el-form-item label="等级名称" prop="levelName">
+            <el-input v-model="formData.levelName" placeholder="等级名称" clearable maxlength="30"></el-input>
+          </el-form-item>
+          <el-form-item label="等级编号" prop="levelNo">
+            <el-input v-model="formData.levelNo" placeholder="等级编号" clearable maxlength="30"></el-input>
+          </el-form-item>
+          <el-form-item class="btn-wrap">
+            <el-button type="primary" @click="handleSearch" class="_el-btn-custom">搜索</el-button>
+            <!-- <el-button @click="resetForm('formData')" class="_el-btn-custom">重置</el-button> -->
+          </el-form-item>
+        </el-form>
+        <div class="__crm-available-coupon-dialog-content-wrap _crm-member-level-dialog-wrap">
+          <div class="__crm-available-coupon-dialog-content-left">
+            <div class="__crm-available-coupon-dialog-table _m-member-table-custom">
+              <el-table ref="multipleTable" :empty-text="tipMessage" :data="tableData" stripe style="width: 100%"
+                @select="handleSelect" @select-all="handleSelect" :row-key="getRowKeys">
+                <el-table-column type="selection" width="55" :reserve-selection="true">
+                </el-table-column>
+                <el-table-column prop="levelNo" :formatter="emptyShow" label="会员等级编号" min-width="80"
+                  show-overflow-tooltip></el-table-column>
+                <el-table-column prop="levelName" :formatter="emptyShow" label="会员等级名称" min-width="80"
+                  show-overflow-tooltip></el-table-column>
+                <el-table-column :formatter="emptyShow" label="会员升级规则" min-width="230" show-overflow-tooltip>
+                  <template slot-scope="scope">
+                    <span v-if="scope.row.levelNo == '1'" class="ordinary">
+                      当前等级为最低，无法添加升级规则
+                    </span>
+                    <span v-else class="no-ordinary">
+                      升级标准：定级周期内成长值达到{{scope.row.levelupGrowth}}点;
+                      保级标准：定级周期内成长值达到{{scope.row.saveGrowth}}点
+                    </span>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
+          </div>
+          <div class="__crm-available-coupon-dialog-content-right">
+            <div class="__content-right-wrap">
+              <div class="__content-right-title">
+                已选等级
+              </div>
+              <div class="__clear-btn" @click="handleEmpty">清空</div>
+            </div>
+            <ul class="__selected-equity-wrap">
+              <li class="__selected-equity-item-inner" v-for="(item, index) of multipleSelectionItem" :key="index">
+                <div class="__selected-equity-name-desc">{{item.levelName}}</div>
+                <i class="el-icon-close __dialog-icon-delete" @click="dialogDeleteEquity(index)"></i>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </dialogWarp>
@@ -88,6 +108,11 @@ export default {
       // 调用弹窗的识别参数
       type: String,
       default: "mainPageUnique"
+    },
+    customTitle: {
+      // 自定义弹窗title
+      type: String,
+      default: "会员等级"
     }
   },
   created() {},
@@ -108,6 +133,17 @@ export default {
     immediate: true
   },
   methods: {
+    // dialog内删除已选权益
+    dialogDeleteEquity(index) {
+      this.multipleSelectionItem.splice(index, 1);
+      this.$refs.multipleTable.clearSelection();
+      this.rowMultipleChecked(this.multipleSelectionItem);
+    },
+    // 清空dialog内已选权益
+    handleEmpty() {
+      this.multipleSelectionItem = [];
+      this.$refs.multipleTable.clearSelection();
+    },
     // 筛选表格数据
     formatData(data) {
       !this.formData.levelNo || data.levelNo.indexOf(this.formData.levelNo);
@@ -266,6 +302,9 @@ export default {
 </script>
 <style lang="scss">
 ._crm-member-level-dialog-wrap {
+  .el-table__body-wrapper {
+    height: 396px !important;
+  }
   .no-ordinary,
   .ordinary {
     font-size: 12px;

@@ -247,54 +247,6 @@ export default {
                 data
             })
         },
-
-        //pos端常用商品设置
-        // 保存常用商品
-        userProSaveUseInfo: data => {
-            return axios({
-                baseURL: config.baseURL,
-                url: '/user/pro/saveUseInfo',
-                method: 'post',
-                data
-            })
-        },
-        // 添加常用商品sku列表分页查询
-        userProQuerySkuCinemaUidList: data => {
-            return axios({
-                baseURL: config.baseURL,
-                url: '/user/pro/querySkuCinemaUidList',
-                method: 'post',
-                data
-            })
-        },
-        // 终端列表接口
-        userProTerminalList: data => {
-            return axios({
-                baseURL: config.baseURL,
-                url: '/user/pro/terminalList',
-                method: 'post',
-                data
-            })
-        },
-        // 终端删除
-        userProDelterminal: data => {
-            return axios({
-                baseURL: config.baseURL,
-                url: '/user/pro/delterminal',
-                method: 'post',
-                data
-            })
-        },
-
-        // 门店常用商品查询
-        userProQueryUseInfo: data => {
-            return axios({
-                baseURL: config.baseURL,
-                url: '/user/pro/queryUseInfo',
-                method: 'post',
-                data
-            })
-        },
         // 采购协议列表检索
         agreementQueryPage: data => {
             return axios({

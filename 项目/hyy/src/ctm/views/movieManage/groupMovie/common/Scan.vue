@@ -141,40 +141,100 @@
           <div class="basic-info account-fenge">
             <el-form ref="form" :model="sizeForm" label-width="85px" size="small" inline>
               <div>
-                <el-form-item label="最低票价：">
-                  <div class="cinema-stock-scan-table">
-                    <el-table :data="priceList" border>
-                      <el-table-column prop="minPrice" label="最低票价" width="199">
-                        <template slot-scope="scope">
-                          ￥{{scope.row.minPrice}}
-                        </template>
-                      </el-table-column>
-                      <el-table-column prop="dateStart" label="有效期" width="199">
-                        <template slot-scope="scope">
-                          <span class="date-css">{{getDateFatFun(scope.row.dateStart.replace(/-/g, '/'))}} ~ {{getDateFatFun(scope.row.dateEnd.replace(/-/g, '/'))}}</span>
-                        </template>
-                      </el-table-column>
-                    </el-table>
-                  </div>
+                <div>
+                  <el-form-item label-width="0px">
+                    <div class="f-12 label-color">
+                      <span class="c-s-title f-w-b">A类城市（{{movieAreaGradeVo.areaGradeListA?movieAreaGradeVo.areaGradeListA.length:""}}）：</span>
+                      <el-tooltip popper-class="w-400" class="item" effect="dark" :content="movieAreaGradeVo.areaA || ''" placement="bottom">
+                        <span class="c-s-title f-w-b">{{movieAreaGradeVo.areaAStr || ""}}</span>
+                      </el-tooltip>
+                    </div>
+                    <div class="cinema-stock-scan-table">
+                      <el-table :data="priceList" border>
+                        <el-table-column prop="minPrice" label="最低票价">
+                          <template slot-scope="scope">
+                            ￥{{scope.row.minPrice}}
+                          </template>
+                        </el-table-column>
+                        <el-table-column prop="dateStart" label="有效期" width="199">
+                          <template slot-scope="scope">
+                            <span class="date-css">{{getDateFatFun(scope.row.dateStart.replace(/-/g, '/'))}} ~ {{getDateFatFun(scope.row.dateEnd.replace(/-/g, '/'))}}</span>
+                          </template>
+                        </el-table-column>
+                      </el-table>
+                    </div>
+                  </el-form-item>
+                </div>
 
-                </el-form-item>
-                <el-form-item label="院方分账：">
-                  <div class="cinema-stock-scan-table">
-                    <el-table :data="rateList" stripe border style="width: 100%">
-                      <el-table-column prop="rate" label="比例" width="199">
-                        <template slot-scope="scope">
-                          {{scope.row.rate}}%
-                        </template>
-                      </el-table-column>
-                      <el-table-column prop="dateStart" label="有效期" width="199">
-                        <template slot-scope="scope">
-                          <span class="date-css">{{getDateFatFun(scope.row.dateStart.replace(/-/g, '/'))}} ~ {{getDateFatFun(scope.row.dateEnd.replace(/-/g, '/'))}}</span>
-                        </template>
-                      </el-table-column>
-                    </el-table>
-                  </div>
+                <div class="m-t-10">
+                  <el-form-item label-width="0px">
+                    <div class="f-12 label-color">
+                      <span class="c-s-title f-w-b">B类城市（{{movieAreaGradeVo.areaGradeListB?movieAreaGradeVo.areaGradeListB.length:""}}）：</span>
+                      <el-tooltip popper-class="w-400" class="item" effect="dark" :content="movieAreaGradeVo.areaB || ''" placement="bottom">
+                        <span class="c-s-title f-w-b">{{movieAreaGradeVo.areaBStr || ""}}</span>
+                      </el-tooltip>
+                    </div>
+                    <div class="cinema-stock-scan-table">
+                      <el-table :data="priceListB" border>
+                        <el-table-column prop="minPrice" label="最低票价">
+                          <template slot-scope="scope">
+                            ￥{{scope.row.minPrice}}
+                          </template>
+                        </el-table-column>
+                        <el-table-column prop="dateStart" label="有效期" width="199">
+                          <template slot-scope="scope">
+                            <span class="date-css">{{getDateFatFun(scope.row.dateStart.replace(/-/g, '/'))}} ~ {{getDateFatFun(scope.row.dateEnd.replace(/-/g, '/'))}}</span>
+                          </template>
+                        </el-table-column>
+                      </el-table>
+                    </div>
+                  </el-form-item>
+                </div>
 
-                </el-form-item>
+                <div class="m-t-10">
+                  <el-form-item label-width="0px">
+                    <div class="f-12 label-color">
+                      <span class="c-s-title f-w-b">C类城市：</span>
+                      <span class="c-s-title f-w-b">除A类、B类所有城市外默认都归为C类</span>
+                    </div>
+                    <div class="cinema-stock-scan-table">
+                      <el-table :data="priceListC" border>
+                        <el-table-column prop="minPrice" label="最低票价">
+                          <template slot-scope="scope">
+                            ￥{{scope.row.minPrice}}
+                          </template>
+                        </el-table-column>
+                        <el-table-column prop="dateStart" label="有效期" width="199">
+                          <template slot-scope="scope">
+                            <span class="date-css">{{getDateFatFun(scope.row.dateStart.replace(/-/g, '/'))}} ~ {{getDateFatFun(scope.row.dateEnd.replace(/-/g, '/'))}}</span>
+                          </template>
+                        </el-table-column>
+                      </el-table>
+                    </div>
+                  </el-form-item>
+                </div>
+
+                <div class="m-t-10">
+                  <el-form-item label-width="0px">
+                    <div class="f-12 label-color">
+                      <span class="c-s-title f-w-b">发行方分账：</span>
+                    </div>
+                    <div class="cinema-stock-scan-table">
+                      <el-table :data="rateList" stripe border style="width: 100%">
+                        <el-table-column prop="rate" label="比例">
+                          <template slot-scope="scope">
+                            {{scope.row.rate}}%
+                          </template>
+                        </el-table-column>
+                        <el-table-column prop="dateStart" label="有效期" width="199">
+                          <template slot-scope="scope">
+                            <span class="date-css">{{getDateFatFun(scope.row.dateStart.replace(/-/g, '/'))}} ~ {{getDateFatFun(scope.row.dateEnd.replace(/-/g, '/'))}}</span>
+                          </template>
+                        </el-table-column>
+                      </el-table>
+                    </div>
+                  </el-form-item>
+                </div>
               </div>
 
             </el-form>
@@ -280,7 +340,10 @@ export default {
   data () {
     return {
       //业务部分
+      movieAreaGradeVo: {},
       priceList: [],
+      priceListB: [],
+      priceListC: [],
       rateList: [],
       sizeForm: {
       },
@@ -427,6 +490,41 @@ export default {
             self.sizeForm = result.schBashMovie;
             self.priceList = result.priceList;
             self.rateList = result.rateList;
+            self.priceListB = result.priceListB;
+            self.priceListC = result.priceListC;
+
+            let arr = result.movieAreaGradeVo.areaGradeListA;
+            let str = ""
+            arr.forEach((item, index) => {
+              if (index != arr.length - 1) {
+                str = str + item.areaName + ","
+              } else {
+                str = str + item.areaName
+              }
+            })
+            result.movieAreaGradeVo.areaAStr = str + "共" + arr.length + "个城市";
+            result.movieAreaGradeVo.areaA = str;
+            //重置str
+            str = "";
+            if (arr.length > 4) {
+              result.movieAreaGradeVo.areaAStr = arr[0].areaName + "," + arr[1].areaName + "," + arr[2].areaName + "," + arr[3].areaName + "共" + arr.length + "个城市"
+            }
+            let arr1 = result.movieAreaGradeVo.areaGradeListB;
+            arr1.forEach((item, index) => {
+              if (index != arr1.length - 1) {
+                str = str + item.areaName + ","
+              } else {
+                str = str + item.areaName
+              }
+            })
+            // str = str + "共" + arr1.length + "个城市";
+            result.movieAreaGradeVo.areaBStr = str + "共" + arr1.length + "个城市";
+            result.movieAreaGradeVo.areaB = str;
+            if (arr1.length > 4) {
+              result.movieAreaGradeVo.areaBStr = arr1[0].areaName + "," + arr1[1].areaName + "," + arr1[2].areaName + "," + arr1[3].areaName + "共" + arr1.length + "个城市"
+            }
+            self.movieAreaGradeVo = result.movieAreaGradeVo;
+
           }
 
         })
@@ -488,6 +586,18 @@ export default {
 </script>
 <style lang="scss">
 .download-film-scan-wrap {
+  .f-w-b {
+    font-weight: bold;
+  }
+  .c-s-title {
+    color: #666666;
+  }
+  .cur-p {
+    cursor: pointer;
+  }
+  .label-color {
+    color: #606266;
+  }
   .more-info {
     color: #3b74ff;
     cursor: pointer;
@@ -516,12 +626,12 @@ export default {
       text-align: center;
       padding-top: 16px;
       box-sizing: border-box;
-      .el-button{
+      .el-button {
         width: 80px;
         height: 32px;
         margin-left: 0px;
       }
-      .el-button--primary{
+      .el-button--primary {
         margin-right: 30px;
       }
     }
@@ -530,7 +640,7 @@ export default {
     padding-bottom: 0px;
   }
   .basic-info {
-    .el-table th{
+    .el-table th {
       background-color: #e7ebff;
     }
     // width: 884px;
@@ -710,8 +820,8 @@ export default {
       }
     }
   }
-   .account-fenge {
-    .el-form-item__label  {
+  .account-fenge {
+    .el-form-item__label {
       color: #333333;
       font-weight: 600;
     }

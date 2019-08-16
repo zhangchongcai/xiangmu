@@ -3,14 +3,14 @@
     <el-dialog :title="title" :close-on-click-modal="false" :visible.sync="mydialogTableVisible">
            <div class="header-wrap">
               <div class="search-wrap">
-                <span>查询组织：</span>
+                <span style="color:#666666;">查询组织：</span>
                 <el-input size="small" placeholder="请输入查询内容"  v-model="filterText"></el-input>
               </div>
               <div class="button-wrap">
                 <el-button type="primary" size="small" @click="searchOrganization">搜索</el-button>
               </div>
             </div>
-            <div class="org-sys">
+            <div style="min-height: 405px;">
               <el-tree
                 @node-click="handleNodeClick"
                 show-checkbox
@@ -21,7 +21,9 @@
                 :filter-node-method="filterNode"
                 :check-strictly="true"
                 :expand-on-click-node="false"
-                :props="defaultProps">
+                :props="defaultProps"
+                :default-checked-keys="reviewList"
+                >
               </el-tree>
             </div>
       <div style="height:12px;background:transparent;"></div>
@@ -34,7 +36,7 @@
 
 </template>
 <script>
-import {organizationList} from "frame_cpm/http/interface.js"
+import {organizationList} from "cmm/http/interface.js"
   export default {
     props: {
       dialogTableVisible: {
@@ -52,11 +54,13 @@ import {organizationList} from "frame_cpm/http/interface.js"
         mydialogTableVisible: this.dialogTableVisible,
         name:'',
         dataTree: [],
+        reviewList:[],
         defaultProps: {
-            children:'children',
-            label:'text'
+          children:'children',
+          label:'text'
         },
-        resultOneOrg:''
+        resultOneOrg:'',
+        tenantId:JSON.parse(localStorage.getItem('user')).consumerId
       }
     },
     methods: {
@@ -75,23 +79,32 @@ import {organizationList} from "frame_cpm/http/interface.js"
         },
         // 确定选择
         chooseOrganization() {
-            this.$emit("callBack", this.$refs.tree.getCheckedNodes());
-            this.mydialogTableVisible = false;
+          this.$emit("callBack", this.$refs.tree.getCheckedNodes());
+          this.mydialogTableVisible = false;
         },
         //打开弹窗
-        openDialog(val){
-            this.mydialogTableVisible=val
-            this.getOrganizationList()
+        openDialog(val,reviewList){
+          this.filterText=""
+          this.reviewList=[]
+          this.mydialogTableVisible=val
+          this.getOrganizationList(reviewList)
         },
         //获取组织结构列表
-        getOrganizationList(){
-            let params={ }
-            organizationList(params).then(res=>{
-              if(res.data&&res.code==200){
-                this.dataTree = JSON.parse(JSON.stringify(res.data))
+        getOrganizationList(reviewList){
+          let params={
+              tenantId:this.tenantId
+          }
+          organizationList(params).then(res=>{
+            if(res.data&&res.code==200){
+              this.dataTree = JSON.parse(JSON.stringify(res.data))
+              //回显
+              if(reviewList){
+                this.reviewList = reviewList
               }
-               
-            })
+            }
+          }).catch(err => {
+            console.log(err)
+          })
         },
     },
     watch: {
@@ -149,6 +162,10 @@ import {organizationList} from "frame_cpm/http/interface.js"
       .el-dialog__headerbtn{
         top: 15px;
       }
+      .el-checkbox__inner{
+        width: 12px;
+        height: 12px;
+      }
       .el-dialog__header::after {
         content: "";
         display: block;
@@ -167,7 +184,7 @@ import {organizationList} from "frame_cpm/http/interface.js"
         font-size: 8px;
       }
       .el-dialog__body{
-        padding: 20px;
+        padding:6px 20px 20px 20px;
       }
       .btn-area {
         // margin-bottom: 10px;
@@ -175,6 +192,7 @@ import {organizationList} from "frame_cpm/http/interface.js"
         justify-content: center;
       }
       .el-tree{
+        
         .el-tree-node__label{
           font-size: 12px;
           color: #666666;

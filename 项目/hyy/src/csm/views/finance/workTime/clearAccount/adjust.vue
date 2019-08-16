@@ -340,7 +340,7 @@
     },
     watch:{
       preAmount(val){
-        const reg=/^[1-9]+\d*$/;
+        const reg=/^[0-9]+\d*$/;
         // console.log(reg.test(val),val)
         this.isError = reg.test(val)?false:true
       },
@@ -460,7 +460,7 @@
     // z-index: 999;
     bottom: 0;
     right: 0;
-    background-color: #f5f5f5;
+    // background-color: #f5f5f5;
 
     .btn-area {
       width: 500px;

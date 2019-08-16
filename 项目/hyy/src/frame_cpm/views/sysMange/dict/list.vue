@@ -1,8 +1,8 @@
 <template>
-<div class="page-wrapper">
+<div class="page-wrapper dict-list">
     <!-- header 查询条件 -->
     <div class="list-wrapper">
-      <el-form :inline="true" :model="listQuery" ref="listQuery" class="search-form search-box" size="mini" label-position="right"  label-width="100px">
+      <el-form :inline="true" :model="listQuery" ref="listQuery" class="search-form search-box" label-position="right"  label-width="86px">
         <!-- <div>
            <el-button-group>
             <el-button size="mini" type="primary"  @click="handleCreate" icon="el-icon-plus">新 增</el-button>
@@ -14,21 +14,23 @@
         </div> -->
         <div class="form-group" style="margin-top:0; border-top:0;">
           <el-form-item label="类型名称：" prop="dictName">
-             <el-input @keyup.enter.native="handleFilter" style="width: 200px;" placeholder="请根据名称进行模糊搜索" v-model="listQuery.dictName">
+             <el-input @keyup.enter.native="handleFilter" class="wid192" placeholder="请根据名称进行模糊搜索" v-model="listQuery.dictName">
              </el-input>
           </el-form-item>
           <el-form-item label="类型编码：" prop="dictCode">
-             <el-input @keyup.enter.native="handleFilter" style="width: 200px;" placeholder="请根据编码进行模糊搜索" v-model="listQuery.dictCode">
+             <el-input @keyup.enter.native="handleFilter" class="wid192" placeholder="请根据编码进行模糊搜索" v-model="listQuery.dictCode">
              </el-input>
           </el-form-item>
           <el-form-item label="启用状态：" prop="status">
-            <el-select v-model="listQuery.status" filterable placeholder="请选择" clearable>
+            <el-select v-model="listQuery.status" class="wid192" filterable placeholder="请选择" clearable>
               <el-option label="全部" value=""></el-option>
               <el-option label="启用" value="1"></el-option>
               <el-option label="禁用" value="-1"></el-option>
             </el-select>
           </el-form-item>
-          <el-button type="primary" class='search-padding' @click="searchList" size="mini" icon="el-icon-search" >搜 索</el-button>
+          <el-form-item>
+            <el-button type="primary" class='search-padding searchBtn' @click="searchList">搜 索</el-button>
+          </el-form-item>
           <!-- <el-form-item style="float: right">
             <el-button style="float: right" @click="handleCreate" type="primary" icon="el-icon-plus">新 增</el-button>
           </el-form-item> -->
@@ -36,7 +38,7 @@
       </el-form>
     <!-- <div class="content-line"></div> -->
     <!-- <div class="create-wrapper"> -->
-         <!-- <el-button type="primary" style="margin-right: 10px;" @click="toCreate" icon="el-icon-plus">新 建</el-button> -->
+         <!-- <el-button type="primary" style="margin-right: 10px;"  v-auth="'system_dictionary_add'" @click="toCreate" icon="el-icon-plus">新 建</el-button> -->
     <!-- </div> -->
      <!-- table表格 -->
     <el-table :key='tableKey'
@@ -92,8 +94,8 @@
       <el-table-column label="操作">
             <template slot-scope="scope">
               <!-- @click="toDetail(scope.row)" -->
-                <span class="table-btn-mini" @click="toDetail(scope.row)">查看</span>
-                <span class="table-btn-mini" @click="tomodifyDict(scope.row)">修改</span>
+                <el-button type="text" class="table-btn-mini"  v-auth="'system_dictionary_see'" @click="toDetail(scope.row)">查看</el-button>
+                <el-button type="text" class="table-btn-mini"  v-auth="'system_dictionary_update'"  @click="tomodifyDict(scope.row)">修改</el-button>
                 <!-- <span class="table-btn-mini" v-if="scope.row.status == 1" @click="disableBtn(scope.row)">禁用</span>
                 <span class="table-btn-mini" v-if="scope.row.status == -1" @click="enableBtn(scope.row)">启用</span> -->
             </template>
@@ -383,8 +385,51 @@ export default {
   },
 }
 </script>
+<style lang="scss">
+  .dict-list{
+    .search-box{
+      padding: 20px 24px;
+      margin-bottom:10px;
+      background: #f5f5f5;
+    }
+    .el-input__inner{
+      font-size: 12px;
+    }
+    .el-select .el-input .el-input__inner{
+      font-size: 12px;
+    }
+    .el-range-editor .el-range-input{
+      font-size: 12px;
+    }
+  }
+ 
+</style>
 
 <style lang="scss" scoped>
+.wid192{
+  width:192px;
+}
+.wid256{
+  width:256px;
+}
+.addBtn{
+  width: 80px;
+  padding-left: 0;
+  padding-right: 0;
+  height: 32px;
+  font-size: 12px;
+  border-color: #3B74FF;
+  color: #3B74FF;
+}
+.searchBtn{
+  width: 80px;
+  margin-left:12px;
+  height: 32px;
+  font-size: 12px;
+}
+.el-form-item{
+  margin-bottom:0px;
+}
 .page-wrapper{
   padding: 0 14px 0 14px;
 }
@@ -393,11 +438,7 @@ export default {
     // padding-top: 15px;
     border-top: 1px solid #ccc;
 }
-.search-box{
-  padding: 24px;
-  padding-bottom: 6px;
-  background: #f5f5f5;
-}
+
 .bread-crumb{
   margin-top: 8px;
   margin-bottom: 8px;

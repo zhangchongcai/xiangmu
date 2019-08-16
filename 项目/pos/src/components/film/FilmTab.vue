@@ -11,7 +11,7 @@
                 <i class="iconfont iconyoujiantouda" @click="nextDate"></i>
             </div>
             <div class="right" @click="refreshCurrentOrder">
-                <i class="common-font-size iconfont iconshuaxin"></i>
+                <i style="font-size: 1.36vw" class="iconfont iconshuaxin"></i>
             </div>
         </div>
 
@@ -158,7 +158,7 @@ export default {
 
             tabNav:[  //排期tab
                 {
-                  is_sel: true,
+                  is_sel: false,
                   name: "按影片",
                   en_name: 'film'
                 },
@@ -488,6 +488,7 @@ export default {
         },
 
         showFullOrder() {
+           this.$emit("getAllFilmDatas")
            this.SHOW_FULL_ORDER()
         },
 
@@ -582,15 +583,9 @@ export default {
         this.timer.slidePrev();
       },
       changeToAll() {
-        // this.tabNav.forEach(item => {
-        //       item.is_sel = false
-        //   })
-
-        this.tabNav.forEach((item, index, arr) => {
-             if(item.en_name == 'film') {
-                arr[index].is_sel = true
-             }
-         })
+        this.tabNav.forEach(item => {
+              item.is_sel = false
+          })
       },
       selOrderType(index) {
           this.tabNav.forEach(item => {
@@ -633,7 +628,7 @@ export default {
          justify-content: space-between;
          align-items: center;
          .common-font-size {
-             font-size: $font-size13;
+             font-size: $font-size12;
              margin: 0 4px;
          }
          .center {
@@ -752,7 +747,7 @@ export default {
                  text-align: center;
                  position: absolute;
                  @include color('color', $white-color);
-                 z-index: 1000;
+                 z-index: 750;
              }
 
              .scroll-arrow-up-right-film, .scroll-arrow-down-right-film {
@@ -803,6 +798,7 @@ export default {
               width: 11.7vw;
               height: 100%;
               overflow: scroll;
+              border-right: 1px solid $bg-searchPaydetalTabColor;
               &::-webkit-scrollbar {display:none}
           }
 

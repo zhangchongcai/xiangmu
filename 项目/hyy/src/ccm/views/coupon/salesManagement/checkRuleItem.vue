@@ -25,7 +25,7 @@ export default {
         return {
             activeName: ['actions', 'ruleConditions'],
             styleConfig: {
-                titleWidth: '120px'
+                titleWidth: '95px'
             },
             model: {
                 type: '',
@@ -389,45 +389,44 @@ export default {
                                 tips: '（设置加价兑换时需设置此金额）'
                             });
                         }
-                    } else {
-                        // 	低于零售价时，由'什么角色支付'
-                        let payer = actions[`payer`];
-                        if (payer) {
-                            let keysObj = {
-                                cinema: '影院',
-                                clientAll: '客户支付全部差额',
-                                client:'客户'
-
-                            };
-                            console.log('keysObj----------===',payer)
-                            let payerVal = keysObj[`${payer.value}`] + `支付,`
-                            if (payer.value == 'cinema'){
-                                payerVal += `限额${actions[`payerPayAmount`].value}元后,再顾客补齐差额`;
-                            }else if (payer.value == 'client') {
-                                if(actions[`payerPayAmount`]){
-                                    payerVal += `限额${actions[`payerPayAmount`].value}元后，元后,再影院补贴补足差额`;
-                                }else{
-                                    payerVal = '客户支付全部差额'
-                                }
-                            }
-                            actionsArr.push({
-                                text: '低于零售价时，由',
-                                value: payerVal
-                            });
-                        }
-
-                        // 是否高于零售价时，使用抵用金额作为零售价
-                        let couponMoneyAsPrice = actions[`couponMoneyAsPrice`];
-                        if (couponMoneyAsPrice) {
-                            actionsArr.push({
-                                text: '高于零售价时，使用抵用金额作为零售价',
-                                value: '是'
-                            });
-                        }
-                    }
+                    } 
                     break;
             }
-
+            if(ticketType == 'films'){   
+                // 	低于零售价时，由'什么角色支付'
+                let payer = actions[`payer`];
+                let text= ''
+                if (payer) {
+                    let payerVal = ''
+                    if (payer.value == 'cinema'){
+                        payerVal = `使用影院限额补贴 ${actions[`payerPayAmount`].value}元后,剩下再顾客支付`;
+                    }else if (payer.value == 'client') {
+                        if(actions[`payerPayAmount`]){
+                            payerVal = `使用顾客限额支付 ${actions[`payerPayAmount`].value}元，剩下再影院补贴`;
+                        }else{
+                            payerVal = '客户支付全部差额'
+                        }
+                    }
+                    if(type=='exchange'){
+                        text = '零售价 - 抵用金额后，仍不足抵消零售价时，采用以下方式处理'
+                    }else{
+                        text = '影片最低票价 - 优惠金额（调整后零售价）后，仍不足抵消最低票价时，采用以下方式处理'
+                    }
+                    actionsArr.push({
+                        text,
+                        value: payerVal
+                    });
+    
+                }
+            }
+            // 是否高于零售价时，使用抵用金额作为零售价
+            let couponMoneyAsPrice = actions[`couponMoneyAsPrice`];
+            if (couponMoneyAsPrice) {
+                actionsArr.push({
+                    text: '高于零售价时，使用抵用金额作为零售价',
+                    value: '是'
+                });
+            }
             // 折扣后取整方式
             let decimalRoundMode = actions[`decimalRoundMode`];
             if (decimalRoundMode) {

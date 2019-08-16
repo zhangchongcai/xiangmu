@@ -3,7 +3,7 @@
         <el-dialog :visible="show" title="影院kpi编辑"
         :before-close="handleClose"
         :close-on-click-modal="false">
-            <div class="content" v-if="infoData && infoData.cinemaCode">
+            <div class="content" style="max-height:500px"  v-if="infoData && infoData.cinemaCode">
                 <el-form ref="updateKpi" class="reset-form"  label-width="140px" label-position="right" 
                     :model="infoData"
                     :rules="ruleForm">

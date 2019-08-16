@@ -14,7 +14,7 @@
       :model="queryData"
       label-position="left"
       label-width="100px"
-      label-suffix=":"
+      label-suffix="："
     >
       <el-collapse  v-model="activeNames">
         <!-- 基础信息 start-->
@@ -31,7 +31,7 @@
                   label="盘点门店" 
                   class="select-input"
                   prop="cinemaName"
-                  :rules="[{ required: routeQuery.type==3 ? false : true, message: '选择登记门店',trigger: 'change' }]"
+                  :rules="[{ required: routeQuery.type==3 ? false : true, message: '选择登盘点门店',trigger: 'change' }]"
                   >
                   <template v-if="routeQuery.type=='1'">     
                     <el-input
@@ -150,8 +150,8 @@
       <cinemal-dialog ref="myCinemalDialog" @onSumit="onCinemalSumit" :dialogFeedbackData="saleCinemaList"></cinemal-dialog>
       <div class="submit-box">
         <el-button type="primary" @click="ThandleSubmit">保存并提交</el-button>
-        <el-button type="primary" @click="ChandleSubmit" v-if="this.queryData.status != 2">保存为草稿</el-button>
-        <el-button @click="handleCancel">{{routeQuery.type !="3" ? "取消":"关闭"}}</el-button>
+        <!-- <el-button type="primary" @click="ChandleSubmit" v-if="this.queryData.status != 2">保存为草稿</el-button> -->
+        <el-button @click="fanhuihandleCancel">{{routeQuery.type !="3" ? "取消":"关闭"}}</el-button>
       </div>
     </el-form>
   </div>
@@ -248,9 +248,26 @@ export default {
         this.resCheckBillCreateBillCode()
         // console.log(JSON.parse(this.$route.query.data))
       }else if(this.$route.query.type == "2"){
-        this.queryData = JSON.parse(this.$route.query.data)
+        this.resCheckBillToPage(JSON.parse(this.$route.query.data))
+        
         console.log(this.queryData)
       }
+    },
+    // 跳转修改页面请求
+    resCheckBillToPage(row){
+      let val = {
+        uid:row
+      }
+      this.$cimList.inventoryManagement
+        .checkBillToPage(val)
+        .then(res => {
+          if (res.code === 200) {
+            this.queryData = res.data
+          } else {
+            this.$message(res.msg);
+          }
+        })
+        .catch(err => {});
     },
     // 查询
     onQuery() {
@@ -259,7 +276,7 @@ export default {
       this.findSemifinishedMater(this.materialQueryData);
     },
         // 选泽门店回调
-    onCinemalSumit(data = []) {
+    setCinema(data = []) {
       this.clearQueryData()
       if (data.length > 0) {
         this.queryData.cinemaName = data[0].name || data[0].cinemaName;
@@ -276,6 +293,21 @@ export default {
         newArr.push(newObj)
       })
       this.saleCinemaList = newArr
+    },
+    // 选泽门店回调
+    onCinemalSumit(val = [],type) {
+      console.log(val," 选泽门店回调",type);
+      if (val.length > 0) {
+        if(type=="default"){
+          if(val.length==1){
+            this.setCinema(val)
+          }
+        }else{
+          this.setCinema(val)
+        }
+      } else {
+        this.setCinema()
+      }
     },
     // 获取分类列表
     getCategoryTrees(param) {
@@ -346,7 +378,7 @@ export default {
               this.resCheckBillSave(this.queryData)
               
             }else if(this.$route.query.type == "2"){
-              this.queryData.saveStatus = 2
+              this.queryData.saveStatus = 1
               this.resCheckBillUpdate(this.queryData)
             }
           }else{
@@ -357,10 +389,20 @@ export default {
     },
     //
     handleCancel() {
+      this.$store.commit("tagNav/removeTagNav", {
+          name: this.$route.name,
+          path: this.$route.path,
+          title: this.$route.meta.title,
+          query: this.$route.query
+      })
       console.log(JSON.stringify(this.queryData))
+      let queryData = {
+        cinemaUid:this.queryData.cinemaUid,
+        cinemaName:this.queryData.cinemaName
+      }
       this.returnList({
         returnType:true,
-        cinema: JSON.stringify(this.queryData)
+        cinema: JSON.stringify(queryData)
       });
     },
     returnList(param) {
@@ -391,6 +433,7 @@ export default {
       this.queryData.storehouseCode = ""
       this.queryData.storehouseName = ""
       this.queryData.checkBillMerEntityList = []
+      this.pdfnData = []
 
     },
     selectSuppliersDialog() {
@@ -416,6 +459,18 @@ export default {
         }
       }
     },
+        // 取消返回
+    fanhuihandleCancel() {
+      this.$store.commit("tagNav/removeTagNav", {
+          name: this.$route.name,
+          path: this.$route.path,
+          title: this.$route.meta.title,
+          query: this.$route.query
+      })
+      this.$router.push({
+          path: "/retail/InventoryManagement/inventoryManagement/list",
+      });
+    },
     // 盘点方案事件
     pdfnSelEvent(){
       if(this.queryData.cinemaUid == "" || this.queryData.cinemaUid == undefined || this.queryData.cinemaUid == null){
@@ -435,6 +490,9 @@ export default {
         this.resCheckBillCheckSolutionMerInfo()
       }
     },
+    // fanhuihandleCancel() {
+    //   this.$router.go(-1);
+    // },
     changeStoreEvent(){
       let selectedWorkName = {};
        selectedWorkName = this.storeData.find((item)=>{

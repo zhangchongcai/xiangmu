@@ -1,7 +1,7 @@
 <template>
   <el-dialog id="cim-good-select-dialog"
     class="retail-style"
-    width="1016px"
+    width="1065px"
     :title="title"
     :visible="dialogVisible"
     @close="closeCallBack"
@@ -138,6 +138,11 @@ export default {
       type: [String, Number],
       default: ""
     },
+    //商品销售状态 -1 为全部商品  0为禁止销售商品 1为允许销售商品
+    canSale: {
+      type: [String, Number],
+      default: "1"
+    },
     //门店id
     cinemaUid: {
       type: [String, Number],
@@ -188,7 +193,7 @@ export default {
     return {
       //查询数据
       queryData: {
-        canSale: "1", //可销售商品
+        canSale: this.canSale, //默认可销售商品
         merType: "", //商品类型
         classUid: "",
         name: "",
@@ -222,7 +227,7 @@ export default {
       this.queryData.classUid = "";
       this.init();
       this.onQuery("open");
-      console.log(this.dialogFeedbackData, "this.dialogFeedbackData");
+      // console.log(this.dialogFeedbackData, "this.dialogFeedbackData");
     },
     init() {
       this.selectProductClass({ uid: "" });
@@ -230,6 +235,9 @@ export default {
     // 查询
     onQuery(type) {
       this.queryData.merType = this.merType;
+      if (this.queryData.canSale == "-1") {
+        this.queryData.canSale = ''
+      }
       if (this.cinemaUid) {
         this.queryData.cinemaUid = this.cinemaUid;
         this.goodsDataQueryCinemaGoodsList(this.queryData, type);
@@ -301,9 +309,14 @@ export default {
           }
         }
         this.tableData = res.data.list.map(item => {
+          //单品
+          if(item.merType == 1){
+            item.merName = item.skuName
+          }
+          //合成品
           if (item.merType == 2) {
             if (item.skuName) {
-              item.merName = item.merName + "--" + item.skuName;
+              item.merName = item.merName + "-" + item.skuName;
             }
           }
           return item;
@@ -316,12 +329,12 @@ export default {
     },
     // 选择添加商品
     handleSelectionMaterial(value) {
-      console.log("选择的商品", value);
+      // console.log("选择的商品", value);
       this.selectedgoods = value;
     },
     //删除选择
     deleteSelected(row, flag) {
-      console.log("删除", row)
+      // console.log("删除", row)
       this.$refs.materialTable.toggleRowSelection(row,false);
     },
     // 清空选择
@@ -444,8 +457,7 @@ export default {
     padding: 10px;
   }
   .search {
-    margin-top: 5px;
-    float: right;
+    margin-top: 6px;
   }
 
   .empty-box {
@@ -454,7 +466,7 @@ export default {
     border: 1px solid #e5e5e5;
     border-left: none;
     .empty-btn{
-
+      margin-top: 4px;
     }
     .selected-content {
       padding: 10px 0;
@@ -476,7 +488,7 @@ export default {
     }
 
     .empty-content {
-      height: 457px;
+      height: 455px;
 
       overflow-y: auto;
       border-top: 1px solid #f5f5f5;

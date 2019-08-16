@@ -5,7 +5,7 @@
       <div class="BoxTitle flex" height="40">
         <div class="left">
           <span class="iconfont icon-shouye-huiyuan"></span>
-          <span>会员</span>
+          <span class="title">会员</span>
         </div>
         <div class="right">
           <span class="tip cursor" @click="goDetail">详情</span>
@@ -26,7 +26,7 @@
         <li @click="MeClick('1')" :class="{active:cur==1}">
           <div>会员消费金额</div>
           <div>
-            <span>{{MemberTop.memberConsumeAmount | capitalizeOne}}</span>{{MemberTop.memberConsumeAmount | foo}}
+            <span>{{MemberTop.memberConsumeAmount | capitalizePerson}}</span>{{MemberTop.memberConsumeAmount | foo}}
           </div>
         </li>
         <li @click="MeClick('2')" :class="{active:cur==2}">
@@ -44,7 +44,7 @@
         <li @click="MeClick('4')" :class="{active:cur==4}">
           <div>储值金额</div>
           <div>
-            <span>{{MemberTop.totalStoreAmount | capitalizeOne}}</span>{{MemberTop.totalStoreAmount | foo}}
+            <span>{{MemberTop.totalStoreAmount | capitalizePerson}}</span>{{MemberTop.totalStoreAmount | foo}}
           </div>
         </li>
       </ul>
@@ -60,10 +60,10 @@
               <el-tooltip class="item" effect="dark" placement="right-start">
                 <div slot="content" style="width:300px">
                   <ul id="ulMain">
-                    <li>新增会员人数当日达成 : <span>{{MemberKPIDataCity.newMemberCurrent | capitalizeOne}}{{MemberKPIDataCity.newMemberCurrent | too}}</span></li>
-                    <li>环比前一日 : <span :class="[MemberKPIDataCity.memberChainDay > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[MemberKPIDataCity.memberChainDay > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{MemberKPIDataCity.memberChainDay | woo}}%</span></li>
-                    <li>月至今达成 : <span>{{MemberKPIDataCity.memberMonthToNow | capitalizeOne}}{{MemberKPIDataCity.memberMonthToNow | too}}</span></li>
-                    <li>环比上月 : <span :class="[MemberKPIDataCity.memberChainMonth > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[MemberKPIDataCity.memberChainMonth > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{MemberKPIDataCity.memberChainMonth | woo}}%</span></li>
+                    <li>新增会员人数当日达成 : <span>{{MemberKPIDataCity.newMemberCurrent | capitalizePerson}}{{MemberKPIDataCity.newMemberCurrent | too}}</span></li>
+                    <li>环比前一日 : <span :class="[MemberKPIDataCity.memberChainDay > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[MemberKPIDataCity.memberChainDay > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{MemberKPIDataCity.memberChainDay | woo(true)}}%</span></li>
+                    <li>月至今达成 : <span>{{MemberKPIDataCity.memberMonthToNow | capitalizePerson}}{{MemberKPIDataCity.memberMonthToNow | too}}</span></li>
+                    <li>环比上月 : <span :class="[MemberKPIDataCity.memberChainMonth > 0? 'green':'red']"><i class="iconfont" style="font-size:12px" :class="[MemberKPIDataCity.memberChainMonth > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"></i>{{MemberKPIDataCity.memberChainMonth | woo(true)}}%</span></li>
                     <li>本月目标为 : <span>{{MemberKPIDataCity.newMemberTarget | capitalizePerson}}</span>{{MemberKPIDataCity.newMemberTarget | too}}</li>
                     <li>达成率 : <span>{{MemberKPIDataCity.newMemberRate | woo}}</span>%</li>
                     <li>与时间进度差距为 : <span :class="[MemberKPIDataCity.timeRateGap > 0? 'green':'red']">{{MemberKPIDataCity.timeRateGap | woo}}%</span></li>
@@ -114,7 +114,7 @@
                 <span class="color" @click="clickCity(scope.$index, scope.row)">{{ scope.row.name }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="showNumMember" label="新增会员人数" min-width="115" align="left" sortable="custom">
+            <el-table-column prop="showNumMember" label="新增会员人数" min-width="120" align="left" sortable="custom">
               <template slot-scope="scope">
                 <span>{{ scope.row.showNumMember }}</span>
               </template>
@@ -137,12 +137,14 @@
       <div class="reset-page">
        <el-pagination  v-if="this.totalPage>10" 
           background 
-          layout="prev, pager, next"
+          layout="total,prev, pager, next"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
           :page-size="this.pageSize"
           :total="this.totalPage" 
         ></el-pagination>
+        <span class="page-else" v-else-if="totalPage>0">共{{totalPage}}条</span>
+        <span class="page-else" v-else></span>
       </div>
     </div>
 
@@ -182,7 +184,7 @@
                 <span class="color" @click="clickCity(scope.$index, scope.row)">{{ scope.row.name }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="showNumMember" label="会员消费金额" min-width="115" align="left" sortable="custom">
+            <el-table-column prop="showNumMember" label="会员消费金额" min-width="120" align="left" sortable="custom">
               <template slot-scope="scope">
                 <span>{{ scope.row.showNumMember }}</span>
               </template>
@@ -205,12 +207,14 @@
       <div class="reset-page">
         <el-pagination  v-if="this.totalPage>10" 
           background 
-          layout="prev, pager, next"
+          layout="total,prev, pager, next"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
           :page-size="this.pageSize"
           :total="this.totalPage" 
         ></el-pagination>
+        <span class="page-else" v-else-if="totalPage>0">共{{totalPage}}条</span>
+        <span class="page-else" v-else></span>
       </div>
     </div>
 
@@ -250,7 +254,7 @@
                 <span class="color" @click="clickCity(scope.$index, scope.row)">{{ scope.row.name }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="showNumMember" label="会员消费占比" min-width="115" align="left" sortable="custom">
+            <el-table-column prop="showNumMember" label="会员消费占比" min-width="120" align="left" sortable="custom">
               <template slot-scope="scope">
                 <span>{{ scope.row.showNumMember}}</span>
               </template>
@@ -273,12 +277,14 @@
       <div class="reset-page">
         <el-pagination  v-if="this.totalPage>10" 
           background 
-          layout="prev, pager, next"
+          layout="total,prev, pager, next"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
           :page-size="this.pageSize"
           :total="this.totalPage" 
         ></el-pagination>
+        <span class="page-else" v-else-if="totalPage>0">共{{totalPage}}条</span>
+        <span class="page-else" v-else></span>
       </div>
     </div>
 
@@ -341,12 +347,14 @@
       <div class="reset-page">
         <el-pagination  v-if="this.totalPage>10" 
           background 
-          layout="prev, pager, next"
+          layout="total,prev, pager, next"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
           :page-size="this.pageSize"
           :total="this.totalPage" 
         ></el-pagination>
+        <span class="page-else" v-else-if="totalPage>0">共{{totalPage}}条</span>
+        <span class="page-else" v-else></span>
       </div>
     </div>
 
@@ -410,12 +418,14 @@
       <div class="reset-page">
         <el-pagination v-if="this.totalPage>10" 
           background 
-          layout="prev, pager, next"
+          layout="total,prev, pager, next"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
           :page-size="this.pageSize"
           :total="this.totalPage" 
         ></el-pagination>
+        <span class="page-else" v-else-if="totalPage>0">共{{totalPage}}条</span>
+        <span class="page-else" v-else></span>
       </div>
     </div>
   </div>  
@@ -597,38 +607,9 @@ export default {
     };
   },
   filters: {
-    woo(value){
+    woo(value,isPositive){
       if (!value) return "--"
-      return value.toFixed(2)
-    },
-    capitalizeOne(value) {
-      if (!value) return "--"
-      let newValue = value.toString();
-      //判断逻辑
-      if(newValue.indexOf('.') != -1){
-        
-        if(newValue.length < 7){
-          return Number(newValue + '0').toFixed(2)
-        }
-        else if(newValue.length >= 7 && newValue.length <= 11){
-          return (newValue / 10000).toFixed(2)
-        }
-        else if(newValue.length >= 12){
-          return ((newValue / 10000) / 10000).toFixed(2)
-        }
-      }
-      else
-      {
-        if(newValue.length < 5){
-          return Number(newValue + '.00').toFixed(2)
-        }
-        else if(newValue.length >= 5 && newValue.length <= 8){
-          return (newValue / 10000).toFixed(2)
-        }
-        else if(newValue.length >= 9){
-          return ((newValue / 10000) / 10000).toFixed(2)
-        }
-      }
+      return isPositive ? Math.abs(value).toFixed(2): value.toFixed(2) 
     },
     //处理万人计算保留两位小数
     capitalizePerson(value) {
@@ -1254,8 +1235,11 @@ export default {
       width: 100%;
       line-height: 40px;
       padding: 0 16px;
-      font-size: 16px;
-      font-weight: bold;
+      .title{
+        font-family: PingFangSC-Medium;
+        font-size: 14px;
+        color:#333;
+      }
       .iconfont {
         margin-right: 5px;
         color: #1296db;
@@ -1271,7 +1255,7 @@ export default {
       .tip {
         font-size: 12px;
         color: #3b74ff;
-        font-weight: normal;
+        // font-weight: normal;
         vertical-align: middle;
       }
     }
@@ -1302,6 +1286,7 @@ export default {
             text-align: center;
             display: block;
             margin-top:13px;
+            font-weight:bold;
           }
           p {
             font-size: 12px;
@@ -1400,6 +1385,7 @@ export default {
 }
 .icon-shouye-huiyuan {
   color: #eb76ff !important;
+  font-size:16px;
 }
 
 .page {
@@ -1430,6 +1416,11 @@ export default {
   margin:0px;
   li{
     line-height:23px;
+  }
+}
+@media screen and (max-width: 1500px) {
+  .BoxContainer .right-col .listUl li.first-li .cont h1 {
+    transform: scale(.8)
   }
 }
 </style>

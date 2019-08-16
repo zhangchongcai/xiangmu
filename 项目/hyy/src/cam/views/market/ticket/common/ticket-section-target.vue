@@ -47,10 +47,10 @@ export default {
     filters:{
         formatMoney(num,indicatorCode){
             let money = Number(num);
-            if(indicatorCode == 'cyhysl' || indicatorCode == 'ffsl' || indicatorCode == 'ddxfdl'){
-                return Global.formatMoney(money,0);
+            if(Global.targetNum.includes(indicatorCode)){
+               return Global.formatMoney(money,0);
             }else{
-                return Global.formatMoney(money)
+               return Global.formatMoney(money)
             }
         },
         formatTargetUnit: (type, money) => {

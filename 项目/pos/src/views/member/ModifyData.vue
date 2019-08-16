@@ -18,75 +18,89 @@
         :model="modifyData"
         ref="ruleForm"
         :rules="rules"
-        label-width="100px"
-        class="from-style"
-      >
+        class="from-style">
+        <!-- 手机号 -->
         <el-form-item
           class="from-item-syle"
-          v-for="(item,index) in ruleForm"
-          :label="item.label+':'"
-          :key="index"
-          v-if="!item.type && modifyData[item.prop] != null"
-          :prop="item.prop"
-        >
-          <el-input v-model="modifyData[item.prop]" class="item-inp"></el-input>
+          label="手机号:"
+          prop="phoneNumber">
+          <el-input v-model="modifyData['phoneNumber']" class="item-inp"></el-input>
         </el-form-item>
+        <!-- 姓名 -->
         <el-form-item
           class="from-item-syle"
-          v-else-if="item.type && item.type === 'radio' && modifyData[item.prop] != null"
-          :label="item.label+':'"
-          :prop="item.prop"
-        >
-          <el-radio-group v-model="modifyData[item.prop]">
-            <el-radio v-for="(v,i) in item.option" :key="i" :label="v.label">{{v.value}}</el-radio>
+          label="姓名:"
+          v-if="modifyData['userName'] != null" 
+          prop="userName">
+          <el-input
+            v-model="modifyData['userName'] " 
+            class="item-inp"></el-input>
+        </el-form-item>
+        <!-- 性别 -->
+        <el-form-item
+          class="from-item-syle"
+          label="性别:"
+          v-if="modifyData['gender'] != null"
+          prop="gender">
+          <el-radio-group 
+            v-model="modifyData['gender']">
+            <el-radio label="male">男</el-radio>
+            <el-radio label="female">女</el-radio>
           </el-radio-group>
         </el-form-item>
+        <!-- 生日 -->
         <el-form-item
           class="from-item-syle"
-          v-else-if="item.type && item.type === 'date' && modifyData[item.prop] != null"
-          :label="item.label+':'"
-          :prop="item.prop"
-        >
-          <el-date-picker v-model="modifyData[item.prop]" type="date" placeholder="选择日期" value-format='yyyy-MM-dd'></el-date-picker>
+          label="生日:"
+          v-if="modifyData['birthday'] != null" 
+          prop="birthday">
+          <el-date-picker
+            v-model="modifyData['birthday']" 
+            type="date" 
+            placeholder="选择日期" 
+            value-format='yyyy-MM-dd'
+            style="width: 20vw;" 
+            :clearable='false'></el-date-picker>
         </el-form-item>
       </el-form>
     </div>
     <div class="foot-buttom-layer" v-if="!member.isshow">
-      <el-button size="medium" @click="back()">返回</el-button>
+      <el-button @click="back()" class="common-btn">返回</el-button>
     </div>
     <div class="bottom-btn-warp" v-else-if="member.isshow && member.cardNoOrphoneNumState">
-      <el-button @click="back()">返回</el-button>
-      <el-button @click="clearRuleForm('ruleForm')">清空</el-button>
-      <el-button class="submit" @click="submit" type="primary">确定</el-button>
+      <el-button @click="back()" class="common-btn">取消</el-button>
+      <el-button @click="clearRuleForm('ruleForm')" class="common-btn">清空</el-button>
+      <el-button class="common-btn" @click="submit" type="primary">确定</el-button>
     </div>
 
     <!-- dialog pc-->
     <el-dialog 
       :title="title" 
       :visible.sync="dialogFormVisible" 
-      width='40%'>
-      <div>
+      width='40%'
+      :close-on-click-modal='false'>
+      <div class="row-line-center">
         <el-input 
           v-model="modifyData.password" 
           :type="inpType"
           style="width:60%"></el-input>
-        <el-button 
-          style="margin-left:5px" 
+        <el-button
+          style="margin-left:.5vw"
+          class="common-btn" 
           @click="getVilidate" 
           :disabled="disable"
           v-if="member.numberType === 'phone'"
           v-text="validataText"></el-button>
       </div>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="validatorInp">确 定</el-button>
+        <el-button @click="dialogFormVisible = false" class="common-btn">取 消</el-button>
+        <el-button type="primary" @click="validatorInp" class="common-btn">确 定</el-button>
       </div>
     </el-dialog>
  
   </div>
 </template>
 <script>
-//01000300000021
 import CardReading from "./components/cardReading";
 import { mapState, mapGetters } from "vuex";
 import { toFormModel , secKeyBoard } from "./util/utils";
@@ -106,28 +120,21 @@ export default {
         cardType: ""
       },
       modifyData: {
-        password:''
+        password:'',
+        userName:'',
+        gender:'',
+        birthday:'',
+        creditNum:'',
+        email:''
       },
       oldPhoneNum:'',
       dialogFormVisible:false,
       inpType:'password',
       cardInfo:null,
-      ruleForm: [
-        { label: "手机号", prop: "phoneNumber"},
-        { label: "姓名", prop: "userName" },
-        {
-          label: "性别",
-          prop: "gender",
-          type: "radio",
-          option: [
-            { label: "male", value: "男" },
-            { label: "female", value: "女" }
-          ]
-        },
-        { label: "生日", prop: "birthday", type: "date" },
-        { label: "身份证号", prop: "creditNum" },
-        { label: "邮箱", prop: "email" }
-      ],
+      // ruleForm: [
+        // { label: "身份证号", prop: "creditNum" },
+        // { label: "邮箱", prop: "email" }
+      // ],
       rules: {
         phoneNumber: [
           { required: true, message: "请输入电话号码", trigger: "change" },
@@ -139,35 +146,37 @@ export default {
         birthday: [
           { required: true, message: "请填写生日", trigger: "change" },
         ],
-        creditNum: [
-          { required: true, message: "请输入身份证号", trigger: "change" },
-          { validator:creditNum,trigger:"change"}
-        ],
-        email: [
-          { required: true, message: "请输入邮箱", trigger: "change" },
-          { type: 'email',message:'请输入正确邮箱格式',trigger: ["blur",'change']}
-        ]
+        // creditNum: [
+        //   { required: true, message: "请输入身份证号", trigger: "change" },
+        //   { validator:creditNum,trigger:"change"}
+        // ],
+        // email: [
+        //   { required: true, message: "请输入邮箱", trigger: "change" },
+        //   { type: 'email',message:'请输入正确邮箱格式',trigger: ["blur",'change']}
+        // ]
       }
-    };
-  },
-  created(){
-    this.member.isshow = false;
+    }
   },
   mounted() {
+    this.member.isshow = false;
     if (!!this.$route.query.type) {
       this.queryData(this.$route.query);
     }
   },
   watch: {
-    "member.memberCardInfo": function(newVal, oldVal) {
-      this.$nextTick(() => {
-          this.modifyData = Object.assign({},newVal, {
-            gender: !!newVal["sex"] ? (newVal["sex"]+'').toLowerCase() : !!newVal["gender"] ? newVal["gender"] === '男' ? 'male' : 'female' : newVal["gender"],
-            phoneNumber: !!newVal["mobileNum"] ? newVal["mobileNum"] : newVal["phoneNumber"],
-            userName: !!newVal["userName"] ? newVal["userName"] : newVal["name"],
-          });
-          this.oldPhoneNum = JSON.parse(JSON.stringify(this.modifyData.phoneNumber))
-      });
+    "member.memberCardInfo":async function(newVal, oldVal) {
+      if(newVal.cardTypeCode === 'gift_card'){
+          Vue.prototype.$message.warning(`${newVal.cardType}不可此操作`);
+          this.member.isshow = false;
+          return;
+      }
+      await this.$nextTick();
+      this.modifyData = Object.assign({},this.modifyData,newVal)
+      this.modifyData.gender = !!newVal["sex"] ? (newVal["sex"]+'').toLowerCase() : !!newVal["gender"] ? newVal["gender"] === '男' ? 'male' : 'female' : newVal["gender"] || null;
+      this.modifyData.phoneNumber = newVal["mobileNum"] || newVal["phoneNumber"] || null;
+      this.modifyData.userName = newVal["userName"] || newVal["name"] || null;
+      this.modifyData.birthday = newVal["birthday"] || null;
+      this.oldPhoneNum = JSON.parse(JSON.stringify(this.modifyData.phoneNumber))
     }
   },
   computed: {
@@ -176,14 +185,7 @@ export default {
   },
   methods: {
     back() {
-      if(this.$route.query.phoneOrCard){
-        this.$router.push({
-          name: "queryDetails",
-          query:this.$route.query
-        })
-      }else{
         this.$router.go(-1);
-      }
     },
     queryData(data) {
         this.cardInfo = data;
@@ -269,12 +271,7 @@ export default {
       };
     },
     clearRuleForm(formName) {
-      let modifyData = this.modifyData;
-      Object.keys(toFormModel(this.ruleForm)).forEach((item,index)=>{
-        if(modifyData[item] != null){
-          modifyData[item] = '';
-        }
-      });
+      this.$refs[formName].resetFields();
     }
   },
   components: {
@@ -283,22 +280,20 @@ export default {
 };
 </script>
 <style lang='scss' scoped>
-.member-info-title {
-  font-size: 1.4vw;
-  color: #333;
-  font-weight: bold;
-  text-indent: 2vw;
-}
 .from-style {
   display: flex;
   flex-wrap: wrap;
 }
 .from-item-syle {
+  display:flex;
+  align-items:center;
   width: 30vw;
   margin-top: 3vh;
-}
+  margin-bottom:0;
+ }
 .item-inp {
   width: 20vw;
 }
+
 </style>
 

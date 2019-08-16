@@ -26,7 +26,7 @@
                                     <span>{{queryData.billCode}}</span>
                                 </el-form-item>
                             </el-col>
-                            <el-col :span="10">
+                            <el-col :span="8">
                                 <el-form-item label="采购门店" class="select-input" prop="cinemaName"
                                               :rules="[{ required: routeQuery.type==3 ? false : true, message: '采购门店不能为空',trigger: 'change' }]">
                                     <span v-if="routeQuery.type==3">{{queryData.cinemaName}}</span>
@@ -39,31 +39,42 @@
                                                 @clear="onCinemalSumit()"
                                                 placeholder="请选择门店"
                                         ></el-input>
-                                        <el-button type="primary" plain @click="handleDialogEvent('refCinemalDialog')" v-if="routeQuery.type==1">{{queryData.cinemaName?"编辑":"选择"}}</el-button>
+                                        <el-button type="primary" plain @click="handleDialogEvent('refCinemalDialog')" v-if="routeQuery.type==1">选择</el-button>
                                     </div>
                                 </el-form-item>
                             </el-col>
                         </el-row>
                         <el-row>
                             <el-col :span="8">
-<!--                                <el-form-item  label-width="110px" class="select-input" prop="supName">-->
-<!--                                    <el-checkbox solt="label" v-model="isOpenAgreement" @change="changeOpenAgreement">-->
-<!--                                        启用采购协议-->
-<!--                                    </el-checkbox>-->
-<!--                                    <span v-if="isOpenAgreement">-->
-<!--                                        <el-input-->
-<!--                                                v-model="queryData.agreementName"-->
-<!--                                                clearable-->
-<!--                                                @focus="handleDialogEvent('refAgreementDialog')"-->
-<!--                                                @clear="onAgreementSumit()"-->
-<!--                                                placeholder="请选择采购协议"-->
-<!--                                        ></el-input>-->
-<!--                                        <el-button type="primary" plain @click="handleDialogEvent('refAgreementDialog')"-->
-<!--                                                   v-if="routeQuery.type==1">{{queryData.supName?"编辑":"选择"}}</el-button>-->
-<!--                                    </span>-->
-<!--                                </el-form-item>-->
+                                <el-form-item label-width="100px" label="协议名称" class="select-input" prop="agreementUid"
+                                              v-if="(routeQuery.type==3)">
+                                    <span v-if="queryData.agreementUid">
+                                          {{queryData.agreementName}}
+                                    </span>
+                                    <span v-else>
+                                         未启用
+                                    </span>
+                                </el-form-item>
+                                <el-form-item v-else label-width="100px" class="select-input" prop="agreementUid">
+                                    <el-checkbox solt="label"  v-model="isOpenAgreement" @change="changeOpenAgreement"   :disabled="routeQuery.type==1 ? false : true">
+                                        启用采购协议
+                                    </el-checkbox>
+                                    <span>
+                                        <span v-if="isOpenAgreement">
+                                            <el-input
+                                                    v-model="queryData.agreementName"
+                                                    clearable
+                                                    @focus="handleDialogEvent('refAgreementDialog')"
+                                                    @clear="onAgreementSumit()"
+                                                    :disabled="routeQuery.type==1 ? false : true"
+                                                    placeholder="请选择采购协议"
+                                            ></el-input>
+                                            <el-button type="primary" :disabled="routeQuery.type==1 ? false : true" plain @click="handleDialogEvent('refAgreementDialog')">选择</el-button>
+                                    </span>
+                                    </span>
+                                </el-form-item>
                             </el-col>
-                            <el-col :span="10">
+                            <el-col :span="8">
                                 <el-form-item label="供应商名称" class="select-input" prop="supName"
                                               :rules="[{ required: routeQuery.type==3 ? false : true, message: '供应商名称不能为空',trigger: 'change' }]">
                                     <div v-if="queryData.billType==1">
@@ -80,7 +91,7 @@
                                                     @focus="handleDialogEvent('refSuppliersDialog')"
                                                     placeholder="请选择供应商"
                                             ></el-input>
-                                            <el-button type="primary" plain @click="handleDialogEvent('refSuppliersDialog')" v-if="routeQuery.type==1">{{queryData.supName?"编辑":"选择"}}</el-button>
+                                            <el-button type="primary" plain @click="handleDialogEvent('refSuppliersDialog')" v-if="routeQuery.type==1">选择</el-button>
                                         </div>
                                     </div>
 
@@ -95,7 +106,31 @@
                             </el-col>
                             <el-col :span="10">
                                 <el-form-item label="有效期">
-                                    <span>{{queryData.beginTime}} ~ {{queryData.finishTime}}</span>
+                                    <span>{{queryData.startTime}} 至 {{queryData.stopTime}}</span>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row v-if="routeQuery.type!=1">
+                            <el-col :span="8" v-if="queryData.billVoTime">
+                                <el-form-item label="制单日期">
+                                    <span>{{queryData.billVoTime}}</span>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="8" v-if="queryData.billUserName">
+                                <el-form-item label="制单员" >
+                                    <span>{{queryData.billUserName}}</span>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row v-if="routeQuery.type!=1">
+                            <el-col :span="8">
+                                <el-form-item label="单据状态">
+                                    <span>{{formatStatus}}</span>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="8">
+                                <el-form-item label="审核状态" >
+                                    <span>{{approvalStart(1)}}</span>
                                 </el-form-item>
                             </el-col>
                         </el-row>
@@ -106,9 +141,8 @@
                 <!-- 商品清单 start-->
                 <el-collapse-item title="商品清单" name="2">
                     <div>
-                        <div class="text-right" v-if="!isOpenAgreement">
-                            <el-button @click="handleAddGood" type="primary" plain v-if="queryData.billType!=1">添加商品
-                            </el-button>
+                        <div class="text-right" v-if="routeQuery.type==1 && queryData.billType!=1">
+                            <el-button @click="handleAddGood" type="primary" plain>添加商品</el-button>
                         </div>
                         <el-table :data="queryData.purchaseBillDetailVoList" stripe>
                             <el-table-column
@@ -123,12 +157,13 @@
                                         <div v-if="item.edit && item.edit(row)">
                                             <el-input
                                                     size="small"
+                                                    type="number"
                                                     :value="row[item.key]"
                                                     @input="inputEvent($event,row,item.key)"
                                             ></el-input>
                                         </div>
                                         <div v-else-if="item.selsect">
-                                            <el-select v-model="row[item.key]"  :disabled="routeQuery.type==1 ? false:true">
+                                            <el-select v-model="row[item.key]"  :disabled="(!queryData.agreementUid && routeQuery.type==1) ? false:true">
                                                 <el-option
                                                         :key="unitItem.id"
                                                         :label="unitItem.name"
@@ -152,7 +187,7 @@
                                                 ></el-option>
                                             </el-select>
                                         </div>
-                                        <span v-else>{{row[item.key]}}</span>
+                                        <span v-else>{{calculateCost(row,item)}}</span>
                                     </div>
                                 </template>
                             </el-table-column>
@@ -186,7 +221,7 @@
                         <span>采购单审核</span>
                     </el-form-item>
                     <el-steps :space="200" :active="approvalActive" finish-status="success">
-                        <el-step :title="approvalStart"></el-step>
+                        <el-step :title="approvalStart()"></el-step>
                         <el-step :title="item.auditMan" :key="item.auditTime" v-for="item in queryData.reviewRecordList"></el-step>
                         <el-step title="结束" v-if="queryData.approvalStatus==2"></el-step>
                     </el-steps>
@@ -209,7 +244,7 @@
             </el-collapse>
 
             <!-- 选择影院弹窗 -->
-            <cinemal-dialog ref="refCinemalDialog" @onSumit="onCinemalSumit" :dialogFeedbackData="[{cinemaUid:queryData.cinemaUid,cinemaName:queryData.cinemaName}]"></cinemal-dialog>
+            <cinemal-dialog ref="refCinemalDialog"  title="选择门店" @onSumit="onCinemalSumit" :dialogFeedbackData="[{cinemaUid:queryData.cinemaUid,cinemaName:queryData.cinemaName}]"></cinemal-dialog>
 
             <!-- 选择采购协议 -->
             <agreement-dialog
@@ -224,18 +259,30 @@
                     :dialogVisible.sync="selectedGoodsDialogVisible"
                     :cinemaUid="queryData.cinemaUid"
                     :merType="'1,5'"
+                    canSale="-1"
                     @cimSelectedGoodsDialogCallBack="selectedGoodsDialogCallBack"
             ></selected-goods>
+            <el-dialog
+                    title="提示"
+                    :visible.sync="proceedUpdateDialog"
+                    width="30%">
+                <span>{{proceedUpdateMessage}}</span>
+                <span slot="footer" class="dialog-footer">
+                <el-button type="primary" @click="handleProceedUpdate">确 定</el-button>
+                <el-button @click="proceedUpdateDialog = false">取 消</el-button>
+              </span>
+            </el-dialog>
 
             <div class="submit-box" v-if="routeQuery.type!=3">
                 <el-button type="primary" @click="handleSubmit('1')" :loading="submitLoading">保存并提交</el-button>
-                <el-button type="primary" @click="handleSubmit('0')" :loading="submitLoading" v-if="queryData.status==1">保存为草稿</el-button>
+                <el-button v-if="queryData.status!=2" type="primary" @click="handleSubmit('0')" :loading="submitLoading">保存为草稿</el-button>
                 <el-button @click="handleCancel">取 消</el-button>
             </div>
             <div v-else class="submit-box">
                 <el-button @click="handleCancel">关 闭</el-button>
             </div>
         </el-form>
+<!--        <fixStepTool :stepData="stepData.stepList"></fixStepTool>-->
     </div>
 </template>
 
@@ -245,12 +292,28 @@
     import suppliersDialog from "cim/components/suppliersDialog/suppliersDialog.vue";
     import selectedGoods from "cim/dialogs/cimSelectedGoods/index.vue";
     import agreementDialog from "cim/components/agreementDialog/agreementDialog.vue";
+    import fixStepTool from "ctm/components/fix-step-tool/fix-step-tool";
+    import fixStepMixin from "ctm/mixins/fixStepTool";
 
     export default {
         name:"common",
-        mixins: [mixin],
+        mixins: [mixin,fixStepMixin],
         data() {
             return {
+                //交互部分数据
+                stepData: {
+                    stepEl: ".el-collapse-item",
+                    stepList: [
+                        {
+                            name: "基础信息",
+                            isactive: false
+                        },
+                        {
+                            name: "商品清单",
+                            isactive: false
+                        },
+                    ]
+                },
                 selectedGoodsDialogVisible: false,
                 //查询数据
                 queryData: {
@@ -292,11 +355,19 @@
                 ],
                 computAmount: '',
                 submitLoading: false,
-                activeNames: ['1', '2', '3','4']
+                activeNames: ['1', '2', '3', '4'],
+                proceedUpdateDialog: false,//采购数量超过库存数弹窗
+                isProceedUpdate:false,
+                proceedUpdateMessage: '',
             };
         },
         created(){
 
+        },
+        beforeCreate(){
+            // let lastLevel = this.typeText+'采购单';
+            // this.$route.meta.title = lastLevel;
+            // console.log(this.$route);
         },
         mounted() {
             this.init();
@@ -309,10 +380,11 @@
                 } else {
                     this.purchaseGet({billCode: this.routeMerData.billCode});
                 }
-                console.log(this.$route);
-                let lastLevel = this.typeText+'采购单';
-                this.$route.meta.title = lastLevel;
-                this.$store.commit('getLevel',lastLevel);
+
+
+                // let lastLevel = this.typeText+'采购单';
+                // this.$route.meta.title = lastLevel;
+                // this.$store.commit('getLevel',lastLevel);
             },
             // 生成采购编码
             purchaseCode(param) {
@@ -329,7 +401,6 @@
                         this.queryData.purchaseBillDetailVoList.push(...resData.data.map(item => {
                             item.merUid = item.uid;
                             item.baseUnitUid = item.unitUid;
-                            item.isProceedUpdate = 0;
                             if(item.purCount ===undefined){
                                 item.purCount = null;
                             }
@@ -365,10 +436,16 @@
                         });
                         this.handleCancel();
                     } else {
-                        this.$message({
-                            message: resData.msg
-                        });
+                        if(resData.code==20005){
+                            this.proceedUpdateDialog = true;
+                            this.proceedUpdateMessage = resData.msg;
+                        }else{
+                            this.$message({
+                                message: resData.message
+                            });
+                        }
                     }
+                    this.isProceedUpdate = false;
                 }).catch(()=>{
                     this.submitLoading = false;
                 })
@@ -385,9 +462,14 @@
                         });
                         this.handleCancel();
                     } else {
-                        this.$message({
-                            message: resData.msg
-                        });
+                        if(resData.code==20005){
+                            this.proceedUpdateDialog = true;
+                            this.proceedUpdateMessage = resData.msg;
+                        }else{
+                            this.$message({
+                                message: resData.msg
+                            });
+                        }
                     }
                 }).catch(()=>{
                     this.submitLoading = false;
@@ -398,11 +480,15 @@
                 this.$cimList.procurement.purchaseGet(param).then(resData => {
                     if (resData.code == 200) {
                         this.queryData = resData.data;
+                        if (this.queryData.agreementUid) {
+                            this.isOpenAgreement = true;
+                        }
                     } else {
                         this.$message({
                             message: resData.msg
                         });
                     }
+                    this.isProceedUpdate = false;
                 }).catch(() => {
 
                 })
@@ -438,12 +524,18 @@
                     .catch(() => {
                     });
             },
+            handleProceedUpdate() {
+               this.isProceedUpdate = true;
+               this.handleSubmit(this.queryData.isReview)
+            },
             //
             handleSubmit(type) {
                 //0草稿,1保存并提交
                 this.queryData.tag = type;
                 this.queryData.isReview = type;
-                console.log(this.queryData);
+                this.queryData.finishTime = '';
+                this.queryData.beginTime = '';
+                // console.log(this.queryData);
                 this.$refs["ruleForm"].validate(valid => {
                     if (valid) {
                         if(this.isOpenAgreement && !this.queryData.agreementCode){
@@ -458,7 +550,15 @@
                             });
                             return;
                         }
-                        let purchaseList  = this.queryData.purchaseBillDetailVoList;
+                        let purchaseList  = this.queryData.purchaseBillDetailVoList.map((item)=>{
+                            //是否继续修改标志,0表示第一次请求,安全库存判断,1继续修改(超过安全库存也继续)
+                            if(this.isProceedUpdate){
+                                item.isProceedUpdate = 1;
+                            }else{
+                                item.isProceedUpdate = 0;
+                            }
+                            return item
+                        })
                         let flag =true;
                         for(let item of purchaseList) {
                             if(typeof(item.amount)=="number"){
@@ -469,25 +569,53 @@
                                 flag = false
                                 break;
                             }
-                            if(!item.purPrice){
-                                this.$message("请填写采购成本");
-                                flag = false
-                                break;
-                            }
+
                             if(!item.purCount){
                                 this.$message("请填写采购数量");
                                 flag = false
                                 break;
+                            }else{
+                                if(item.purCount<=0){
+                                    this.$message("采购数量必须大于0!");
+                                    flag = false;
+                                    break;
+                                }
                             }
+
+                            if(!item.purPrice){
+                                this.$message("请填写采购成本");
+                                flag = false
+                                break;
+                            }else{
+                                if(item.purPrice<0){
+                                    this.$message("采购成本不能小于0!");
+                                    flag = false;
+                                    break;
+                                }
+                            }
+
                             if(!item.taxRate){
                                 this.$message("请填写税率");
                                 flag = false
                                 break;
+                            }else{
+                                if(item.taxRate<0){
+                                    this.$message("税率不能小于0!");
+                                    flag = false;
+                                    break;
+                                }
                             }
+
                             if(!item.amount){
                                 this.$message("请写含税金额");
                                 flag = false
                                 break;
+                            }else{
+                                if(item.amount<0){
+                                    this.$message("含税金额不能小于0!");
+                                    flag = false;
+                                    break;
+                                }
                             }
                         }
                         if(flag){
@@ -520,7 +648,7 @@
                 this.$refs[name].handleDialog(true);
             },
             selectedGoodsDialogCallBack(value) {
-                console.log(value);
+                // console.log(value);
                 if (value.btnType == 1) {
                     if (value.data.length > 0) {
                         this.purchasePurchaseMer({flag: 0, purchaseMerVoList: value.data});
@@ -535,23 +663,36 @@
             unRepeat(arr) {
                 let hash = {};
                 return arr.reduce((item, next) => {
-                    if (!hash[next.skuCode]) {
-                        hash[next.skuCode] = true;
+                    if (!hash[next.skuUid]) {
+                        hash[next.skuUid] = true;
                         item.push(next);
                     }
                     return item;
                 }, []);
             },
             // 选泽门店回调
-            onCinemalSumit(val = []) {
+            onCinemalSumit(val = [],type) {
+                // console.log(val," 选泽门店回调",type);
                 if (val.length > 0) {
-                    this.queryData.cinemaName =  val[0].cinemaName || val[0].name;
-                    this.queryData.cinemaUid = val[0].cinemaUid  || val[0].uid;
+                    if(type=="default"){
+                        if(val.length==1){
+                            this.setCinema(val)
+                        }
+                    }else{
+                        this.setCinema(val)
+                    }
                 } else {
+                    this.setCinema()
+                }
+            },
+            setCinema(val=[]){
+                if(val.length>0){
+                    this.queryData.cinemaName =  val[0].cinemaName || val[0].name ;
+                    this.queryData.cinemaUid =  val[0].cinemaUid || val[0].uid;
+                }else{
                     this.queryData.cinemaName = "";
                     this.queryData.cinemaUid = "";
                 }
-                console.log(this.queryData);
             },
             changeOpenAgreement(value) {
                 this.onAgreementSumit([]);
@@ -560,24 +701,27 @@
             onAgreementSumit(val = []) {
                 if (val.length > 0) {
                     this.queryData.billType = "1";
+                    this.queryData.supUid = val[0].supUid;
                     this.queryData.supName = val[0].supName;
                     this.queryData.agreementCode = val[0].code;
                     this.queryData.agreementName = val[0].name;
                     this.queryData.agreementUid = val[0].uid;
-                    this.queryData.beginTime = val[0].beginTime;
-                    this.queryData.finishTime = val[0].finishTime;
+                    this.queryData.startTime = val[0].beginTime;
+                    this.queryData.stopTime = val[0].finishTime;
                     this.agreementGet({uid: val[0].uid})
                 } else {
                     this.queryData.billType = "0";
+                    this.queryData.supUid = "";
                     this.queryData.supName = "";
                     this.queryData.agreementCode = "";
                     this.queryData.agreementName = "";
                     this.queryData.agreementUid = "";
-                    this.queryData.beginTime = "";
-                    this.queryData.finishTime = "";
+                    this.queryData.startTime = "";
+                    this.queryData.stopTime = "";
                     this.queryData.purchaseBillDetailVoList = []
                 }
-                console.log(this.queryData);
+                this.$refs['ruleForm'].clearValidate(['supName'])
+                // console.log(this.queryData);
             },
             // 查看协议单
             agreementGet(param) {
@@ -593,6 +737,9 @@
                             if (!item.amount === undefined) {
                                 item.amount = null;
                             }
+                            if(typeof item.taxRate === 'number') {
+                                item.taxRate = item.taxRate.toString();
+                            }
                             return item
                         })
                     }
@@ -607,26 +754,37 @@
                     this.queryData.supName = "";
                     this.queryData.uid = "";
                 }
-                console.log(this.queryData);
+                // console.log(this.queryData);
             },
             inputEvent(value,row,key) {
-                console.log(value,row,key)
-                row[key] = value;
+                // console.log(value,row,key)
+                row[key] = value.replace(/^(.*\..{4}).*$/,"$1");
                 if (key == "purCount" || key == "purPrice") {
-                    row.amount =  row.purCount * row.purPrice
+                    row.amount =  (row.purCount * row.purPrice).toFixed(4)
                 }
                 if(key =="amount"){
-                    row.purPrice =  (row.amount/row.purCount).toFixed(2)
+                    if(row.amount && row.purCount){
+                        row.purPrice =  (row.amount/row.purCount).toFixed(4)
+                    }
                 }
             },
             //计算成本
             calculateCost(row, item) {
+                // console.log(row.purPrice,row.taxRate)
+                if(typeof row.purPrice === 'number') {
+                    row.purPrice = row.purPrice.toFixed(4).toString();
+                }
+                if(typeof row.amount === 'number') {
+                    row.amount = row.amount.toFixed(4).toString();
+                }
+                if(typeof row.taxRate === 'number') {
+                    row.taxRate = row.taxRate.toString();
+                }
                 switch (item.key) {
                     case "excludingTaxCost":
                         // 不含税采购成本=采购成本-采购成本*税率
                         if (row.purPrice && row.taxRate) {
-                            return row[item.key] =
-                                (row.purPrice - (row.purPrice * row.taxRate) / 100).toFixed(2);
+                            return row[item.key] = (row.purPrice - (row.purPrice * row.taxRate) / 100).toFixed(4);
                         } else {
                             return "";
                         }
@@ -634,8 +792,7 @@
                     case "excludingTaxAmount":
                         //不含税金额=含税金额-含税金额*税率
                         if (row.amount && row.taxRate) {
-                            return row[item.key] =
-                                (row.amount - (row.amount * row.taxRate) / 100).toFixed(2);
+                            return row[item.key] = (row.amount - (row.amount * row.taxRate) / 100).toFixed(4);
                         } else {
                             return "";
                         }
@@ -643,7 +800,7 @@
                     case "taxAmount":
                         //税额=含税金额-不含税金额
                         if (row.amount && row.excludingTaxAmount) {
-                            return row[item.key] = (row.amount - row.excludingTaxAmount).toFixed(2);
+                            return row[item.key] = (row.amount - row.excludingTaxAmount).toFixed(4);
                         } else {
                             return "";
                         }
@@ -651,7 +808,32 @@
                     default:
                         return row[item.key];
                 }
-            }
+            },
+            approvalStart(type){
+                let result = "";
+                switch (this.queryData.approvalStatus) {
+                    case 0:
+                        result = "未审核";
+                        break;
+                    case 1:
+                        result = "待审核";
+                        break;
+                    case 2:
+                        if(type==1){
+                            result = "审核通过";
+                        }else{
+                            result = "开始";
+                        }
+                        break;
+                    case 3:
+                        result = "审核不通过";
+                        break;
+                    case 4:
+                        result = "无需审核";
+                        break;
+                }
+                return result;
+            },
         },
         computed: {
             routeQuery() {
@@ -667,47 +849,41 @@
             typeText() {
                 //1新建，2修改，3查看
                 switch (this.routeQuery.type) {
-                    // 单品
                     case "1":
                         return "新建";
                         break;
-                    // 财务
                     case "2":
                         return "编辑";
                         break;
-                    // 合成品
                     case "3":
                         return "查看";
                         break;
                 }
             },
-            approvalStart(){
+            formatStatus(){
                 let result = "";
-                switch (this.queryData.approvalStatus) {
-                    case 0:
-                        result = "未审核";
-                        break;
+                switch (this.queryData.status) {
                     case 1:
-                        result = "待审核";
+                        result = "未提交";
                         break;
                     case 2:
-                        result = "开始";
+                        result = "已提交";
                         break;
                     case 3:
-                        result = "审核不通过";
+                        result = "部分入库";
                         break;
                     case 4:
-                        result = "无需审核";
+                        result = "全部入库";
                         break;
                 }
-                 return result;
+                return result;
             },
             // 表格表头
             tableColumn() {
                 return [
                     {
                         label: "商品名称",
-                        key: "merName"
+                        key: "skuName"
                     },
                     {
                         label: "SKU编码",
@@ -814,7 +990,8 @@
             cinemalDialog,
             suppliersDialog,
             agreementDialog,
-            selectedGoods
+            selectedGoods,
+            fixStepTool
         }
     };
 </script>
@@ -823,10 +1000,10 @@
     @import "../../../../assets/css/common.scss";
     @import "../../../../assets/css/element-common.scss";
     .purchase-note-common {
-       .text-right{
-           float: right;
-           margin-bottom: 20px;
-       }
+        .text-right{
+            float: right;
+            margin-bottom: 20px;
+        }
     }
 
 </style>

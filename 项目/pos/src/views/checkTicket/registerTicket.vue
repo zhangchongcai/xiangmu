@@ -56,7 +56,7 @@
           <el-table-column prop="applyStatusStr" label="受理状态" width="120" ></el-table-column>
           <el-table-column  label="操作" width="50">
             <template slot-scope="scope">
-              <i class="iconfont iconshanchu" :class="!scope.row.planUid ? 'invalid' : ''" @click="delItem(scope.row.planUid ? true:false,scope.$index)"></i> 
+              <i v-if="scope.row.planUid" class="iconfont iconshanchu" :class="!scope.row.planUid ? 'invalid' : ''" @click="delItem(scope.row.planUid ? true:false,scope.$index)"></i> 
             </template>
           </el-table-column>
           <div slot="append" class="tableFoot">
@@ -112,7 +112,7 @@ export default {
       bankPay:0,
       tableData3: [],
       multipleSelection: [],
-      applyStatusStrs:['','不需要审核','未受理','受理中','受理成功','受理失败'],
+      applyStatusStrs:['','不需要审核','未受理','受理成功','受理中','受理失败'],
       loading:false,
     }
   },
@@ -211,6 +211,8 @@ export default {
         if(Number(this.cashPay)+Number(this.bankPay) != this.totalPrice) return this.dialogOpen(0,'现金、银联与总价不一致！')
         const min_price = this.options[this.value].arr_plan_list[this.subValue].min_price
         if(this.moviePrice < min_price) return this.dialogOpen(0,`票价不能低于${min_price}`)
+        if(this.moviePrice > 999.99) return this.dialogOpen(0,`票价不能大于999.99元`)
+        if(this.servicePrice > 999.99) return this.dialogOpen(0,`增值服务费不能大于999.99元`)
         let obj = {
           price:Number(this.moviePrice).toFixed(2),
           addFee:Number(this.servicePrice).toFixed(2),

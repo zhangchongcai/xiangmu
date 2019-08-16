@@ -136,7 +136,7 @@ import { querySmsScene } from 'src/frame_cpm/http/interface';
        <!-- 票房收入明细 -->
       <el-table :data="gridData" :cell-style={padding:0} :row-style={height:30} :header-cell-style={padding:0}
         highlight-current-row show-summary v-if="parentDialog=='isboxOffice'" :summary-method="getSummaries" :key=1>
-        <el-table-column property="transactionCode" label="交易流水号" width="150" show-overflow-tooltip></el-table-column>
+        <el-table-column property="transactionCode" label="交易流水号" width="160" show-overflow-tooltip></el-table-column>
         <el-table-column property="transactionTime" label="交易时间" width="150" show-overflow-tooltip></el-table-column>
         <el-table-column property="saleType" label="交易类型" width="90"></el-table-column>
         <el-table-column property="ticketPrice" label="票房单价（元）" width="120" show-overflow-tooltip></el-table-column>
@@ -156,7 +156,7 @@ import { querySmsScene } from 'src/frame_cpm/http/interface';
       <!-- 银行卡收入 -->
       <el-table :data="gridData" :cell-style={padding:0} :row-style={height:30} :header-cell-style="{padding:0}"
         highlight-current-row show-summary v-else-if="parentDialog=='isbankCard'" :summary-method="getSummaries">
-        <el-table-column property="transactionCode" label="交易流水号" width="120" show-overflow-tooltip></el-table-column>
+        <el-table-column property="transactionCode" label="交易流水号" width="160" show-overflow-tooltip></el-table-column>
         <el-table-column property="transactionTime" label="交易时间" width="96" show-overflow-tooltip></el-table-column>
         <el-table-column property="payTime" label="支付时间" width="120" show-overflow-tooltip></el-table-column>
         <el-table-column property="payTypeName" label="支付方式" width="96" show-overflow-tooltip></el-table-column>
@@ -172,7 +172,7 @@ import { querySmsScene } from 'src/frame_cpm/http/interface';
       <!-- 卖品收入明细 -->
       <el-table :data="gridData" :cell-style={padding:0} :row-style={height:30} :header-cell-style={padding:0}
         highlight-current-row show-summary v-else-if="parentDialog=='isGood'" :summary-method="getSummaries" :key=2>
-        <el-table-column property="transactionCode" label="交易流水号" width="120" show-overflow-tooltip></el-table-column>
+        <el-table-column property="transactionCode" label="交易流水号" width="160" show-overflow-tooltip></el-table-column>
         <el-table-column property="transactionTime" label="交易时间" width="96" show-overflow-tooltip></el-table-column>
         <el-table-column property="saleType" label="交易类型" width="120"></el-table-column>
         <el-table-column property="merName" label="商品名称" width="96" show-overflow-tooltip></el-table-column>
@@ -193,7 +193,7 @@ import { querySmsScene } from 'src/frame_cpm/http/interface';
       <!-- 会员开卡充值明细 -->
       <el-table :data="gridData" :cell-style={padding:0} :row-style={height:30} :header-cell-style={padding:0}
         highlight-current-row show-summary v-else-if="parentDialog=='isvipDetail'" :summary-method="getSummaries" :key=3>
-        <el-table-column property="transactionCode" label="交易流水号" width="120" show-overflow-tooltip></el-table-column>
+        <el-table-column property="transactionCode" label="交易流水号" width="160" show-overflow-tooltip></el-table-column>
         <el-table-column property="transactionTime" label="交易时间" width="96" show-overflow-tooltip></el-table-column>
         <el-table-column property="sellType" label="交易类型" width="120" show-overflow-tooltip></el-table-column>
         <el-table-column property="memberCardCode" label="会员卡号" width="96" show-overflow-tooltip></el-table-column>
@@ -211,7 +211,7 @@ import { querySmsScene } from 'src/frame_cpm/http/interface';
       <!-- 票券销售明细 -->
       <el-table :data="gridData" :cell-style={padding:0} :row-style={height:30} :header-cell-style={padding:0}
         highlight-current-row show-summary v-else-if="parentDialog=='isTicket'" :summary-method="getSummaries" :key=4>
-        <el-table-column property="transactionCode" label="交易流水号" width="120" show-overflow-tooltip></el-table-column>
+        <el-table-column property="transactionCode" label="交易流水号" width="160" show-overflow-tooltip></el-table-column>
         <el-table-column property="transactionTime" label="交易时间" width="96" show-overflow-tooltip></el-table-column>
         <el-table-column property="saleType" label="交易类型" width="120" show-overflow-tooltip></el-table-column>
         <el-table-column property="ticketName" label="票券名称" width="96" show-overflow-tooltip></el-table-column>
@@ -229,7 +229,7 @@ import { querySmsScene } from 'src/frame_cpm/http/interface';
        <!-- 其他收入明细 -->
       <el-table :data="gridData" :cell-style={padding:0} :row-style={height:30} :header-cell-style={padding:0}
         highlight-current-row show-summary v-else-if="parentDialog=='isOther'" :summary-method="getSummaries" :key=5>
-        <el-table-column property="transactionCode" label="交易流水号" width="120" show-overflow-tooltip></el-table-column>
+        <el-table-column property="transactionCode" label="交易流水号" width="160" show-overflow-tooltip></el-table-column>
         <el-table-column property="transactionTime" label="交易时间" width="96" show-overflow-tooltip></el-table-column>
         <el-table-column property="saleType" label="交易类型" width="120" show-overflow-tooltip></el-table-column>
         <el-table-column property="goodsName" label="商品名称" width="96" show-overflow-tooltip></el-table-column>

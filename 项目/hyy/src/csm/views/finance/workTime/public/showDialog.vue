@@ -1,3 +1,4 @@
+import config from 'frame_cpm/http/config.js';
 <template>
   <div class="my_dialog">
     <el-dialog :title="title" :visible.sync="mydialogTableVisible">
@@ -60,13 +61,28 @@
         </el-table>
         <!-- 支付宝 -->
         <el-table :data="gridData" border :cell-style={padding:0} :row-style={height:30} :header-cell-style={padding:0}
-          highlight-current-row show-summary v-else-if="parentDialog=='isAlipay'" :summary-method="getSummaries">
-          <el-table-column property="transactionCode" label="交易流水号" width="120" show-overflow-tooltip></el-table-column>
-          <el-table-column property="transactionTime" label="交易时间" width="96" show-overflow-tooltip></el-table-column>
-          <el-table-column property="payTime" label="支付时间" width="120" show-overflow-tooltip></el-table-column>
+          highlight-current-row show-summary v-else-if="parentDialog=='isAlipay' && payTypeQuery!='0X03'" :summary-method="getSummaries">
+          <el-table-column property="transactionCode" label="交易流水号" width="160" show-overflow-tooltip></el-table-column>
+          <el-table-column property="transactionTime" label="交易时间" width="160" show-overflow-tooltip></el-table-column>
+          <el-table-column property="payTime" label="支付时间" width="160" show-overflow-tooltip></el-table-column>
           <el-table-column property="payTypeName" label="支付方式" width="96" show-overflow-tooltip></el-table-column>
           <el-table-column property="payAmount" label="金额（元）" width="96" show-overflow-tooltip></el-table-column>
-          <el-table-column property="returnCode" label="支付凭证号" width="96" show-overflow-tooltip></el-table-column>
+          <!-- <el-table-column v-show="payTypeQuery=='0X03'"  property="returnCode" label="支付凭证号" width="96" show-overflow-tooltip></el-table-column> -->
+          <el-table-column property="transactionType" label="交易类型" width="96" show-overflow-tooltip></el-table-column>
+          <el-table-column label="操作" show-overflow-tooltip width="80">
+            <template slot-scope="scope">
+              <el-button size='small' type="text" @click="detail(scope.row)">查看</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+         <el-table :data="gridData" border :cell-style={padding:0} :row-style={height:30} :header-cell-style={padding:0}
+          highlight-current-row show-summary v-else-if="parentDialog=='isAlipay' && payTypeQuery =='0X03'" :summary-method="getSummaries">
+          <el-table-column property="transactionCode" label="交易流水号" width="160" show-overflow-tooltip></el-table-column>
+          <el-table-column property="transactionTime" label="交易时间" width="160" show-overflow-tooltip></el-table-column>
+          <el-table-column property="payTime" label="支付时间" width="160" show-overflow-tooltip></el-table-column>
+          <el-table-column property="payTypeName" label="支付方式" width="96" show-overflow-tooltip></el-table-column>
+          <el-table-column property="payAmount" label="金额（元）" width="96" show-overflow-tooltip></el-table-column>
+          <el-table-column v-show="payTypeQuery=='0X03'"  property="returnCode" label="支付凭证号" width="96" show-overflow-tooltip></el-table-column>
           <el-table-column property="transactionType" label="交易类型" width="96" show-overflow-tooltip></el-table-column>
           <el-table-column label="操作" show-overflow-tooltip width="80">
             <template slot-scope="scope">
@@ -148,7 +164,9 @@
           25: "升级换卡",
           26: "充值冲销",
           27: "会员激活",
-        }
+        },
+        isVip:false,
+        payTypeQuery:""
       }
     },
     methods: {
@@ -199,7 +217,7 @@
         this.$router.push({
           path:"../trandingRecord/detail",                             
           query:{
-            saleBillFlowUid:row.uid,
+            saleBillFlowUid:row.transactionCode,
             cinemaUid:row.cinemaUid
           }
         })
@@ -208,11 +226,13 @@
     watch: {
       dialogTableVisible(val) {
         this.mydialogTableVisible = val;
+        console.log(this.payTypeQuery)
         // if(!val)this.$refs.borderDiv.style.height = "410px"
         // console.log(this.$refs.borderDiv,val)
       },
       mydialogTableVisible(val) {
         this.search = {};
+        this.isVip = true;
         this.$emit("changeDialogTableVisible", val)
       },
       currentPage(val) {

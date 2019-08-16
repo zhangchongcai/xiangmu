@@ -1,7 +1,7 @@
 <template>
     <div>
         <draggable class="clearfix" element="ul" v-model="goodList">
-            <li name="list" tag="li" class="draggable-box-li left" v-for="(item) in value" :key="item.uid">
+            <li name="list" tag="li" class="draggable-box-li left" v-for="(item) in value" :key="item.skuUid || item.uid || item.categoryUid">
                 <div class="color" :style="{borderRightColor:item.color,borderTopColor:item.color}"></div>
                 <div :class="{'name-box':true,'classify-good':type=='classifyGood'}" class="">
                     <div v-if="item.merName || item.name">
@@ -90,6 +90,7 @@
         },
         updated() {
             this.goodList = this.value;
+            // console.log(this.goodList)
         },
         methods: {
             init() {
@@ -98,7 +99,7 @@
             //设置颜色
             handleSetColor(item) {
                 this.colorDialogVisible = true;
-                this.currentSelectColor.uid = item.uid;
+                this.currentSelectColor.uid = item.uid || item.categoryUid;
             },
             //选择颜色
             handleSelectColor(row, index) {
@@ -117,7 +118,10 @@
                 this.goodList = this.goodList.filter(item => {
                     if (item.uid) {
                         return item.uid != row.uid;
-                    } else if (item.blankId) {
+                    } else if (item.categoryUid) {
+                        return item.categoryUid != row.categoryUid;
+                    }
+                    else if (item.blankId) {
                         return item.blankId != row.blankId;
                     }
                 });
@@ -127,8 +131,7 @@
             handleColorConfirm() {
                 // console.log(this.currentSelectColor);
                 this.goodList = this.goodList.map(item => {
-
-                    if (this.currentSelectColor.uid == item.uid) {
+                    if (this.currentSelectColor.uid == (item.uid || item.categoryUid)) {
                         item.color = this.currentSelectColor.color;
                     }
                     return item;
@@ -177,8 +180,8 @@
 
         .name {
             padding: 20px 5px 10px;
-            margin-bottom: 12px;
-            height: 48px;
+            margin-bottom: 8px;
+            height: 50px;
             word-break: break-all;
             text-overflow: ellipsis;
             display: -webkit-box;

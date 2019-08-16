@@ -1,8 +1,9 @@
 <template>
     <div class="detail">
         <div class="ticketBox">
-            <div class="canva" id="print" ref="canvas">
-                <canvas width="460px" height="360px" ref="canva"  v-show="0"></canvas>
+            <div class="canva"  ref="canvas">
+                <div ref="imgDom" v-show="showCanvs" class="imgDom" id="print"></div>
+                <canvas width="460px" height="360px" ref="canva" v-show="showCanvs" ></canvas>
             </div>
         </div>
         <div class="content">
@@ -18,9 +19,8 @@
                 </tbody>
             </table>
             <div class="btn">   
-                <!-- <el-button type="primary" @click="printTicket">打印票版</el-button> -->
-                <el-button type="primary"  v-print="'#print'">打印票版</el-button>
-                <el-button type="primary" @click="back">返回</el-button>
+                <el-button type="primary" v-print="'#print'" @click="printTicket">打印票版</el-button>
+                <el-button plain @click="back" style="width:80px;height:32px;">返回</el-button>
             </div>    
         </div>
     </div>
@@ -38,6 +38,7 @@ export default {
 
     data(){
         return{
+            showCanvs:true,
             //图片路径
             sele_background:null,
             defualt_background:require('ctm/assets/images/ticketSample/ticket.jpg'),
@@ -138,8 +139,7 @@ export default {
             if (this.sele_background) {		
                 console.log('图片')		
                 this.mouse_context.drawImage(this.sele_background,1,1,this.mouseCanv_width-1,this.mouseCanv_height-1);
-            }
-            else{
+            }else{
                 console.log('默认票版')
                 this.mouse_context.restore();
                 this.mouse_context.save();
@@ -178,13 +178,6 @@ export default {
                     this.mouseCanv_width = data.width ;
                     this.mouseCanv_height = data.height ;
                     data.ticketsampleChannelNames = data.ticketsampleChannelNames?data.ticketsampleChannelNames[0]:'';
-                    //获取图片base64
-                    if(data.picUrl){
-                        let url = data.sele_background ? data.sele_background: null;
-                        let image = new Image();
-                        image.src = url ;
-                        this.sele_background = image; 
-                    }
                     this.ticket_data.forEach(item => {
                         item.isSele = 1;
                         item.element_no =this.element_no =this.element_no+1;
@@ -208,48 +201,59 @@ export default {
                     // this.mouse_context.scale(1.4,1.4)          图像放大
                     this.repaintCanvas();
                     let iamge = convertCanvasToImage(this.$refs.canva)
-                    this.$refs.canvas.appendChild(iamge)
+                    this.$refs.imgDom.appendChild(iamge)
+                    //获取图片base64
+                    if(data.picUrl){
+                        let image = new Image();
+                        image.src = data.picUrl ;
+                        image.onload = _=> {
+                            this.sele_background = image; 
+                            this.repaintCanvas();
+                        }
+                    }
                 }
             })
         },
         back(){
+            this.$store.commit("tagNav/removeTagNav", {
+                name: this.$route.name,
+                path: this.$route.path,
+                title: this.$route.meta.title,
+                query: this.$route.query
+            })
             this.$router.push('/ticket/ticketSampleManage')
         },
         printTicket() {
-            let ticket = this.data 
-            let ele_array =[]
-            ticket.ciTicketsampleitemList.forEach(item => {
-                let data = {
-                    "movieTicketUid":item.uid,
-                    "x": item.ulX,
-                    "y": item.ulY,
-                    "elementValue":item.itemDefaultValue,
-                    "font_size":item.size,
-                    "font_black":item.bold,
-                    "show_modle":item.showMode,
-                }
-                ele_array.push(data)
-            })
-            let data = {
-                "width":ticket.width,
-                "height":ticket.height,
-                "print_method":ticket.printMode,
-                ticket_element:ele_array
-            }
-            console.log(JSON.stringify(data))
-            util.readTerminalParameter(config => {
-                util.printTicket('film_print',data,config,args=> {
-                    console.log('成功回调',args)
-                })
-            })
+            // this.showCanvs = !this.showCanvs
         },
-        printTicket() {
-            
-        },
-        // canvas => img
-        canvasToimg(){
-            
-        }
+        // printTickets() {
+        //     let ticket = this.data 
+        //     let ele_array =[]
+        //     ticket.ciTicketsampleitemList.forEach(item => {
+        //         let data = {
+        //             "movieTicketUid":item.uid,
+        //             "x": item.ulX,
+        //             "y": item.ulY,
+        //             "elementValue":item.itemDefaultValue,
+        //             "font_size":item.size,
+        //             "font_black":item.bold,
+        //             "show_modle":item.showMode,
+        //         }
+        //         ele_array.push(data)
+        //     })
+        //     let data = {
+        //         "width":ticket.width,
+        //         "height":ticket.height,
+        //         "print_method":ticket.printMode,
+        //         ticket_element:ele_array
+        //     }
+        //     console.log(JSON.stringify(data))
+        //     util.readTerminalParameter(config => {
+        //         util.printTicket('film_print',data,config,args=> {
+        //             console.log('成功回调',args)
+        //         })
+        //     })
+        // }
     },      
     created(){
         let img = new Image();
@@ -274,7 +278,7 @@ export default {
     }
 }
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
     .detail{
         display:flex;
         justify-content: flex-end;
@@ -285,6 +289,7 @@ export default {
             height: 500px;
             flex: 1;
             .canva{
+                position: relative;
                 width: 460px;
                 height: 460px;
                 margin: 50px auto;
@@ -309,6 +314,12 @@ export default {
                 color: #666
             }
         }
+    }
+    .imgDom{
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: -1
     }
 </style>
 

@@ -13,16 +13,17 @@
           :model="ruleFormData"
           :rules="rules"
           ref="ruleForm"
-          label-width="100px"
           class="demo-ruleForm"
         >
-          <div v-if='isshow && ruleFormFilter' style="position:relative;margin-top:-22px">
-            <div class="recharge-info-title">修改密码</div>
+          <div v-if='isshow && ruleFormFilter' style="position:relative">
+            <div class="member-info-title">修改密码</div>
             <el-form-item
               v-for="(item,index) in ruleFormFilter"
               :key="index"
               :label="item.label"
               :prop="item.prop"
+              class="row-line-center"
+              style="margin-top:1.5vw"
             >
               <el-input :type="item.type" v-model="ruleFormData[item.prop]" class="psd-inp"></el-input>
               <el-button class="start-btn" @click="startKeyBorad(`${item.prop}`)">启动密码输入</el-button>
@@ -36,9 +37,9 @@
 
 <script>
 import memberInfoAndCard from "./components/memberInfoAndCard";
-import { num10_999float2 } from "./util/validate.js";
-import { toFormModel ,readCard ,secKeyBoard ,statusDeter ,cardStatusCN} from "./util/utils";
-import { MemberAjax,memeberApi } from "src/http/memberApi";
+import { customPasswordReg ,passwdReg} from "./util/validate.js";
+import { toFormModel ,readCard ,secKeyBoard ,statusDeter ,cardStatusCN ,routerJump} from "./util/utils";
+import { MemberAjax, memeberApi } from "src/http/memberApi";
 import { mapState, mapGetters } from "vuex";
 export default {
   data() {
@@ -68,9 +69,10 @@ export default {
         { prop: "cardNo", show: true }
       ],
       rules: {
-        passwd: [{ required: true, message: "请输入旧密码", trigger: "change" }],
+        passwd: [{ validator:passwdReg,trigger:'change'}],
         newPasswd: [
-          { required: true, message: "请输入新密码", trigger: "change" }
+          { required: true, message: "请输入新密码", trigger: "change" },
+          { min:6,max:6, validator: customPasswordReg, trigger: "change",passwordkType:1}
         ],
         confirmPsd: [{ required: true, validator: checkPass, trigger: "change" }]
       }
@@ -90,6 +92,7 @@ export default {
   },
   methods: {
     isShow(data) {
+      if(routerJump.call(this))
       this.isshow = statusDeter.call(this,data,'normal',`该卡状态为${cardStatusCN(this.member.cardState)},不能修改密码`);
       if(this.isshow)this.$refs['ruleForm'].resetFields();
     },
@@ -134,38 +137,27 @@ export default {
         })  
     }
   },
+  watch:{
+    'member.cardNo'(newVal){
+      if(newVal){
+        this.$store.dispatch('cardPolicy',{cardNo:newVal,tenantId: this.tenantId}).then(res=>{
+          if(res.data)this.rules.newPasswd[1].passwordkType = res.data.weakPassword;
+        })
+      }
+    }
+  },
   components: {
     memberInfoAndCard
   }
 };
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 ._member-recharge {
   min-height: 93vh;
-  padding-bottom: 7vh;
   position: relative;
 
   .member-recharge-content {
-    padding: 0 2vw 2.6vh 2vw;
-  }
-  .recharge-info-title {
-    font-size: $font-size14;
-    color: #333;
-    font-weight: bold;
-    text-indent: 2vw;
-    padding-bottom: 3vh;
-  }
-  .psd-inp {
-    width: 65%;
-  }
-  .demo-ruleForm {
-    margin-top: 4vh;
-    width: 50vw;
-  }
-  .start-btn {
-    margin-left: 1vw;
-    border-color: #dcdfe6;
-    border-radius: 0;
+    padding: 0 2vw 0vh 2vw;
   }
 }
 </style>

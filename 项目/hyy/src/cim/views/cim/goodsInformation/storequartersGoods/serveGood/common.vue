@@ -117,10 +117,10 @@
               </div>
               <div class="form-item-box left">
                 <el-form-item label="销售状态">
-                  <span v-if="routeQuery.type==3">{{queryData.canSale == 1 ? '允许':'禁止'}}</span>
+                  <span v-if="routeQuery.type==3">{{queryData.canSale == 1 ? '允许销售':'禁止销售'}}</span>
                   <el-radio-group v-else v-model="queryData.canSale">
-                    <el-radio label="1" value="1">允许</el-radio>
-                    <el-radio label="0" value="0">禁止</el-radio>
+                    <el-radio label="1" value="1">允许销售</el-radio>
+                    <el-radio label="0" value="0">禁止销售</el-radio>
                   </el-radio-group>
                 </el-form-item>
               </div>
@@ -197,31 +197,31 @@
                                 type="primary" plain
                                 v-if="routeQuery.type!=3"
                                 @click.stop="handleDialog('myChannelDialog')"
-                        >{{selectedChannelName?"编辑":"选择"}}</el-button>
+                        >选择</el-button>
                     </span>
                   </div>
                 </el-form-item>
               </div>
             </el-row>
             <el-row>
-              <div class="form-item-box left">
-                <el-form-item label-width="160px" label="是否只允许套餐内售卖">
-                  <span v-if="routeQuery.type==3">{{queryData.isSaleAsSetMeal == 1 ? '允许':'禁止'}}</span>
-                  <el-radio-group v-else v-model="queryData.isSaleAsSetMeal">
-                    <el-radio label="1" value="1">是</el-radio>
-                    <el-radio label="0" value="0">否</el-radio>
-                  </el-radio-group>
-                </el-form-item>
-              </div>
+<!--              <div class="form-item-box left">-->
+<!--                <el-form-item label-width="160px" label="是否只允许套餐内售卖">-->
+<!--                  <span v-if="routeQuery.type==3">{{queryData.isSaleAsSetMeal == 1 ? '允许':'禁止'}}</span>-->
+<!--                  <el-radio-group v-else v-model="queryData.isSaleAsSetMeal">-->
+<!--                    <el-radio label="1" value="1">是</el-radio>-->
+<!--                    <el-radio label="0" value="0">否</el-radio>-->
+<!--                  </el-radio-group>-->
+<!--                </el-form-item>-->
+<!--              </div>-->
               <div class="form-item-box left">
                 <el-form-item label="销售地点">
                   <span v-if="routeQuery.type==3" :class="queryData.salePlace!=1 ? 'examine':''">
-                     <span v-if="queryData.saleChannel==1">全部地点</span>
+                     <span v-if="queryData.salePlace==1">全部地点</span>
                      <span v-else class="examine examine-tit incise"
                            @click="handleDialog('mySalesPlaceDialog')">{{ salesPlaceName}} </span>
                   </span>
                   <div v-else>
-                    <el-select v-model="queryData.salePlace" placeholder="请选择" class="apply-select">
+                    <el-select v-model="queryData.salePlace" placeholder="请选择" class="apply-select" @change="salePlaceChange">
                       <el-option
                               v-for="item in salesPlaceRadios"
                               :key="item.type"
@@ -243,7 +243,7 @@
                                 type="primary" plain
                                 v-if="routeQuery.type!=3"
                                 @click.stop="handleDialog('mySalesPlaceDialog')"
-                        >{{salesPlaceName?"编辑":"选择"}}</el-button>
+                        >选择</el-button>
                  </span>
                   </div>
                 </el-form-item>
@@ -367,7 +367,7 @@
   mounted() {
     this.init();
     // console.log(this.queryData);
-    console.log(this.routeMerData);
+    // console.log(this.routeMerData);
   },
   methods: {
     init() {
@@ -426,15 +426,14 @@
         .catch(err => {});
     },
     handleSubmit() {
-      console.log(this.queryData);
       this.$refs["ruleForm"].validate(valid => {
         if (valid) {
           if ((this.queryData.cinemaSaleChannel == 0) && (!this.queryData.cinemaSaleChannelEntityList || this.queryData.cinemaSaleChannelEntityList.length == 0)) {
-            this.$message("请选择至少一个指定渠道！");
+            this.$message("请选择至少一个指定适用渠道！");
             return
           }
           if ((this.queryData.salePlace == 0) && (!this.queryData.cinemaSalePlaceEntityList || this.queryData.cinemaSalePlaceEntityList.length == 0)) {
-            this.$message("请选择至少一个指定地点！");
+            this.$message("请选择至少一个指定销售地点！");
             return
           }
           if(this.queryData.downTimeType == 0){
@@ -452,9 +451,23 @@
         }
       });
     },
+    salePlaceChange(val){
+      if (val == 1) {
+        this.salesPlaceName = '';
+        this.queryData.cinemaSalePlaceEntityList = [];
+      }
+    },
     // 取消提交信息
     handleCancel() {
-      this.$router.go(-1);
+      this.$store.commit("tagNav/removeTagNav", {
+        name: this.$route.name,
+        path: this.$route.path,
+        title: this.$route.meta.title,
+        query: this.$route.query
+      })
+      this.$router.push({
+        path: "/retail/commodityInformationStore/list",
+      });
     },
     // 查看服务商品
     merServiceGoodsQuery(param) {
@@ -467,7 +480,7 @@
               resData.data.downTimeType = "0";
             }
             this.queryData = resData.data;
-            this.queryData.cinemaUid = this.routeMerData.cinemaUid
+            this.queryData.cinemaUid = this.$route.query.cinemaUid;
             if (this.queryData.canSale != null) {
               this.queryData.canSale = this.queryData.canSale.toString();
             }
@@ -502,6 +515,7 @@
               }).join(",")
               this.queryData.cinemaSalePlaceEntityList = this.queryData.cinemaSalePlaceEntityList.map(item => {
                 item.placeUid = item.placeUid || item.uid;
+                item.code = item.placeCode;
                 return item
               })
             }
@@ -545,7 +559,7 @@
                 return item.name;
               })
               .join(",");
-      console.log("门店数据", data);
+      // console.log("门店数据", data);
     },
     // 渠道
     onChanneSumit(data = []) {
@@ -560,7 +574,7 @@
                 return item.channelName  || item.name;
               })
               .join(",");
-      console.log("渠道数据", data);
+      // console.log("渠道数据", data);
     },
     // 销售地点
     onSalesPlaceSumit(data = []) {
@@ -576,13 +590,13 @@
                 return item.placeName ||  item.name;
               })
               .join(",");
-      console.log("销售地点数据", data);
+      // console.log("销售地点数据", data);
     },
     // 品牌
     onBrandSumit(data = []) {
       this.queryData.brandUid = data[0].uid;
       this.selectedBranchName = data[0].name;
-      console.log("品牌数据", data);
+      // console.log("品牌数据", data);
     },
     //删除门店
     handleDeleteCinemas() {

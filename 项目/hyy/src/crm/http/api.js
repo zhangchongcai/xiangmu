@@ -65,8 +65,8 @@ export default function $axios(options) {
           delete config.headers['Authorization'];
         }
         //暂且从localStorge获取token
-        if (localStorage.getItem('token')) {
-          config.headers['Cpm-User-Token'] = localStorage.getItem('token');
+        if (sessionStorage.getItem('token')) {
+          config.headers['Cpm-User-Token'] = sessionStorage.getItem('token');
         }
         let hasEmojiCharacter = false;
         //根据请求方法，序列化传来的参数，根据后端需求是否序列化

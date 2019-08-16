@@ -3,10 +3,10 @@
     <el-dialog :title="title" :close-on-click-modal="false" :visible.sync="mydialogTableVisible">
       <el-form label-width="" :inline="true">
         <div style="position:relative">
-          <el-form-item label="客商编码:" class="two_search">
+          <el-form-item label="客商编码:" label-width="80px" class="two_search">
             <el-input v-model="code" style="width:152px" placeholder="请输入"></el-input>
           </el-form-item>
-          <el-form-item label="客商名称:">
+          <el-form-item label="客商名称:" label-width="80px">
             <el-input v-model="name" style="width:184px" placeholder="请输入"></el-input>
           </el-form-item>
           <el-button type="primary" style="margin:4px 0;" @click="searchUser">查询</el-button>

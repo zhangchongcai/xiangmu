@@ -4,14 +4,11 @@
   <div class="SysContent">
     <div class="SysHeader">
       <div class="HeaderTop">
-        <div class="query">
-          <div class="left-sider" :span="12">
-            <div class="left-purple-dark submitMain">
-              <span style="display:inline-block;margin-right:60px;">区域: {{cityName ? cityName : cityJsonName}}</span>
-              <span class="font">选择时间 :</span>
-              <calendar-view
-                size="mini"
-                v-model="time"
+        <div class="font flex">
+            <div>
+              <span style="margin-right:60px;">区域:<span style="margin-left:16px">{{cityName ? cityName : cityJsonName}}</span></span>
+              <span style="margin-right:16px">选择时间:</span>
+              <calendar-view size="mini"  v-model="time"
                 :dateType="dateType"
                 :dateTypeActive='dateTypeActive'
                 :dateTypeIndex="dateTypeIndex"
@@ -19,10 +16,7 @@
                 @change="changeTime"
               ></calendar-view>
             </div>
-          </div>
-          <div class="right-sider font">
-            数据更新时间:{{updateTime}}
-          </div>
+            <div>数据更新时间:<span style="margin-left:16px">{{updateTime}}</span></div>
         </div>
         <div class="total">
           <div class="totalLeft">
@@ -37,8 +31,7 @@
               <div class="title" @click="clickfoo()">票房占比</div>
               <div class="el-progress">
                 <el-progress 
-                  :text-inside="true" 
-                  :stroke-width="15" 
+                  :stroke-width="10" 
                   :percentage="+boxRadio"
                 ></el-progress>
               </div>
@@ -48,10 +41,9 @@
               <div class="title">卖品占比</div>
               <div class="el-progress">
                 <el-progress
-                  :text-inside="true"
-                  :stroke-width="15"
+                  :stroke-width="10"
                   :percentage="+sellRadio"
-                  color="rgba(254,130,94, 0.7)"
+                  color="#FE825E"
                 ></el-progress>
               </div>
             </div>
@@ -356,7 +348,7 @@ export default {
         })
         .then(response => {
           let res = response.data;
-          this.cityId = res.cityId;
+          this.cityId = res.cityId || this.$route.query.cityId;
           
           //如果是区域直接进入
           if(res.orgName){
@@ -630,107 +622,107 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
-.self-el-section-warp{
-  z-index:10;
-}
-.font{
-    color:#666;
-    font-size:12px;
-}
-//外层容器
-.SysContent {
-  padding: 0px 20px;
-  background: #eeeeee;
-  .SysHeader {
-    width: 100%;
-    height: 166px;
-    .HeaderTop {
-      // line-height: 60px;
-      padding-top:10px;
-      .left-sider {
-        float: left;
-      }
-      .right-sider {
-        float: right;
-      }
-      .total {
-        width: 100%;
-        height: 106px;
-        margin-top: 10px;
-        border-left: 3px solid #3b74ff;
-        background: white;
-        display: flex;
-        justify-content:space-around;
-        .totalLeft {
-          position: relative;
-          line-height:60px;
-          .icon-danchuang-tishi {
-            position: absolute;
-            right: -20px;
-            top: -4px;
-            color: blue;
-            font-size: 12px;
-          }
-        }
-        h1 {
-          margin: 10px 0 5px;
-          font-size: 58px;
-          font-weight: bold;
-          color: #3b74ff;
-          text-align: center;
-        }
-        p {
-          margin: 0px;
-          font-size: 12px;
-          line-height: 10px;
-          text-align: center;
-        }
-      }
-    }
-  }
-}
-.SysMain {
-  margin-top: 20px;
-  width: 100%;
-}
-.left-purple-dark {
-  height: 50px;
-  text-align: left;
-  color: #666;
-  font-size: 12px;
-}
-.right-purple-dark {
-  height: 50px;
-  text-align: right;
-}
+// .self-el-section-warp{
+//   z-index:10;
+// }
+// .font{
+//     color:#666;
+//     font-size:12px;
+// }
+// //外层容器
+// .SysContent {
+//   padding: 0px 20px;
+//   background: #eeeeee;
+//   .SysHeader {
+//     width: 100%;
+//     height: 166px;
+//     .HeaderTop {
+//       // line-height: 60px;
+//       padding-top:10px;
+//       .left-sider {
+//         float: left;
+//       }
+//       .right-sider {
+//         float: right;
+//       }
+//       .total {
+//         width: 100%;
+//         height: 106px;
+//         margin-top: 10px;
+//         border-left: 3px solid #3b74ff;
+//         background: white;
+//         display: flex;
+//         justify-content:space-around;
+//         .totalLeft {
+//           position: relative;
+//           line-height:60px;
+//           .icon-danchuang-tishi {
+//             position: absolute;
+//             right: -20px;
+//             top: -4px;
+//             color: blue;
+//             font-size: 12px;
+//           }
+//         }
+//         h1 {
+//           margin: 10px 0 5px;
+//           font-size: 58px;
+//           font-weight: bold;
+//           color: #3b74ff;
+//           text-align: center;
+//         }
+//         p {
+//           margin: 0px;
+//           font-size: 12px;
+//           line-height: 10px;
+//           text-align: center;
+//         }
+//       }
+//     }
+//   }
+// }
+// .SysMain {
+//   margin-top: 20px;
+//   width: 100%;
+// }
+// .left-purple-dark {
+//   height: 50px;
+//   text-align: left;
+//   color: #666;
+//   font-size: 12px;
+// }
+// .right-purple-dark {
+//   height: 50px;
+//   text-align: right;
+// }
 
-.ProgressBoxCoff {
-  height: 40px;
-  .title {
-    width: 60px;
-    display: inline-block;
-    float: left;
-    height: 35px;
-    line-height: 35px;
-    position: relative;
-    top: 12px;
-    font-size: 12px;
-    color: #666666;
-    &:after {
-      content: "";
-      clear: both;
-    }
-  }
-  .el-progress {
-    float: left;
-    width: 80%;
-    position: relative;
-    top: 10px;
-  }
-}
-.SysContent .SysHeader .HeaderTop .total .progress {
-  width: 582px;
-  // position: relative;
-  // left: -130px;
-}
+// .ProgressBoxCoff {
+//   height: 40px;
+//   .title {
+//     width: 60px;
+//     display: inline-block;
+//     float: left;
+//     height: 35px;
+//     line-height: 35px;
+//     position: relative;
+//     top: 12px;
+//     font-size: 12px;
+//     color: #666666;
+//     &:after {
+//       content: "";
+//       clear: both;
+//     }
+//   }
+//   .el-progress {
+//     float: left;
+//     width: 80%;
+//     position: relative;
+//     top: 10px;
+//   }
+// }
+// .SysContent .SysHeader .HeaderTop .total .progress {
+//   width: 582px;
+//   // position: relative;
+//   // left: -130px;
+// }
 </style>

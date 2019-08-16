@@ -11,13 +11,14 @@
           autocomplete="off"
           @focus="(e)=>{e.target.style.borderColor = 'rgb(63, 118, 253)'}"
           @blur="(e)=>{e.target.style.borderColor = '#bcbcbc'}">
-      <el-button size="medium" type="primary" @click="readCard" :loading="readLoading">读卡</el-button>
-      <el-button size="medium" @click="search" v-if="!isApply">{{$attrs.validateText ? '校验': '查询'}}</el-button>
+      <el-button type="primary" @click="readCard" :loading="readLoading" class="common-btn">读卡</el-button>
+      <el-button @click="search" v-if="!isApply" class="common-btn">{{$attrs.validateText ? '校验': '查询'}}</el-button>
       <div class="iskeyBoard" v-if="!!$attrs.iskeyBoard">
-        <el-button size="medium" @click="startKeyBorad">启动密码输入</el-button>
-        <label style="color:#666"><em style="color:red">*</em>输入后请按回车键或直接刷卡</label>
+        <el-button @click="startKeyBorad" class="common-btn">启动密码输入</el-button>
+        <label style="color:#666;font-size:1.04vw"><em style="color:red">*</em>输入后请按回车键或直接刷卡</label>
       </div>
     </div>
+    <p style="padding-left:10.2vw;padding-top: .3vw;color:#2A2A2A;font-size:.8vw" v-if="!$attrs.iskeyBoard"><em style="color:#F33430">*</em>录入完成请按回车键</p>
   </div>
 </template>
 <script>
@@ -60,11 +61,11 @@ export default {
       if (this.isApply) {
         console.log("开卡流程");
         if (getPhoneOrCard) {
-          if(!/\d{14}/.test(getPhoneOrCard)){
-            this.member.cardNoOrphoneNumState = false;
-            this.$message.warning('请输入正确卡号');
-            return;
-          }
+          // if(!/\d{11}/.test(getPhoneOrCard)){
+          //   this.member.cardNoOrphoneNumState = false;
+          //   this.$message.warning('请输入正确卡号');
+          //   return;
+          // }
           this.member.cardNoOrphoneNumState = true;
           this.member.numberType = "card";
           this.member.cardNo = getPhoneOrCard;
@@ -97,11 +98,11 @@ export default {
               type: "phone"
             });
           } else{
-            if(!/\d{14}/.test(getPhoneOrCard)){
-              this.member.cardNoOrphoneNumState = false;
-                this.$message.warning('请输入正确会员卡号/手机号')
-                return;
-              }
+            // if(!/\d{14}/.test(getPhoneOrCard)){
+            //   this.member.cardNoOrphoneNumState = false;
+            //     this.$message.warning('请输入正确会员卡号/手机号')
+            //     return;
+            //   }
             console.log("卡号");
             this.member.numberType = "card";
             this.member.cardNo = getPhoneOrCard;
@@ -140,20 +141,17 @@ export default {
 </script>
 <style lang="scss">
 ._card-reading {
-  padding: 2.7vh 2vw;
+  padding: 2.7vh 2vw 0;
   .query-phone-or-card {
     display: flex;
     align-items: center;
     .lable {
       min-width: 10.2vw;
-      font-size: $font-size14;
+      font-size: $font-size12;
     }
     .el-input {
       width: 34.2vw;
       margin-right: 0.9vw;
-      .el-input__inner {
-        height: 38px;
-      }
     }
   }
 }
@@ -163,13 +161,13 @@ export default {
 }
 .phoneOrCard{
     width: 34.2vw;
-    padding: 10px 15px;
+    height:5vh;
+    padding:0 15px;
     margin-right: .9vw;
     border-radius: 4px;
     border: 1px solid #bcbcbc;
     color: rgb(96, 98, 102);
-    // line-height: 37px;
-    font-size:14px;
+    font-size:$font-size12;
     outline:none;
     box-sizing: border-box;
     &::-webkit-input-placeholder {

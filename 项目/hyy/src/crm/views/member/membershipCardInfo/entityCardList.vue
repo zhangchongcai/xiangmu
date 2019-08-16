@@ -15,7 +15,7 @@
           placeholder="请输入卡批次名称" clearable></el-input>
       </el-form-item>
       <el-form-item label="卡政策：" prop="cardProductId">
-        <el-select v-model="formData.cardProductId" placeholder="请选择卡政策" clearable>
+        <el-select v-model="formData.cardProductId" placeholder="请选择卡政策" filterable clearable>
           <el-option v-for="item in cardNameOptions" :key="item.id" :label="item.cardName" :value="item.id"></el-option>
         </el-select>
       </el-form-item>
@@ -28,8 +28,14 @@
     <div>
       <div class="head-info-wrap">
         <div class="data-title">数据更新于 {{startOpenDate}}</div>
-        <el-button @click="handleApplyCard" size="small" plain class="_el-btn-custom _member-custom-ghost-button">申请会员卡
-        </el-button>
+        <div>
+          <el-button @click="handleApplyCard" size="small" plain class="_el-btn-custom _member-custom-ghost-button">
+            申请会员卡
+          </el-button>
+          <el-button @click="handleReceiveCard" size="small" plain class="_el-btn-custom _member-custom-ghost-button">
+            领用礼品卡
+          </el-button>
+        </div>
       </div>
       <!-- <tempalte v-if="tableDataList.length>0"> -->
       <div class="entity-card-list-table _m-member-table-custom">
@@ -92,7 +98,9 @@ export default {
       pageSize: 20,
       total: 0,
       tableDataList: [],
-      startOpenDate: new Date().addDays(0).formatDate("yyyy-MM-dd hh:mm:ss")
+      startOpenDate: new Date().addDays(0).formatDate("yyyy-MM-dd hh:mm:ss"),
+      cardCurrent: 1,
+      cardPageSize: 1000
     };
   },
   created() {
@@ -123,22 +131,32 @@ export default {
         cardBatchNo: _this.formData.cardBatchNo,
         cardProductId: _this.formData.cardProductId
       };
-      _this.$crmList.cardbatchList(param).then(ret => {
-        if (ret.total == 0 || ret.data == null) {
-          _this.tipMessage = "暂无数据";
-        }
-        _this.tableDataList = ret.records;
-        // console.log(_this.tableDataList);
-        _this.current = ret.current; //
-        _this.pageSize = ret.size; // 每页数量
-        _this.total = ret.total;
-      });
+      _this.$crmList
+        .cardbatchList(param)
+        .then(ret => {
+          if (ret.total == 0 || ret.data == null) {
+            _this.tipMessage = "暂无数据";
+          }
+          _this.tableDataList = ret.records;
+          // console.log(_this.tableDataList);
+          _this.current = ret.current; //
+          _this.pageSize = ret.size; // 每页数量
+          _this.total = ret.total;
+        })
+        .catch(err => {
+          console.log(err);
+          if (err && err.msg) {
+            this.tipMessage = err.msg;
+          } else {
+            this.tipMessage = "系统繁忙，请稍后重试！";
+          }
+        });
     },
     getCardproductList() {
       let _this = this;
       let param = {
-        current: _this.current,
-        size: _this.pageSize,
+        current: _this.cardCurrent,
+        size: _this.cardPageSize,
         tenantId: this.$store.state.loginUser.consumerId,
         status: "start"
       };
@@ -158,6 +176,12 @@ export default {
     handleApplyCard() {
       this.$router.push({
         path: "/member/membershipCard/addEntityCard"
+      });
+    },
+    // 领用会员卡
+    handleReceiveCard() {
+      this.$router.push({
+        path: "/member/membershipCard/receiveEntityCard"
       });
     },
     handleSizeChange(val) {

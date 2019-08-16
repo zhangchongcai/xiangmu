@@ -10,7 +10,7 @@
           </el-form-item>
           <el-form-item label="状态：" class="two_search">
             <span class="show-text">
-              {{showData.code}}
+              {{showData.status==1?"启用":"停用"}} 
             </span>
           </el-form-item>
           <el-form-item label="销售地点名称：" class="two_search">
@@ -20,7 +20,7 @@
           </el-form-item>
           <el-form-item label="销售地点编码：" class="two_search">
             <span class="show-text">
-              {{showData.status}}
+             {{showData.code}}
             </span>
           </el-form-item>
         </div>
@@ -113,7 +113,6 @@
         this.mydialogTableVisible = false;
       },
       handleCurrentChange(val) {
-        console.log(val, 1111)
         this.currentPage = val
       },
       

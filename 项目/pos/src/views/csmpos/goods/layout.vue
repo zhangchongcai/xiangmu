@@ -66,32 +66,37 @@
                 </div>
                 <ul class="good-list"
                 v-loading="loading">
-                    <li :class='["good-item",ind==isSelectGoods?"border":""]'
+                    <li :class='["good-item"+ind,"good-item",
+                    item.soleUid === isSelectGoods?"border":"",
+                    item.saleStatus?"":"disabled"]'
                     :style="goodListsale?'width:15.7vw':''" 
-                    @click="addCart($event,ind)"
+                    @click="addCart('good-item'+ind,item)"
                     v-for="(item,ind) in listData" 
                     ref="goodsItem"
                     :key="ind" 
                     >
                         <div class="good-img" v-show="!isFont" >
-                            <img :src="item.imgUrl" alt="">
+                            <img :src="item.imgUrl" alt="" v-if="item.imgUrl">
+                            <div v-else  :style="{width:'100%',height:'100%'}"></div>
                         </div>
-                        <div :class='["introduce",ind==isSelectGoods?"isSelectGoods":""]' :style="!isFont?'border-top:none':''">
-                            <p class>{{[1,2,3].includes(item.merType)?item.skuSellEntity.name:item.name}}</p>
-                            <p class>¥{{[1,2,3].includes(item.merType)?item.skuSellEntity.price:item.price}}</p>
+                        <div :class='["introduce",item.soleUid === isSelectGoods?"isSelectGoods":""]' :style="!isFont?'border-top:none':''">
+                            <p class>{{item.aliasName ?item.aliasName:[1,3,5].includes(item.merType) ? item.skuSellEntity.name:
+                                item.merType==2 ? item.name+'/'+ item.skuSellEntity.name : item.name}}</p>
+                            <p class>¥{{[1,2,3,5].includes(item.merType)?item.skuSellEntity.price:item.price}}</p>
                         </div>
                     </li>
                 </ul>
 
                 <div class="footer">
+                    <span class="totall">总计：{{totalNum}}件商品</span>
                     <div class="pagation" >
                         <template v-if="listData.length">
-                            <el-button size="medium" :disabled="currentPage==1" @click="pagination('pre')"  class="pagebtn"><i class="iconfont iconzuojiantouda"></i> </el-button>
+                            <el-button plain class="el-icon-arrow-left nav-button"   :disabled="currentPage==1"  @click="pagination('pre')"></el-button>
                             <span>{{currentPage}}/{{Math.ceil(totalNum/pageSize)}}</span>
-                            <el-button size="medium" :disabled="currentPage==Math.ceil(totalNum/pageSize)"  @click="pagination('next')" class="pagebtn"><i class="iconfont iconyoujiantouda"></i> </el-button>
+                            <el-button plain class="el-icon-arrow-right nav-button"   :disabled="currentPage==Math.ceil(totalNum/pageSize)"  @click="pagination('next')"></el-button>
                         </template>
                     </div>
-                    <span class="totall">总计：{{totalNum}}件商品</span>
+                    
                 </div>
             </div>
             <!-- 购物车 -->
@@ -122,8 +127,9 @@ import ReplaceGoods from 'src/components/dialog/ReplaceGoods'
 import KeyNumberBoard from 'components/dialog/CartNumberKeyBoard'
 import SettlementWindow from 'components/settlement/SettlementWindow'
 import BScroll from 'better-scroll'
-import {mapGetters,mapMutations,mapState} from 'vuex'
-import {SHOW_MORE_TICKETS,GET_CART_BILLCODE,CART_SET_GOODS_DATA,GET_KIND_PRICE,GET_CART_DATA,GET_CART_BILLCODEUID,CART_SEARCH_GOODS_TEXT} from 'types'
+import {mapGetters,mapMutations,mapState,mapActions} from 'vuex'
+import {SHOW_MORE_TICKETS,GET_CART_BILLCODE,CART_SET_GOODS_DATA,GET_KIND_PRICE,GET_CART_DATA,GET_CART_BILLCODEUID,CART_SEARCH_GOODS_TEXT,ACTION_CART_ADD_CART,ACTION_CART_INIT_CART,CART_FIND_CART_DATA} from 'types'
+import { VM_ON_GOODS_SEACH } from 'types/vmOnType.js'
 import { productExhibitionClassIfy, productExhibitionHomeDefault,addCart,initCart,findCart,productExhibitionGetProductByCode} from 'http/apis'
 const clickoutside = {
     // 初始化指令
@@ -172,7 +178,7 @@ export default {
             TwomenuLength:'',
 
             //一级菜单
-            oneMenu:null,
+            oneMenu:0,
             //二级菜单显示
             towMenuShow:false,
             towMenuSele:null,
@@ -186,22 +192,22 @@ export default {
 
             listData:[],
             currentPage:1,
-            isSelectGoods: 0,
+            isSelectGoods: '',
             //换票类
             dialogList:[],
             data:[],
             scroll:null,
             twoScroll:null,
             navUid:'',
-            breadcrumbArr:['全部'],
+            breadcrumbArr:['常用商品'],
             totalNum:0,
             loading:false,
+            searchGoodsText:'',
         };
     },
+    
     computed: {
-        ...mapState({
-            searchGoodsText : state => state.cart.searchGoodsText
-        }),
+        
         ...mapGetters([
             'changingTicket',
             'billCode',
@@ -218,7 +224,25 @@ export default {
             if(this.isFont && !this.goodListsale) return 4*7
             if(!this.isFont && this.goodListsale) return 6*2
             if(!this.isFont && !this.goodListsale) return 4*2
-        }
+        },
+    },
+    async mounted() {
+        this.getNavData()
+        this.getListData()
+        this.scroll = new BScroll(this.$refs.navScroll,{
+            scrollY:false,
+            scrollX:true,
+            click:true,
+        })
+        this.$vm.$on(VM_ON_GOODS_SEACH,(data)=>{
+            this.searchGoodsText = data;
+            if(!data) return
+            this.currentPage = 1;
+            this.getListDataByCode()
+        })
+    },
+    beforeDestroy(){
+        this.$vm.$off(VM_ON_GOODS_SEACH)
     },
     methods: {
         ...mapMutations({
@@ -229,21 +253,20 @@ export default {
             GET_CART_BILLCODEUID,
             CART_SEARCH_GOODS_TEXT
         }),
+        ...mapActions([
+            ACTION_CART_ADD_CART,
+            ACTION_CART_INIT_CART,
+            CART_FIND_CART_DATA
+        ]),
         navChange(type){
             if(type){
-                this.scroll.scrollTo(this.scroll.x+window.innerWidth*(11.7/100),0)
+                this.scroll.scrollBy(window.innerWidth*(11.7/100),0,300)
             }else{
-                this.scroll.scrollTo(this.scroll.x + -(window.innerWidth*(11.7/100)),0)
+                this.scroll.scrollBy(-(window.innerWidth*(11.7/100)),0,300)
             }
         },
         async initCart(){
             const data = await initCart({
-                // channelCode:this.channelCode, //渠道编码	,
-                // channelName:'132',//渠道名称
-                // channelUid:'132',//渠道uid
-                // cinemaCode:this.cinemaCode,//影院编码	
-                // cinemaName:this.cinemaName,//影院名称
-                // cinemaUid:'123456',//影院uid
                 netSaleFlag:'0',
                 remark:'一些说明',
             })
@@ -251,11 +274,13 @@ export default {
                 this[GET_CART_BILLCODE](data.data)
             }
         },
-        async addCart(e,ind){
+        async addCart(event,item){
+            if(!item.saleStatus) return;
             if(!this.billCode){
-                await this.initCart()
+                // await this.initCart()
+                await this[ACTION_CART_INIT_CART]()
             }
-            this.SelectIntroduce(e,ind)
+            this.SelectIntroduce(event,item)
         },
         handleCarouselSed(isLeft) {
             // let width =Number(13.3);
@@ -269,91 +294,19 @@ export default {
         modulChange(modul) {
             this.isFont = modul;
         },
-        async SelectIntroduce(e,ind) {
-            console.log(this.listData[ind])
-            this.loading = true
-            const item = this.listData[ind];
-            let obj = {};
-            
-            obj.saleNum = 1;
+        async SelectIntroduce(event,dataItem) {
 
-            if([1,2].includes(item.merType)){
-                obj.salePrice = item.skuSellEntity.price;
-                obj.originalPrice = item.skuSellEntity.price;
-            }else{
-                obj.salePrice = item.price;
-                obj.originalPrice = item.price;
-            }
-            obj.saleMer = {};
-            
-            obj.saleMer.brandUid = item.brandUid;
-            obj.saleMer.merCode = item.code;
-            obj.saleMer.merUid = item.merUid;
-            obj.saleMer.merSpec = item.merSpec;
-            obj.saleMer.merType = item.merType;
-            obj.saleMer.merName = item.name;
-            obj.saleMer.unitUid = item.unitUid;
-            if(![3,4].includes(item.merType)){
-                obj.saleMer.skuCode = item.skuSellEntity.code;
-                obj.saleMer.skuUid = item.skuSellEntity.skuUid;
-            }
-            if(item.merType == 2){ //合成品
-                obj.saleMer.merItemList = [];
-                item.compoundList.map((mapItem)=>{
-                    obj.saleMer.merItemList.push(this.specialGoodMap(mapItem,item.merUid));
-                })
-            }
-            if(item.merType == 4){ //套餐
-                obj.saleMer.merItemList = [];
-                for(let i = 0; i< item.cinemaSetMealItemList.length;i++){
-                    let mapItem = item.cinemaSetMealItemList[i]
-                    obj.saleMer.merItemList.push(this.specialGoodMap(mapItem,item.merUid,item.merType));
-                    if(mapItem.cinemaMakeItemEntityList){
-                        mapItem.cinemaMakeItemEntityList.map((map)=>{
-                            map.parentSkuUid = mapItem.skuSellEntity.skuUid
-                            obj.saleMer.merItemList.push(this.specialGoodMap(map,mapItem.merUid,)); 
-                        })
-                    }
-                }
-            }
-            const data = await addCart({
-                billCode:this.billCode,
-                merGoodsList:[obj],
-                opType:'0'
-            })
-            this.loading = false;
-            if(data.code != 200) return this.$message.error(data.msg);
-            const cartData = await  findCart({
-                billCode:this.billCode,
-            })
-            if(cartData.code != 200) return this.$message.error(cartData.msg);
-            if(!cartData.data.goodsList) cartData.data.goodsList = [];
-            this[CART_SET_GOODS_DATA](cartData.data.merGoodsList)
-            this[GET_KIND_PRICE](cartData.data)
-            this[GET_CART_DATA](cartData.data)
-            this[GET_CART_BILLCODEUID](cartData.data.uid)
-            this.isSelectGoods = ind;
-            let span = document.createElement("span");
-            span.className = "iconfont iconhuiyuan"
-            span.style.position= 'absolute'
-            span.style.transition = 'all 0.7s cubic-bezier(0.49, -0.29, 0.75, 0.41)';
-            span.style.left = this.$refs.goodsItem[ind].getBoundingClientRect().left +this.$refs.goodsItem[ind].offsetWidth/2 +'px'
-            span.style.top =  this.$refs.goodsItem[ind].getBoundingClientRect().top + this.$refs.goodsItem[ind].offsetHeight/2 + 'px'
-            span.style.zIndex=99
-            document.body.appendChild(span)
-            let origin = document.querySelector("#origin");
-            var x1 = span.getBoundingClientRect().left;
-            var y1 = span.getBoundingClientRect().top;
-            var x2 = origin.getBoundingClientRect().left;
-            var y2 = origin.getBoundingClientRect().top;
-            let maxX = x2 - x1 ;
-            let maxY = y2 - y1 ;
-            span.style.left = x1 + maxX + "px";
-            span.style.top = y1 + maxY + "px";
-            setTimeout(() => {
-                document.body.removeChild(span)
-            },700)
-            
+            console.log(dataItem)
+            this.loading = true 
+            const data = await this[ACTION_CART_ADD_CART](dataItem)
+             this.loading = false
+            if(data.code != 200) return 
+            this[CART_FIND_CART_DATA]();
+            // this.controllPath(event)
+            this.isSelectGoods = dataItem.soleUid;
+            setTimeout(()=>{
+               this.isSelectGoods = '' 
+            },300)
         },
         specialGoodMap(mapItem,parentMerUid,type){//组合 合成品，套餐对象.
             let subObj = {};
@@ -438,45 +391,64 @@ export default {
         selecDialogItem(item) {
             console.log(item)
         },
-        changeData(obj,arr){ //递归重组后台返回的菜单树
+        changeData(obj,arr,showTopArr){ //递归重组后台返回的菜单树
             if(obj.size){
                 for(let i = 0 ; i < obj.list.length ; i++){
                     let item = obj.list[i]
-                    let dataObj = {
-                        name: item.name,
-                        parentUid: item.parentUid,
-                        isLeaf: item.isLeaf,
-                        seq: item.seq,
-                        uid:item.uid,
-                        children:[]
-                    }
-                    arr.push(dataObj)
-                    this.changeData(obj.list[i].children,arr[i].children) 
+                        let dataObj = {
+                            name: item.name,
+                            parentUid: item.parentUid,
+                            isLeaf: item.isLeaf,
+                            seq: item.seq,
+                            uid:item.uid,
+                            children:[]
+                        }
+                        if(showTopArr) if(item.showTop) showTopArr.push(item)
+                        arr.push(dataObj)
+                        this.changeData(obj.list[i].children,arr[i].children,showTopArr) 
+                    
+                    
                 }
             }
         },
         async getNavData(){
             const data = await productExhibitionClassIfy({
                 cinemaUid:this.cinemaUid,
+                terminalId:this.terminalId
             }) 
-
-            console.log(data);
+            
             let arr = [];
-            this.changeData(data.data.children,arr)
-            this.data = arr;
+            let newObj = {
+                list:[],
+                size:0
+            }
+            // let newArr = [];
+            let showData = [];
+            if(data.data){
+                this.changeData(data.data.children,arr,newObj.list)
+                // arr = data.data
+                newObj.size = newObj.list.length
+                this.changeData(newObj,showData)
+            }
+            showData.unshift({
+                name:'常用商品',
+                uid:'',
+                children:[],
+            })
+            this.data = showData;
         },
         async getListData(){
             const data = await productExhibitionHomeDefault({
-                cinemaUid:'805852',
+                cinemaUid:this.cinemaUid,
                 terminalCode:this.terminalId,
                 categoryUid:this.navUid,
                 pageSize:this.pageSize,
                 currentPage : this.currentPage,
             })
+            if(data.code != 200) return this.$message.error(data.msg)
             this.listData = data.data.data;
             this.currentPage = data.data.currentPage;
             this.totalNum = data.data.totalNum;
-            console.log(data)
         },
         async getListDataByCode(){
             const data = await productExhibitionGetProductByCode({
@@ -486,23 +458,102 @@ export default {
                 pageSize:this.pageSize,
                 currentPage : this.currentPage,
             })
+            if(data.code != 200 ) return this.$message.error(data.msg)
+            if(!data.data || !data.data.data.length) return this.$message.warning('暂无商品！')
+            if(data.data.data.length == 1){
+                this.searchGoodsText = '';
+                this.addCart(null,data.data.data[0])
+                return
+            }
+            
             this.listData = data.data.data;
             this.currentPage = data.data.currentPage;
             this.totalNum = data.data.totalNum;
-        }
+        },
+    // controllPath(addBtn, shopCar='detail-menu') {
+    //     var addBtnDom = null,
+    //         shopCarDom = null;
+    //     if(typeof addBtn === "string"){
+    //     addBtnDom = document.querySelector('.'+addBtn);
+    //     } else if(addBtn instanceof HTMLElement){
+    //         addBtnDom = addBtn
+    //     } else {
+    //         alert("传入的参数错误： 第一个参数应为增加按钮的dom元素或该元素的选择器。");
+    //         return;
+    //     }
+
+    //     if(typeof shopCar === "string"){
+    //         shopCarDom = document.querySelector('.'+shopCar);
+    //     } else if(shopCar instanceof HTMLElement){
+    //         shopCarDom = shopCar;
+    //     }else {
+    //         alert("传入的参数错误： 第二个参数应为购物车的dom元素或该元素的选择器。");
+    //         return;
+    //     }
+
+    //     // 获取两个dom的位置
+    //     var addBtnposition = addBtnDom.getBoundingClientRect();
+    //     var shopCarPosition = shopCarDom.getBoundingClientRect();
+    //     var addBtnCenterX = (addBtnposition.left + addBtnposition.right) / 2;
+    //     var addBtnCenterY = (addBtnposition.top + addBtnposition.bottom) / 2;
+    //     var shopCarCenterX = (shopCarPosition.left + shopCarPosition.right) / 2;
+    //     var shopCarCenterY = (shopCarPosition.top + shopCarPosition.bottom) / 2;
+    //     //计算增加按钮 是在 相对于购物车的 左边还是右边（用于控制后面的移动方向）
+    //     var relativePosition = addBtnCenterX > shopCarCenterX ? -1 : 1;
+
+    //     // 获取连个dom之间的距离
+    //     var xDistance = Math.abs(addBtnCenterX - shopCarCenterX);
+    //     var yDistance = Math.abs(addBtnCenterY - shopCarCenterY);
+
+    //     // 绘制小球并设置其位置
+    //     var ballDom = this.drawBall();
+    //     ballDom.style.top = addBtnCenterY + "px";
+    //     ballDom.style.left = addBtnCenterX + "px";
+    //     document.body.appendChild(ballDom);
+    //     /*
+    //     * 根据一元二次方程的轨迹求出对象的系数 y = ax^2 + bx + c
+    //     *  var coefficientC = 0;
+    //     *  var coefficientB = 0;
+    //     *  var coefficientA = yDistance / Math.pow(xDistance, 2);
+    //     */
+    //     //小球的横竖坐标
+    //     var xAbscissa = 0, yAbscissa = 0;
+
+    //     //设置移动路径
+    //     var ballTimer = setInterval(function () {
+    //         //每次重新坐标
+    //         xAbscissa += 5 * relativePosition;
+    //         yAbscissa = (yDistance / Math.pow(xDistance, 2)) * Math.pow(xAbscissa, 2);
+    //         ballDom.style.top = addBtnCenterY + yAbscissa + "px";
+    //         ballDom.style.left = addBtnCenterX + xAbscissa + "px";
+    //         //检查是否到达终点
+    //         var surplusDistance = parseInt(ballDom.style.left) - shopCarCenterX;
+    //         if (Math.abs(surplusDistance) <= 5) {
+    //             clearInterval(ballTimer);
+    //             document.body.removeChild(ballDom)
+                
+    //         }
+    //     }, 5);
+    // },
+    // drawBall() {
+    //     var ballDom = document.createElement("div");
+    //     ballDom.style.width = "30px";
+    //     ballDom.style.height = "30px";
+    //     ballDom.style.border = "1px solid #3b74ff";
+    //     ballDom.style.background = "#3b74ff";
+    //     ballDom.style.borderRadius = "50%";
+    //     ballDom.style.position = "absolute";
+    //     ballDom.style.zIndex = '10000' 
+    //     return ballDom;
+    // },
+
+
         
     },
     created() {
+        
     },
-    async mounted() {
-        this.getNavData()
-        this.getListData()
-        this.scroll = new BScroll(this.$refs.navScroll,{
-            scrollY:false,
-            scrollX:true,
-            click:true,
-        })
-    },
+    
     watch:{
         pageSize(){
             this.currentPage = 1;
@@ -515,17 +566,9 @@ export default {
         },
         navUid(){
             this.currentPage = 1;
-            this[CART_SEARCH_GOODS_TEXT](this.seachAddition)
+            this[CART_SEARCH_GOODS_TEXT]('')
             this.getListData()
         },
-        async searchGoodsText(val){
-            this.currentPage = 1;
-            if(val == '') return
-            this.getListDataByCode()
-            
-            
-            
-        }
     }
 };
 </script>
@@ -553,11 +596,12 @@ export default {
             margin: 0 auto;
             height: 100%;
             display: flex;
+            align-items: flex-end;
             .control-btn{
                 margin-left: 1vw;
                 display: inline-flex;
                 flex-wrap: nowrap;
-                height: 100%;
+                height: 80%;
                 align-items: center;
                 .el-button{
                         text-align: center;
@@ -613,11 +657,13 @@ export default {
             .nav-warp {
                 display: flex;
                 height: 100%;
+                box-shadow: 0px 4px 5px rgba(0,0,0,0.2);
                 .carousel-container {
                     margin: 0 auto;
                     height: 100%;
                     overflow: hidden;
                     flex:1;
+                    background: #fff;
                     .carousel {
                         display: inline-block;
                         white-space: nowrap;
@@ -727,25 +773,29 @@ export default {
                 overflow: auto;
                 width: 100%;
                 height:calc(100% - 7vh - 10vh) ;
+                cursor:pointer;
                 .border {
                     box-shadow: 0 0 0 1px $btn-background-color-theme;
                 }
                 .good-item {
                     position: relative;
                     box-sizing: border-box;
-                    display: inline-flex;
+                    display: inline-block;
                     flex-direction: column;
                     transition: all .3s;
                     width: 24%;
-                    margin-bottom: .8%;
+                    margin-bottom: 1vh;
                     margin-left: .5%;
                     border-radius: 4px;
                     z-index: 99;
+                    color:#a7b8e4;
                     .good-img {
                         box-sizing: border-box;
                         width: 100%;
                         height: 19vh;
-                        border-radius: 4px;
+                        border: 1px solid;
+                        border-radius: 4px 4px 0 0;
+                        overflow: hidden;
                         img {
                             width: 100%;
                             height: 100%;
@@ -759,7 +809,7 @@ export default {
                         width: 100%;
                         height: 7.8vh;
                         border: 1px solid #a7b8e4;
-                        border-radius: 2px;
+                        border-radius: 0 0 4px 4px;
                         transition: all 0.3s;
                         & > p {
                             flex: 1;
@@ -771,6 +821,9 @@ export default {
                             font-family: MicrosoftYaHei-Bold;
                             font-size: $font-size12;
                             color: #333333;
+                            white-space: nowrap;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
                         }
                         & > p:nth-child(2) {
                             font-family: Arial-BoldMT;
@@ -784,6 +837,18 @@ export default {
                         p {
                             color: #ffffff !important;
                         }
+                    }
+                }
+                .disabled{
+                    background: rgb(242,242,242);
+                    cursor: not-allowed;
+                    color:#BCBCBC!important;
+                    .introduce {
+                        border-color:#BCBCBC;
+                        p{
+                            color:#666!important;
+                        }
+                        
                     }
                 }
             }

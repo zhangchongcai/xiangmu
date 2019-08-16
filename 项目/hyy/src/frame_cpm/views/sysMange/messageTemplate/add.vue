@@ -1,5 +1,5 @@
 <template>
-<div class="page-wrapper page-justsee-message-channel page-justsee-msgTpl-edit">
+<div class="page-wrapper page-justsee-message-channel page-justsee-messagetml-edit">
     <!-- <div class="breadcrumb">
         <el-breadcrumb separator-class="el-icon-arrow-right">
             <el-breadcrumb-item>短信管理</el-breadcrumb-item>
@@ -66,12 +66,16 @@
                 </el-row>  
                  <el-row :gutter="20" v-if="!isJustSee">
                       <!-- v-if="!isJustSee && isModify" -->
-                    <el-col :span="12" >
+                    <el-col :span="12" class="width490">
                         <el-form-item label="测试手机号：" prop="description">
                             <el-input  v-model="messageTemplate.phone" style="width:360px;"></el-input>
-                            <el-button type="primary"  @click="sendMessage" style="margin-left:12px; padding:8px 8px;">发送测试短信</el-button>
                             <!-- <div class="contentMsg">{{contentMsg}}</div> -->
                         </el-form-item>
+                    </el-col>
+                     <el-col :span="12">
+                        <div class="marginTop8">
+                            <el-button type="primary"  @click="sendMessage" style="margin-left:12px; padding:8px 8px;">发送测试短信</el-button>
+                        </div>
                     </el-col>
                 </el-row>  
                 
@@ -188,6 +192,7 @@ import { createSmsChannel, updateSmsTemplate, querySmsScene,sendSingleMsg, creat
                         createSmsTemplate(messageTemplateBase)
                         .then( ret => {
                             if (ret.result) {
+                                this.$store.commit("tagNav/removeTagNav", this.$route)
                                 this.success('创建短信模板成功')
                                 this.$router.push('/sys/message/messageTemplate');
                             } else {
@@ -202,6 +207,7 @@ import { createSmsChannel, updateSmsTemplate, querySmsScene,sendSingleMsg, creat
                         updateSmsTemplate(messageTemplateBase)
                         .then( ret => {
                             if (ret.result) {
+                                this.$store.commit("tagNav/removeTagNav", this.$route)
                                 this.success('修改短信模板成功')
                                 this.$router.push('/sys/message/messageTemplate');
                             } else {
@@ -273,6 +279,7 @@ import { createSmsChannel, updateSmsTemplate, querySmsScene,sendSingleMsg, creat
 
             //取消退出
             out(){
+                this.$store.commit("tagNav/removeTagNav", this.$route)
                 this.$router.push("/sys/message/messageTemplate")
             },
             templateTextareaFunc(){
@@ -370,8 +377,8 @@ import { createSmsChannel, updateSmsTemplate, querySmsScene,sendSingleMsg, creat
                 let paramCurrentUse = itemScene && itemScene[0] && itemScene[0].paramList
                     // let templateInfo1 = '【大地电影】购买成功，卡号：{CardCode},支付金额{Money}元！'
                     // let templatetext = '【大地电影】购买成功，卡号：6669769,支付金额35元！'
-                     let templateInfo = '【大地电影】购买成功，'
-                     let templatetext = '【大地电影】购买成功，'
+                     let templateInfo = ''
+                     let templatetext = ''
                     for(let i=0;i<paramCurrentUse.length;i++){
                       templateInfo += paramCurrentUse[i].paramName +':' +'{'
                       templateInfo += paramCurrentUse[i].paramCode +'}';
@@ -417,10 +424,30 @@ import { createSmsChannel, updateSmsTemplate, querySmsScene,sendSingleMsg, creat
     }
 </script>
 <style lang="scss">
+    .page-justsee-messagetml-edit{
+        .marginTop8{
+            margin-top:8px;
+        }
+        .width490{
+            width: 490px;
+        }
+        .el-form-item__label {
+            font-size: 12px;
+        } 
+        .el-textarea__inner{
+            font-size: 12px;
+        }
+        .el-input--suffix .el-input__inner{
+            font-size: 12px;
+        }
+        .el-input__inner{
+            font-size: 12px;
+        }
+    }
     .page-justsee-message-channel{
         .el-form-item__label{
             font-size: 12px;
-            line-height: 30px;
+            line-height: 40px;
         }
         .el-input__inner{
             font-size: 12px;
@@ -551,9 +578,10 @@ import { createSmsChannel, updateSmsTemplate, querySmsScene,sendSingleMsg, creat
             border-radius: 4px;
             padding-left: 12px;
             padding-right: 12px;
+            margin-bottom: 6px;
+            margin-top: 6px;
             height: 28px;
             line-height: 28px;
-            font-size:12px;
             cursor: pointer;
         }
     }

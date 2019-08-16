@@ -1,7 +1,7 @@
 <template>
   <div class="_add-member-tags">
-    <el-form :model="ruleForm" :rules="rules" hide-required-asterisk ref="ruleForm" size="medium" label-width="120px"
-      label-position="right">
+    <el-form :model="ruleForm" :rules="rules" hide-required-asterisk ref="ruleForm" size="medium" label-width="108px"
+      label-position="left">
       <el-collapse v-model="activeNames" class="_member-label-content">
         <!-- 标签基础信息 -->
         <el-collapse-item title="标签基础信息" name="1">
@@ -19,7 +19,8 @@
             </el-form-item>
             <el-form-item label="显示预览：" prop="viewPreview">
               <div class="_view-preview-wrap" :style="`border-color:${ruleForm.labelColor}`">
-                <span class="_view-preview-word" :style="`color:${ruleForm.labelColor}`">黄金会员</span>
+                <span class="_view-preview-word"
+                  :style="`color:${ruleForm.labelColor}`">{{ruleForm.labelName?ruleForm.labelName:'标签名称'}}</span>
               </div>
             </el-form-item>
           </div>
@@ -454,19 +455,20 @@
             <el-form-item label="条件筛选规则：" prop="filterCondition">
               <el-radio v-model="ruleForm.filterCondition" label="all">满足以上所有条件</el-radio>
             </el-form-item>
-            <el-form-item label="符合条件人数：" prop="filterCondition">
+            <!-- <el-form-item label="符合条件人数：" prop="filterCondition">
               <div class="_qualified-number-wrap">
                 <el-button type="primary" class="_calculation-btn" @click="handleCalculation(50,1000)">计算</el-button>
                 <div class="_qualified-number-desc">
                   该群体人数：{{ruleForm.numberPeople}}，占总人数：{{ruleForm.percent}}%
                 </div>
               </div>
-            </el-form-item>
+            </el-form-item> -->
           </div>
         </el-collapse-item>
       </el-collapse>
       <el-form-item style="textAlign:center">
-        <el-button type="primary" @click="submitForm('ruleForm')" class="_el-btn-custom _member-add-edit-save-btn">保存</el-button>
+        <el-button type="primary" @click="submitForm('ruleForm')" class="_el-btn-custom _member-add-edit-save-btn">保存
+        </el-button>
         <el-button @click="handleCancelAddLabel" class="_el-btn-custom">取消</el-button>
       </el-form-item>
     </el-form>
@@ -1003,9 +1005,9 @@ export default {
         shopConsumeAmountRelativeTimeUnit: "day", //卖品消费金额相对时间单位
         lastConsumeStart: "", //距上次消费天数下限
         lastConsumeEnd: "", //距上次消费天数上限
-        filterCondition: "all", //条件筛选规则
-        numberPeople: 0, //符合筛选群体数
-        percent: 0 //筛选人群占比
+        filterCondition: "all" //条件筛选规则
+        // numberPeople: 0, //符合筛选群体数
+        // percent: 0 //筛选人群占比
       },
       rules: {
         labelName: [
@@ -1496,8 +1498,8 @@ export default {
       this.ruleForm.labelName = detailData.labelName;
       this.ruleForm.labelColor = detailData.labelColor;
       this.ruleForm.filterCondition = detailData.filterCondition;
-      this.ruleForm.numberPeople = detailData.numberPeople;
-      this.ruleForm.percent = detailData.percent;
+      // this.ruleForm.numberPeople = detailData.numberPeople;
+      // this.ruleForm.percent = detailData.percent;
       this.selectedTotalArr = labelRulesArr.map(item => {
         return item.lableType;
       });
@@ -1545,8 +1547,8 @@ export default {
             labelName: this.ruleForm.labelName, //会员标签名称
             labelColor: this.ruleForm.labelColor, //会员标签颜色
             filterCondition: this.ruleForm.filterCondition, //筛选条件
-            numberPeople: this.ruleForm.numberPeople, //	符合筛选群体数
-            percent: this.ruleForm.percent, //	筛选人群占比
+            // numberPeople: this.ruleForm.numberPeople, //	符合筛选群体数
+            // percent: this.ruleForm.percent, //	筛选人群占比
             labelRules: temporaryArr
           };
 
@@ -1556,6 +1558,7 @@ export default {
               .labelEdit(data)
               .then(res => {
                 this.$message.success("修改成功");
+                this.$store.commit("tagNav/removeTagNav", this.$route);
                 this.$router.push({
                   path: "/member/memberTags/list"
                 });
@@ -1569,6 +1572,7 @@ export default {
               .labelAdd(data)
               .then(res => {
                 this.$message.success("添加成功");
+                this.$store.commit("tagNav/removeTagNav", this.$route);
                 this.$router.push({
                   path: "/member/memberTags/list"
                 });
@@ -1586,6 +1590,7 @@ export default {
     },
     // 取消
     handleCancelAddLabel() {
+      this.$store.commit("tagNav/removeTagNav", this.$route);
       this.$router.push({
         path: "/member/memberTags/list"
       });
@@ -2145,9 +2150,15 @@ export default {
     },
     // 选择影院回调
     handleCallBack(opt) {
-      var arr = new Array(...opt.data);
-      this.ruleForm.cinema = arr;
-      this.$refs["ruleForm"].validateField(["cinema"]);
+      if (opt.btnType == 1 && opt.data.length == 0) {
+        this.dialogVisible = true;
+        this.$message.warning("请至少选择一家影院");
+        return false;
+      } else {
+        let arr = new Array(...opt.data);
+        this.ruleForm.cinema = arr;
+        this.$refs["ruleForm"].validateField(["cinema"]);
+      }
     },
     // 选择可用券
     chooseCouponName() {
@@ -2158,6 +2169,7 @@ export default {
     // 删除所选可用券
     clearSelectedCouponName() {
       this.ruleForm.couponName = [];
+      this.$set(this, "innerCouponNameMultiData", []);
     },
     //展示当前可用券合集
     getArrCouponName(arr) {
@@ -2176,25 +2188,30 @@ export default {
       this.ruleForm.couponName = arr;
       this.$refs["ruleForm"].validateField(["couponName"]);
       // console.log("选择的可用券", this.ruleForm.couponName);
-    },
-    // 筛选条件计算
-    handleCalculation(Min, Max) {
-      var Range = Max - Min;
-      var Rand = Math.random();
-      this.ruleForm.numberPeople = Min + Math.round(Rand * Range);
-      this.ruleForm.percent =
-        Rand == 0 ? Math.round(Rand + 10) : Math.round(Rand * 100);
     }
+    // 筛选条件计算
+    // handleCalculation(Min, Max) {
+    //   var Range = Max - Min;
+    //   var Rand = Math.random();
+    //   this.ruleForm.numberPeople = Min + Math.round(Rand * Range);
+    //   this.ruleForm.percent =
+    //     Rand == 0 ? Math.round(Rand + 10) : Math.round(Rand * 100);
+    // }
   }
 };
 </script>
 <style lang="scss">
 ._add-member-tags {
   width: 80%;
+  .el-form-item__label {
+    text-indent: 0;
+    margin-left: 22px;
+    margin-top: 10px;
+  }
   ._label-red-star {
     color: #f56c6c;
     position: absolute;
-    left: -90px;
+    left: -92px;
     top: 0px;
     z-index: 99;
   }
@@ -2216,7 +2233,7 @@ export default {
     ._member-label-basic-set {
       .el-form-item__error {
         top: 40px;
-        // left: 370px;
+        left: 20px;
       }
       // 标签颜色样式
       ._label-color-wrap {
@@ -2239,12 +2256,14 @@ export default {
       //标签预览
       ._view-preview-wrap {
         border: 1px solid #666;
-        width: 65px;
+        min-width: 65px;
         height: 20px;
         line-height: 18px;
         margin-top: 8px;
         text-align: center;
         border-radius: 2px;
+        padding: 0 7px;
+        float: left;
         ._view-preview-word {
           font-size: 12px;
           color: #666;
@@ -2253,6 +2272,7 @@ export default {
     }
     // 筛选条件设置
     ._member-condition-setting {
+      margin-left: 22px;
       // title
       ._member-condition-head {
         background: #f2f4fd;
@@ -2380,6 +2400,7 @@ export default {
                 text-align: left;
                 font-size: 12px;
                 color: #666666;
+                margin-left: 0px;
               }
               .el-form-item__content {
                 margin-left: 10px !important;
@@ -2413,6 +2434,8 @@ export default {
                 text-align: left;
                 font-size: 12px;
                 color: #666666;
+                margin-top: 3px;
+                margin-left: 0px;
               }
             }
             ._consumer-cinema {

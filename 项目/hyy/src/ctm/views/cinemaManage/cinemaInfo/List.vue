@@ -89,7 +89,7 @@
 					>
 						<template slot-scope="scope">
 							<el-button  type="text" size="small"  @click="cinema_search(scope.row.uid)">查看</el-button>
-							<el-button  type="text" size="small"  @click="cinema_edit(scope.row.uid)">修改</el-button>
+							<el-button  type="text" size="small"  @click="cinema_edit(scope.row.uid)">编辑</el-button>
 						</template>
 					</el-table-column>
 				</el-table>
@@ -120,7 +120,7 @@ import minxins from 'frame_cpm/mixins/cacheMixin.js'
 		components:{},
 		data(){
 			return {
-				/* 缓存数据 */
+				// /* 缓存数据 */
 				cacheField: ["total","current","pageSize","tableData","searchAdition"],
 				subComName:['cinema'],
 					//总数

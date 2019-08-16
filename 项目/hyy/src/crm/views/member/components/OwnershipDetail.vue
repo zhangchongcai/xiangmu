@@ -10,10 +10,13 @@
       <el-collapse-item title="权益信息" name="1">
         <div class="equity-info">
           <div class="item-inner"><label class="lable-name">权益名称：</label>{{detailData.equityName | filterEmpty}}</div>
-          <div class="item-inner"><label class="lable-name">权益类型：</label>{{detailData.equityTypeName | filterEmpty}}</div>
-          <div class="item-inner" v-if="detailData.equityType == 'consumer_type'"><label class="lable-name">权益类别：</label>{{detailData.equityCategoryName
+          <div class="item-inner"><label class="lable-name">权益类型：</label>{{detailData.equityTypeName | filterEmpty}}
+          </div>
+          <div class="item-inner" v-if="detailData.equityType == 'consumer_type'"><label
+              class="lable-name">权益类别：</label>{{detailData.equityCategoryName
             | filterEmpty}}</div>
-          <div class="item-inner"><label class="lable-name">权益说明：</label> <span style="font-size:12px" v-html="formateRemark(detailData.equityRemark)">
+          <div class="item-inner"><label class="lable-name">权益说明：</label> <span style="font-size:12px"
+              v-html="formateRemark(detailData.equityRemark)">
             </span></div>
           <div class="item-inner-img"><label class="lable-name">icon：</label>
             <span v-if="detailData.logoPic" class="have-img">
@@ -24,7 +27,8 @@
         </div>
       </el-collapse-item>
       <!-- 权益规则 -->
-      <el-collapse-item :title="`权益规则-${detailData.equityCategoryName}`" name="2" v-if="detailData.equityType == 'consumer_type' && detailData.equityCategory">
+      <el-collapse-item :title="`权益规则-${detailData.equityCategoryName}`" name="2"
+        v-if="detailData.equityType == 'consumer_type' && detailData.equityCategory">
         <div class="equity-rules">
           <!-- 影票折扣 -->
           <div v-if="detailData.equityCategory == 'movie'">
@@ -36,7 +40,8 @@
               <div class="item-inner"><label class="lable-name">适用制式：</label>{{item.screenList |
                 filterCinemaList('screenName')}}</div>
               <div class="item-inner"><label class="lable-name">放映星期：</label>{{item.weeks | formatWeeks}}</div>
-              <div class="item-inner"><label class="lable-name">放映时段：</label>{{item.dayTimesJson?item.dayTimesJson:'-'}}</div>
+              <div class="item-inner"><label class="lable-name">放映时段：</label>{{item.dayTimesJson?item.dayTimesJson:'-'}}
+              </div>
               <div class="item-inner"><label class="lable-name">优惠方式：</label>{{item.ticketSaleType |
                 formatTicketSaleType}}，{{item.ticketSaleData}}</div>
               <div class="item-inner" v-if="item.ticketLimitSaleType?true:false"><label class="lable-name">优惠限制：</label>{{item.ticketLimitSaleType
@@ -57,21 +62,24 @@
           </div>
           <!-- 生日赠券 -->
           <div class="birthday-coupons" v-if="detailData.equityCategory == 'birthday'">
-            <div class="item-inner"><label class="lable-name">发送时间：</label>{{detailData.birthday | filterBirthday}}</div>
+            <div class="item-inner"><label class="lable-name">发送时间：</label>{{detailData.birthday | filterBirthday}}
+            </div>
             <div class="gift-voucher-wrap">
               <!-- <div class="item-inner"><label class="lable-name">赠送券类型：</label>代金券 + 兑换码</div> -->
               <div v-if="detailData.birthday.voucherList && detailData.birthday.voucherList.length > 0">
                 <div class="cash-coupon-title">代金券</div>
                 <div class="item-inner" v-for="(item, index) of detailData.birthday.voucherList" :key="index"><label
                     class="lable-name">销售单号：</label>
-                  <div style="width:140px" class="my12size">{{item.ticketNo}}</div><label class="lable-name">&emsp;&emsp;&emsp;张数：</label>{{item.num}}张
+                  <div style="width:140px" class="my12size">{{item.ticketNo}}</div><label
+                    class="lable-name">&emsp;&emsp;&emsp;张数：</label>{{item.num}}张
                 </div>
               </div>
               <div v-if="detailData.birthday.cdkeyList && detailData.birthday.cdkeyList.length > 0">
                 <div class="cash-coupon-title">兑换码</div>
                 <div class="item-inner" v-for="(item, index) of detailData.birthday.cdkeyList" :key="index"><label
                     class="lable-name">销售单号：</label>
-                  <div style="width:140px" class="my12size">{{item.ticketNo}}</div><label class="lable-name">&emsp;&emsp;&emsp;张数：</label>{{item.num}}张
+                  <div style="width:140px" class="my12size">{{item.ticketNo}}</div><label
+                    class="lable-name">&emsp;&emsp;&emsp;张数：</label>{{item.num}}张
                 </div>
               </div>
             </div>
@@ -80,10 +88,29 @@
           <div class="cash-coupon" v-if="detailData.equityCategory == 'voucher'">
             <div class="item-inner my12size" v-for="(item, index) of detailData.ticketList" :key="index">
               <label class="lable-name">销售单号：</label>
-              <div style="width:140px" class="my12size">{{item.ticketNo}}</div><label class="lable-name">&emsp;&emsp;&emsp;张数：</label>
+              <div style="width:140px" class="my12size">{{item.ticketNo}}</div><label
+                class="lable-name">&emsp;&emsp;&emsp;张数：</label>
               <div style="width:55px;" class="my12size">{{item.totalNum}}张</div>&emsp;&emsp;&emsp;
               <label class="lable-name my12size" style="width:100px;">发放时间与张数：</label>
               <div class="my12size">每{{item.outOfTime | outOfTimeToChinese}}</div>{{item.num}}张
+            </div>
+          </div>
+          <!-- 次卡 -->
+          <div v-if="detailData.equityCategory == 'time_card'">
+            <div class="ticket-discount" v-for="(item, index) of detailData.movieList" :key="index">
+              <div class="item-inner"><label class="lable-name">适用影院：</label>{{item.cinemaList |
+                filterCinemaList('cinemaName')}}</div>
+              <div class="item-inner"><label class="lable-name">适用影厅：</label>{{item.hallList |
+                filterCinemaList('hallName')}}</div>
+              <div class="item-inner"><label class="lable-name">适用制式：</label>{{item.screenList |
+                filterCinemaList('screenName')}}</div>
+              <div class="item-inner"><label class="lable-name">放映星期：</label>{{item.weeks | formatWeeks}}</div>
+              <div class="item-inner"><label class="lable-name">放映时段：</label>{{item.dayTimesJson?item.dayTimesJson:'-'}}
+              </div>
+              <div class="item-inner"><label class="lable-name">出票金额：</label>{{item.ticketIssueType |
+                formatTicketIssueType}}，{{item.ticketIssueValue}}</div>
+              <div class="item-inner"><label class="lable-name">低于最低票价时：</label>{{item.lowPriceMark |
+                formatLowPriceMark}}{{item.maxSubsidies}}</div>
             </div>
           </div>
         </div>
@@ -152,9 +179,7 @@ export default {
         .then(data => {
           this.detailData = data;
           if (data.equityCategoryName) {
-            this.stepData.stepList[1].name = `权益规则-${
-              data.equityCategoryName
-            }`;
+            this.stepData.stepList[1].name = `权益规则-${data.equityCategoryName}`;
           }
           // if (data.equityType != "consumer_type") {
           //   this.stepData.stepList = [
@@ -255,6 +280,17 @@ export default {
         return "固定金额（元）";
       }
     },
+    formatTicketIssueType: function(value) {
+      if (value == "subPrice") {
+        return "零售价-N（元）";
+      } else if (value == "discountPrice") {
+        return "零售打折（%）";
+      } else if (value == "fixPrice") {
+        return "固定金额（元）";
+      } else if (value == "addToLowestPrice") {
+        return "最低发行价±N（元）";
+      }
+    },
     formatLowPriceMark: function(value) {
       if (value == "notAllowSale") {
         return "不允许出票";
@@ -340,6 +376,7 @@ export default {
         font-size: 12px;
         color: #666666;
         line-height: 1.3;
+        flex-shrink: 0;
       }
     }
     .item-inner-img {

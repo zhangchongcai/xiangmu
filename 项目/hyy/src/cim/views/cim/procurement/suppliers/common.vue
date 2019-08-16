@@ -1,13 +1,5 @@
 <template>
-  <div class="content supplires-common">
-<!--    <div class="breadcrumb">-->
-<!--      <el-breadcrumb separator-class="el-icon-arrow-right">-->
-<!--        <el-breadcrumb-item>采购管理</el-breadcrumb-item>-->
-<!--        <el-breadcrumb-item :to="{ path: '/retail/procurement/suppliers/list' }">供应商管理</el-breadcrumb-item>-->
-<!--        <el-breadcrumb-item>{{typeText}}供应商</el-breadcrumb-item>-->
-<!--      </el-breadcrumb>-->
-<!--    </div>-->
-    <div class="tittle"></div>
+  <div class="content" id="supplires-common">
     <el-form
       :inline="true"
       ref="ruleForm"
@@ -16,33 +8,33 @@
       label-width="100px"
       label-suffix="："
     >
-      <el-collapse  v-model="activeNames">
+      <el-collapse v-model="activeNames">
         <!-- 基础信息 start-->
         <el-collapse-item title="基础信息" name="1">
           <div>
             <el-row>
               <el-col :span="8">
                 <el-form-item
-                        label="供应商编码"
-                        prop="code"
-                        :rules="[{ required:  routeQuery.type==3 ? false : true, message: '供应商编码不能为空',trigger:  ['blur', 'change']  }, {pattern:/^[0-9a-zA-Z_-]{6}$/,message: '请输入6位英文字母或数字!'}]"
+                  label="供应商编码"
+                  prop="code"
+                  :rules="[{ required:  routeQuery.type==3 ? false : true, message: '供应商编码不能为空',trigger:  ['blur', 'change']  }, {pattern:/^[0-9a-zA-Z_-]{6}$/,message: '请输入6位英文字母或数字!'}]"
                 >
                   <span v-if="routeQuery.type==3">{{queryData.code}}</span>
                   <el-input
-                          v-else
-                          placeholder="请输入"
-                          prop="shorthandCode"
-                          :disabled="routeQuery.type==2  ? true: false"
-                          class="basic-input"
-                          v-model="queryData.code"
+                    v-else
+                    placeholder="请输入"
+                    prop="shorthandCode"
+                    :disabled="routeQuery.type==2  ? true: false"
+                    class="basic-input"
+                    v-model="queryData.code"
                   ></el-input>
                 </el-form-item>
               </el-col>
               <el-col :span="8">
                 <el-form-item
-                        label="供应商名称"
-                        prop="name"
-                        :rules="[{ required:  routeQuery.type==3 ? false : true, message: '供应商名称不能为空',trigger: 'change' }]"
+                  label="供应商名称"
+                  prop="name"
+                  :rules="[{ required:  routeQuery.type==3 ? false : true, message: '供应商名称不能为空',trigger: 'change' }]"
                 >
                   <span v-if="routeQuery.type==3">{{queryData.name}}</span>
                   <el-input v-else placeholder="请输入" class="basic-input" v-model="queryData.name"></el-input>
@@ -63,10 +55,10 @@
                 <el-form-item label="税务登记号" prop="taxRegisterNum">
                   <span v-if="routeQuery.type==3">{{queryData.taxRegisterNum}}</span>
                   <el-input
-                          placeholder="请输入"
-                          class="basic-input"
-                          v-else
-                          v-model="queryData.taxRegisterNum"
+                    placeholder="请输入"
+                    class="basic-input"
+                    v-else
+                    v-model="queryData.taxRegisterNum"
                   ></el-input>
                 </el-form-item>
               </el-col>
@@ -74,19 +66,24 @@
             <el-row>
               <el-col :span="8">
                 <el-form-item
-                        prop="linkman"
-                        label="联系人"
-                        :rules="[{ required:  routeQuery.type==3 ? false : true, message: '联系人不能为空',trigger: 'change' }]"
+                  prop="linkman"
+                  label="联系人"
+                  :rules="[{ required:  routeQuery.type==3 ? false : true, message: '联系人不能为空',trigger: 'change' }]"
                 >
                   <span v-if="routeQuery.type==3">{{queryData.linkman}}</span>
-                  <el-input placeholder="请输入" v-else class="basic-input" v-model="queryData.linkman"></el-input>
+                  <el-input
+                    placeholder="请输入"
+                    v-else
+                    class="basic-input"
+                    v-model="queryData.linkman"
+                  ></el-input>
                 </el-form-item>
               </el-col>
               <el-col :span="8">
                 <el-form-item
-                        prop="tel"
-                        label="联系电话"
-                        :rules="[{ required:  routeQuery.type==3 ? false : true, message: '联系电话不能为空',trigger: 'change' }]"
+                  prop="tel"
+                  label="联系电话"
+                  :rules="[{ required:  routeQuery.type==3 ? false : true, message: '联系电话不能为空',trigger: 'change' },{pattern:/^([0-9-]+)$/,message: '请输入数字或者-'}]"
                 >
                   <span v-if="routeQuery.type==3">{{queryData.tel}}</span>
                   <el-input v-else placeholder="请输入" class="basic-input" v-model="queryData.tel"></el-input>
@@ -110,25 +107,30 @@
             <el-row>
               <el-col :span="8">
                 <el-form-item
-                        prop="cooperationTime"
-                        label="合作时间"
-                        class="cooperation-time"
-                        :rules="[{ required:  routeQuery.type==3 ? false : true, message: '合作时间不能为空',trigger: 'change' }]"
+                  prop="cooperationTime"
+                  label="合作时间"
+                  class="cooperation-time"
+                  :rules="[{ required:  routeQuery.type==3 ? false : true, message: '合作时间不能为空',trigger: 'change' }]"
                 >
-                  <span v-if="routeQuery.type==3">{{queryData.startTime +'至' + queryData.endTime}}</span>
+                  <span v-if="routeQuery.type==3">
+                    <span
+                      v-if="queryData.startTime"
+                    >{{queryData.startTime +'至' + queryData.endTime}}</span>
+                  </span>
                   <el-date-picker
-                          v-else
-                          class="basic-input"
-                          v-model="queryData.cooperationTime"
-                          type="datetimerange"
-                          format="yyyy-MM-dd HH:mm"
-                          value-format="yyyy-MM-dd HH:mm"
-                          placeholder="选择日期"
+                    v-else
+                    class="basic-input"
+                    v-model="queryData.cooperationTime"
+                    type="datetimerange"
+                    format="yyyy-MM-dd HH:mm"
+                    value-format="yyyy-MM-dd HH:mm"
+                    :picker-options="pickerOptions"
+                    placeholder="选择日期"
                   ></el-date-picker>
                 </el-form-item>
               </el-col>
             </el-row>
-      </div>
+          </div>
         </el-collapse-item>
         <!-- 基础信息 end-->
 
@@ -140,10 +142,10 @@
                 <el-form-item prop="openAccountBank" label="开户行">
                   <span v-if="routeQuery.type==3">{{queryData.openAccountBank}}</span>
                   <el-input
-                          placeholder="请输入"
-                          v-else
-                          class="basic-input"
-                          v-model="queryData.openAccountBank"
+                    placeholder="请输入"
+                    v-else
+                    class="basic-input"
+                    v-model="queryData.openAccountBank"
                   ></el-input>
                 </el-form-item>
               </el-col>
@@ -151,10 +153,10 @@
                 <el-form-item prop="bankAccount" label="银行账号">
                   <span v-if="routeQuery.type==3">{{queryData.bankAccount}}</span>
                   <el-input
-                          placeholder="请输入"
-                          v-else
-                          class="basic-input"
-                          v-model="queryData.bankAccount"
+                    placeholder="请输入"
+                    v-else
+                    class="basic-input"
+                    v-model="queryData.bankAccount"
                   ></el-input>
                 </el-form-item>
               </el-col>
@@ -163,8 +165,13 @@
               <el-col :span="8">
                 <el-form-item prop="bunesRate" label="返点率">
                   <span v-if="routeQuery.type==3">{{queryData.bunesRate}}</span>
-                  <el-input placeholder="请输入" type="number" v-else class="basic-input"
-                            v-model="queryData.bunesRate"></el-input>
+                  <el-input
+                    placeholder="请输入"
+                    type="number"
+                    v-else
+                    class="basic-input"
+                    v-model="queryData.bunesRate"
+                  ></el-input>
                 </el-form-item>
               </el-col>
             </el-row>
@@ -178,45 +185,47 @@
             <el-row>
               <el-col :span="8">
                 <el-form-item
-                        prop="provinceId"
-                        :error="areaError"
-                        label="区域"
-                        :rules="[{ required:  routeQuery.type==3 ? false : true, message: '区域不能为空',trigger: 'change' }]"
+                  prop="provinceId"
+                  :error="areaError"
+                  label="区域"
+                  :rules="[{ required:  routeQuery.type==3 ? false : true, message: '区域不能为空',trigger: 'change' }]"
                 >
-                  <span v-if="routeQuery.type==3">{{queryData.provinceName+queryData.cityName+queryData.countyName}}</span>
+                  <span
+                    v-if="routeQuery.type==3"
+                  >{{queryData.provinceName+queryData.cityName+queryData.countyName}}</span>
                   <div v-else>
                     <el-select
-                            v-model="queryData.provinceId"
-                            @change="handleProvinceChange"
-                            placeholder="请选择省份"
-                            class="area-select"
+                      v-model="queryData.provinceId"
+                      @change="handleProvinceChange"
+                      placeholder="请选择省份"
+                      class="area-select"
                     >
                       <el-option
-                              v-for="item in provinceRegion"
-                              :key="item.areaCode"
-                              :label="item.areaName"
-                              :value="item.areaCode"
+                        v-for="item in provinceRegion"
+                        :key="item.areaCode"
+                        :label="item.areaName"
+                        :value="item.areaCode"
                       ></el-option>
                     </el-select>
                     <el-select
-                            v-model="queryData.cityId"
-                            @change="handleCityChange"
-                            placeholder="请选择市"
-                            class="area-select"
+                      v-model="queryData.cityId"
+                      @change="handleCityChange"
+                      placeholder="请选择市"
+                      class="area-select"
                     >
                       <el-option
-                              v-for="item in cityRegion"
-                              :key="item.areaCode"
-                              :label="item.areaName"
-                              :value="item.areaCode"
+                        v-for="item in cityRegion"
+                        :key="item.areaCode"
+                        :label="item.areaName"
+                        :value="item.areaCode"
                       ></el-option>
                     </el-select>
                     <el-select v-model="queryData.countyId" placeholder="请选择县区" class="area-select">
                       <el-option
-                              v-for="item in countyRegion"
-                              :key="item.areaCode"
-                              :label="item.areaName"
-                              :value="item.areaCode"
+                        v-for="item in countyRegion"
+                        :key="item.areaCode"
+                        :label="item.areaName"
+                        :value="item.areaCode"
                       ></el-option>
                     </el-select>
                   </div>
@@ -225,7 +234,12 @@
               <el-col :span="8">
                 <el-form-item prop="zipCode" label="邮编">
                   <span v-if="routeQuery.type==3">{{queryData.zipCode}}</span>
-                  <el-input placeholder="请输入" v-else class="basic-input" v-model="queryData.zipCode"></el-input>
+                  <el-input
+                    placeholder="请输入"
+                    v-else
+                    class="basic-input"
+                    v-model="queryData.zipCode"
+                  ></el-input>
                 </el-form-item>
               </el-col>
             </el-row>
@@ -233,7 +247,12 @@
               <el-col :span="8">
                 <el-form-item prop="address" label="详细地址">
                   <span v-if="routeQuery.type==3">{{queryData.address}}</span>
-                  <el-input placeholder="请输入" v-else class="basic-input" v-model="queryData.address"></el-input>
+                  <el-input
+                    placeholder="请输入"
+                    v-else
+                    class="basic-input"
+                    v-model="queryData.address"
+                  ></el-input>
                 </el-form-item>
               </el-col>
             </el-row>
@@ -249,18 +268,20 @@
         <el-button @click="handleCancel">关 闭</el-button>
       </div>
     </el-form>
+
   </div>
 </template>
 
 <script>
-  import mixin from "cim/mixins/cim/paginationConfig.js";
-  import applyStores from "cim/components/applyStores/applyStores.vue";
-  import applyChannel from "cim/components/applyChannel/applyChannel.vue";
-  import {letterAndNumReg} from "cim/util/reg.js";
+import mixin from "cim/mixins/cim/paginationConfig.js";
+import applyStores from "cim/components/applyStores/applyStores.vue";
+import applyChannel from "cim/components/applyChannel/applyChannel.vue";
+import fixStepTool from "ctm/components/fix-step-tool/fix-step-tool";
+import fixStepMixin from "ctm/mixins/fixStepTool";
+// import moment from 'moment';
 
-  console.log(letterAndNumReg)
-  export default {
-  mixins: [mixin],
+export default {
+  mixins: [mixin, fixStepMixin],
   data() {
     return {
       //查询数据
@@ -294,16 +315,36 @@
         value: "areaCode",
         label: "areaName"
       },
-      areaError: '',
-      activeNames:['1','2','3']
+      pickerOptions: {
+        selectableRange:'18:30 - 20:30',
+        disabledDate(time) {
+          return time.getTime() < Date.now() - 8.64e7;//当天之后的时间可选
+        }
+      },
+      areaError: "",
+      activeNames: ["1", "2", "3"],
+      //交互部分数据
+      stepData: {
+        stepList: [
+          {
+            name: "基础信息",
+            isactive: false
+          },
+          {
+            name: "财务信息",
+            isactive: false
+          },
+          {
+            name: "地理信息",
+            isactive: false
+          }
+        ]
+      }
     };
   },
-  activated() {
-
-  },
+  activated() {},
   mounted() {
     this.init();
-    console.log(this.routeMerData);
   },
 
   methods: {
@@ -313,17 +354,13 @@
     // 查询
     onQuery() {
       if (this.routeQuery.type == 1) {
-        this.supplierGetAreaList({areaCode: "000000"});
+        this.supplierGetAreaList({ areaCode: "000000" });
       } else if (this.routeQuery.type == 2) {
-        this.supplierGetAreaList({areaCode: "000000"});
-        this.supplierAdminSelectSupplierEntity({uid: this.routeMerData.uid});
+        this.supplierGetAreaList({ areaCode: "000000" });
+        this.supplierAdminSelectSupplierEntity({ uid: this.routeMerData.uid });
       } else {
         this.supplierAdminSelectSupplierEntity({ uid: this.routeMerData.uid });
       }
-      let lastLevel = this.typeText+'供应商';
-      this.$route.meta.title = lastLevel;
-      this.$store.commit('getLevel',lastLevel);
-
     },
     // 新建供应商
     supplierAdminAddSupplier(param) {
@@ -369,28 +406,34 @@
         .then(resData => {
           if (resData.code == 200) {
             this.queryData = resData.data;
-            this.queryData.cooperationTime = [
+            this.$set(this.queryData, "cooperationTime", [
               this.queryData.startTime,
               this.queryData.endTime
-            ];
+            ]);
             if (this.queryData.provinceId) {
-              this.supplierGetAreaList({areaCode: this.queryData.provinceId}, "province");
+              this.supplierGetAreaList(
+                { areaCode: this.queryData.provinceId },
+                "province"
+              );
             }
             if (this.queryData.cityId) {
-              this.supplierGetAreaList({areaCode: this.queryData.cityId}, "city");
+              this.supplierGetAreaList(
+                { areaCode: this.queryData.cityId },
+                "city"
+              );
             }
           }
         });
     },
     // 省改变
     handleProvinceChange(value) {
-      this.queryData.cityId = '';
-      this.queryData.countyId = '';
+      this.queryData.cityId = "";
+      this.queryData.countyId = "";
       this.supplierGetAreaList({ areaCode: value }, "province");
     },
     // 市改变
     handleCityChange(value) {
-      this.queryData.countyId = '';
+      this.queryData.countyId = "";
       this.supplierGetAreaList({ areaCode: value }, "city");
     },
     // 获取区域
@@ -413,21 +456,30 @@
         }
       });
     },
-    // //提交
+    //提交
     handleSubmit() {
-      console.log(this.queryData);
+      // console.log(this.queryData);
       this.$refs["ruleForm"].validate(valid => {
         if (valid) {
           if (!this.queryData.cityId) {
-            this.$refs.ruleForm.fields[12].error = "请选择市"
-            return false
+            this.$refs.ruleForm.fields[12].error = "请选择市";
+            return false;
           }
           if (!this.queryData.countyId) {
-            this.$refs.ruleForm.fields[12].error = "请选择县区"
-            return false
+            this.$refs.ruleForm.fields[12].error = "请选择县区";
+            return false;
           }
           this.queryData.startTime = this.queryData.cooperationTime[0];
           this.queryData.endTime = this.queryData.cooperationTime[1];
+
+          var nowTime = new Date().getTime();
+          var currentStartTime = new Date(this.queryData.cooperationTime[0]).getTime();
+          if(currentStartTime < nowTime){
+            this.$message({
+              message: "合作开始时间须大于当前时间!"
+            });
+            return;
+          }
           if (this.routeQuery.type == 1) {
             //新建
             this.supplierAdminAddSupplier(this.queryData);
@@ -440,7 +492,6 @@
         }
       });
     },
-
     //
     handleCancel() {
       this.$store.commit("tagNav/removeTagNav", {
@@ -448,9 +499,9 @@
         path: this.$route.path,
         title: this.$route.meta.title,
         query: this.$route.query
-      })
+      });
       this.$router.push({
-        path: "/retail/procurement/suppliers/list",
+        path: "/retail/procurement/suppliers/list"
       });
     },
     saleCinemaType(type) {
@@ -498,7 +549,8 @@
   },
   components: {
     applyStores,
-    applyChannel
+    applyChannel,
+    fixStepTool
   }
 };
 </script>
@@ -506,15 +558,17 @@
 <style lang="scss">
 @import "../../../../assets/css/common.scss";
 @import "../../../../assets/css/element-common.scss";
-.supplires-common{
+#supplires-common {
   .area-select {
     width: 120px;
   }
-  .el-form-item__content{
-    .basic-input .el-input__inner{
+  .el-date-editor--datetimerange.el-input__inner {
+    width: 360px;
+  }
+  .el-form-item__content {
+    .basic-input .el-input__inner {
       width: 300px;
     }
   }
 }
-
 </style>

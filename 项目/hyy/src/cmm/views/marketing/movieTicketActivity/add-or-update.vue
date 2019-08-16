@@ -5,7 +5,7 @@
             <!-- 活动基础信息 -->
             <el-collapse-item title="活动基础信息" name="1">
                 <el-form-item label="活动类型:" size="small" prop="activityType">
-                    <el-radio-group v-model="basicDataForm.activityType" :disabled="disabled">
+                    <el-radio-group v-model="basicDataForm.activityType" :disabled="disabled" @change="changeActivityType">
                         <el-radio-button :label="14">打折</el-radio-button>
                         <el-radio-button :label="15">立减</el-radio-button>
                         <el-radio-button :label="16">减至</el-radio-button>
@@ -65,7 +65,7 @@
                 <div v-if="basicDataForm.excludeDate.indexOf('指定排除日期范围')!=-1">
                     <el-form-item label v-for="(item,index) in basicDataForm.excludeDateOptions" :key="index" :prop="'excludeDateOptions.'+index+'.excludeDateOption'" :rules="{required: true, message: '指定排除日期范围不能为空', trigger: 'change'}">
                         <el-date-picker v-model="item.excludeDateOption" :picker-options="pickerOptions" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" :disabled="disabled" @change="setExcludeDate"></el-date-picker>
-                        <el-button size="small" type="text" @click="delExcludeDate(index)">删除</el-button>
+                        <el-button size="small" type="text" @click="delExcludeDate(index)" v-if="basicDataForm.excludeDateOptions.length > 1">删除</el-button>
                     </el-form-item>
 
                     <el-form-item label v-if="isEdit != 'detail'">
@@ -92,7 +92,7 @@
                                 </el-checkbox-group>
                             </el-form-item>
                             <el-form-item :prop="'timeRangeSelectDays.'+index" :rules="{required: true, message: '时段范围不能为空', trigger: 'blur'}">
-                                <el-checkbox :indeterminate="item.isIndeterminateWithWeekend" :disabled="disabled" v-model="item.checkAllWeekend" @change="handleCheckAllWeekendChange(item,$event)" style="float:left; margin-right:40px;">周末
+                                <el-checkbox :indeterminate="item.isIndeterminateWithWeekend" :disabled="disabled" v-model="item.checkAllWeekend" @change="handleCheckAllWeekendChange(item,$event)" style="float:left; margin-right:37px;">周末
                                 </el-checkbox>
                                 <el-checkbox-group v-model="item.weekend" :disabled="disabled" @change="handleCheckedWeekendChange(item,$event)">
                                     <el-checkbox v-for="item in weekendOptions" :label="item.id" :key="item.id">{{item.text}}</el-checkbox>
@@ -105,7 +105,7 @@
                                     <el-button size="small" type="text" @click="amClick(item)">上午</el-button>
                                     <el-button size="small" type="text" @click="pmClick(item)">下午</el-button>
                                     <el-button size="small" type="text" @click="eveningClick(item)">晚上</el-button>
-                                    <el-button style="margin-left:25px;" size="small" type="text" @click="delTimeRangeSelect(index)">删除</el-button>
+                                    <el-button style="margin-left:25px;" size="small" type="text" @click="delTimeRangeSelect(index)" v-if="basicDataForm.timeRangeSelect.length > 1">删除</el-button>
                                 </div>
                             </el-form-item>
                         </el-form-item>
@@ -125,8 +125,14 @@
                             <el-option label="不包含" value="normalNotIn"></el-option>
                         </el-select>
                         <el-form-item v-if="basicDataForm.tradingChannel!=''" prop="tradingChannelInput">
-                            <el-input class="chooseWidth1" v-model="basicDataForm.tradingChannelInput" readonly></el-input>
-                            <el-button class="windowBtn" type="primary" :disabled="disabled" @click="tradeChannelClick()" plain>选择</el-button>
+                            <el-input class="chooseWidth1" v-show="!basicDataForm.tradingChannelInput" v-model="basicDataForm.tradingChannelInput" readonly></el-input>
+                            <el-tooltip placement="bottom" v-show="basicDataForm.tradingChannelInput">
+                                <el-input class="chooseWidth1" style="width: 166px;" v-model="basicDataForm.tradingChannelInput" readonly></el-input>
+                                <div slot="content">
+                                    <div v-for="item in basicDataForm.tradingChannelInput.split(',')" :key="item" style="font-size:12px">{{ item }}<br/></div>
+                                </div>
+                            </el-tooltip>
+                            <el-button class="windowBtn" type="primary" :disabled="disabled" @click="tradeChannelClick({value:basicDataForm.tradingChannelId,text:basicDataForm.tradingChannelInput})" plain>选择</el-button>
                         </el-form-item>
                     </el-row>
                 </el-form-item>
@@ -149,7 +155,7 @@
                                 <div v-for="item in basicDataForm.tradingMerchantInput.split(',')" :key="item" style="font-size:12px">{{ item }}<br/></div>
                             </div>
                         </el-tooltip>   
-                        <el-button class="windowBtn" type="primary" :disabled="disabled" @click="cinemaClick('movieTicketDialog')" plain>选择</el-button>
+                        <el-button class="windowBtn" type="primary" :disabled="disabled" @click="cinemaClick('movieTicketDialog',{value:basicDataForm.tradingMerchantId,text:basicDataForm.tradingMerchantInput})" plain>选择</el-button>
                     </el-form-item>
                 </el-row>
 
@@ -163,7 +169,7 @@
                         </el-select>
                         <el-form-item v-if="basicDataForm.customerLevel=='normalIn' || basicDataForm.customerLevel=='normalNotIn'" prop="customerLevelInput">
                             <el-input class="chooseWidth1" v-model="basicDataForm.customerLevelInput" readonly></el-input>
-                            <el-button class="windowBtn" type="primary" :disabled="disabled" @click="membershipLevelClick('otherCrmMemberLevelDialog')" plain>选择</el-button>
+                            <el-button class="windowBtn" type="primary" :disabled="disabled" @click="membershipLevelClick('otherCrmMemberLevelDialog',{text:basicDataForm.customerLevelInput,value:basicDataForm.customerLevelId})" plain>选择</el-button>
                         </el-form-item>
                     </el-row>
                 </el-form-item>
@@ -193,34 +199,34 @@
                         </el-select>
                         <el-form-item v-if="basicDataForm.membershipLevel=='normalIn' || basicDataForm.membershipLevel=='normalNotIn'" prop="membershipLevelInput">
                             <el-input class="chooseWidth1" v-model="basicDataForm.membershipLevelInput" ></el-input>
-                            <el-button type="primary" v-if="basicDataForm.membershipLevel!=''" class="windowBtn" @click="cardPolicyClick('giftMembershipLevelDialog')" plain>选择</el-button>
+                            <el-button type="primary" v-if="basicDataForm.membershipLevel!=''" class="windowBtn" @click="cardPolicyClick('giftMembershipLevelDialog',{text:basicDataForm.membershipLevelInput,value:basicDataForm.membershipLevelId})" plain>选择</el-button>
                         </el-form-item>
                     </el-row>
                 </el-form-item>
                 <el-form-item label="放映效果:">
                     <el-row class="flex-base">
-                        <el-select v-model="basicDataForm.projectionEffect" :disabled="disabled" clearable>
+                        <el-select v-model="basicDataForm.projectionEffect" :disabled="disabled">
                             <el-option label="不限" value></el-option>
                             <el-option label="包含" value="FieldStringIndexOf"></el-option>
                             <el-option label="不包含" value="notFieldStringIndexOf"></el-option>
                         </el-select>
                         <el-form-item v-if="basicDataForm.projectionEffect!=''" prop="projectionEffectInput">
                             <el-input class="chooseWidth1" v-model="basicDataForm.projectionEffectInput" readonly></el-input>
-                            <el-button class="windowBtn" type="primary" :disabled="disabled" v-if="basicDataForm.projectionEffect!=''" @click="projectionEffectClick()" plain>选择</el-button>
+                            <el-button class="windowBtn" type="primary" :disabled="disabled" v-if="basicDataForm.projectionEffect!=''" @click="projectionEffectClick({text:basicDataForm.projectionEffectInput,value:basicDataForm.projectionEffectId})" plain>选择</el-button>
                         </el-form-item>
                     </el-row>
                 </el-form-item>
 
                 <el-form-item label="影厅类型:">
                     <el-row class="flex-base">
-                        <el-select v-model="basicDataForm.studioType" :disabled="disabled" clearable>
+                        <el-select v-model="basicDataForm.studioType" :disabled="disabled">
                             <el-option label="不限" value></el-option>
                             <el-option label="包含" value="normalIn"></el-option>
                             <el-option label="不包含" value="normalNotIn"></el-option>
                         </el-select>
                         <el-form-item v-if="basicDataForm.studioType!=''" prop="studioTypeInput">
                             <el-input class="chooseWidth1" v-model="basicDataForm.studioTypeInput" readonly></el-input>
-                            <el-button class="windowBtn" type="primary" :disabled="disabled" v-if="basicDataForm.studioType!=''" @click="cinemaTypeClick()" plain>选择</el-button>
+                            <el-button class="windowBtn" type="primary" :disabled="disabled" v-if="basicDataForm.studioType!=''" @click="cinemaTypeClick({value:basicDataForm.studioTypeId,text:basicDataForm.studioTypeInput})" plain>选择</el-button>
                         </el-form-item>
                     </el-row>
                 </el-form-item>
@@ -234,35 +240,35 @@
                         </el-select>
                         <el-form-item v-if="basicDataForm.film!=''" prop="filmInput">
                             <el-input class="chooseWidth1" v-model="basicDataForm.filmInput" ></el-input>
-                            <el-button class="windowBtn" type="primary" :disabled="disabled" v-if="basicDataForm.film!=''" @click="filmClick()" plain>选择</el-button>
+                            <el-button class="windowBtn" type="primary" :disabled="disabled" v-if="basicDataForm.film!=''" @click="filmClick({value:basicDataForm.filmId,text:basicDataForm.filmInput})" plain>选择</el-button>
                         </el-form-item>
                     </el-row>
                 </el-form-item>
 
                 <el-form-item label="影片类型:">
                     <el-row class="flex-base">
-                        <el-select v-model="basicDataForm.filmType" :disabled="disabled" clearable>
+                        <el-select v-model="basicDataForm.filmType" :disabled="disabled">
                             <el-option label="不限" value></el-option>
                             <el-option label="包含" value="stringSplitContainOneOperator"></el-option>
                             <el-option label="不包含" value="notStringSplitContainOneOperator"></el-option>
                         </el-select>
                         <el-form-item v-if="basicDataForm.filmType!=''" prop="filmTypeInput">
                             <el-input class="chooseWidth1" v-model="basicDataForm.filmTypeInput" readonly></el-input>
-                            <el-button class="windowBtn" type="primary" :disabled="disabled" v-if="basicDataForm.filmType!=''" @click="filmTypeClick()" plain>选择</el-button>
+                            <el-button class="windowBtn" type="primary" :disabled="disabled" v-if="basicDataForm.filmType!=''" @click="filmTypeClick({value:basicDataForm.filmTypeId,text:basicDataForm.filmTypeInput})" plain>选择</el-button>
                         </el-form-item>
                     </el-row>
                 </el-form-item>
 
                 <el-form-item label="放映有效期:">
                     <el-row class="flex-base">
-                        <el-select v-model="basicDataForm.screeningValidity" :disabled="disabled" clearable @change="handleScreeningValidityChange">
+                        <el-select v-model="basicDataForm.screeningValidity" :disabled="disabled" @change="handleScreeningValidityChange">
                             <el-option label="不限" value></el-option>
                             <el-option label="包含范围" value="TimeBetweenOperator"></el-option>
                             <el-option label="包含每月指定日" value="DayContainOperator"></el-option>
                             <el-option label="不包含每月指定日" value="not_DayContainOperator"></el-option>
                         </el-select>
                         <el-form-item v-if="basicDataForm.screeningValidity=='TimeBetweenOperator'" prop="screeningValidityOption">
-                            <el-date-picker style="position: relative;top: 2px;" v-model="basicDataForm.screeningValidityOption" :picker-options="pickerOptions" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" :disabled="disabled" @change="setScreeningValidity"></el-date-picker>
+                            <el-date-picker style="position: relative;top: 3px;" v-model="basicDataForm.screeningValidityOption" :picker-options="pickerOptions" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" :disabled="disabled" @change="setScreeningValidity"></el-date-picker>
                         </el-form-item>
                         <el-form-item prop="screeningValidityInput" v-if="basicDataForm.screeningValidity=='DayContainOperator'||basicDataForm.screeningValidity=='not_DayContainOperator'">
                             <el-input class="chooseWidth1" v-model="basicDataForm.screeningValidityInput" :disabled="disabled"></el-input>
@@ -271,7 +277,7 @@
                 </el-form-item>
 
                 <el-form-item label="放映时段范围:">
-                    <el-select v-model="basicDataForm.screeningPeriod" :disabled="disabled" clearable>
+                    <el-select v-model="basicDataForm.screeningPeriod" :disabled="disabled">
                         <el-option label="不限" value></el-option>
                         <el-option label="上午09:00-12:59" value="MorningOperator"></el-option>
                         <el-option label="下午13:00-16:59" value="AfternoonOperator"></el-option>
@@ -283,7 +289,7 @@
                 <div v-if="basicDataForm.screeningPeriod=='TimeRangeContainOperator'">
                     <el-form-item label v-for="(item,index) in basicDataForm.screeningPeriodOptions" :key="index" :prop="'screeningPeriodOptions.'+index+'.screeningPeriodOption'" :rules="{required: true, message: '时段范围不能为空', trigger: 'change'}">
                         <el-time-picker is-range v-model="item.screeningPeriodOption" range-separator="至" start-placeholder="开始时间" end-placeholder="结束时间" value-format="HH:mm:ss" :disabled="disabled" style="float:left;" @change="setScreeningPeriod"></el-time-picker>
-                        <el-button size="small" type="text" @click="delScreeningPeriod(index)">删除</el-button>
+                        <el-button size="small" type="text" @click="delScreeningPeriod(index)" v-if="basicDataForm.screeningPeriodOptions.length > 1">删除</el-button>
                     </el-form-item>
                 </div>
                 <el-form-item label v-if="basicDataForm.screeningPeriod=='TimeRangeContainOperator' && isEdit != 'detail'">
@@ -294,7 +300,7 @@
 
                 <el-form-item label="最低发行价:">
                     <el-row class="flex-base">
-                        <el-select v-model="basicDataForm.issuePrice" :disabled="disabled" clearable>
+                        <el-select v-model="basicDataForm.issuePrice" :disabled="disabled">
                             <el-option label="不限" value></el-option>
                             <el-option label="大于" value="normalGreater"></el-option>
                             <el-option label="小于" value="normalLess"></el-option>
@@ -314,14 +320,14 @@
 
                 <el-form-item label="支付方式:">
                     <el-row class="flex-base">
-                        <el-select v-model="basicDataForm.payType" :disabled="disabled" clearable>
+                        <el-select v-model="basicDataForm.payType" :disabled="disabled">
                             <el-option label="不限" value></el-option>
                             <el-option label="包含" value="normalIn"></el-option>
                             <el-option label="不包含" value="normalNotIn"></el-option>
                         </el-select>
                         <el-form-item v-if="basicDataForm.payType!=''" prop="payTypeInput">
                             <el-input class="chooseWidth1" v-model="basicDataForm.payTypeInput" readonly></el-input>
-                            <el-button class="windowBtn" type="primary" v-if="basicDataForm.payType!=''" @click="payTypeClick()" plain>选择</el-button>
+                            <el-button class="windowBtn" type="primary" v-if="basicDataForm.payType!=''" @click="payTypeClick({value:basicDataForm.payTypeId,text:basicDataForm.payTypeInput})" plain>选择</el-button>
                         </el-form-item>
                     </el-row>
                 </el-form-item>
@@ -334,14 +340,21 @@
                         <span>{{basicDataForm.activityType == 15 ? '立减' : basicDataForm.activityType==16 ? '定价' : basicDataForm.activityType==14 ? '折扣' : ''}}</span>
                         <el-input style="width:100px;" v-model="basicDataForm.discount" :disabled="disabled" placeholder="请输入"></el-input>
                         <span>{{basicDataForm.activityType == 15 ? '/每张影票' : basicDataForm.activityType==16 ? '元/每张影票' : basicDataForm.activityType==14 ? '%(零售价打折)' : ''}}</span>
+                        <el-popover v-if="basicDataForm.activityType == 15" placement="right-start" title width="200" trigger="hover" content="调价方式为“最低票价”时，立减N元/每张影票计算得出的优惠价为：最低票价+N元">
+                            <el-button type="text" slot="reference" class="el-icon-warning" style="margin-left:5px;">
+                                <span style="color:#ffffff">1</span>
+                            </el-button>
+                        </el-popover>
                     </el-row>
                 </el-form-item>
-                <el-form-item label="折扣后取整方式:" v-if="basicDataForm.activityType==14">
+                <el-form-item label="折扣后取整方式:" >
                     <el-select v-model="basicDataForm.roundingMethod" :disabled="disabled">
                         <el-option label="保留小数" value="ROUND_UNNECESSARY"></el-option>
-                        <el-option label="四舍五入" value="ROUND_HALF_UP"></el-option>
-                        <el-option label="忽略小数取整" value="ROUND_FLOOR"></el-option>
-                        <el-option label="小数进1取整" value="ROUND_CEILING"></el-option>
+                        <template v-if="basicDataForm.activityType==14">
+                            <el-option label="四舍五入" value="ROUND_HALF_UP"></el-option>
+                            <el-option label="忽略小数取整" value="ROUND_FLOOR"></el-option>
+                            <el-option label="小数进1取整" value="ROUND_CEILING"></el-option>
+                        </template>
                     </el-select>
                 </el-form-item>
                 <!-- 立减 -->
@@ -358,7 +371,7 @@
                             <el-option label="不允许出票" value="notAllowSale"></el-option>
                             <el-option label="用户补贴" value="clientPay"></el-option>
                             <el-option label="影院补贴" value="cinemaPay"></el-option>
-                            <el-option label="第三方补贴" value="thirdaPay"></el-option>
+                            <!-- <el-option label="第三方补贴" value="thirdaPay"></el-option> -->
                         </el-select>
                         <el-form-item v-if="basicDataForm.miniPrice=='cinemaPay' || basicDataForm.miniPrice=='thirdaPay'" prop="miniPriceInput" >
                             <el-row class="flex-base">
@@ -402,24 +415,30 @@
                     </el-select>
 
                 </el-form-item>
-                <el-form-item label="活动总预算:">
-                    <el-select v-model="basicDataForm.activityBudgetSum" :disabled="disabled">
+                <el-form-item label="活动总预算:" prop="activityBudgetSumCheckList">
+                    <el-select v-model="basicDataForm.activityBudgetSum" :disabled="disabled" @change="activityBudgetSumOptionChange">
                         <el-option label="不限制" value></el-option>
                         <el-option label="指定预算限制" value="1"></el-option>
                     </el-select>
                     <div v-if="basicDataForm.activityBudgetSum==1">
-                        <el-form-item prop="totalTicketsAmount">
-                            <span>限制总票数</span>
-                            <el-input class="input-type-94" v-model="basicDataForm.totalTicketsAmount" :disabled="disabled" placeholder="请输入"></el-input>
-                            <span>张</span>
-                        </el-form-item>
-                        <el-form-item prop="totalDiscountAmount" class="margin-top-15">
-                            <span>限制总优惠金额</span>
-                            <el-input class="input-type-94" v-model="basicDataForm.totalDiscountAmount" :disabled="disabled" placeholder="请输入"></el-input>
-                            <span>元</span>
-                        </el-form-item>
+                        <el-checkbox-group v-model="basicDataForm.activityBudgetSumCheckList" @change="activityBudgetSumChange">
+
+                            <el-checkbox label="限制总票数" style="width:110px"></el-checkbox>
+                            <el-form-item prop="totalTicketsAmount" style="width:120px;display:inline-block;" v-if="basicDataForm.activityBudgetSumCheckList.indexOf('限制总票数')!=-1">
+                                <el-input class="input-type-94" v-model="basicDataForm.totalTicketsAmount" :disabled="disabled" placeholder="请输入"></el-input>
+                                <span style="margin-left:8px;">张</span>
+                            </el-form-item>
+                            <br>
+                            <el-checkbox label="限制总优惠金额" style="width:110px"></el-checkbox>
+                            <el-form-item prop="totalDiscountAmount" style="width:150px;display:inline-block;margin-top:15px;" v-if="basicDataForm.activityBudgetSumCheckList.indexOf('限制总优惠金额')!=-1">
+                                <el-input style="width:120px;" v-model="basicDataForm.totalDiscountAmount" :disabled="disabled" placeholder="请输入"></el-input>
+                                <span style="margin-left:8px;">元</span>
+                            </el-form-item>
+                        </el-checkbox-group>
+                        
                     </div>
                 </el-form-item>
+
                 <el-form-item label="活动总预算周期限制:" class="br-row">
                     <el-row class="flex-base">
                         <el-select v-model="basicDataForm.activityBudgetCycle" :disabled="disabled" @change="handleActivityBudgetChange">
@@ -431,7 +450,7 @@
                             <el-option label="指定周期限制" value="appointTimeRange"></el-option>
                         </el-select>
                         <el-form-item v-if="basicDataForm.activityBudgetCycle == 'appointTimeRange'" prop="activityBudgetCycleDate">
-                            <el-date-picker style="position: relative;top: 2px;" v-model="basicDataForm.activityBudgetCycleDate" :picker-options="pickerOptions" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" :disabled="disabled"></el-date-picker>
+                            <el-date-picker style="position: relative;top: 3px;" v-model="basicDataForm.activityBudgetCycleDate" :picker-options="pickerOptions" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" :disabled="disabled"></el-date-picker>
                         </el-form-item>
                     </el-row>
                     <el-form-item v-if="basicDataForm.activityBudgetCycle!=''" prop="activityBudgetCycleInput">
@@ -504,7 +523,7 @@
         <!-- 放映效果弹窗 -->
         <projectionEffectDialog :title="projectionEffectDialog.title" :dialogTableVisible.sync="projectionEffectDialog.projectionEffectDialogVisible" ref="projectionEffectDialog" @callBack="handleOtherProjectionEffectCallBack"></projectionEffectDialog>
         <!-- 会员卡政策弹窗 -->
-        <crmCardPolicyDialog @crmCardPolicyDialogCallBack="handleCardPolicy" :whereUse="crmCardPolicyDialogWhereUse" :reviewData="reviewCrmCardPolicyTypeData" :dialogVisible.sync="crmCardPolicyDialogVisible" />
+        <crmCardPolicyDialog @crmCardPolicyDialogCallBack="handleCardPolicy" :whereUse="crmCardPolicyDialogWhereUse" :reviewData="reviewCrmCardPolicyTypeData" :dialogVisible.sync="crmCardPolicyDialogVisible" :unique="crmCardPolicyDialogUnique"/>
         <!-- 会员等级弹窗 -->
         <crmMemberLevelDialog @crmMemberLevelDialogCallBack="handleMembershipLevel" :whereUse="crmMemberLevelDialogWhereUse" :reviewData="reviewCrmMemberLevelData" :dialogVisible.sync="crmMemberLevelDialogVisible"/>
         <!-- 交易渠道弹窗 -->
@@ -713,6 +732,7 @@ export default {
                     message: "支付方式不能为空",
                     trigger: "change"
                 }],
+              
                 totalTicketsAmount: [{
                     required: true,
                     validator: (rules, value, callback) => {
@@ -746,6 +766,22 @@ export default {
                     },
                     trigger: "blur"
                 }],
+                activityBudgetSumCheckList:[{
+                    required: true,
+                    validator: (rules, value, callback) => {
+                        if(this.basicDataForm.activityBudgetSum==""){
+                            return callback();
+                        }
+                        //指定预算限制
+                        if (value && value.length==0) {
+                            return callback(new Error('指定预算限制至少选择一个'));
+                        }else{
+                            return callback();
+                        }
+
+                    },
+                    trigger: "change"
+                }],
                 activityBudgetCycleDate: [{
                     required: true,
                     message: "请选择指定周期限制",
@@ -774,23 +810,25 @@ export default {
                         if (!value) {
                             return callback(new Error('优惠设置不能为空'));
                         }
-                        // if(this.basicDataForm.activityType==14){
-                        //     let regExp = /^(?:(?!0\d)\d{1,2}(?:\.\d{1,2})?|100(?:\.0{1,2})?)$/;
-                        //     if (!regExp.test(value)) {
-                        //         return callback(new TypeError('请输入100以内的正数,且只允许输入两位小数位'));
-                        //     }
-                        // }else{
-                        //     let regExp = /(^[1-9]([0-9]+)?(\.[0-9]{1,2})?$)|(^(0){1}$)|(^[0-9]\.[0-9]([0-9])?$)/;
-                        //     if (!regExp.test(value)) {
-                        //         return callback(new TypeError('请输入正数,且只允许输入两位小数位'));
-                        //     }else if(value == 0){
-                        //         return callback(new TypeError('请输入正数,且只允许输入两位小数位'));
-                        //     }
-                        // }
-                        let regExp = /^(?:(?!0\d)\d{1,2}(?:\.\d{1,2})?|100(?:\.0{1,2})?)$/;
-                        if (!regExp.test(value)) {
-                            return callback(new TypeError('请输入100以内的正数,且只允许输入两位小数位'));
+                        if(this.basicDataForm.activityType==14){
+                            let regExp = /^(?:(?!0\d)\d{1,2}(?:\.\d{1,2})?|100(?:\.0{1,2})?)$/;
+                            if (!regExp.test(value)) {
+                                return callback(new TypeError('请输入100以内的正数,且只允许输入两位小数位'));
+                            }
+                        }else{
+                            let regExp = /(^[1-9]([0-9]+)?(\.[0-9]{1,2})?$)|(^(0){1}$)|(^[0-9]\.[0-9]([0-9])?$)/;
+                            if (!regExp.test(value)) {
+                                return callback(new TypeError('请输入正数,且只允许输入两位小数位'));
+                            }else if(value == 0){
+                                return callback(new TypeError('请输入正数,且只允许输入两位小数位'));
+                            }else if(value>=1000000000){
+                                return callback(new TypeError('超出范围'));
+                            }
                         }
+                        // let regExp = /^(?:(?!0\d)\d{1,2}(?:\.\d{1,2})?|100(?:\.0{1,2})?)$/;
+                        // if (!regExp.test(value)) {
+                        //     return callback(new TypeError('请输入100以内的正数,且只允许输入两位小数位'));
+                        // }
                         return callback();
                     },
                     trigger: "blur"    
@@ -964,7 +1002,7 @@ export default {
                 // 设置优惠方案
                 discount: "",
                 priceMethod: "2", //立减
-                roundingMethod: "ROUND_HALF_UP", //四舍五入
+                roundingMethod: "ROUND_UNNECESSARY", //保留小数
                 roundingNumInput: "",
 
                 miniPrice: "notAllowSale",
@@ -980,6 +1018,8 @@ export default {
                 activityBudgetCycleDate: "",
 
                 activityBudgetSum: "",
+                activityBudgetSumCheckList:[],
+
                 totalDiscountAmount: "",
                 totalTicketsAmount: "",
 
@@ -997,6 +1037,12 @@ export default {
         // this.getChannelList();
     },
     methods: {
+        changeActivityType(){
+            this.$nextTick(()=>{
+                // 重置表单验证
+                this.$refs["basicDataForm"].clearValidate();
+            })
+        },
         // getChannelList(){
         //     if(this.options.length==0){
         //         let params={
@@ -1033,9 +1079,6 @@ export default {
                 this.activityId = row.id || 0;
                 this.isEdit = isEdit;
                 console.log("isEdit",this.isEdit)
-                if (this.isEdit == "copy") {
-                    this.activityId = "";
-                }
                 let params = qs.stringify({
                     activityId: row.id,
                     tenantId: this.basicDataForm.tenantId
@@ -1050,8 +1093,11 @@ export default {
                                 res.data.marketingActivityVO.ruleGroup
                             );
                             console.log("ruleGroup " + JSON.stringify(ruleGroup));
-
-                            this.activityId = data.id;
+                            if (this.isEdit == "copy") {
+                                this.activityId = "";
+                            }else{
+                                this.activityId = data.id;
+                            }
                             this.basicDataForm.activityCode = data.activityCode;
                             this.basicDataForm.tenantId = ruleGroup.tenantId;
                             this.basicDataForm.activityType = ruleGroup.templateId;
@@ -1126,14 +1172,19 @@ export default {
                                         if (obj.workDay && obj.workDay.length > 0 && obj.workDay.length == 5) {
                                             obj.checkAllWorkDay = true;
                                             obj.isIndeterminateWithWorkDay = false;
+                                        } else if(obj.workDay.length == 0){
+                                            obj.checkAllWorkDay = false;
+                                            obj.isIndeterminateWithWorkDay = false;
                                         } else {
                                             obj.checkAllWorkDay = false;
                                             obj.isIndeterminateWithWorkDay = true;
                                         }
                                         obj.checkAllWeekend = false;
                                         if (obj.weekend && obj.weekend.length > 0 && obj.weekend.length == 2) {
-                                            
                                             obj.checkAllWeekend = true;
+                                            obj.isIndeterminateWithWeekend = false;
+                                        } else if(obj.weekend.length == 0){
+                                            obj.checkAllWeekend = false;
                                             obj.isIndeterminateWithWeekend = false;
                                         } else {
                                             obj.checkAllWeekend = false;
@@ -1226,7 +1277,9 @@ export default {
                             // 优惠方案
                             for (let item of actions) {
                                 if (item.key == "modifyValue") {
-                                    this.basicDataForm.discount =  Math.abs(item.value-0);
+                                    this.basicDataForm.discount = item.value;
+                                    //立减传负数
+                                    // this.basicDataForm.discount =  Math.abs(item.value-0);
                                 } else if (item.key == "modifyWay") {
                                     if (item.value == "addToLowestPrice") {
                                         this.basicDataForm.priceMethod = "2";
@@ -1261,8 +1314,15 @@ export default {
                             }
                             this.basicDataForm.totalDiscountAmount = bizPropertyMap.totalDiscountAmount;
                             this.basicDataForm.totalTicketsAmount = bizPropertyMap.totalTicketsAmount;
-                            if (bizPropertyMap.totalDiscountAmount && bizPropertyMap.totalTicketsAmount) {
+                            if (bizPropertyMap.totalDiscountAmount || bizPropertyMap.totalTicketsAmount) {
                                 this.basicDataForm.activityBudgetSum = "1";
+                                if(this.basicDataForm.totalDiscountAmount){
+                                    this.basicDataForm.activityBudgetSumCheckList.push("限制总优惠金额")
+                                }
+                                if(this.basicDataForm.totalTicketsAmount){
+                                    this.basicDataForm.activityBudgetSumCheckList.push("限制总票数")
+                                }
+                                console.log(this.basicDataForm.activityBudgetSumCheckList)
                             }
                         }
                             //复制情况下 ID 置空
@@ -1285,7 +1345,7 @@ export default {
         //     this.basicDataForm.subsidyPrice = "clientMakeUp";
         // },
         returnList() {
-            this.$emit("refreshDataList");
+            this.$emit("refreshDataList",false);
         },
         handleChange(val) {
             console.log(val); 
@@ -1435,6 +1495,29 @@ export default {
                     this.basicDataForm.consumerIdentityId=""
                 }
             }
+        },
+        //活动总预算 监听
+        activityBudgetSumOptionChange(val){
+            if(val==""){
+                this.basicDataForm.activityBudgetSumCheckList=[]
+                this.basicDataForm.totalTicketsAmount=""
+                this.basicDataForm.totalDiscountAmount=""
+            }
+        },
+        //活动总预算-指定预算限制 监听
+        activityBudgetSumChange(val){
+            if(val.length!=0){
+                if(val.indexOf("限制总票数")==-1){
+                    this.basicDataForm.totalTicketsAmount=""
+                }
+                if(val.indexOf("限制总优惠金额")==-1){
+                    this.basicDataForm.totalDiscountAmount=""
+                }
+            }else{
+                this.basicDataForm.totalTicketsAmount=""
+                this.basicDataForm.totalDiscountAmount=""
+            }
+            console.log(val)
         },
         /*添加放映时段范围 */
         addScreeningPeriod() {
@@ -1633,7 +1716,7 @@ export default {
                 this.ruleConditions.push({
                     category: "SaleInfo",
                     key: "cinemaCode",
-                    groupId: 14,
+                    groupId: 19,
                     value: this.basicDataForm.tradingMerchantId, //弹窗回传
                     text: this.basicDataForm.tradingMerchantInput, //弹窗回传
                     opUniqueName: this.basicDataForm.tradingMerchant //操作符,不填默认为 =
@@ -1642,6 +1725,10 @@ export default {
 
             // 会员等级
             if (this.basicDataForm.customerLevel != "") {
+                if(this.basicDataForm.customerLevel == 'not_memberOperator'){
+                    this.basicDataForm.customerLevelId = '';
+                    this.basicDataForm.customerLevelInput = '';
+                }
                 this.ruleConditions.push({
                     category: "SaleInfo",
                     key: "customerLevelCode",
@@ -1652,7 +1739,11 @@ export default {
                 });
             }
             // 会员卡政策
-            if (this.basicDataForm.membershipLevel == "normalIn") {
+            if (this.basicDataForm.membershipLevel != "") {
+                if(this.basicDataForm.membershipLevel == 'AllMember'){
+                    this.basicDataForm.membershipLevelId = '';
+                    this.basicDataForm.membershipLevelInput = '';
+                }
                 this.ruleConditions.push({
                     category: "SaleInfo",
                     key: "cardRightCode",
@@ -1729,7 +1820,7 @@ export default {
                 ) {
                     targetValue = this.basicDataForm.screeningValidityInput.replace(/，/ig,',');
                 }
-
+                console.log(JSON.stringify(targetValue))
                 this.ruleConditions.push({
                     category: "FilmTicketInfo",
                     key: "planStartTime",
@@ -1795,9 +1886,10 @@ export default {
             } else if (this.basicDataForm.activityType == 16) {
                 targetValue = "fixPrice";
             }
-            if(this.basicDataForm.activityType == 15){
-                this.basicDataForm.discount=(this.basicDataForm.discount*-1)+""
-            }
+            //立减传负数
+            // if(this.basicDataForm.activityType == 15){
+            //     this.basicDataForm.discount=(this.basicDataForm.discount*-1)+""
+            // }
 
               //优惠设置- 修改单票售价
             this.actions.push({
@@ -2001,6 +2093,9 @@ export default {
     @import "../../../assets/comstyle.scss";
     .el-select-dropdown__item{
         font-size: 12px !important;
+    }
+    /deep/ .el-form-item.is-error .el-input__inner{
+        border-color: #F56C6C!important;
     }
     /deep/.movie-plan_default{
         .el-radio-button__inner{

@@ -14,21 +14,19 @@
           :model="ruleForm"
           :rules="rules"
           ref="ruleForm"
-          label-width="100px"
-          style="width:54vw"
           class="demo-ruleForm"
         >
-          <div style="position:relative;margin-top:-22px">
-            <div class="recharge-info-title">验证身份</div>
-            <el-form-item label="短信验证码" prop="validateCode">
+          <div style="position:relative">
+            <div class="member-info-title">验证身份</div>
+            <el-form-item label="短信验证码" prop="validateCode" class="row-line-center">
               <el-input v-model="ruleForm.validateCode" class="psd-inp"></el-input>
               <el-button class="start-btn" @click="getVilidate" v-text="validataText" :disabled="disable"></el-button>
             </el-form-item>
           </div>
           <div
             style="position:relative;margin-top:22px">
-            <div class="recharge-info-title">重置密码</div>
-            <el-form-item label="新消费密码" prop="passwd">
+            <div class="member-info-title">重置密码</div>
+            <el-form-item label="新消费密码" prop="passwd" class="row-line-center">
               <el-input type="password" v-model="ruleForm.passwd" class="psd-inp"></el-input>
               <el-button class="start-btn" @click="startKeyBorad">启动密码输入</el-button>
             </el-form-item>
@@ -43,7 +41,8 @@
 import memberInfoAndCard from "./components/memberInfoAndCard";
 import { mapState, mapGetters } from "vuex";
 import { MemberAjax, memeberApi } from "src/http/memberApi";
-import { readCard ,secKeyBoard  ,statusDeter,cardStatusCN} from './util/utils';
+import { readCard ,secKeyBoard ,statusDeter,cardStatusCN ,routerJump} from './util/utils';
+import { customPasswordReg } from "./util/validate";
 import getVilidateCode from './mixins/getVilidateCode'
 export default {
   mixins:[getVilidateCode],
@@ -59,7 +58,10 @@ export default {
         validateCode: ""
       },
       rules: {
-        passwd: [{ required: true, message: "请输入密码", trigger: "change" }],
+        passwd:[
+          { required: true, message: "请输入密码", trigger: "change" },
+          { validator: customPasswordReg, trigger: "change",passwordkType:1}
+        ],
         validateCode: [
           { required: true, message: "请输入验证码", trigger: "change" }
         ]
@@ -73,10 +75,20 @@ export default {
   watch: {
     "member.numberType": function(newVal, oldVal) {
       this.member["numberType"] = newVal;
+    },
+    'member.cardNo'(newVal){
+      if(newVal){
+        this.$store.dispatch('cardPolicy',{cardNo:newVal,tenantId: this.tenantId}).then(res=>{
+          if(res.data){
+            this.rules.passwd[1].passwordkType = res.data.weakPassword;
+          }
+        })
+      }
     }
   },
   methods: {
     isShow(data) {
+      if(routerJump.call(this))
       this.isshow = statusDeter.call(this,data,'normal',`该卡状态为${cardStatusCN(this.member.cardState)},不能重置密码`);
       if(this.isshow)this.$refs['ruleForm'].resetFields();
     },
@@ -130,4 +142,5 @@ export default {
   }
 };
 </script>
+
 

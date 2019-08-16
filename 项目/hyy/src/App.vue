@@ -13,8 +13,8 @@ export default {
 
   },
   mounted () {
-
   },
+
 };
 </script>
 
@@ -210,9 +210,6 @@ a:hover {
   /*  //border:1px solid #dfe6ec;*/
   margin: 10px 0px;
 }
-.el-button{
-  font-size: 12px;
-}
 .el-table .cell span.table-btn-mini {
   color: #3b74ff;
   cursor: pointer;
@@ -263,6 +260,7 @@ a:hover {
 // 重写框架样式
 .el-button {
   padding: 8px 22px;
+  font-size: 12px;
 }
 // 默认按钮
 .el-button--default {
@@ -609,5 +607,16 @@ body .el-table colgroup.gutter{
 ::-webkit-scrollbar-thumb:hover {
   background-color: rgba(95, 95, 95, 0.7);
 }
+html {
+  /*隐藏滚动条，当IE下溢出，仍然可以滚动*/
+  -ms-overflow-style:none;
+  /*火狐下隐藏滚动条*/
+  overflow:-moz-scrollbars-none;
+  scrollbar-color: transparent transparent;
+  scrollbar-track-color: transparent;
+  -ms-scrollbar-track-color: transparent;
+}
+/*!*Chrome下隐藏滚动条，溢出可以透明滚动*!
+html::-webkit-scrollbar{width:0px}*/
 
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="cinema-stock-wrap">
     <div class="ciniema-stock-header">
       <div class="search-wrap">
         <span>影院名称：</span>
@@ -79,7 +79,7 @@
         <el-button
           type="primary"
           size="small"
-          @click="getDatas"
+          @click="getDatas('backPageOne')"
           class="button-reset"
         >查询</el-button>
 
@@ -107,7 +107,7 @@
     <el-dialog
         title="下载影片"
         :visible.sync="dialogVisible"
-        width="40%"
+        width="448px"
         :before-close="handleClose">
         <div>
           <div class="block">
@@ -126,8 +126,8 @@
         </div>
         </div>
         <span slot="footer" class="dialog-footer">
-          <el-button @click="dialogVisible = false">取 消</el-button>
           <el-button type="primary" @click="downLoadMovie">确 定</el-button>
+          <el-button @click="dialogVisible = false">取 消</el-button>
         </span>
     </el-dialog>
     <div class="cinema-stock-table">
@@ -281,7 +281,7 @@
               size="mini"
               type="text"
               @click="handleEdit(scope.$index, scope.row)"
-            >修改</el-button>
+            >编辑</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -312,7 +312,7 @@
       @callBackSingle="handleSingleCallBack"
       ref="frameSingleCinema"
     >
-      <div slot="footerId">
+      <div slot="footerId" class="chose-cinema-button">
         <el-button
           type="primary"
           @click="confirmCinemaSingleDialog(), singleCinemaVisible= false"
@@ -454,8 +454,11 @@ export default {
       _this.value7 = [];
       _this.status =''
     },
-    getDatas() {
+    getDatas(backPageOne) {
       let _this = this;
+      if(backPageOne) {
+        _this.currentPage = 1
+      }
       let params = {
         cinemaUid:_this.innerDataSingle.id,
         movieCode: _this.movieCode,
@@ -526,12 +529,8 @@ export default {
     openDownloadMovie() {
         this.dialogVisible =true
       },
-      handleClose(){
-          this.$confirm('确认关闭？')
-            .then(_ => {
-              done();
-            })
-            .catch(_ => {});
+      handleClose(done){
+         done();
       },
         downLoadMovie() {
           // console.log('调用了影院的下载方法')
@@ -586,6 +585,18 @@ export default {
 };
 </script>
 <style lang="scss">
+.cinema-stock-wrap{
+  .chose-cinema-button{
+    .el-button{
+        width: 80px;
+        height: 32px;
+        margin-left: 0px;
+      }
+      .el-button--primary{
+        margin-right: 30px;
+      }
+  }
+}
 .ciniema-stock-header {
   min-width: 1260px;
   width: 100%;
@@ -667,6 +678,40 @@ export default {
     }
   }
 }
+ .el-icon-close{
+    font-size: 12px;
+  }
+.block{
+    .demonstration{
+      color:#666666;
+    }
+    display: inline-block;
+    height: 32px;
+    .el-date-range-picker__content.is-left{
+      border-right: 0px;
+    }
+    .el-input {
+      width: 360px;
+    }
+    .el-range-editor .el-range-input{
+      font-size: 12px;
+    }
+    .el-range-editor.el-input__inner{
+      padding: 0 10px;
+    }
+    .el-date-editor--daterange.el-input__inner{
+      width: 256px;
+    }
+    .el-date-editor .el-range-separator{
+      width: 8%;
+      font-size: 12px;
+      color: #666666;
+    }
+    span {
+      color: #666666;
+      font-size: 12px;
+    }
+  }
 .cinema-stock-table {
   //   margin-left: 174px;
   .el-table .warning-row {
@@ -679,5 +724,17 @@ export default {
   .el-table tr {
     background: #f2f4fd;
   }
+  
+  .dialog-footer{
+      margin-left: 8px;
+      display: inline-block;
+      // margin-top:15px;
+      span{
+        font-size: 12px;
+      }
+      .button-reset{
+        width: 80px; height: 32px; font-size: 12px;
+      }
+    }
 }
 </style>

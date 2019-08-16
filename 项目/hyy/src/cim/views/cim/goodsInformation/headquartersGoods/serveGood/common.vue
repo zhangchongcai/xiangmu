@@ -152,10 +152,10 @@
               </div>
               <div class="form-item-box left">
                 <el-form-item label="销售状态">
-                  <span v-if="routeQuery.type==3">{{queryData.canSale == 1 ? '允许':'禁止'}}</span>
+                  <span v-if="routeQuery.type==3">{{queryData.canSale == 1 ? '允许销售':'禁止销售'}}</span>
                   <el-radio-group v-else v-model="queryData.canSale">
-                    <el-radio label="1" value="1">允许</el-radio>
-                    <el-radio label="0" value="0">禁止</el-radio>
+                    <el-radio label="1" value="1">允许销售</el-radio>
+                    <el-radio label="0" value="0">禁止销售</el-radio>
                   </el-radio-group>
                 </el-form-item>
               </div>
@@ -227,7 +227,7 @@
                                 @clear="handleDeleteCinemas"
                         >
                        </el-input>
-                      <el-button type="primary" plain @click.stop="handleDialog('myCinemalDialog')">{{selectedStoreName?"编辑":"选择"}}</el-button>
+                      <el-button type="primary" plain @click.stop="handleDialog('myCinemalDialog')">选择</el-button>
                  </span>
                   </div>
                 </el-form-item>
@@ -262,23 +262,23 @@
                                 type="primary" plain
                                 v-if="routeQuery.type!=3"
                                 @click.stop="handleDialog('myChannelDialog')"
-                        >{{selectedChannelName?"编辑":"选择"}}</el-button>
+                        >选择</el-button>
                     </span>
                   </div>
                 </el-form-item>
               </div>
             </el-row>
-            <el-row>
-              <div class="form-item-box left">
-                <el-form-item label-width="160px" label="是否只允许套餐内售卖">
-                  <span v-if="routeQuery.type==3">{{queryData.isSaleAsSetMeal == 1 ? '允许':'禁止'}}</span>
-                  <el-radio-group v-else v-model="queryData.isSaleAsSetMeal">
-                    <el-radio label="1" value="1">是</el-radio>
-                    <el-radio label="0" value="0">否</el-radio>
-                  </el-radio-group>
-                </el-form-item>
-              </div>
-            </el-row>
+<!--            <el-row>-->
+<!--              <div class="form-item-box left">-->
+<!--                <el-form-item label-width="160px" label="是否只允许套餐内售卖">-->
+<!--                  <span v-if="routeQuery.type==3">{{queryData.isSaleAsSetMeal == 1 ? '允许':'禁止'}}</span>-->
+<!--                  <el-radio-group v-else v-model="queryData.isSaleAsSetMeal">-->
+<!--                    <el-radio label="1" value="1">是</el-radio>-->
+<!--                    <el-radio label="0" value="0">否</el-radio>-->
+<!--                  </el-radio-group>-->
+<!--                </el-form-item>-->
+<!--              </div>-->
+<!--            </el-row>-->
         </el-collapse-item>
         <!-- 销售信息 end-->
       </el-collapse>
@@ -388,8 +388,8 @@
   },
   mounted() {
     this.init();
-    console.log(this.queryData);
-    console.log(this.routeMerData);
+    // console.log(this.queryData);
+    // console.log(this.routeMerData);
   },
   methods: {
     init() {
@@ -451,7 +451,6 @@
         .catch(err => {});
     },
     handleSubmit() {
-      console.log(this.queryData);
       this.$refs["ruleForm"].validate(valid => {
         if (valid) {
           if (this.queryData.canSale == 1 && !this.queryData.price) {
@@ -516,7 +515,15 @@
     },
     // 取消提交信息
     handleCancel() {
-      this.$router.go(-1);
+      this.$store.commit("tagNav/removeTagNav", {
+        name: this.$route.name,
+        path: this.$route.path,
+        title: this.$route.meta.title,
+        query: this.$route.query
+      })
+      this.$router.push({
+        path: "/retail/commodityInformation/list",
+      });
     },
     // 查看服务商品
     merServiceGoodsQuery(param) {
@@ -549,6 +556,9 @@
               }).join(",")
               this.queryData.cinemaEntityList = this.queryData.cinemaEntityList.map(item => {
                 item.name = item.cinemaName;
+                if(!item.areaName){
+                  item.areaName = item.area;
+                }
                 return item
               })
             }
@@ -564,15 +574,6 @@
             this.synproFindUnitList({catUid: this.queryData.classUid, flag: "0"});
 
 
-          }
-        });
-    },
-    // 门店修改
-    cinemaServiceGoodsUpdate(param) {
-      this.$cimList.storequartersGoods
-        .cinemaServiceGoodsUpdate(param)
-        .then(resData => {
-          if (resData.code == 200) {
           }
         });
     },
@@ -597,7 +598,7 @@
           return item.cinemaName || item.name;
         })
         .join(",");
-      console.log("门店数据", data);
+      // console.log("门店数据", data);
     },
     // 渠道
     onChanneSumit(data = []) {
@@ -612,13 +613,13 @@
           return item.channelName  || item.name;
         })
         .join(",");
-      console.log("渠道数据", data);
+      // console.log("渠道数据", data);
     },
     // 品牌
     onBrandSumit(data = []) {
       this.queryData.brandUid =data[0].brandUid  || data[0].uid;
       this.selectedBranchName = data[0].name;
-      console.log("品牌数据", data);
+      // console.log("品牌数据", data);
     },
     //删除门店
     handleDeleteCinemas() {
@@ -692,9 +693,9 @@
     width: 100px;
   }
   .brand{
-    .select-input .el-input{
-      width: 208px;
-    }
+    /*.select-input .el-input{*/
+    /*  width: 208px;*/
+    /*}*/
   }
   .good-img-col {
     position: relative;

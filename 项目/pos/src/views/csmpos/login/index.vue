@@ -23,57 +23,75 @@
              </div>
              <div class="login-input-box">
                  <img class="icon-img" src="/static/imgs/username.png" alt="用户">
-                 <input class="login-input" v-model="info.user_name" type="text" placeholder="请输入用户名称" @focus="showKeyBoard('user_name')" />
+                 <input class="login-input" v-model="info.user_name" type="text" placeholder="请输入用户账号" @focus="showKeyBoard('user_name')" @keyup.enter="toPassWord" />
              </div>
              <div class="login-input-box">
                  <img class="icon-img" src="/static/imgs/password.png" alt="密码">
-                 <input style="margin-top: 0" class="login-input" v-model="info.password" type="password" placeholder="请输入密码" @focus="showKeyBoard('password')" />
+                 <input ref="passWordInputBox" style="margin-top: 0" class="login-input" v-model="info.password" type="password" placeholder="请输入密码" @focus="showKeyBoard('password')" />
              </div>
-             <div class="login-input-box" style="display: flex; justify-content: space-between">
+             <div class="login-input-box" style="display: flex; justify-content: space-between; margin: 6.9vh auto 3.9vh">
                  <input type="submit" class="login-btn" value="登录" />
                  <input type="button" class="login-btn close-btn" value="关闭" @click="closePos" />
              </div>
           </form>
 
-          <key-board v-model="info[modelStr]" :type="modelStr == 'user_name' ? 'text' : 'password'" @confirm="fillContent" ref="keyboard"></key-board>
+          <el-dialog
+                title="温馨提示"
+                :visible.sync="resetPwd"
+                width="30%"
+                >
+                <span style="font-size: 1.2vw;">密码过于简单请重置密码</span>
+                <span slot="footer" class="dialog-footer">
+                    <el-button @click="close">取 消</el-button>
+                    <el-button type="primary" @click="toPassWordPage">确 定</el-button>
+                </span>
+          </el-dialog>
+
+          <!-- <key-board v-model="info[modelStr]" :type="modelStr == 'user_name' ? 'text' : 'password'" @confirm="fillContent" ref="keyboard"></key-board> -->
     </div>
 </template>
 
 <script>
 import util from 'src/http/app.js'
-import {loginPos,getMenuTree} from 'src/http/apis.js'
-import {mapMutations} from 'vuex'
-import {SAVE_CINEMA_INFO, SAVE_USER_INFO,GLOBAL_SET_NAV_DATAS} from 'types'
+import {loginPos,getMenuTree, payType} from 'src/http/apis.js'
+import {mapMutations,mapGetters} from 'vuex'
+import {SAVE_CINEMA_INFO, SAVE_USER_INFO,GLOBAL_SET_NAV_DATAS, SAVE_ALL_PAY} from 'types'
+import { VM_LOGIN_SET_MENU,VM_ON_LOGIN_UESINFO } from 'types/vmOnType'
 import KeyBoard from 'components/keyboard'
 export default {
     data() {
         return {
             modelStr: 'user_name',
             brower: false,
+            resetPwd: false,
             info: {
                 user_name: '',
                 password: '',
-                cinemaLicence: '1e67a45f65e4ba51',
+                cinemaLicence: 'b0233f558a2191d1',
                 macCode: 'ABC321'
             },
-            menuList:[],
-            otherFlag: false,
-            otherList: [],
-            arr: [],
-            
+            loading:null,
         }
     },
 
     created() {
       try {
-           let code = util.License_Read_REQUEST()
-           console.log(code)
+           util.getCinemaInfoParameter(res => {
+              let data = JSON.parse(res[1])
+              this.info.macCode = data.machine
+              this.info.cinemaLicence = data.license
+           })
+           localStorage
       } catch (error) {
           if(error) {
             this.brower = true;
-            console.log(error)
           }
       }
+    },
+    computed:{
+        ...mapGetters([
+            'configData'
+        ])
     },
 
     methods: {
@@ -81,11 +99,24 @@ export default {
             SAVE_CINEMA_INFO,
             SAVE_USER_INFO,
             GLOBAL_SET_NAV_DATAS,
+            SAVE_ALL_PAY
         ]),
 
         showKeyBoard(key){
             this.modelStr = key
             this.$refs.keyboard.show();
+        },
+        //输入name后回车跳到密码框
+        toPassWord() {
+          if(!this.info.user_name) {
+              this.$message({
+                            showClose: true,
+                            message: "请输入名称",
+                            type: 'error'
+                        });
+          }else {
+             this.$refs.passWordInputBox.focus();
+          }
         },
 
         fillContent(value) {
@@ -96,69 +127,92 @@ export default {
            }
         },
 
-        showData() {
-          if(this.info.user_name && this.info.password) {
-              loginPos(this.info).then(res => {
-                if(res.code == 200) {
-                    this.getData()
-                    this.SAVE_USER_INFO(res.data)
-                    this.SAVE_CINEMA_INFO(res.data)
-                    this.$router.push({path: '/home'})
+        async showData() {
+            if(!this.info.user_name && !this.info.password) return this.$message({
+                        showClose: true,
+                        message: '请填写正确的用户名和密码',
+                        type: 'error'
+                    });
+            this.loading = this.$loading({
+                lock: true,
+                text: '登录中...',
+                spinner: 'el-icon-loading',
+                background: 'rgba(0, 0, 0, 0.7)'
+            });
+            const res = await loginPos(this.info)
+            if(this.info.forceLogin) delete this.info.forceLogin;
+            if(res.code == 201) {
+                return this.$confirm(res.msg, '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+                }).then(() => {
+                    this.loading.close()
+                    this.info.forceLogin = 1
+                    this.showData()
+                }).catch(() => {
+                    this.loading.close()
+                });
+            }
+            // res.data.userAccount = this.info.user_name;
+            if(res.code == 200 && res.data.passworkIsEssay) {
+                this.resetPwd = true
+                
+                this.loginSaveUserInfo(res)
+                return
+            }
+            if(res.code !=200 && res.code !=201) {
+                this.loading.close()
+                return this.$message({
+                                showClose: true,
+                                message: res.msg,
+                                type: 'error'
+                            });
+            }
+            this.loginSaveUserInfo(res)
+            if(['both','movie'].includes(this.configData.counter_type_value)){
+                this.$router.push({path: '/home'})
+            }else{
+                this.$router.push({path: '/home/goods/cellgoods'})
+            }
+        },
+        loginSaveUserInfo(res){
+            this.loading.close()
+            this.$eventHub.$emit(VM_ON_LOGIN_UESINFO,res.data.workTimeUid)
+            this.$vm.$emit(VM_LOGIN_SET_MENU)
+            this.SAVE_USER_INFO(res.data)
+            this.SAVE_CINEMA_INFO(res.data)
+            localStorage.setItem('cinemaLicence',this.info.cinemaLicence)
+                payType().then(res=> {
+                if(res.code==200) {
+                    let {data} = res
+                    // console.log("payType ===>", data)
+                    this.SAVE_ALL_PAY(data)
                 }else {
                     this.$message({
-                                    showClose: true,
-                                    message: res.msg,
-                                    type: 'error'
-                                });
+                                showClose: true,
+                                message: res.data && res.data.length == 0 ? '暂无支付方式数据' : res.msg,
+                                type: 'error'
+                            });
                 }
             })
-          }else {
-              this.$message({
-                            showClose: true,
-                            message: '请填写正确的用户名和密码',
-                            type: 'error'
-                        });
-          }
-          
         },
 
+        //密码过于简单 跳转到密码重置页面
+        toPassWordPage() {
+           this.resetPwd = false
+           this.$router.push({path: '/page/settings/changePassword'})
+        },
+        close(){
+            this.resetPwd = false;
+            if(['both','movie'].includes(this.configData.counter_type_value)){
+                this.$router.push({path: '/home'})
+            }else{
+                this.$router.push({path: '/home/goods/cellgoods'})
+            }
+        },
         closePos() {
             util.quit()
-        },
-        getData() {
-            getMenuTree().then(ret=>{
-                if(ret&&ret.code==200){
-                this.getArray(ret.data,4)
-                if(this.arr.length>=0&&this.arr.length<=8){
-                    this.arr.forEach(item=>{
-                        this.menuList.push(item)
-                    })
-                }else{
-                    this.arr.forEach((item,index)=>{
-                    if(index<7){
-                        this.menuList.push(item)
-                    }else{
-                        this.otherFlag=true
-                        this.otherList.push(item)
-                    }
-                    })
-                }
-                this[GLOBAL_SET_NAV_DATAS]({
-                otherFlag :this.otherFlag,
-                otherList : this.otherList,
-                menuList : this.menuList,
-                })
-                }
-            })
-        },
-        getArray(data,menuType) {
-            for (var i in data) {
-                if (data[i].menuType == menuType) {
-                this.arr.push(data[i])
-                } else {
-                this.getArray(data[i].submenu, menuType);
-                }
-            }
         },
     },
 
@@ -179,7 +233,7 @@ export default {
 
       .header-info {
           display: flex;
-          width: calc(100% - 10vw);
+          width: calc(100% - 20vw);
           margin: 6vh auto;
           align-items: center;
           justify-content: space-between;
@@ -190,23 +244,22 @@ export default {
       .left-img {
           position: absolute;
           top: 200px;
-          left: 5vw;
+          left: 10vw;
           width: 42.2vw;
       }
 
       .login {
           position: absolute;
           top: 200px;
-          right: 5vw;
+          right: 10vw;
           display: flex;
           flex-direction: column;
           width: 31%;
-          height: 54%;
           background: #ffffff;
           border-radius: 4px;
 
           .login-name {
-              font-size: $font-size22;
+              font-size: $font-size28;
               font-weight: bolder;
               color: $font-color-blue;
               margin-top: 2vw;
@@ -214,8 +267,9 @@ export default {
           }
 
           .login-tip {
-              font-size: $font-size12;
-              color: $font-color6;
+              font-size: $font-size14;
+              color: $font-color9;
+              font-weight: 300;
               margin-top: 0.5vw;
               margin-left: 2vw;
           }

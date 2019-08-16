@@ -10,7 +10,7 @@
         </div>
       </div>
       <div class="member-desc-wrap">
-        <div class="member-basic-desc" style="width:520px">
+        <div class="member-basic-desc" style="min-width:210px">
           <div class="member-name">{{information.name | emptyShow}}</div>
           <div class="member-gender">
             <label class="lable">性别：</label>
@@ -38,34 +38,64 @@
           </div>
         </div>
         <div class="member-account-desc">
-          <div class="stored-money">储值金额：
-            <div class="stored-total">
-              ￥{{information.totalBalance | emptyShow}} &nbsp;
-              <span class="stored-detail">(实收￥{{information.basicBalance | emptyShow}}，奖励￥{{information.donateBalance |
-                emptyShow}})</span>
+          <div class="_member-account-row">
+            <div class="stored-money">储值金额：
+              <div class="stored-total">
+                ￥{{information.totalBalance | emptyShow}}
+                <div class="stored-detail">（ 实收￥{{information.basicBalance | emptyShow}}，奖励￥{{information.donateBalance |
+                emptyShow}} ）</div>
+              </div>
+            </div>
+            <div class="cumulative-money">累计充值金额：
+              <div class="cumulative-total">￥{{information.totalChargeAmount | emptyShow}}</div>
             </div>
           </div>
-          <div class="cumulative-money">累计充值金额：
-            <div class="cumulative-total">￥{{information.totalChargeAmount | emptyShow}}</div>
+          <div class="_member-account-row _member-account-row-down">
+            <div class="cumulative-money">积分余额：
+              <div class="cumulative-total">{{information.scoreBalance | emptyShow}}</div>
+            </div>
+            <div class="cumulative-money">累计积分：
+              <div class="cumulative-total">{{information.totalScore | emptyShow}}</div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-    <!-- 会员标签 -->
-    <div class="_member-label-wrap">
-      <label class="lable">会员标签：</label>
-      <div class="_no-label" v-if="information.labelVOS.length == 0 || information.labelVOS ==null">暂无标签</div>
-      <div class="_label-item-wrap" v-else>
-        <div class="_member-label-item" :style="`border-color:${item.labelColor}`"
-          v-for="(item, index) of information.labelVOS" :key="index">
-          <span :style="`color:${item.labelColor}`" class="_member-label-color">{{item.labelName}}</span>
+    <!-- 会员标签、会员等级 -->
+    <div class="_member-label-level-wrap">
+      <div class="_member-item-iinner">
+        <label class="lable">会员等级：</label>
+        {{information.levelName | emptyShow}}
+      </div>
+      <div class="_member-item-iinner">
+        <label class="lable">会员标签：</label>
+        <div class="_no-label" v-if="information.labelVOS.length == 0 || information.labelVOS ==null">暂无标签</div>
+        <div class="_label-item-wrap" v-else>
+          <div class="_member-label-item" :style="`border-color:${item.labelColor}`"
+            v-for="(item, index) of information.labelVOS" :key="index">
+            <span :style="`color:${item.labelColor}`" class="_member-label-color">{{item.labelName}}</span>
+          </div>
         </div>
       </div>
+
     </div>
-    <el-collapse v-model="activeNames" @change="handleChange" class="holding-card-info">
+    <el-collapse v-model="activeNames" class="holding-card-info">
+      <!-- 会员权益 -->
+      <el-collapse-item title="会员权益" name="0">
+        <div class="_member-level-rights-wrap">
+          <div class="_member-level-rights-title">{{levelData.levelName}}</div>
+          <ul class="_member-level-rights-items-wrap" v-if="levelData.levelEquitys.length>0">
+            <li class="_member-level-rights-item" v-for="(item,index) of levelData.levelEquitys" :key="index">
+              <img :src="item.equity.logoPic" :alt="index">
+              <div class="_equity-name">{{item.equity.equityName?item.equity.equityName:'-'}}</div>
+            </li>
+          </ul>
+          <div v-else class="_no-equity-word">暂无会员等级权益</div>
+        </div>
+      </el-collapse-item>
       <!-- 未使用优惠券 -->
-      <el-collapse-item title="未使用优惠券" name="0">
-        <div class="_m-member-table-custom">
+      <el-collapse-item title="未使用优惠券" name="1">
+        <div class="_m-member-table-custom" style="margin-left:20px;">
           <el-table :data="information.couponList" stripe style="width: 100%">
             <template slot="empty">{{unusedCouponsTip}}</template>
             <!-- <template slot="empty">该会员没有未使用的优惠券</template> -->
@@ -73,7 +103,7 @@
               show-overflow-tooltip></el-table-column>
             <el-table-column prop="couponNo" label="券码" min-width="250" :formatter="formateEmpty" show-overflow-tooltip>
             </el-table-column>
-            <el-table-column prop="startTime" label="获得时间" min-width="250" :formatter="formateEmpty"
+            <el-table-column prop="createTime" label="获得时间" min-width="250" :formatter="formateEmpty"
               show-overflow-tooltip></el-table-column>
             <el-table-column prop="endTime" label="过期时间" min-width="250" :formatter="formateEmpty"
               show-overflow-tooltip></el-table-column>
@@ -81,9 +111,10 @@
         </div>
       </el-collapse-item>
       <!-- 持有卡信息 -->
-      <el-collapse-item title="持有卡信息" name="1">
+      <el-collapse-item title="持有卡信息" name="2">
         <el-row style="width:100%;padding-left: 20px;">
-          <div v-if="information.cardList=='' || information.cardList==null" style="text-align: center;">暂无持有卡信息</div>
+          <div v-if="information.cardList=='' || information.cardList==null" style="text-align: center;color: #909399;">
+            暂无持有卡信息</div>
           <el-col class="card-item-wrap" style="margin-bottom:20px"
             v-for="(item,index) in information.cardList?information.cardList:[]" :key="index">
             <el-card shadow="hover" class="card-item">
@@ -117,54 +148,56 @@
         </el-row>
       </el-collapse-item>
       <!-- 历史账单明细 -->
-      <el-collapse-item title="历史账单明细" name="2">
+      <el-collapse-item title="历史账单明细" name="3">
         <el-radio-group v-model="tabPosition" class="radio-btn-wrap" @change="changeTab">
           <el-radio-button label="CONSUME">消费</el-radio-button>
           <el-radio-button label="CHARGE">储值</el-radio-button>
-          <!-- <el-radio-button label="COUPON">优惠券</el-radio-button> -->
+          <el-radio-button label="INTEGRAL">积分</el-radio-button>
         </el-radio-group>
         <div class="historical-bill-table _m-member-table-custom">
           <el-table :data="consumptionList" stripe style="width: 100%" v-if="type=='CONSUME'">
             <template slot="empty">{{tipMessage}}</template>
             <!-- <template slot="empty">该会员没有消费记录</template> -->
-            <el-table-column prop="businessName" label="交易类型" min-width="100" :formatter="formateEmpty"
+            <el-table-column prop="businessName" label="交易类型" min-width="80" :formatter="formateEmpty"
               show-overflow-tooltip></el-table-column>
-            <el-table-column prop="cardNo" label="会员卡号" min-width="140" :formatter="formateEmpty" show-overflow-tooltip>
+            <el-table-column prop="cardNo" label="会员卡号" min-width="110" :formatter="formateEmpty" show-overflow-tooltip>
             </el-table-column>
-            <el-table-column prop="transactionTime" label="时间" min-width="140" :formatter="formateEmpty"
+            <el-table-column prop="transactionTime" label="时间" min-width="130" :formatter="formateEmpty"
               show-overflow-tooltip></el-table-column>
-            <el-table-column prop="outOrderNo" label="订单号" min-width="110" :formatter="formateEmpty"
+            <el-table-column prop="outOrderNo" label="订单号" min-width="240" :formatter="formateEmpty"
               show-overflow-tooltip></el-table-column>
-            <el-table-column prop="flowNo" label="流水号" min-width="150" :formatter="formateEmpty" show-overflow-tooltip>
+            <el-table-column prop="flowNo" label="流水号" min-width="130" :formatter="formateEmpty" show-overflow-tooltip>
             </el-table-column>
             <el-table-column prop="cinemaName" label="门店" min-width="100" :formatter="formateEmpty"
               show-overflow-tooltip></el-table-column>
             <el-table-column prop="amount" label="消费总金额(元)" min-width="110" :formatter="formateEmpty"
               show-overflow-tooltip></el-table-column>
-            <el-table-column prop="basicAmount" label="实收金额(元)" min-width="100" :formatter="formateEmpty"
+            <el-table-column prop="basicAmount" label="实收金额(元)" min-width="95" :formatter="formateEmpty"
               show-overflow-tooltip></el-table-column>
-            <el-table-column prop="channelName" label="交易渠道" min-width="120" :formatter="formateEmpty"
+            <el-table-column prop="channelName" label="交易渠道" min-width="95" :formatter="formateEmpty"
               show-overflow-tooltip></el-table-column>
           </el-table>
           <!-- 储值 -->
           <el-table :data="consumptionList" stripe style="width: 100%" v-if="type=='CHARGE'">
             <template slot="empty">{{tipMessage}}</template>
             <!-- <template slot="empty">该会员没有储值记录</template> -->
-            <el-table-column prop="businessName" label="交易类型" min-width="100" :formatter="formateEmpty"
+            <el-table-column prop="businessName" label="交易类型" min-width="80" :formatter="formateEmpty"
               show-overflow-tooltip></el-table-column>
-            <el-table-column prop="cardNo" label="会员卡号" min-width="140" :formatter="formateEmpty" show-overflow-tooltip>
+            <el-table-column prop="cardNo" label="会员卡号" min-width="110" :formatter="formateEmpty" show-overflow-tooltip>
             </el-table-column>
-            <el-table-column prop="transactionTime" label="时间" min-width="140" :formatter="formateEmpty"
+            <el-table-column prop="transactionTime" label="时间" min-width="130" :formatter="formateEmpty"
               show-overflow-tooltip></el-table-column>
-            <el-table-column prop="flowNo" label="流水号" min-width="140" :formatter="formateEmpty" show-overflow-tooltip>
+              <el-table-column prop="outOrderNo" label="订单号" min-width="240" :formatter="formateEmpty"
+              show-overflow-tooltip></el-table-column>
+            <el-table-column prop="flowNo" label="流水号" min-width="130" :formatter="formateEmpty" show-overflow-tooltip>
             </el-table-column>
             <el-table-column prop="cinemaName" label="门店" min-width="120" :formatter="formateEmpty"
               show-overflow-tooltip></el-table-column>
-            <el-table-column prop="basicAmount" label="充值金额(元)" min-width="100" :formatter="formateEmpty"
+            <el-table-column prop="basicAmount" label="充值金额(元)" min-width="95" :formatter="formateEmpty"
               show-overflow-tooltip></el-table-column>
-            <el-table-column prop="giveAmount" label="奖励金额(元)" min-width="100" :formatter="formateEmpty"
+            <el-table-column prop="giveAmount" label="奖励金额(元)" min-width="95" :formatter="formateEmpty"
               show-overflow-tooltip></el-table-column>
-            <el-table-column prop="channelName" label="交易渠道" min-width="120" :formatter="formateEmpty"
+            <el-table-column prop="channelName" label="交易渠道" min-width="95" :formatter="formateEmpty"
               show-overflow-tooltip></el-table-column>
             <!-- <el-table-column
               prop="modifyBy"
@@ -173,19 +206,28 @@
              :formatter="formateEmpty" show-overflow-tooltip
             ></el-table-column> -->
           </el-table>
-          <!-- 优惠券 -->
-          <!-- <el-table :data="consumptionList" stripe style="width: 100%" v-if="type=='COUPON'">
+          <!-- 积分 -->
+          <el-table :data="consumptionList" stripe style="width: 100%" v-if="type=='INTEGRAL'">
             <template slot="empty">{{tipMessage}}</template>
-            <el-table-column prop="businessName" label="交易类型" min-width="100" :formatter="formateEmpty" show-overflow-tooltip></el-table-column>
-            <el-table-column prop="transactionTime" label="时间" min-width="140" :formatter="formateEmpty" show-overflow-tooltip></el-table-column>
-            <el-table-column prop="flowNo" label="流水号" min-width="140" :formatter="formateEmpty" show-overflow-tooltip></el-table-column>
-            <el-table-column prop="cinemaName" label="门店" min-width="110" :formatter="formateEmpty" show-overflow-tooltip></el-table-column>
-            <el-table-column prop="couponName" label="券名称" min-width="110" :formatter="formateEmpty" show-overflow-tooltip></el-table-column>
-            <el-table-column prop="couponApplicableCommodity" label="适用商品" min-width="110" :formatter="formateEmpty" show-overflow-tooltip></el-table-column>
-            <el-table-column prop="couponAmount" label="券面值" min-width="100" :formatter="formateEmpty" show-overflow-tooltip></el-table-column>
-            <el-table-column prop="couponNo" label="券码" min-width="100" :formatter="formateEmpty" show-overflow-tooltip></el-table-column>
-            <el-table-column prop="couponSource" label="券来源" min-width="100" :formatter="formateEmpty" show-overflow-tooltip></el-table-column>
-          </el-table> -->
+            <el-table-column prop="flowNo" label="积分流水号" min-width="120" :formatter="formateEmpty"
+              show-overflow-tooltip></el-table-column>
+            <el-table-column prop="transactionTime" label="交易时间" min-width="140" :formatter="formateEmpty"
+              show-overflow-tooltip></el-table-column>
+            <el-table-column prop="integral" label="积分数量" min-width="100" :formatter="formateEmpty"
+              show-overflow-tooltip></el-table-column>
+            <el-table-column prop="integralType" label="积分交易类型" key="integralType" min-width="110"
+              :formatter="formateEmpty" show-overflow-tooltip>
+              <template slot-scope="scope">
+                {{scope.row.integralType | formatIntegralType}}
+              </template>
+            </el-table-column>
+            <el-table-column prop="channelName" label="交易渠道" min-width="100" :formatter="formateEmpty"
+              show-overflow-tooltip></el-table-column>
+            <el-table-column prop="cinemaName" label="交易影院" min-width="110" :formatter="formateEmpty"
+              show-overflow-tooltip></el-table-column>
+            <el-table-column prop="operator" label="操作人" min-width="100" :formatter="formateEmpty"
+              show-overflow-tooltip></el-table-column>
+          </el-table>
         </div>
         <!-- 分页 start -->
         <div class="page-wrap">
@@ -207,14 +249,17 @@ export default {
   name: "ManageDetail",
   data() {
     return {
+      levelData: {
+        levelName: "-",
+        levelEquitys: []
+      },
       tabPosition: "CONSUME",
-      scope: JSON.stringify(this.$route.query.scope), //解析路径json
       id: this.$route.query.id,
       tenantId: this.$store.state.loginUser.consumerId,
       current: 1,
       size: 20,
       total: 1000,
-      activeNames: ["0", "1", "2"],
+      activeNames: ["0", "1", "2", "3"],
       tableData3: [],
       information: {
         labelVOS: []
@@ -226,11 +271,33 @@ export default {
     };
   },
   filters: {
+    formatIntegralType(val) {
+      switch (val) {
+        case 0:
+          return "积分获取";
+          break;
+        case 1:
+          return "积分兑换";
+          break;
+        case 2:
+          return "积分冲销";
+          break;
+        case 3:
+          return "手动调整积分";
+          break;
+        case 4:
+          return "退积分";
+          break;
+        default:
+          return "-";
+          break;
+      }
+    },
     emptyShow: function(value) {
-      if (value || value == 0) {
-        return value;
-      } else {
+      if (value == null || value == "") {
         return "-";
+      } else {
+        return value;
       }
     },
     timeFn: function(val) {
@@ -250,19 +317,39 @@ export default {
   },
   created() {
     this.loadingData();
-    this.change("CONSUME");
+    this.change();
+    this.getLevelEquity();
   },
   methods: {
     // 关闭
     handleBack() {
+      this.$store.commit("tagNav/removeTagNav", this.$route);
       this.$router.push({ path: "/member/member/list" });
     },
     formateEmpty(row, column, cellValue, index) {
-      if (cellValue != null || cellValue != "") {
-        return cellValue;
-      } else {
+      if (cellValue == null || cellValue == "") {
         return "-";
+      } else {
+        return cellValue;
       }
+    },
+    // 获取等级权益
+    getLevelEquity() {
+      let params = {
+        levelNo: this.$route.query.levelNo,
+        tenantId: this.$store.state.loginUser.consumerId
+      };
+      this.$crmList
+        .getLevelEquityByLevelCode(params)
+        .then(res => {
+          this.levelData = {
+            levelEquitys: res.levelEquitys ? res.levelEquitys : [],
+            levelName: res.levelName ? res.levelName : "-"
+          };
+        })
+        .catch(err => {
+          console.log(err);
+        });
     },
     loadingData() {
       //数据加载
@@ -294,11 +381,9 @@ export default {
           }
         });
     },
-
-    change(val) {
-      //1 储值； 2 消费 菜单切换
+    //1 储值； 2 消费 菜单切换
+    change() {
       let _this = this;
-      // _this.type=val;
       let params = {
         businessType: this.type,
         cardNo: "",
@@ -317,13 +402,40 @@ export default {
             _this.tipMessage = "该会员没有消费记录";
           } else if (ret.total == 0 && _this.type == "CHARGE") {
             _this.tipMessage = "该会员没有储值记录";
-          } else if (ret.total == 0 && _this.type == "COUPON") {
-            _this.tipMessage = "该会员没有优惠券记录";
           }
           _this.consumptionList = ret.records;
           _this.size = ret.size;
           _this.total = ret.total;
-          // console.log(ret.total)
+        })
+        .catch(err => {
+          _this.consumptionList = [];
+          if (err && err.msg) {
+            _this.tipMessage = err.msg;
+          } else {
+            _this.tipMessage = "系统繁忙，请稍后重试！";
+          }
+          console.log(err);
+        });
+    },
+    // 获取积分列表
+    integralChange() {
+      let _this = this;
+      let data = {
+        memberId: this.id,
+        current: _this.current,
+        size: _this.size,
+        tenantId: this.$store.state.loginUser.consumerId
+      };
+      _this.tipMessage = "数据加载中...";
+      _this.$crmList
+        .getIntegralTradeRecordList(data)
+        .then(ret => {
+          if (ret.total == 0 && _this.type == "INTEGRAL") {
+            _this.tipMessage = "该会员没有积分记录";
+          }
+          _this.consumptionList = ret.records;
+          _this.size = ret.size;
+          _this.total = ret.total;
         })
         .catch(err => {
           _this.consumptionList = [];
@@ -338,28 +450,39 @@ export default {
     changeTab(val) {
       this.current = 1;
       this.type = val;
-      this.change(this.type);
+      if (val == "INTEGRAL") {
+        this.integralChange();
+      } else {
+        this.change();
+      }
     },
     handleSizeChange(val) {
-      // console.log(`每页 ${val} 条`);
       this.size = val;
-      this.change(this.type);
+      if (this.type == "INTEGRAL") {
+        this.integralChange();
+      } else {
+        this.change();
+      }
     },
     handleCurrentChange(val) {
-      // console.log(`当前页: ${val}`);
       this.current = val;
-      this.change(this.type);
-    },
-    handleChange(val) {
-      // console.log(val);
+      if (this.type == "INTEGRAL") {
+        this.integralChange();
+      } else {
+        this.change();
+      }
     },
     // 查看卡详情
-    handleMembershipCardDetail(id) {
+    handleMembershipCardDetail(cardNo) {
       this.$router.push({
         path: "/member/membershipCard/detail",
         query: {
-          cardNo: id,
-          tenantId: this.$store.state.loginUser.consumerId
+          cardNo: cardNo,
+          pathOrigin: "detail",
+          levelNo: this.$route.query.levelNo,
+          id: this.$route.query.id,
+          startOpenDate: this.$route.query.startOpenDate,
+          endOpenDate: this.$route.query.endOpenDate
         }
       });
     }
@@ -380,6 +503,7 @@ export default {
       .avatar-img {
         width: 100%;
         height: 100%;
+        min-width: 186px;
       }
       .member-desc {
         width: 186px;
@@ -417,7 +541,7 @@ export default {
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        width: 50%;
+        width: 55%;
         font-family: MicrosoftYaHei;
         font-size: 12px;
         color: #666666;
@@ -441,64 +565,96 @@ export default {
         flex-direction: column;
         justify-content: space-around;
         // margin-left: 40px;
-        padding: 30px 0;
-        .stored-money {
-          font-size: 12px;
-          color: #666666;
-          .stored-total {
-            display: flex;
-            align-items: center;
-            font-size: 21px;
-            color: #333333;
-            margin-top: 15px;
-            .stored-detail {
-              font-size: 12px;
-              color: #666;
+        padding: 20px 0 0;
+        ._member-account-row {
+          display: flex;
+          .stored-money {
+            font-size: 12px;
+            color: #666666;
+            width: 200px;
+            .stored-total {
+              // display: flex;
+              align-items: center;
+              font-size: 21px;
+              color: #333333;
+              margin-top: 10px;
+              font-weight: bold;
+              margin-left: -4px;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+              .stored-detail {
+                font-size: 12px;
+                color: #666;
+                // padding-left: 5px;
+                font-weight: inherit;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+              }
+            }
+          }
+          .cumulative-money {
+            font-size: 12px;
+            color: #666666;
+            width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            .cumulative-total {
+              font-size: 21px;
+              color: #333333;
+              margin-top: 10px;
+              font-weight: bold;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
             }
           }
         }
-        .cumulative-money {
-          font-size: 12px;
-          color: #666666;
-          .cumulative-total {
-            font-size: 21px;
-            color: #333333;
-            margin-top: 15px;
-          }
+        ._member-account-row-down {
+          margin-top: 10px;
         }
       }
     }
   }
   // 会员标签
-  ._member-label-wrap {
+  ._member-label-level-wrap {
     display: flex;
+    flex-direction: column;
     padding: 12px 0 0 242px;
     align-items: baseline;
-    .lable {
-      width: 60px;
-      display: inline-block;
-      font-size: 12px;
-      color: #666;
-      flex-shrink: 0;
-    }
-    ._no-label {
-      font-size: 12px;
-      color: #666;
-      margin-left: 5px;
-    }
-    ._label-item-wrap {
+    ._member-item-iinner {
       display: flex;
-      flex-wrap: wrap;
-      ._member-label-item {
-        border: 1px solid #666;
-        margin: 0 10px 10px 0;
-        padding: 0 8px;
-        height: 20px;
-        line-height: 18px;
-        border-radius: 2px;
-        ._member-label-color {
-          font-size: 12px;
-          color: #666;
+      margin-bottom: 12px;
+      font-size: 12px;
+      color: #666;
+      .lable {
+        width: 60px;
+        display: inline-block;
+        font-size: 12px;
+        color: #666;
+        flex-shrink: 0;
+      }
+      ._no-label {
+        font-size: 12px;
+        color: #666;
+        margin-left: 5px;
+      }
+      ._label-item-wrap {
+        display: flex;
+        flex-wrap: wrap;
+        ._member-label-item {
+          border: 1px solid #666;
+          margin: 0 10px 10px 0;
+          padding: 0 8px;
+          height: 20px;
+          line-height: 18px;
+          border-radius: 2px;
+          ._member-label-color {
+            font-size: 12px;
+            color: #666;
+          }
         }
       }
     }
@@ -506,6 +662,52 @@ export default {
   .holding-card-info {
     margin-top: 20px;
     border: 0;
+    // 等级权益
+    ._member-level-rights-wrap {
+      display: flex;
+      background: #f5f7fa;
+      border-radius: 4px;
+      padding: 10px 15px 0;
+      margin-left: 20px;
+      ._member-level-rights-title {
+        flex-shrink: 0;
+        font-size: 12px;
+        font-weight: bold;
+        color: #333333;
+        letter-spacing: 0;
+        height: 76px;
+        line-height: 76px;
+        padding: 0 30px 0 15px;
+        border-right: 1px solid #dededf;
+      }
+      ._member-level-rights-items-wrap {
+        display: flex;
+        flex-wrap: wrap;
+        ._member-level-rights-item {
+          text-align: center;
+          width: 100px;
+          margin: 6px 10px 10px;
+          img {
+            width: 36px;
+            height: 36px;
+            vertical-align: middle;
+            margin-bottom: 14px;
+          }
+          ._equity-name {
+            font-size: 12px;
+            color: #333333;
+            letter-spacing: 0;
+          }
+        }
+      }
+      ._no-equity-word {
+        text-align: center;
+        color: #909399;
+        width: 83%;
+        height: 86px;
+        line-height: 76px;
+      }
+    }
     // 卡样式
     .card-item-wrap {
       width: 352px;
@@ -664,9 +866,8 @@ export default {
   }
   .detail-btn-wrap {
     width: 100%;
-    margin: 0 0 40px;
+    margin: 1px 0 40px;
     text-align: center;
   }
 }
 </style>
-

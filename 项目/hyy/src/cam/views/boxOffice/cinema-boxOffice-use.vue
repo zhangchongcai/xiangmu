@@ -16,19 +16,17 @@
             <Authority-Name :orgType="orgType" :orgName="orgName"></Authority-Name>
         </div>
         <div class="time-item">
-          <label class="label-title">
-            时间选择：
-            <calendar-view
-              size="mini"
-              v-model="time"
-              format="yyyy/MM/dd"
-              :dateType="dateType"
-              :dateTypeActive="dateTypeActive"
-              :dateTypeIndex="dateTypeIndex"
-              @emitCalendarType="getTimeType"
-              @change="changeTime"
-            ></calendar-view>
-          </label>
+          <span class="label-title">时间选择:</span>
+          <calendar-view
+            size="mini"
+            v-model="time"
+            format="yyyy/MM/dd"
+            :dateType="dateType"
+            :dateTypeActive="dateTypeActive"
+            :dateTypeIndex="dateTypeIndex"
+            @emitCalendarType="getTimeType"
+            @change="changeTime"
+          ></calendar-view>
         </div>
         <div class="time-item">
           <el-button type="primary"  @click="search">查询</el-button>
@@ -72,7 +70,7 @@
                   class="iconfont"
                   :class="[item.valueRound > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"
                 ></i>
-                {{item.valueRound == '-9999'?'--':(item.valueRound*1 >0?item.valueRound*1:item.valueRound*(-1))}}%
+                {{item.valueRound | numberToFixed}}%
               </span>
             </div>
             <div class="ratio" v-if="ratioType == 2 && !disabledSame">
@@ -82,7 +80,7 @@
                   class="iconfont"
                   :class="[item.valueSame > 0? 'icon-neiye-shangshengjiantou':'icon-neiye-xiajiangjiantou']"
                 ></i>
-                {{item.valueSame == '-9999'?'--':(item.valueSame*1 >0 ?item.valueSame:item.valueSame*(-1))}}%
+                {{item.valueSame | numberToFixed}}%
               </span>
             </div>
           </div>
@@ -141,7 +139,7 @@
               <template slot-scope="scope">{{scope.row.planShowCount | formatNum | formatFixed}}</template>
             </el-table-column>
             <el-table-column prop="avgTicketPrice" label="平均票价(元)" min-width="100" key="avgTicketPrice">
-              <template slot-scope="scope">{{scope.row.avgTicketPrice | formatNull}}</template>
+              <template slot-scope="scope">{{scope.row.avgTicketPrice | formatNum | formatNull}}</template>
             </el-table-column>
             <el-table-column prop="servicePrice" label="三方服务费(元)" min-width="130" key="servicePrice">
               <template slot-scope="scope">{{scope.row.servicePrice | formatNum}}</template>
@@ -190,7 +188,7 @@
             @getType="changeChannelType"
           ></target-label>
           <div style="width:100%">
-            <ve-pie
+            <!-- <ve-pie
               :title="channelTitle"
               :data="channelData"
               :extend="pieExtend"
@@ -199,7 +197,16 @@
               :data-empty="channelChartEmpty"
               v-if="showChannelPie"
             >
-            </ve-pie>
+            </ve-pie> -->
+            <ve-ring
+              :title="channelTitle"
+              :settings="{roseType: 'radius'}"
+              :data="channelData"
+              :extend="pieExtendChannel"
+              :colors="colors"
+              :data-empty="channelChartEmpty"
+              v-if="showChannelPie"
+            ></ve-ring>
             <ve-histogram
               :title="channelTitle1"
               :data="channelData"
@@ -223,7 +230,7 @@
               :title="movieTitle"
               :settings="{roseType: 'radius'}"
               :data="movieData"
-              :extend="pieExtend"
+              :extend="pieExtendMovie"
               :colors="colors"
               :data-empty="movieChartEmpty"
               v-if="showMoviePie"

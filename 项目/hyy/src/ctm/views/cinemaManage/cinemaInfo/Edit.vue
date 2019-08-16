@@ -4,7 +4,7 @@
         <el-collapse v-model="activeNames">
             <el-collapse-item title="基础信息" coolapse="1" name="1">
                 <div class="cinema-editContent">
-                    <el-form ref="cinema" :model="cinemaData" :rules="rules" label-width="130px" label-height='60px'>
+                    <el-form ref="cinema"  :model="cinemaData" :rules="rules" label-width="130px" label-height='60px'>
                         <div class="item item-left">
                             <el-form-item label="影院编码：" class="text-indent">
                                 <el-input v-model="cinemaData.code" disabled></el-input>          
@@ -12,6 +12,11 @@
                             <el-form-item label="影院名称：" prop="name" style="">
                                 <div style="white-space:normal;">
                                 <el-input v-model.trim="cinemaData.name"></el-input>
+                                </div>
+                            </el-form-item> 
+                            <el-form-item label="影院简称：" prop="shortName" style="" class="text-indent">
+                                <div style="white-space:normal;">
+                                <el-input v-model.trim="cinemaData.shortName"></el-input>
                                 </div>
                             </el-form-item> 
                             <el-form-item label="内部管理编号：" prop="mgCode" >
@@ -32,9 +37,7 @@
                             <el-form-item label="所属影线：" prop="cinemas" class="text-indent">
                                 <el-input v-model="cinemaData.cinemas"></el-input>
                             </el-form-item>
-                            <el-form-item label="影院联系人：" prop="contactMan">
-                                <el-input v-model="cinemaData.contactMan"></el-input>
-                            </el-form-item>
+                            
                             <el-form-item label="状态：" class="text-indent">
                                 <el-radio-group v-model="cinemaData.status" @change="statusChange" >
                                     <el-radio  :label="1">营业</el-radio>
@@ -47,6 +50,9 @@
                         
                         </div>
                         <div class="item">
+                            <el-form-item label="影院联系人：" prop="contactMan">
+                                <el-input v-model="cinemaData.contactMan"></el-input>
+                            </el-form-item>
                             <el-form-item label="联系人手机：" prop="mphone">
                                 <el-input v-model="cinemaData.mphone"></el-input>
                             </el-form-item> 
@@ -118,7 +124,48 @@
                     </el-form>
                 </div>
             </el-collapse-item>
-            <el-collapse-item title="影厅信息"  coolapse="2" name="2">
+            <el-collapse-item title="分组信息" coolapse="2" name="2" v-if='cinemaList_options.length>0 || merList_options.length>0 || areaList_option.length>0'>
+                <!-- <el-collapse-item title="分组信息" coolapse="2" name="2"> -->
+                 <div class="cinema-editContent">
+                     <el-form  :model="cinemaData" :rules="rules" label-width="130px" label-height='60px'>
+                         <div class="item left">
+                             <el-form-item label="影院等级：" prop="fax" class="text-indent">
+                                <el-select v-model="cinemaData.gradeCinema" placeholder="请选择" @change="selectGradeFun(0)">
+                                    <el-option
+                                    v-for="item in cinemaList_options"
+                                    :key="item.propertyCode"
+                                    :label="item.propertyName"
+                                    :value="item.propertyCode">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item label="区域：" prop="fax" class="text-indent">
+                                <el-select v-model="cinemaData.gradeArea" placeholder="请选择" @change="selectGradeFun(2)">
+                                    <el-option
+                                    v-for="item in areaList_option"
+                                     :key="item.propertyCode"
+                                    :label="item.propertyName"
+                                    :value="item.propertyCode">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                         </div>
+                         <div class="item">
+                             <el-form-item label="卖品等级：" prop="fax" class="text-indent">
+                                <el-select v-model="cinemaData.gradeMer" placeholder="请选择" @change="selectGradeFun(1)">
+                                    <el-option
+                                    v-for="item in merList_options"
+                                     :key="item.propertyCode"
+                                    :label="item.propertyName"
+                                    :value="item.propertyCode">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                         </div>
+                     </el-form>
+                 </div>
+            </el-collapse-item>
+            <el-collapse-item title="影厅信息"  coolapse="3" name="3">
                 <HallinfoList :cinemaUid="uid"></HallinfoList>
             </el-collapse-item>
         </el-collapse>
@@ -201,8 +248,12 @@ import usbKeyDialog from './usbKeyDialog'
                 }
             };
             return{
+                cinemaList_options: [],
+                merList_options:[],
+                areaList_option:[],
+                value: '',
                 /* 折叠版参数 */
-                activeNames:['1','2'],
+                activeNames:['1','2','3'],
                 status:false,
                 provs:[],
                 citys: [],
@@ -226,6 +277,7 @@ import usbKeyDialog from './usbKeyDialog'
                         acode:'',
                         aname:''
                     },
+                    shortName:'',
                     cinemas:'',     //所属影线
                     code:'',        //影院编码
                     company:'',     //公司名称
@@ -240,7 +292,38 @@ import usbKeyDialog from './usbKeyDialog'
                     orgCode:'',     //所属组织编号  *
                     postcode:'',    //影院邮政
                     status:'1',      //影院状态，1营业，2测试
-                    tphone:'',      //联系人固定电话  
+                    tphone:'',      //联系人固定电话 
+                    //分组信息字段
+                    gradeCinema:'',
+                    gradeMer:'',
+                    gradeArea:'',
+                    cinemaGradeList:[
+                        {uid:'' ,
+                        tenantId:'',
+                        cinemaUid:'',
+                        gradeTypeCode:'',
+                        gradeTypeName:'',
+                        gradeCode:'',
+                        gradeName:'',
+                        flag:'',},
+                         {uid:'' ,
+                        tenantId:'',
+                        cinemaUid:'',
+                        gradeTypeCode:'',
+                        gradeTypeName:'',
+                        gradeCode:'',
+                        gradeName:'',
+                        flag:'',},
+                         {uid:'' ,
+                        tenantId:'',
+                        cinemaUid:'',
+                        gradeTypeCode:'',
+                        gradeTypeName:'',
+                        gradeCode:'',
+                        gradeName:'',
+                        flag:'',},
+                       
+                    ]
 
                 },
                 rules: {
@@ -297,6 +380,41 @@ import usbKeyDialog from './usbKeyDialog'
             }
         },
         methods:{
+            //分组信息方法
+            selectGradeFun(index){
+                let arrItem = {}
+                if(index == 0){
+                    this.cinemaData.cinemaGradeList[index].gradeTypeName = '影院等级'
+                    this.cinemaList_options.forEach((item,index2)=>{
+                        if(item.propertyCode == this.cinemaData.gradeCinema){
+                            arrItem = item
+                        }
+                    })
+                }
+                if(index == 1){
+                    this.cinemaData.cinemaGradeList[index].gradeTypeName = '卖品等级'
+                     this.merList_options.forEach((item,index2)=>{
+                        if(item.propertyCode == this.cinemaData.gradeMer){
+                            arrItem = item
+                        }
+                    })
+                }
+                if(index == 2){
+                     this.cinemaData.cinemaGradeList[index].gradeTypeName = '区域'
+                     this.areaList_option.forEach((item,index2)=>{
+                        if(item.propertyCode == this.cinemaData.gradeArea){
+                            arrItem = item
+                        }
+                    })
+                }
+                this.cinemaData.cinemaGradeList[index].uid = this.cinemaData.cinemaGradeList[index].uid?this.cinemaData.cinemaGradeList[index].uid : '';
+                this.cinemaData.cinemaGradeList[index].cinemaUid = this.cinemaData.uid
+                this.cinemaData.cinemaGradeList[index].tenantId = this.cinemaData.tenantId
+                this.cinemaData.cinemaGradeList[index].gradeTypeCode = arrItem.dictCode
+                this.cinemaData.cinemaGradeList[index].gradeCode = arrItem.propertyCode
+                this.cinemaData.cinemaGradeList[index].gradeName = arrItem.propertyName
+                this.cinemaData.cinemaGradeList[index].flag = 1
+            },
             //保存省 获取城市数据
             getProv(prov) {
                 var item = this.provs.filter(item=>{
@@ -334,7 +452,11 @@ import usbKeyDialog from './usbKeyDialog'
             submitForm(formName) {
                 this.$refs[formName].validate((valid) => {
                     if (valid) {
-                        console.log(this.cinemaData)
+                        //分组信息清除未选择
+                        let obj = JSON.parse(JSON.stringify(this.cinemaData.cinemaGradeList))
+                        this.cinemaData.cinemaGradeList = obj.filter((item,index)=>{
+                            return item.cinemaUid
+                        })
                         let cinemaData = this.cinemaData;
                         this.$ctmList.cinemaSave(cinemaData).then( data => {
                             console.log(data)
@@ -375,7 +497,8 @@ import usbKeyDialog from './usbKeyDialog'
                 var getname = this.getname;
                 this.$ctmList.cinemaGetInfo(this.uid).then((response)=> {
                     //城市名字分割
-                    let data = response.data//获得数据
+                    let data = response.data.cinemaInfo//获得数据
+                    data.cinemaGradeList = response.data.cinemaGradeList
                     var code = data.areaCode || "000000:000000:000000"
                     code = code.split(':')
                     var erea = data.areaName ||  "北京:北京:北京"
@@ -397,11 +520,30 @@ import usbKeyDialog from './usbKeyDialog'
                             this.areas = res.data
                         })
                     }
-                    this.cinemaData = data
+                    let obj = JSON.parse(JSON.stringify(this.cinemaData.cinemaGradeList))
+                    Object.assign(this.cinemaData, data);
+                    this.cinemaData.cinemaGradeList = obj
+                    data.cinemaGradeList.forEach( (item,index) => {
+                        if(item.gradeTypeName == '影院等级'){
+                            this.cinemaData.cinemaGradeList[0] = item
+                            this.cinemaData.gradeCinema = item.gradeCode
+                        }
+                         if(item.gradeTypeName == '卖品等级'){
+                            this.cinemaData.cinemaGradeList[1] = item
+                            this.cinemaData.gradeMer = item.gradeCode
+                        }
+                         if(item.gradeTypeName == '区域'){
+                            this.cinemaData.cinemaGradeList[2] = item
+                            this.cinemaData.gradeArea = item.gradeCode
+                        }
+                    })
+
                     this.cinemaData.usbkey = data.usbkey? data.usbkey : ''
                     this.status = data.status==1?true : false
                     this.cinemaData.status= Number(data.status)
-                    console.log(this.cinemaData)
+                    this.getDictionary('ci_cinema_grade_info_cinema')
+                    this.getDictionary('ci_cinema_grade_info_mer')
+                    this.getDictionary('ci_cinema_grade_info_area')
 
                 })
                 .catch(function (error) {
@@ -530,12 +672,42 @@ import usbKeyDialog from './usbKeyDialog'
                     this.status = res.data.status==1?true : false
                 })
 
+            },
+            //获取影片字典
+            getDictionary (val) {
+            let _this = this
+            let params = {
+                dicCode: val,
+                uidCinema:this.cinemaData.uid,
+                tenantId:this.cinemaData.tenantId,
             }
+            _this.$ctmList
+                .getCenameDictionary(params)
+                .then(ret => {
+                if (ret.data) {
+                    let result = ret.data.cpmDictList;
+                    if (val == 'ci_cinema_grade_info_cinema') {
+                    //影院等级
+                    _this.cinemaList_options = [...result]
+                    }
+                    if (val == 'ci_cinema_grade_info_mer') {
+                    //卖品等级
+                    _this.merList_options = [...result]
+                    }
+                    if (val == 'ci_cinema_grade_info_area') {
+                    //区域
+                    _this.areaList_option = [...result]
+                    }
+                   
+                }
+                })
+            },
         },
         created() {
             this.uid = this.$route.query.uid
             this.getInfo()
             this.getname()
+           
         }
     }
 </script>
@@ -547,13 +719,17 @@ import usbKeyDialog from './usbKeyDialog'
         width: 100%;
         display: flex;
         padding: 10px 0;
+        .el-input,
+        .el-select{
+            width:100%;
+        }
     }
     .item{flex: 1}
 }
 .cinema-edit{
     position: relative;
     .el-collapse-item__header {
-        padding-left: 22px;
+        padding-left: 2px;
         color: #333;
     }
     .el-form-item__label{font-size: 12px}
@@ -635,6 +811,17 @@ import usbKeyDialog from './usbKeyDialog'
                 color: white;
             }
         }
+    }
+    .el-collapse-item__header{
+        display: flex;
+        justify-content:flex-end;
+        flex-direction: row-reverse;
+    }
+    .el-collapse-item__header::after{
+        display: none
+    }
+    .el-collapse-item__arrow{
+        margin: 0 8px 0px 0;
     }
 }
 

@@ -1,65 +1,68 @@
 <template>
-  <div class="ccm-tradeMerchant-single">
-    <el-dialog title="选择客商" :visible.sync="dialogVisible" width="62%" :close-on-click-modal="false">
+  <div class="ccm_dialog">
+    <el-dialog title="选择客商名称" 
+    :visible.sync="dialogVisible"  
+    :close-on-click-modal="false"
+    >
+      
       <el-form label-width="" :inline="true">
-        <div class="film-top">
-          <el-form-item label="客户账号" class="two_search">
-            <el-input v-model="customerCode" style="width:100px"></el-input>
-          </el-form-item>
-          <el-form-item label="客户简称">
-            <el-input v-model="customerName" style="width:100px"></el-input>
-          </el-form-item>
-          <!-- <el-form-item label="客户类型:">
-            <el-select v-model="customerType" style="width:150px" @change="change()">
-              <el-option label="全部" value>全部</el-option>
-              <el-option label="大客户" value="1">大客户</el-option>
-              <el-option label="第三方" value="2">第三方</el-option>
-            </el-select>
-          </el-form-item> -->
-          <el-form-item label="状态:">
-            <el-select v-model="customerStatus" style="width:150px" @change="change()">
-              <el-option label="全部" value>全部</el-option>
-              <el-option label="启用" value="1">启用</el-option>
-              <el-option label="禁用" value="2">禁用</el-option>
-            </el-select>
-          </el-form-item>
-          <el-button type="primary" style="position:absolute;right:0;top:5px;" @click="searchUser">查询</el-button>
-        </div>
+        <el-form-item label="客户账号" class="two_search">
+          <el-input v-model="customerCode" style="width:100px"></el-input>
+        </el-form-item>
+        <el-form-item label="客户简称">
+          <el-input v-model="customerName" style="width:100px"></el-input>
+        </el-form-item>
+        <!-- <el-form-item label="客户类型:">
+          <el-select v-model="customerType" style="width:150px" @change="change()">
+            <el-option label="全部" value>全部</el-option>
+            <el-option label="大客户" value="1">大客户</el-option>
+            <el-option label="第三方" value="2">第三方</el-option>
+          </el-select>
+        </el-form-item> -->
+        <el-form-item label="状态:">
+          <el-select v-model="customerStatus" style="width:150px" @change="change()">
+            <el-option label="全部" value>全部</el-option>
+            <el-option label="启用" value="1">启用</el-option>
+            <el-option label="禁用" value="2">禁用</el-option>
+          </el-select>
+        </el-form-item>
+        <el-button type="primary" style="position:absolute;right:0" @click="searchUser">查询</el-button>
       </el-form>
-      <div class="choose_table">
-        <div>
-          <el-table :data="tableList" 
-            @row-click= "select"
-             ref="singleTable">
-            <el-table-column label="选择" width="50">
-                <template slot-scope="scope">
-                    <el-radio v-model="selectedId" :label="scope.row.id">&nbsp;</el-radio>
-                </template>
-            </el-table-column>
-            <template v-for="(item,index) in tableConfig" >
-                <el-table-column :key="index" v-if="item.hasTemplate" 
-                  :prop="item.prop?item.prop:''" 
-                  :label="item.label?item.label:''" 
-                  :width="item.width?item.width:''" >
-                    <div slot-scope="scope">
-                        {{item.label=="客户类型"?formatType(scope.row.type):formatRole(scope.row.status)}}
-                    </div>
-                </el-table-column>
-                <el-table-column :key="index" v-else :prop="item.prop?item.prop:''" :label="item.label?item.label:''" :width="item.width?item.width:''"></el-table-column> -->
-            </template>
-          </el-table>
+      <div class="choose-body">
+        <el-table :data="tableList" @row-click= "select" ref="singleTable">
+          <el-table-column label="选择" width="50">
+              <template slot-scope="scope">
+                  <el-radio v-model="selectedId" :label="scope.row.id">&nbsp;</el-radio>
+              </template>
+          </el-table-column>
+          <template v-for="(item,index) in tableConfig" >
+              <el-table-column :key="index" v-if="item.hasTemplate" 
+                :prop="item.prop?item.prop:''" 
+                :label="item.label?item.label:''" 
+                :width="item.width?item.width:''" >
+                  <div slot-scope="scope">
+                      {{item.label=="客户类型"?formatType(scope.row.type):formatRole(scope.row.status)}}
+                  </div>
+              </el-table-column>
+              <el-table-column :key="index" v-else :prop="item.prop?item.prop:''" :label="item.label?item.label:''" :width="item.width?item.width:''"></el-table-column> -->
+          </template>
+        </el-table>
+        <!-- 分页 -->
+        <div class="page-wrap">
+          <el-pagination 
+          @current-change="handleCurrentChange" 
+          background 
+          :current-page.sync="pageData.pageNum"
+          :page-size="pageData.size" 
+          layout="total,prev, pager, next, jumper" 
+          :total="pageData.total">
+          </el-pagination>
         </div>
-          <!-- 分页 -->
-          <div class="pagation">
-            <el-pagination @current-change="handleCurrentChange" background :current-page.sync="pageData.pageNum"
-              :page-size="pageData.size" layout="total,prev, pager, next, jumper" :total="pageData.total">
-            </el-pagination>
-          </div>
 
       </div>
-      <div class="btn-area" slot="footer" >
-        <el-button @click="dialogVisible = false">取消</el-button>
+      <div slot="footer" >
         <el-button type="primary" @click="chooseUser" style="margin-right:22px;">确定</el-button>
+        <el-button @click="dialogVisible = false">取消</el-button>
       </div>
     </el-dialog>
   </div>
@@ -72,7 +75,6 @@
       customerType:{
         default:''
       },
-      customerId:''
     },
     data() {
       return {
@@ -135,9 +137,10 @@
             this.dialogVisible = false;
         },
         //打开弹窗
-        openDialog(val){
+        openDialog(val,innerdata){
             this.dialogVisible=val
             this.searchData()
+            this.selectedId = Number(innerdata) 
         },
         // 页面改变
         handleCurrentChange(val) {
@@ -172,35 +175,10 @@
         },
       
     },
-    created(){
-      this.selectedId = this.customerId
-    },
+    created(){},
   }
 </script>
 
-<style lang="scss">
-  .ccm-tradeMerchant-single{
-    .film-top{
-        position: relative;
-        margin-left:8px;
-    }
-    .choose_table{
-      border: 1px solid #e5e5e5;
-      max-height: 378px;
-    }
-    .pagation,{
-      padding-top: 10px;
-      padding-bottom: 5px;
-      text-align: center
-    }
-    .el-dialog__header{
-      .el-dialog__title{
-          padding-bottom: 5px;
-          width: 100%;
-          display: inline-block;
-          border-bottom: 1px solid #e5e5e5;
-      }
-    }
-}
-
+<style lang="scss" scoped>
+@import "../../assets/css/dialogs.scss"; 
 </style>

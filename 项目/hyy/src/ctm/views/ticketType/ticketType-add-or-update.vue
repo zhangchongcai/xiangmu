@@ -1,14 +1,14 @@
 <template>
-<div class="ticketType">
-    <el-form :model="dataForm" :rules="dataRule" ref="dataForm"  class="common-form">
+<div class="ticket-Type">
+    <el-form :model="dataForm" :rules="dataRule" ref="dataForm" label-width="100px"  class="common-form">
       <el-form-item label="票类名称:" prop="name" v-if="dataForm.name!='成人票'&&dataForm.name!='团体票'&&dataForm.name!='学生票'">
-        <el-input v-model="dataForm.name" placeholder="请输入票类名称"></el-input>
+        <el-input v-model="dataForm.name" placeholder="请输入票类名称" style="width:200px"></el-input>
       </el-form-item>
       <el-form-item label="票类名称:" prop="name" v-else>
-        <el-input v-model="dataForm.name" placeholder="请输入票类名称" disabled></el-input>
+        <el-input v-model="dataForm.name" placeholder="请输入票类名称" disabled style="width:200px"></el-input>
       </el-form-item>
       <el-form-item label="票类顺序:" prop="seq">
-        <el-input v-model="dataForm.seq" placeholder="请输入票类顺序" maxlength="10"></el-input>
+        <el-input v-model="dataForm.seq" placeholder="请输入票类顺序" maxlength="10" style="width:200px"></el-input>
       </el-form-item>
       <el-form-item label="是否允许打折:" size="mini" prop="isDiscount">
         <el-radio-group v-model="dataForm.isDiscount">
@@ -21,29 +21,33 @@
           <el-radio :label="1">适用全部影院</el-radio>
           <el-radio :label="0">适用指定影院</el-radio>
         </el-radio-group>
-        <!-- 选择影院弹窗 -->
-        <GroupMultiSelectCinema v-if="dataForm.useRange==0" 
-        :cinemaUid="dataForm.cinemaUids.join(',')" 
-        :cinemaNames ="dataForm.cinemaNames.join(',')"
-        selectionMode="single" 
-        @cinemaChanged="cinemaChangedHandler"
-        />
+        
+        <el-form-item style="display:inline-block;margin-left:10px" v-if="dataForm.useRange=='0'">
+          <el-input style="width:192px;" v-model="cinemaNameStr" readonly>
+            <i slot="suffix" class="el-icon-circle-close" style="cursor:pointer" @click="clearInputValue()" v-if="cinemaNameStr"></i>
+          </el-input>
+          <el-button type="primary" @click="inputFocus" style="margin-left:10px" >选择</el-button>
+        </el-form-item>
       </el-form-item>
       <el-form-item class="footer" style="text-align:center">
         <el-button type="primary" @click="dataFormSubmit()">确定</el-button>
         <el-button @click='returnList()'>返回</el-button>
       </el-form-item>
     </el-form>
-  <!-- <choose-simple v-if="chooseSimpleShow" ref="chooseSimple" @return="close"></choose-simple> -->
+    <!-- 选择影院弹窗 -->
+    <GroupMultiSelectCinema 
+      :reviewData = "huixianData"
+      :dialogVisible.sync = "dialogVisible"
+      @frameCinemaDialogCallBack="handleRegisterCinemaCallBack"
+      :disabledData=[]
+      :innerCinemaMultiData='innerData'
+      >
+    </GroupMultiSelectCinema>
 </div>
 </template>
 <script>
-// import ChooseSimple from './chooseSimple'
-import GroupMultiSelectCinema from "ctm/components/GroupMultiSelectCinema/GroupMultiSelectCinema";
+import GroupMultiSelectCinema from 'frame_cpm/dialogs/cinemaDialog/multiCinema2.vue'
   export default {
-    // components: {
-    //   ChooseSimple
-    // },
     components: {GroupMultiSelectCinema},
     data () {
       let checkNum = (rule, value, callback) => {
@@ -55,15 +59,21 @@ import GroupMultiSelectCinema from "ctm/components/GroupMultiSelectCinema/GroupM
         }
       }
       return {
-        dataForm: {
+        cinemaNameStr: '',
+        dataForm: { 
           name: '',
           seq: '',
           isDiscount: 1,
           useRange: 1,
-          cinemaNames: [],
+          cinemaNames:[],
           cinemaUids: [],
           cinemaIds:[]
         },
+        innerData:{
+          type:2
+        },
+        dialogVisible:false,
+        huixianData:[],
         dataRule: {
           name: [
             { required: true, message: '票类名称不能为空', trigger: 'blur' },
@@ -80,24 +90,26 @@ import GroupMultiSelectCinema from "ctm/components/GroupMultiSelectCinema/GroupM
       // this.load();
     },
     methods: {
-      cinemaChangedHandler(uidArray){
-        this.dataForm.cinemaUids = uidArray;
-      },
       init (row) {
         if (row) {
           // this.dataForm = row
           this.dataForm.uid = row.uid || 0
           this.$ctmList.tickettypeView(row.uid).then( data => {
-            console.log('tickettypeView')
-              console.log(data)
               if (data && data.code === 200) {
                 this.dataForm = data.data
+                this.cinemaNameStr = data.data.cinemaNames.join(',')
+                data.data.cinemaUids.forEach(id=>{
+                  this.huixianData.push({id:id})
+                })
+                data.data.cinemaNames.forEach( (name,index)=>{
+                  this.huixianData[index]['name'] = name
+                })
+
+                console.log(this.huixianData)
                 if(!this.dataForm.cinemaUids){this.dataForm.cinemaUids=[]}
-                // console.log(data.data.cinemaNames)
                 if(this.dataForm.useRange==1){
-                  this.dataForm.cinemaNames=[]
                   this.dataForm.cinemaUids=[]
-                  this.dataForm.cinemaIds=[]
+                  this.dataForm.cinemaNames=[]
                 }
                 
               } else {
@@ -113,15 +125,11 @@ import GroupMultiSelectCinema from "ctm/components/GroupMultiSelectCinema/GroupM
             seq: '',
             isDiscount: 1,
             useRange: 1,
-            cinemaNames: [],
             cinemaUids: [],
             cinemaIds:[]
           }
         }
       },
-      // close () {
-      //   this.chooseSimpleShow = false
-      // },
       returnList () {
         this.$emit('refreshDataList')
       },
@@ -178,18 +186,42 @@ import GroupMultiSelectCinema from "ctm/components/GroupMultiSelectCinema/GroupM
             }
           }
         })
+      },
+      //清空
+      clearInputValue() {
+        this.dataForm.cinemaUids  = []
+        this.dataForm.cinemaNames = []
+        this.cinemaNameStr = ''
+        console.log('清除',this.dataForm.cinemaNames)
+      },
+      inputFocus() {
+        this.dialogVisible = true
+      },
+      handleRegisterCinemaCallBack(data) {
+        console.log(data)
+        data = data.data
+        let value = []
+        let text = []
+        data.forEach(element => {
+          value.push(element.id)
+          text.push(element.name)
+        });
+        this.dataForm.cinemaUids = value
+        this.cinemaNameStr = text.join(',')
       }
     }
   }
 </script>
 
 <style lang="scss" scoped>
-.ticketType{
-  .el-input{
-    width: 35%;
-    margin-left: 20px;
+.ticket-Type{
+  /depp/ .el-form-item__label{
+    text-align: left !important;
   }
-  .ticketType{
+  /deep/ .el-input__inner{
+    // text-overflow: ellipsis
+  }
+  .ticket-Type{
     .el-form-item{
       margin-bottom: 8px;
     }
@@ -207,3 +239,11 @@ import GroupMultiSelectCinema from "ctm/components/GroupMultiSelectCinema/GroupM
   }
 }
 </style>
+<style lang="scss">
+.ticket-Type{
+  .el-form-item__label{
+    text-align: left !important;
+  }
+}
+</style>
+

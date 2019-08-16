@@ -77,7 +77,7 @@ const setGlobalTopNavs = function (to, next) {
             name: item.meta.title,
             path: item.path,
             query: item.query,
-            params: item.params
+            params: item.params,
         }
         store.commit('updateNavTabData', newItem);
     }
@@ -85,13 +85,6 @@ const setGlobalTopNavs = function (to, next) {
 }
 
 Vue.use(require('vue-wechat-title'));
-// window.onload=function(e){
-//     let token = localStorage.getItem('token');
-//     if(!token){
-//         window.location.href = '/login';
-//     }
-// }
-// var routerList = []
 Vue.prototype.$_has = function (value) {
     // console.log(value)
     let isExist = false
@@ -116,15 +109,14 @@ Vue.directive('auth', {
         }
     }
 })
+
 router.beforeEach((to, from, next) => {
-    let token = localStorage.getItem('token')
+    let token = sessionStorage.getItem('token')
     let user = localStorage.getItem('user')
     NProgress.start()
-    if(to.path){
-
-    }
     if (to.path == '/login') {
-        localStorage.clear();
+        localStorage.clear()
+        sessionStorage.clear()
         store.commit('updateLoginToken', null);
         store.commit('updateLoginUser', null);
         store.commit('updateUserMenu', null);
@@ -136,17 +128,15 @@ router.beforeEach((to, from, next) => {
     } else {
         if (!store.state.loginToken || !user) {
             if (token && user) {
-                // urlList.forEach(item=>{
-                //   if(item.resUrl==to.path){
-                //
-                //   }else{
-                //     // router.push(from.path)
-                //   }
-                // })
                 store.commit('updateLoginTokenCPM', token);
                 store.commit('updateLoginUserCPM', JSON.parse(user));
                 setGlobalTopNavs(to, next);
             } else {
+                localStorage.clear()
+                sessionStorage.clear()
+                store.commit('updateLoginToken', null);
+                store.commit('updateLoginUser', null);
+                store.commit('updateUserMenu', null);
                 next({
                     path: '/login'
                 });

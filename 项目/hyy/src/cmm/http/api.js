@@ -61,8 +61,8 @@ export default function $axios(options) {
                 if (config.url.indexOf('/sys/perm/user/updatePwd') > -1) {
                     delete config.headers['Authorization'];
                 }
-                if (localStorage.getItem('token')) {
-                    config.headers['Cpm-User-Token'] = localStorage.getItem('token');
+                if (sessionStorage.getItem('token')) {
+                    config.headers['Cpm-User-Token'] = sessionStorage.getItem('token');
                 }
                 //根据请求方法，序列化传来的参数，根据后端需求是否序列化
                 if (

@@ -59,6 +59,10 @@
                             placeholder="请输入支付方式名称"
                     ></el-input>
                 </el-form-item>
+                <el-form-item label="pos端是否显示：">
+                    <el-radio :disabled="mode === 'view' ? true : false" v-model="addForm.showFlag" :label="1">显示</el-radio>
+                    <el-radio :disabled="mode === 'view' ? true : false" v-model="addForm.showFlag" :label="0">不显示</el-radio>
+                </el-form-item>
                 <el-form-item label="适用影院：" prop="useCinema">
                     <div>
                         <el-radio :disabled="mode === 'view' ? true : false" v-model="addForm.useCinema" :label="1" @change="useCinemaChange">全部影院</el-radio>
@@ -137,12 +141,19 @@
                 show-overflow-tooltip>
             </el-table-column>
             <el-table-column
-                prop="defFlag"
                 label="支付类型"
                 show-overflow-tooltip>
                 <template slot-scope="scope">
                     <span v-if="scope.row.defFlag">自定义支付方式</span>
                     <span v-else>默认支付方式</span>
+                </template>
+            </el-table-column>
+            <el-table-column
+                label="pos端是否显示"
+                show-overflow-tooltip>
+                <template slot-scope="scope">
+                    <span v-if="scope.row.showFlag">显示</span>
+                    <span v-else>不显示</span>
                 </template>
             </el-table-column>
             <el-table-column
@@ -155,7 +166,7 @@
                 </template>
             </el-table-column>
             <el-table-column
-                width="260"
+                width="200"
                 fixed="right"
                 label="操作">
                 <template slot-scope="scope">
@@ -231,6 +242,7 @@
                     payTypeCode: '',
                     payTypeName: '',
                     useCinema: 1,
+                    showFlag: 1,
                     cinemaUids: [],
                     id: '',
                     uid: '',
@@ -314,9 +326,14 @@
             },
 
             callBackSingle(data) {
+                this.singleCinemaVisible = data.framedialogVisible
+
+                if(data.isCloseWindow) return
+
                 console.log(data, '-----> data')
                 this.formData.cinemaUid = data.data.id
                 this.cinemaName = data.data.name
+                 this.cinemaName = this.cinemaName.length> 10?this.cinemaName.substring(0,9)+"...": this.cinemaName
                 this.innerData.id = data.data.id
 
                 this.search()
@@ -331,6 +348,9 @@
                         }
                         this.addForm.payTypeCode = res.data.payTypeCode
                         this.addForm.payTypeName = res.data.payTypeName
+
+                        this.addForm.showFlag = res.data.showFlag
+
                         this.addForm.useCinema = res.data.useCinema
                         this.selectedCinema = res.data.useCinema ? '' : cinemaNames.join('，')
 
@@ -422,6 +442,7 @@
                         this.addForm.payTypeCode = res.data
                         this.addForm.payTypeName = ''
                         this.addForm.useCinema = 1
+                        this.addForm.showFlag = 1
                         this.addForm.cinemaUids = []
 
                         this.mode = 'add'

@@ -325,8 +325,9 @@
                 </el-form-item>
 
                 <el-form-item
-                  label="院方分账："
+                  label="发行方分账："
                   prop="dateShowFirst"
+                  label-width="95px"
                 >
 
                   <div
@@ -1052,7 +1053,7 @@ export default {
   }
   .basic-info {
     // width: 430px;
-    margin-left: 30px;
+    margin-left: 21px;
     .el-form-item--small.el-form-item {
       margin-bottom: 18px;
       display: inline-block;
@@ -1080,6 +1081,7 @@ export default {
     
     .el-select,
     .el-textarea,
+    .el-textarea__inner,
     .el-input__inner {
       width: 334px;
       font-size: 12px;

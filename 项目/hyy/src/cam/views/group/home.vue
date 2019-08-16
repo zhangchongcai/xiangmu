@@ -4,13 +4,11 @@
   <div class="SysContent">
     <div class="SysHeader">
       <div class="HeaderTop">
-        <div class="flex">
-            <div class=" submitMain">
-              <span style="display:inline-block;margin-right:60px;color:#666666;font-size:12px;">总部: {{consumer}} </span>
-              <span class="font">选择时间 : </span>
-              <calendar-view
-                size="mini"
-                v-model="time"
+        <div class="flex font">
+            <div>
+              <span style="margin-right:60px;">总部:<span style="margin-left:16px">{{consumer}}</span></span>
+              <span style="margin-right:16px">选择时间: </span>
+              <calendar-view  size="mini"  v-model="time"
                 :dateType="dateType"
                 :dateTypeActive='dateTypeActive'
                 :dateTypeIndex="dateTypeIndex"
@@ -18,9 +16,7 @@
                 @change="changeTime"
               ></calendar-view>
             </div>
-         <div class="font">
-            数据更新时间:{{updateTime}}
-          </div>
+            <div><span style="margin-right:16px">数据更新时间:</span> {{updateTime}}</div>
         </div>
         <div class="total">
           <div class="totalLeft">
@@ -34,19 +30,14 @@
             <div class="ProgressBoxCoff">
               <div class="title">票房占比</div>
               <div class="el-progress">
-                <el-progress :text-inside="true" :stroke-width="15" :percentage="boxRadio*1"></el-progress>
+                <el-progress  :stroke-width="10" :percentage="boxRadio*1"></el-progress>
               </div>
             </div>
             <div style="clear:both;"></div>
             <div class="ProgressBoxCoff">
               <div class="title">卖品占比</div>
               <div class="el-progress">
-                <el-progress
-                  :text-inside="true"
-                  :stroke-width="15"
-                  :percentage="sellRadio*1"
-                  color="#FE825E"
-                ></el-progress>
+                <el-progress  :stroke-width="10" :percentage="sellRadio*1" color="#FE825E"></el-progress>
               </div>
             </div>
           </div>
@@ -590,116 +581,113 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
-.self-el-section-warp{
-  z-index:10;
-}
-.font{
-  font-size:12px;
-  color:#666;
-}
 //外层容器
-.SysContent {
-  padding: 0px 20px;
-  background: #f5f5f5;
-  .SysHeader {
-    width: 100%;
-    height: 166px;
-    .HeaderTop {
-      padding-top:10px;
-      // line-height: 60px;
-      .left-sider {
-        float: left;
-      }
-      .right-sider {
-        float: right;
-      }
-      .total {
-        box-sizing: border-box;
-        width: 100%;
-        height: 106px;
-        margin-top: 10px;
-        border-left: 3px solid #3b74ff;
-        background: white;
-        display: flex;
-        justify-content: space-around;
-        // padding-left:134px;
-        .totalLeft {
-          position: relative;
-          line-height: 60px;
-          // margin-right:138px;
-          .icon-danchuang-tishi {
-            position: absolute;
-            right: -20px;
-            top: -4px;
-            color: #3b74ff;
-            font-size: 12px;
-          }
-        }
-        h1 {
-          margin: 10px 0 5px;
-          font-size: 48px;
-          font-weight: bold;
-          color: #3b74ff;
-          text-align: center;
-        }
-        p {
-          margin: 0px;
-          font-size: 12px;
-          line-height: 10px;
-          text-align: center;
-        }
-      }
-    }
-  }
-}
-.SysMain {
-  margin-top: 20px;
-  width: 100%;
-}
-.left-purple-dark {
-  height: 50px;
-  text-align: left;
-  color: #666;
-  font-size: 12px;
-}
-.right-purple-dark {
-  height: 50px;
-  text-align: right;
-}
+// .SysContent {
+//   padding: 0px 20px;
+//   background: #f5f5f5;
+//   .SysHeader {
+//     width: 100%;
+//     height: 166px;
+//     .font{
+//         font-size:12px;
+//         color:#666;
+//     }
+//     .HeaderTop {
+//       padding-top:10px;
+//       // line-height: 60px;
+//       .left-sider {
+//         float: left;
+//       }
+//       .right-sider {
+//         float: right;
+//       }
+//       .total {
+//         box-sizing: border-box;
+//         width: 100%;
+//         height: 106px;
+//         margin-top: 10px;
+//         border-left: 3px solid #3b74ff;
+//         background: white;
+//         display: flex;
+//         justify-content: space-around;
+//         // padding-left:134px;
+//         .totalLeft {
+//           position: relative;
+//           line-height: 60px;
+//           // margin-right:138px;
+//           .icon-danchuang-tishi {
+//             position: absolute;
+//             right: -20px;
+//             top: -4px;
+//             color: #3b74ff;
+//             font-size: 12px;
+//           }
+//         }
+//         h1 {
+//           margin: 10px 0 5px;
+//           font-size: 48px;
+//           font-weight: bold;
+//           color: #3b74ff;
+//           text-align: center;
+//         }
+//         p {
+//           margin: 0px;
+//           font-size: 12px;
+//           line-height: 10px;
+//           text-align: center;
+//         }
+//       }
+//     }
+//   }
+// }
+// .SysMain {
+//   margin-top: 20px;
+//   width: 100%;
+// }
+// .left-purple-dark {
+//   height: 50px;
+//   text-align: left;
+//   color: #666;
+//   font-size: 12px;
+// }
+// .right-purple-dark {
+//   height: 50px;
+//   text-align: right;
+// }
 
-.ProgressBoxCoff {
-  height: 40px;
-  .title {
-    width: 60px;
-    display: inline-block;
-    float: left;
-    height: 35px;
-    line-height: 35px;
-    position: relative;
-    top: 12px;
-    font-size: 12px;
-    color: #666666;
-    &:after {
-      content: "";
-      clear: both;
-    }
-  }
-  .el-progress {
-    float: left;
-    width: 80%;
-    position: relative;
-    top: 10px;
-  }
-}
-.SysContent .SysHeader .HeaderTop .total .progress {
-  width: 582px;
-  // position: relative;
-  // left: -130px;
-}
+// .ProgressBoxCoff {
+//   height: 40px;
+//   .title {
+//     width: 60px;
+//     display: inline-block;
+//     float: left;
+//     height: 35px;
+//     line-height: 35px;
+//     position: relative;
+//     top: 12px;
+//     font-size: 12px;
+//     color: #666666;
+//     &:after {
+//       content: "";
+//       clear: both;
+//     }
+//   }
+//   .el-progress {
+//     float: left;
+//     width: 80%;
+//     position: relative;
+//     top: 10px;
+//   }
+// }
+// .SysContent .SysHeader .HeaderTop .total .progress {
+//   width: 582px;
+//   // position: relative;
+//   // left: -130px;
+// }
 
-.el-message{
-  background:red;
-}
+// .el-message{
+//   background:red;
+// }
 
 
 </style>

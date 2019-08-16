@@ -12,7 +12,15 @@
         <el-form ref="form" label-width="72px">
             <el-form-item label="影片名称:" >
                 <!-- :filter-method="searchMovie" -->
-                <el-select v-model="curMovieId" filterable placeholder="请选择" @change="curMovieChange" :disabled="showType == 'view'">
+                <!-- <el-select v-model="curMovieId" filterable placeholder="请选择" @change="curMovieChange" :disabled="showType == 'view'">
+                    <el-option
+                    v-for="item in movieList"
+                    :key="item.id"
+                    :label="item.movieName"
+                    :value="item.movieId">
+                    </el-option>
+                </el-select> -->
+                <el-select v-model="curMovieIds" multiple placeholder="请选择" @change="curMovieChange" :disabled="showType == 'view'">
                     <el-option
                     v-for="item in movieList"
                     :key="item.id"
@@ -150,17 +158,30 @@ import { getBaseMovieInfo } from 'ctm/http/interface'
                 type: String,
                 required: true,
                 default: 'new'
+            },
+            // 编辑模式当前索引
+            curCtrlGuideIndex: {
+                type: Number,
+                default: 0
             }
         },
         watch: {
+            showType(data, oldData) {
+                this.resetData()
+            },
+            editData(data, oldData) {
+                this.initEditData()
+            }
         },
         data() {
             return {
                 selectCinema: [],
                 curMovieId: '',
+                curMovieIds: [],
                 curMovie: {
                     
                 },
+                curMovies: [],
                 hallList: [],
                 hallData: [{}],
                 addData: {},
@@ -180,10 +201,7 @@ import { getBaseMovieInfo } from 'ctm/http/interface'
         },
         mounted() {
             this.getBaseMovieInfo()
-            if (this.showType != 'new') {
-                this.editViewDataInit()
-            }
-            this.initHallList()
+            this.initEditData()
             
             let that = this
             this.pickerOptions = {
@@ -195,17 +213,31 @@ import { getBaseMovieInfo } from 'ctm/http/interface'
         methods: {
             // 初始化转换当前操作数据
             editViewDataInit() {
-                this.curMovieId = this.editData.cmcBaseMovieId
-                this.curMovie =  {
-                    movieName: this.editData.movieName,
-                    dateShowFirst: this.editData.dateShowFirst,
-                    dateShowOff: this.editData.dateShowOff,
-                    disVersions: this.editData.disVersions,
-                    endDate: this.editData.endDate,
-                    startDate: this.editData.startDate,
-                    movieLevel: this.editData.movieLevel,
-                    timeLong: this.editData.timeLong
-                }
+                // this.curMovieId = Number(this.editData.movieInfoVoList[0].cmcBaseMovieId)
+                // this.curMovie =  {
+                //     movieName: this.editData.movieInfoVoList[0].movieName,
+                //     dateShowFirst: this.editData.movieInfoVoList[0].dateShowFirst,
+                //     dateShowOff: this.editData.movieInfoVoList[0].dateShowOff,
+                //     disVersions: this.editData.movieInfoVoList[0].disVersions,
+                //     endDate: this.editData.movieInfoVoList[0].endDate,
+                //     startDate: this.editData.movieInfoVoList[0].startDate,
+                //     movieLevel: this.editData.movieInfoVoList[0].movieLevel,
+                //     timeLong: this.editData.movieInfoVoList[0].timeLong
+                // }
+                this.curMovieIds = this.editData.movieInfoVoList.map(item => Number(item.cmcBaseMovieId))
+                // this.curMovies =  this.editData.movieInfoVoList.map(item => {
+                //     return {
+                //         movieId: item.cmcBaseMovieId,
+                //         movieName: item.movieName,
+                //         dateShowFirst: item.dateShowFirst,
+                //         dateShowOff: item.dateShowOff,
+                //         disVersions: item.disVersions,
+                //         endDate: item.endDate,
+                //         startDate: item.startDate,
+                //         movieLevel: item.movieLevel,
+                //         timeLong: item.timeLong
+                //     }
+                // })
                 this.ctimeValue = [this.editData.startDate, this.editData.endDate]
                 this.selectCinema = this.editData.guidanceMovieCinemaVoList
             },
@@ -220,22 +252,23 @@ import { getBaseMovieInfo } from 'ctm/http/interface'
             },
             submitData() {
                 let data = {}
-                // data.baseMovieVo = {
-                //     disVersion: 
-                // }
-                // data.baseMovieVo = this.curMovie.filmEdition ? 
                 data.cinemaNumber = this.selectCinema.length
-                data.cmcBaseMovieId = this.curMovie.movieId
-                data.dateShowFirst = this.curMovie.dateShowFirst
-                data.dateShowOff = this.curMovie.dateShowOff
-                data.disVersions = this.curMovie.disVersions
-                data.endDate = this.ctimeValue[1]
-                data.guidanceMovieCinemaVoList = this.selectCinema
                 data.guideType = this.addType
-                data.movieLevel = this.curMovie.movieLevel
-                data.movieName = this.curMovie.movieName
+                data.guidanceMovieCinemaVoList = this.selectCinema
+
+                data.movieInfoVoList = this.curMovieIds.map(item => {
+                    return {
+                        cmcBaseMovieId: this.movieList.find(citem => Number(citem.movieId) == Number(item)).movieId,
+                        dateShowFirst: this.movieList.find(citem => Number(citem.movieId) == Number(item)).dateShowFirst,
+                        dateShowOff: this.movieList.find(citem => Number(citem.movieId) == Number(item)).dateShowOff,
+                        disVersions: this.movieList.find(citem => Number(citem.movieId) == Number(item)).disVersions,
+                        movieLevel: this.movieList.find(citem => Number(citem.movieId) == Number(item)).movieLevel,
+                        movieName: this.movieList.find(citem => Number(citem.movieId) == Number(item)).movieName,
+                        timeLong: this.movieList.find(citem => Number(citem.movieId) == Number(item)).timeLong
+                    }
+                })
                 data.startDate = this.ctimeValue[0]
-                data.timeLong = this.curMovie.timeLong
+                data.endDate = this.ctimeValue[1]
                 data.movieDetailVoList = this.hallList.filter(item => item.value).map(item => {
                     let numberOrRatio = item.value.includes('%') ? 0 : 1
                     let value1 = numberOrRatio == 1 ? item.value.includes('-') ? item.value.split('场')[0].split('-')[0] : item.value.split('场')[0] : item.value.split('%')[0].split('-')[0]
@@ -275,13 +308,27 @@ import { getBaseMovieInfo } from 'ctm/http/interface'
 
                 // 同一个影片同一个适用日期指导类型唯一
                 var p1 = new Promise((resolve, reject) => {
-                    let isResolve = !!this.curMovieId
+                    let isResolve = this.curMovieIds.length
                     
                     if (!isResolve) {
                         reject({
                             type: 'p1',
                             data: [],
                             msg: '排片必须选择一部影片!'
+                        })
+                    } else {
+                        resolve()
+                    }
+                    
+                })
+                // 影片是否在全局适应日期内(具体适用于修改了全局适用时间之后)
+                var movieP = new Promise((resolve, reject) => {
+                    let isResolve = this.curMovieIds.every(item => this.movieList.some(citem => citem.movieId == item))
+                    if (!isResolve) {
+                        reject({
+                            type: 'movieP',
+                            data: [],
+                            msg: '存在不在全局适用日期的影片, 请修改!'
                         })
                     } else {
                         resolve()
@@ -324,8 +371,8 @@ import { getBaseMovieInfo } from 'ctm/http/interface'
                     let isResolve = true
                     contrastData.some(guide => {
                         // TODO 判断影片是否相同
-                        if (guide.movieId == curMovie.movieId) {
-                            if (!(new Date(guide.endDate).getTime() < new Date(this.timeValu[0]).getTime() || new Date(this.timeValu[1]).getTime() < new Date(guide.statrtDate).getTime())) {
+                        if (guide.movieInfoVoList.some(item => this.curMovieIds.includes(Number(item.cmcBaseMovieId)))) {
+                            if (!(new Date(guide.endDate).getTime() < new Date(this.ctimeValue[0]).getTime() || new Date(this.ctimeValue[1]).getTime() < new Date(guide.startDate).getTime())) {
                                 isResolve = false
                                 return true
                             }
@@ -336,7 +383,7 @@ import { getBaseMovieInfo } from 'ctm/http/interface'
                         reject({
                             type: 'p4',
                             data: [],
-                            msg: '影片在其他指导中存在重复的适用影城'
+                            msg: '影片在其他指导中存在重复的适用日期'
                         })
                     } else {
                         resolve()
@@ -346,12 +393,15 @@ import { getBaseMovieInfo } from 'ctm/http/interface'
                 // 同一指导类型同一影城同一影片同一个适用日期只能有一条限制规则
                 var p5 = new Promise((resolve, reject) => {
                     let contrastData = this.addType == 'force' ? JSON.parse(JSON.stringify(this.forceGuide)) : JSON.parse(JSON.stringify(this.adviseGuide))
+                    if (this.showType == 'edit') {
+                        contrastData = contrastData.filter((item, index) => index != this.curCtrlGuideIndex)
+                    }
                     let isResolve = true
                     contrastData.some(guide => {
                         // TODO 判断影片是否相同
-                        if (guide.movieId == curMovie.movieId) {
-                            if (!(new Date(guide.endDate).getTime() < new Date(this.timeValu[0]).getTime() || new Date(this.timeValu[1]).getTime() < new Date(guide.statrtDate).getTime())) {
-                                // if (guide.guidanceMovieCinemaVoList.some(item => !addData.cinemaData.every(cinema => cinema.cinemaUid != item.cinemaUid))) {
+                        if (guide.movieInfoVoList.some(item => this.curMovieIds.includes(Number(item.cmcBaseMovieId)))) {
+                            if (!(new Date(guide.endDate).getTime() < new Date(this.ctimeValue[0]).getTime() || new Date(this.ctimeValue[1]).getTime() < new Date(guide.startDate).getTime())) {
+                                
                                 if (guide.guidanceMovieCinemaVoList.some(item => !this.selectCinema.every(cinema => cinema.cinemaUid != item.cinemaUid))) {
                                     isResolve = false
                                     return true
@@ -364,7 +414,7 @@ import { getBaseMovieInfo } from 'ctm/http/interface'
                         reject({
                             type: 'p5',
                             data: [],
-                            msg: '影片在其他指导中存在重复的适用日期'
+                            msg: '影片在其他指导中存在重复的适用影城'
                         })
                     } else {
                         resolve()
@@ -403,17 +453,17 @@ import { getBaseMovieInfo } from 'ctm/http/interface'
                     
                 })
 
-                Promise.all([p1, p2, p3, p4, p5, p6]).then(() => {
+                Promise.all([p1, movieP, p2, p3, p4, p5, p6]).then(() => {
                     this.submitData()
                 }).catch(res => {
+                    console.log(res)
                     this.errorObj = res
                     let type = res.type
-                    if (type == 'p1' || type == 'p2' || type == 'p3') {
+                    if (type == 'p1' || type == 'p2' || type == 'p3' || type == 'movieP') {
                         this.error(this.errorObj.msg)
                     } else {
                         this.dialogVisible = true
                     }
-                    console.log(this.errorObj)
                     // this.error(res)
                     
                 })
@@ -430,6 +480,7 @@ import { getBaseMovieInfo } from 'ctm/http/interface'
                 //     this.hallData = [{}]
                 //     return
                 // }
+                console.log(this.editData)
                 let hallList = this.editData.movieDetailVoList ? this.editData.movieDetailVoList.map(item => {
                     if (item.numberOrRatio) {
                         if (item.timeNumLower == item.timeNumUpper) {
@@ -468,12 +519,12 @@ import { getBaseMovieInfo } from 'ctm/http/interface'
             curMovieChange(val) {
                 if (this.showType == 'view') return
                 this.ctimeValue = null
-                this.curMovie = this.movieData.find(item => item.movieId == val) || {}
             },
             changeCurCheckedCinema(data) {
                 this.selectCinema = JSON.parse(JSON.stringify(data))
                 let oldHallList = JSON.parse(JSON.stringify(this.hallData))
                 let hallData = []
+                // debugger
                 this.selectCinema.forEach(item => {
                     if (hallData.every(hall => hall.type != item.hallCount)) {
                         hallData.push({type: item.hallCount, value: ''})
@@ -485,18 +536,15 @@ import { getBaseMovieInfo } from 'ctm/http/interface'
                     value: ''
                 }].concat(hallData)
                 hallList.forEach(item => {
-                    console.log(oldHallList)
                     item.value = oldHallList[0][item.type] ? oldHallList[0][item.type] : ''
                 })
                 this.hallList = hallList
                 this.hallData = this.hallList.reduce((data, item) => {
-                    console.log(data)
                     data[0][item.type] = item.value
                     return data
                 }, [{}])
             },
             inputChange(value, index) {
-                console.log(value, index)
                 let hallList = JSON.parse(JSON.stringify(this.hallList))
                 hallList[index].value = value
                 this.hallList = hallList
@@ -504,6 +552,36 @@ import { getBaseMovieInfo } from 'ctm/http/interface'
             inputCheck(data) {
                 return /^((([0-9][0-9]?|100)(-[0-9][0-9]?|100)?场)|(([0-9][0-9]?|100)(-[0-9][0-9]?|100)%))$/.test(data)
             },
+            resetData() {
+                this.selectCinema = []
+                this.curMovieIds = []
+                this.curMovies = []
+                this.hallList = []
+                this.hallData = [{}]
+                this.addData = {}
+                this.errorObj = {}
+                this.ctimeValue = null
+                // 获取到的所有影片数据
+                this.movieData = []
+                // 当前下拉框展示
+                this.movieList = []
+
+                this.getBaseMovieInfo()
+                
+                
+                let that = this
+                this.pickerOptions = {
+                    disabledDate(time) {
+                        return (time.getTime() < new Date(that.timeValue[0]).getTime() - 1000 * 24 * 60 * 60) || (time.getTime() > new Date(that.timeValue[1]).getTime())
+                    }
+                }
+            },
+            initEditData() {
+                if (this.showType != 'new') {
+                    this.editViewDataInit()
+                }
+                this.initHallList()
+            }
         },
         
         components: {

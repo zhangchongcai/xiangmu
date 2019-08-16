@@ -221,7 +221,7 @@ const ticket = {
             let params = {
                 body:{
                     bsiCode:option.code,
-                    ticketBatchNo:this.id?this.id:1234,
+                    ticketBatchNo:this.id?this.id:null,
                     startDate:this.startTime,
                     endDate:this.endTime,
                     detailType:option.type,
@@ -234,6 +234,12 @@ const ticket = {
                 let refDetail = this.$refs.detail;
                 if(resData){
                     let columns = Object.keys(resData[0]);
+                    let len = resData.length;
+                    let num = 0;
+                    if (len>20){
+                        num = parseInt(len * 1 / 12);
+                    }
+                    this.$set(refDetail.lineExtend, 'xAxis.0.axisLabel.interval', num);
                     this.$set(refDetail.lineData,'columns',columns);
                     this.$set(refDetail.lineData,'rows', resData);
                     refDetail.isCompar = true

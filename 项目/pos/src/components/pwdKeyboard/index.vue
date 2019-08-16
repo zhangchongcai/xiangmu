@@ -3,6 +3,7 @@
     :title="title"
     :visible.sync="visible"
     :width="width"
+    :close-on-click-modal="false"
     >
     <div class="pwdLayer">
       <span class="info">{{info}}</span>

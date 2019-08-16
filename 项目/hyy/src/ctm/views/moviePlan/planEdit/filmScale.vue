@@ -240,7 +240,7 @@ section {
 
 /deep/ .el-dialog.changeScaleDialog {
     .el-dialog__body {
-        &>div {
+        & > div {
             flex-direction: column;
 
             div {

@@ -63,9 +63,7 @@
             </li>
           </ul>
         </div>
-
       </div>
-
       <div style="height:12px;background:transparent;"></div>
       <div class="btn-area">
         <el-button type="primary" @click="chooseUser" style="margin-right:22px;">确定</el-button>
@@ -73,8 +71,8 @@
       </div>
     </el-dialog>
   </div>
-
 </template>
+
 <script>
 import {getCinemaAdminRegionList} from "cmm/http/interface.js"
   export default {
@@ -87,23 +85,6 @@ import {getCinemaAdminRegionList} from "cmm/http/interface.js"
         type: String,
         default: "父组件尚未传值"
       },
-      // innerData:{
-      //   type: Array,
-      //   default:[
-      //     {
-      //       name:"耀莱成龙国际影城12",
-      //       code:"11064202",
-      //     },
-      //     {
-      //       name:"星美",
-      //       code:"11061602",
-      //     },
-      //     {
-      //       name:"通州万达",
-      //       code:"66765",
-      //     },
-      // ]
-      // }
     },
     data() {
       return {
@@ -119,7 +100,6 @@ import {getCinemaAdminRegionList} from "cmm/http/interface.js"
           total:0,
           size:10,
         },
-       
       }
     },
     methods: {

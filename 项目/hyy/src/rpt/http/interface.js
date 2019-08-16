@@ -1,7 +1,6 @@
 import axios from '../../frame_cpm/http/api';
 import qs from 'qs';
 import config from '../../frame_cpm/http/config';
-
 /**
  * 将所有接口统一起来便于维护
  * 如果项目很大可以将 URL 独立成文件，接口分成不同的模块
@@ -189,10 +188,10 @@ export const selectCardProductList = (pageNum, pageSize, cardName) => {
 //控件-发行版本获取数据
 export const movieReleasedVersion = () => {
   return axios({
-    url: 'report/condition/getDictInfo',
+    url: '/ticket/dictionary/getByName',
     method: 'get',
     params: {
-      code: "movie_film_film_edition"
+      name: "SCH_MOVIE_DIS_VERSION"
     }
   })
 }
@@ -322,7 +321,6 @@ export const checkBillStorageRack = data => {
 //导出表格
 export const exportExcel = data => {
   config.responseType = 'blob'
-  console.log(config)
   return axios({
     url: '/report/report/exportExcel',
     method: 'post',
@@ -383,6 +381,49 @@ export const gitTicketData = (currentPage, pageSize, cinemaUid, ticketTypeName) 
   })
 }
 
+//活动选择
+export const getActivityData = () => {
+  return axios({
+    url: '/report/condition/getMarketing',
+    method: 'post'
+  })
+}
+
+//分组合并表格
+export const showGroupMergeData = data => {
+  return axios({
+    // url: 'http://192.168.100.125:3201/report/showGroupMergeData',
+    url: 'report/report/showGroupMergeData',
+    method: 'post',
+    data
+  });
+}
+
+//点击表格单元格获取详情表格数据
+export const getSonTable = (sonRoute, data) => {
+  return axios({
+    url: `http://192.168.100.125:3201/report/getSonTable/${sonRoute}`,
+    method: 'post',
+    data
+  });
+}
+
+//3.0集团报表入口数据
+export const getOldCinemaCenter = () => {
+  return axios({
+    url: `report/report/oldCinemaCenter`,
+    method: 'get'
+  });
+}
+
+//3.0影院报表入口数据
+export const getOldCinema = () => {
+  return axios({
+    url: `report/report/oldCinema`,
+    method: 'get'
+  });
+}
+
 export default {
   testGet,
   testPost,
@@ -421,5 +462,10 @@ export default {
   gitDicData,
   gitComboGoodsData,
   gitHallData,
-  gitTicketData
+  gitTicketData,
+  getActivityData,
+  showGroupMergeData,
+  getSonTable,
+  getOldCinemaCenter,
+  getOldCinema
 };

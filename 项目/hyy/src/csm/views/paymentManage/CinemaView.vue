@@ -107,6 +107,14 @@
                 </template>
             </el-table-column>
             <el-table-column
+                    label="pos端是否显示"
+                    show-overflow-tooltip>
+                <template slot-scope="scope">
+                    <span v-if="scope.row.showFlag">显示</span>
+                    <span v-else>不显示</span>
+                </template>
+            </el-table-column>
+            <el-table-column
                 prop="status"
                 label="使用状态"
                 width="120"
@@ -131,6 +139,7 @@
                 label="操作">
                 <template slot-scope="scope">
                     <el-button style="padding: 0" @click="getCinemaPayType(scope.row.payTypeCode)" type="text" size="small">查看</el-button>
+                    <el-button style="padding: 0" @click="updatePayTypeShowFlag(scope.row.showFlag === 0 ? 1 : 0, scope.row.payTypeCode)" type="text" size="small">{{scope.row.showFlag ? '隐藏' : '显示'}}</el-button>
                     <el-button style="padding: 0" @click="updatePayTypeStatus(scope.row.status === 0 ? 1 : 0, scope.row.payTypeCode)" type="text" size="small">{{scope.row.status ? '停用' : '启用'}}</el-button>
                     <el-button v-if="scope.row.defFg" style="padding: 0" @click="deletePayType(scope.row.uid)" type="text" size="small">删除</el-button>
                 </template>
@@ -211,11 +220,15 @@
         methods: {
 
             callBackSingle(data) {
+                this.singleCinemaVisible = data.framedialogVisible
+
+                if(data.isCloseWindow) return
+
                 console.log(data, '-----> data')
                 this.formData.cinemaUids = data.data.id
                 this.cinemaName = data.data.name
+                 this.cinemaName = this.cinemaName.length> 10?this.cinemaName.substring(0,9)+"...": this.cinemaName
                 this.innerData.id = data.data.id
-
                 this.search()
             },
 
@@ -230,6 +243,19 @@
                         this.isDetail = true
                         this.dialogVisible = true
 
+                    }else {
+                        this.error(res.msg)
+                    }
+
+                })
+            },
+
+            updatePayTypeShowFlag(showFlag, code) {
+                this.$csmList.updatePayTypeShowFlag({ showFlag, code, cinemaUid: this.formData.cinemaUids }).then( res => {
+                    console.log(res)
+                    if(res.code === 200) {
+                        this.success(res.msg)
+                        this.search()
                     }else {
                         this.error(res.msg)
                     }

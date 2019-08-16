@@ -37,7 +37,7 @@
               ></el-table-column>
               <el-table-column label="操作">
                 <template slot-scope="{row,$index}">
-                  <el-button type="text" size="small" @click.stop="handleModification($index, row)">
+                  <el-button type="text" size="small" @click.stop="handleModification($index, row)" v-if="row.isBindingMer==0">
                     编辑
                   </el-button>
                   <el-button type="text" size="small" @click.stop="handleDlete($index, row)">
@@ -117,7 +117,7 @@
           <p>
             <el-input v-model="criterionSelected.name" disabled></el-input>
             <el-popover class="retail-style" placement="right" width="400" trigger="click">
-              <div class="change-tree retail-style">
+              <div class="change-tree norm-change-tree  retail-style">
                 <el-tree
                         :data="buildCriterionClassData"
                         :props="defaultProps"
@@ -161,20 +161,12 @@
       defaultProps: {
         children: "children",
         label: "name",
-        // disabled: (data, node) => {
-        //   // console.log(data, node);
-        //   if (data.isLeaf == 1) {
-        //     return false;
-        //   } else {
-        //     return true;
-        //   }
-        // }
       },
       //查询数据
       queryData: {
         uid: "", //类别id
         page: 1,
-        pageSize: 10
+        pageSize: 15
       },
       tableColumn: [
         {
@@ -265,7 +257,7 @@
       this.$cimList.getCategoryTrees((param = {})).then(resData => {
         if (resData.code == 200) {
           this.bigClassTeeData = [resData.data];
-          console.log(this.bigClassTeeData);
+          // console.log(this.bigClassTeeData);
         }
       });
     },
@@ -284,7 +276,13 @@
         .categoryList(param)
         .then(resData => {
           if (resData.code == 200) {
-            this.tableData = resData.data.list;
+            this.tableData = resData.data.list.map(item=>{
+              if(item.isLeaf ==0){
+                item.merClassName ="";
+              }
+              return item;
+            })
+
             this.total = resData.data.total;
           }
           this.tableLoding = false;
@@ -458,6 +456,8 @@
 @import "../../../../assets/css/element-common.scss";
 @import "../../../../assets/css/common.scss";
 .change-tree{
+  max-height: 600px;
+  overflow: scroll;
   .el-radio{
     margin-right: 0;
   }
@@ -465,11 +465,14 @@
     display: none;
   }
 }
+.norm-change-tree{
+  max-height: 450px;
+}
 .goods-categories-management {
-
   .list-tree {
     .el-tree {
-      min-height: 750px;
+      height: 750px;
+      overflow-y: scroll;
     }
   }
   .custom-tree-node{

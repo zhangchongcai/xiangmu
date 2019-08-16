@@ -52,7 +52,7 @@
                     <div v-if="basicDataForm.excludeDate.indexOf('指定排除日期范围')!=-1">
                         <el-form-item label v-for="(item,index) in basicDataForm.excludeDateOptions" :key="index" :prop="'excludeDateOptions.'+index+'.excludeDateOption'" :rules="{required: true, message: '指定排除日期范围不能为空', trigger: 'change'}">
                             <el-date-picker v-model="item.excludeDateOption" :picker-options="pickerOptions" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" :disabled="disabled" @change="setExcludeDate"></el-date-picker>
-                            <el-button size="small" type="text" @click="delExcludeDate(index)">删除</el-button>
+                            <el-button size="small" type="text" @click="delExcludeDate(index)" v-if="basicDataForm.excludeDateOptions.length > 1">删除</el-button>
                         </el-form-item>
                     </div>
 
@@ -70,7 +70,7 @@
                     </el-form-item>
                     <div v-if="basicDataForm.timeRange==1 && basicDataForm.timeRangeSelect.length>0" class="timeRange_bg">
                         <div label v-for="(item,index) in basicDataForm.timeRangeSelect" :key="item.key" style="margin-bottom: -4px;">
-                            <el-form-item >
+                            <el-form-item>
                                 <el-form-item>
                                     <el-checkbox :indeterminate="item.isIndeterminateWithWorkDay" v-model="item.checkAllWorkDay" :disabled="disabled" @change="handleCheckAllWorkDayChange(item,$event)" style="float:left; margin-right:25px;">工作日
                                     </el-checkbox>
@@ -79,7 +79,7 @@
                                     </el-checkbox-group>
                                 </el-form-item>
                                 <el-form-item :prop="'timeRangeSelectDays.'+index" :rules="{required: true, message: '时段范围不能为空', trigger: 'blur'}">
-                                    <el-checkbox :indeterminate="item.isIndeterminateWithWeekend" :disabled="disabled" v-model="item.checkAllWeekend" @change="handleCheckAllWeekendChange(item,$event)" style="float:left; margin-right:40px;">周末
+                                    <el-checkbox :indeterminate="item.isIndeterminateWithWeekend" :disabled="disabled" v-model="item.checkAllWeekend" @change="handleCheckAllWeekendChange(item,$event)" style="float:left; margin-right:37px;">周末
                                     </el-checkbox>
                                     <el-checkbox-group v-model="item.weekend" :disabled="disabled" @change="handleCheckedWeekendChange(item,$event)">
                                         <el-checkbox v-for="item in weekendOptions" :label="item.id" :key="item.id">{{item.text}}</el-checkbox>
@@ -92,7 +92,7 @@
                                         <el-button size="small" type="text" @click="amClick(item)">上午</el-button>
                                         <el-button size="small" type="text" @click="pmClick(item)">下午</el-button>
                                         <el-button size="small" type="text" @click="eveningClick(item)">晚上</el-button>
-                                        <el-button style="margin-left:25px;" size="small" type="text" @click="delTimeRangeSelect(index)">删除</el-button>
+                                        <el-button style="margin-left:25px;" size="small" type="text" @click="delTimeRangeSelect(index)" v-if="basicDataForm.timeRangeSelect.length > 1">删除</el-button>
                                     </div>
                                 </el-form-item>
                             </el-form-item>
@@ -106,14 +106,20 @@
 
                     <el-form-item label="交易渠道:">
                         <el-row class="flex-base">
-                            <el-select v-model="basicDataForm.tradingChannel" :disabled="disabled" clearable>
+                            <el-select v-model="basicDataForm.tradingChannel" :disabled="disabled">
                                 <el-option label="不限" value></el-option>
                                 <el-option label="包含" value="normalIn"></el-option>
                                 <el-option label="不包含" value="normalNotIn"></el-option>
                             </el-select>
                             <el-form-item v-if="basicDataForm.tradingChannel!=''" prop="tradingChannelInput">
-                                <el-input class="chooseWidth1" v-model="basicDataForm.tradingChannelInput" readonly></el-input>
-                                <el-button class="windowBtn" type="primary" :disabled="disabled" @click="tradeChannelClick()" plain>选择</el-button>
+                                <el-input class="chooseWidth1" v-show="!basicDataForm.tradingChannelInput" v-model="basicDataForm.tradingChannelInput" readonly></el-input>
+                                <el-tooltip placement="bottom" v-show="basicDataForm.tradingChannelInput">
+                                    <el-input class="chooseWidth1" style="width: 166px;" v-model="basicDataForm.tradingChannelInput" readonly></el-input>
+                                    <div slot="content">
+                                        <div v-for="item in basicDataForm.tradingChannelInput.split(',')" :key="item" style="font-size:12px">{{ item }}<br/></div>
+                                    </div>
+                                </el-tooltip>
+                                <el-button class="windowBtn" type="primary" :disabled="disabled" @click="tradeChannelClick({value:basicDataForm.tradingChannelId,text:basicDataForm.tradingChannelInput})" plain>选择</el-button>
                             </el-form-item>
                         </el-row>
                     </el-form-item>
@@ -132,17 +138,26 @@
                                     <div v-for="item in basicDataForm.tradingMerchantInput.split(',')" :key="item" style="font-size:12px">{{ item }}<br/></div>
                                 </div>
                             </el-tooltip>   
-                            <el-button type="primary" class="windowBtn" @click="cinemaClick('movieTicketDialog')" plain :disabled="disabled">选择</el-button>
+                            <el-button type="primary" class="windowBtn" @click="cinemaClick('movieTicketDialog',{value:basicDataForm.tradingMerchantId,text:basicDataForm.tradingMerchantInput})" plain :disabled="disabled">选择</el-button>
                         </el-form-item>
                     </el-row>
                 </el-collapse-item>
                 <!-- 分组活动执行条件 -->
                 <el-collapse-item title="分组活动执行条件" name="2" class="addGroupLeft">
                     <div class="bigBtn">
-                        <div class="def-tag" v-for="(rule,index) in rules" :key="index" closable @click="addGroup(rule,index)">
-                            <i class="el-icon-close closeIcon" @click.stop="removeRule(index)"></i>
-                            <span>{{rule.name}}</span>
-                        </div>
+                        <!-- 数据迁移(transferStatus==5) --> 
+                        <template v-if="transferStatus==5">
+                            <div :class="{'def-tag':true,'validate-status-green':validateStatus[index],'validate-status-red':!validateStatus[index]}" v-for="(rule,index) in rules" :key="index" closable @click="addGroup(rule,index)">
+                                <i class="el-icon-close closeIcon" @click.stop="removeRule(index)"></i>
+                                <span>{{rule.name}}</span>
+                            </div>
+                        </template>
+                        <template v-else>
+                            <div class="def-tag" v-for="(rule,index) in rules" :key="index" closable @click="addGroup(rule,index)">
+                                <i class="el-icon-close closeIcon" @click.stop="removeRule(index)"></i>
+                                <span>{{rule.name}}</span>
+                            </div>
+                        </template>
                         <ul>
                             <li class="addBtn" v-if="rules && rules.length<10 && isEdit != 'detail'"  @click="addGroup()">
                                 <span class="icon el-icon-plus"></span>
@@ -158,14 +173,14 @@
                             <el-option label="补贴金额" value="allowance"></el-option>
                         </el-select>
                     </el-form-item>
-                    <el-form-item label="活动总预算:">
-                        <el-select v-model="basicDataForm.activityBudgetSum" :disabled="disabled">
+                    <el-form-item label="活动总预算:" prop="activityBudgetSumCheckList">
+                        <el-select v-model="basicDataForm.activityBudgetSum" :disabled="disabled"  @change="activityBudgetAmountOptionChange">
                             <el-option label="不限制" value></el-option>
                             <el-option label="指定预算限制" value="1"></el-option>
                         </el-select>
 
                         <div v-if="basicDataForm.activityBudgetSum==1">
-                            <el-form-item prop="totalTicketsAmount">
+                            <!-- <el-form-item prop="totalTicketsAmount">
                                 <el-row class="flex-base">
                                     <span>限制总票数</span>
                                     <el-input class="input-type-94" v-model="basicDataForm.totalTicketsAmount" :disabled="disabled" placeholder="请输入"></el-input>
@@ -178,7 +193,21 @@
                                     <el-input class="input-type-94" v-model="basicDataForm.totalDiscountAmount" :disabled="disabled" placeholder="请输入"></el-input>
                                     <span>元</span>
                                 </el-row>
-                            </el-form-item>
+                            </el-form-item> -->
+
+                            <el-checkbox-group v-model="basicDataForm.activityBudgetSumCheckList" @change="activityBudgetSumChange">
+                                <el-checkbox label="限制总票数" style="width:110px"></el-checkbox>
+                                <el-form-item prop="totalTicketsAmount" style="width:150px;display:inline-block;" v-if="basicDataForm.activityBudgetSumCheckList.indexOf('限制总票数')!=-1">
+                                    <el-input style="width:120px;" v-model="basicDataForm.totalTicketsAmount" :disabled="disabled" placeholder="请输入"></el-input>
+                                    <span style="margin-left:8px;">张</span>
+                                </el-form-item>
+                                <br>
+                                <el-checkbox label="限制总补贴金额" style="width:110px"></el-checkbox>
+                                <el-form-item prop="totalDiscountAmount" style="width:150px;display:inline-block;margin-top:15px;" v-if="basicDataForm.activityBudgetSumCheckList.indexOf('限制总补贴金额')!=-1">
+                                    <el-input style="width:120px;" v-model="basicDataForm.totalDiscountAmount" :disabled="disabled" placeholder="请输入"></el-input>
+                                    <span style="margin-left:8px;">元</span>
+                                </el-form-item>
+                            </el-checkbox-group>
                         </div>
                     </el-form-item>
                     <el-form-item label="活动总预算周期限制:" class="br-row">
@@ -192,7 +221,7 @@
                                 <el-option label="指定周期限制" value="appointTimeRange"></el-option>
                             </el-select>
                             <el-form-item v-if="basicDataForm.activityBudgetCycle == 'appointTimeRange'" prop="activityBudgetCycleDate">
-                                <el-date-picker v-model="basicDataForm.activityBudgetCycleDate" :picker-options="pickerOptions" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" :disabled="disabled"></el-date-picker>
+                                <el-date-picker style="position: relative;top: 2px;" v-model="basicDataForm.activityBudgetCycleDate" :picker-options="pickerOptions" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" :disabled="disabled"></el-date-picker>
                             </el-form-item>
                         </el-row>
                         <el-form-item v-if="basicDataForm.activityBudgetCycle!=''" prop="activityBudgetCycleInput">
@@ -214,7 +243,14 @@
             </div>
         </el-row>
     </div>
-    <add-group v-if="addGroupShow" ref="addGroup" @close="close" @transferData="transferData"></add-group>
+    <!-- 子活动 --> <!-- 数据迁移(transferStatus==5) --> 
+    <template v-if="transferStatus==5">
+        <add-group v-if="addGroupShow" ref="addGroup" @close="close" @transferData="transferData" :transferStatus="transferStatus" @transferHandle="handleTransferStatus"></add-group>
+    </template>
+    <!-- 子活动 --> 
+    <template v-else>
+        <add-group v-if="addGroupShow" ref="addGroup" @close="close" @transferData="transferData"></add-group>
+    </template>
 
     <!-- 弹窗组件都加这 -->
     <section class="alert-group">
@@ -240,6 +276,170 @@ import FormData from "./basicFormData.json";
 // 弹窗混入回调方法，注册弹窗和设置回调都在此处
 import alertHandle from 'cmm/mixins/marketing/alertHandle.js';
 import commonRules from 'cmm/mixins/rules'
+//数据迁移过滤选项(临时状态)
+const transferOptions={
+    //公共条件
+    commonInfo:[
+        //交易影院
+        {
+            groupId: 19,
+            key: "cinemaCode",
+            text: "",
+            value: ""
+        },
+        //交易渠道
+        {
+            groupId: 32,
+            key: "consumeWayCode",
+            text: "",
+            value: ""
+        },
+    ],
+    //分组活动条件
+    rules:{
+        //活动条件
+        ruleConditions:[
+            //注册影院
+            {
+                groupId: 13,
+                key: "registerBusinessCode",
+                text: "",
+                value: ""
+            },
+            //会员等级
+            {
+                groupId: 101,
+                key: "customerLevelCode",
+                text: "",
+                value: ""
+            },
+            //会员卡政策
+            {
+                groupId: 100,
+                key: "cardRightCode",
+                text: "",
+                value: ""
+            },
+            //会员卡类型
+            {
+                groupId: 10,
+                key: "cardTypeKey",
+                text: "",
+                value: ""
+            },
+            //影片
+            {
+                groupId: 79,
+                key: "uniformCode",
+                text: "",
+                value: ""
+            },
+            //影厅类型
+            {
+                groupId: 36,
+                key: "hallTypeKey",
+                text: "",
+                value: ""
+            },
+            //影片类型
+            {
+                groupId: 34,
+                key: "filmTypeKey",
+                text: "",
+                value: ""
+            },
+            //放映效果
+            {
+                groupId: 35,
+                key: "showEffect",
+                text: "",
+                value: ""
+            },
+            //商品品牌
+            {
+                groupId: 40,
+                key: "brandId",
+                text: "",
+                value: ""
+            },
+            //商品类别
+            {
+                groupId: 41,
+                key: "classCode",
+                text: "",
+                value: ""
+            },
+            //商品名称
+            {
+                groupId: 46,
+                key: "merKey",
+                text: "",
+                value: ""
+            },
+            //交易影院行政区域
+            {
+                groupId: 25,
+                key: "cinemaAreaId",
+                text: "",
+                value: ""
+            },
+            //支付方式(柜台用)
+            {
+                groupId: 86,
+                key: "payTypeCode",
+                text: "",
+                value: ""
+            },
+        ],
+        //执行条件
+        actions:[
+            //赠送票券-票券名称
+            {
+                groupId: 3,
+                key: "couponApplyCode",
+                text: "",
+                value: ""
+            },
+            //赠送商品-商品
+            {
+                groupId: 11,
+                key: "merKey",
+                text: "",
+                value: ""
+            },
+            //单品优惠价调整-商品
+            {
+                groupId: 9,
+                key: "merKey",
+                text: "",
+                value: ""
+            },
+            //以优惠价格增加单品-商品
+            {
+                groupId: 10,
+                key: "merKey",
+                text: "",
+                value: ""
+            },
+            //卖品分类优惠价调整-分类
+            {
+                groupId: 27,
+                key: "classCode",
+                text: "",
+                value: ""
+            },
+            //按品牌优惠价调整-品牌
+            {
+                groupId: 28,
+                key: "brandId",
+                text: "",
+                value: ""
+            },
+        ]
+
+    
+    },
+}
 // 活动条件
 const memberOptions = [{
         key: "birthday7",
@@ -309,6 +509,10 @@ const memberOptions = [{
         key: "sumPrice1",
         value: "单次充值金额"
     },
+    {
+        key: "chargeSum50",
+        value: "累计充值金额"
+    },
     // {
     //     key: "consumeNum",
     //     value: "动态周期消费次数",
@@ -366,14 +570,14 @@ const tradeOptions = [
     //     key: "consumerTypeKey27",
     //     value: "消费者身份"
     // },
-    {
-        key: "tradeType33",
-        value: "交易类型"
-    },
-    {
-        key: "saleItemType17",
-        value: "商品类型"
-    },
+    // {
+    //     key: "tradeType33",
+    //     value: "交易类型"
+    // },
+    // {
+    //     key: "saleItemType17",
+    //     value: "商品类型"
+    // },
     // {
     //     key: "consumeWayCode32",
     //     value: "交易渠道"
@@ -430,6 +634,20 @@ const tradeOptions = [
             },
             {
                 key: "sumAmount28",
+                value: "累计购买数量"
+            }
+        ]
+    },
+    {
+        key: "buyNumByBrand",
+        value: "同品牌商品累计购买数量",
+        hasSon: true,
+        sonData: [{
+                key: "brandId29",
+                value: "商品品牌"
+            },
+            {
+                key: "sumAmount29",
                 value: "累计购买数量"
             }
         ]
@@ -811,12 +1029,18 @@ const movieTicketsActions = [{
 export default {
     data() {
         return {
+            transferId:0,//数据迁移id（临时处理）
+            transferStatus:0,//数据迁移id（临时处理）
+            validateStatus:[],//数据迁移验证修改列表（临时处理）
+            tenantId:  JSON.parse(localStorage.getItem('user')).consumerId,//租户id
             //限制过去时间不可选
             pickerOptions: {
                 disabledDate(time) {
                     return time.getTime() < Date.now() - 8.64e7;
                 }
             },
+            //迁移数据过滤选项
+            transferOptions:transferOptions,
             // 折叠区域
             memberActions:memberActions,
             tradeActions:tradeActions,
@@ -932,6 +1156,22 @@ export default {
                         return callback();
                     },
                     trigger: "blur"
+                }],
+                activityBudgetSumCheckList:[{
+                    required: true,
+                    validator: (rules, value, callback) => {
+                        if(this.basicDataForm.activityBudgetSum==""){
+                            return callback();
+                        }
+                        //指定预算限制
+                        if (value && value.length==0) {
+                            return callback(new Error('指定预算限制至少选择一个'));
+                        }else{
+                            return callback();
+                        }
+
+                    },
+                    trigger: "change"
                 }],
                 activityBudgetCycle:[{
                     required: true,
@@ -1051,8 +1291,11 @@ export default {
                     weekend: [6,7],
                     specifyTime: ["00:00:00", "23:59:00"]
                 }],
-
-                tradingChannel: "", //交易渠道
+                //交易类型
+                tradeTypeId:"BUY",
+                tradeTypeInput:'["消费"]',
+                //交易渠道
+                tradingChannel: "", 
                 tradingChannelId:"",
                 tradingChannelInput: "",
 
@@ -1071,6 +1314,7 @@ export default {
                 activityBudgetSum: "",
                 totalDiscountAmount: "",
                 totalTicketsAmount: "",
+                activityBudgetSumCheckList:[],
 
                 /* 基础信息-交易渠道 */
                 // tradingChannelState: [],
@@ -1143,18 +1387,20 @@ export default {
         delSpace(){
             this.basicDataForm.activityName = (this.basicDataForm.activityName).replace(/\s*/g,"");
         },
+       
         /********** 编辑数据回显 **********/
         init(row, isEdit) {
             if (row) {
                 this.activityId = row.id || 0;
                 this.isEdit = isEdit;
-                if (this.isEdit === "copy") {
-                     this.activityId = "";
-                }
                 let params = qs.stringify({
                     activityId: row.id,
                     tenantId: this.basicDataForm.tenantId
                 });
+                //临时处理（迁移数据）
+                if(row.approvalResult == 5){
+                    this.transferStatus=5
+                }
                 if(this.isEdit != "add"){
                     this.$cmmList
                     .marketingViewActivity(params)
@@ -1164,12 +1410,19 @@ export default {
                             let ruleGroup = JSON.parse(
                                 res.data.marketingActivityVO.ruleGroup
                             );
-
                             //基础信息
-                            this.activityId = data.id;
+                            if (this.isEdit == "copy") {
+                                this.activityId = "";
+                            }else{
+                                this.activityId = data.id;
+                            }
+                            //临时处理（迁移数据）
+                            if(this.transferStatus==5){
+                                this.transferId=row.id
+                            }
                             this.basicDataForm.activityCode = data.activityCode;
                             this.basicDataForm.tenantId = ruleGroup.tenantId;
-                            this.basicDataForm.activityType = ruleGroup.templateId;
+                            this.basicDataForm.activityType = data.activityType;
                             this.basicDataForm.activityName = ruleGroup.name;
                             this.basicDataForm.activityDesc = ruleGroup.remark;
                             this.basicDataForm.executeMode = ruleGroup.executeMode;
@@ -1184,14 +1437,25 @@ export default {
                             let commonInfo = ruleGroup.commonInfo;
                             let bizPropertyMap = ruleGroup.rules[0].bizPropertyMap;
                             let rules = ruleGroup.rules;
+
+                            //------------过滤迁移数据start-------------
+                            if(this.transferStatus==5){
+                                this.transferRules(rules)
+                                this.transferCommonInfo(commonInfo,rules)
+
+                            }
+                            //------------过滤迁移数据end-------------
                             
 
                             //回显公共规则
                             this.showCommonInfo(commonInfo);
                             //回显活动预算
                             this.showBizPropertyMap(bizPropertyMap);
+                             console.log("22222")
                             //回显所有规则
                             this.showRules(rules);
+                            console.log("11111111")
+
                         }
                     })
                     .catch(err => {
@@ -1206,10 +1470,189 @@ export default {
                 this.disabled = false;
             }
         },
+        //数据迁移过滤数据commonInfo(临时状态)
+        transferCommonInfo(commonInfo,rules){
+            for (let i = commonInfo.length-1; i >=0; i--) {
+                try {
+                    //3.0交易客商,临时处理（数据迁移）
+                    if(commonInfo[i].key == "businessCode"){
+                        commonInfo.splice(i,1)
+                    }
+                } catch (error) {
+                    console.log(error)
+                }
 
+                try {
+                    //3.0消费者身份,临时处理（数据迁移）
+                    if(commonInfo[i] && commonInfo[i].key == "consumerTypeKey"){
+                        //3.0消费者身份 迁移成 4.0会员等级（数据迁移）
+                        this.validHasOrNoOption("customerLevelCode",rules)
+                    }
+                } catch (error) {
+                    console.log(error)
+                }
+
+                try {
+                    //3.0会员等级,临时处理（数据迁移）
+                    if(commonInfo[i] && commonInfo[i].key == "cardTypeKey"){
+                        //3.0会员等级 迁移成 4.0会员等级（数据迁移）
+                        this.validHasOrNoOption("customerLevelCode",rules)
+                    }
+                } catch (error) {
+                    console.log(error)
+                }
+
+                try {
+                    //3.0支付方式(柜台用),临时处理（数据迁移）
+                    if(commonInfo[i] && commonInfo[i].key == "payTypeCode"){
+                        //3.0支付方式(柜台用) 迁移成 4.0支付方式(柜台用)（数据迁移）
+                        this.validHasOrNoOption("payTypeCode",rules)
+                    }
+                } catch (error) {
+                    console.log(error)
+                }
+               
+                //清空弹窗内的值让用户重新选择
+                this.transferOptions.commonInfo.forEach(item=>{
+                    if(commonInfo[i] 
+                        && commonInfo[i].groupId == item.groupId 
+                        && commonInfo[i].key == item.key
+                    ){
+                        commonInfo[i].value=item.value
+                        commonInfo[i].text=item.text
+                    }
+                })
+                
+            }
+            console.log("commonInfo数据迁移",commonInfo)
+        },
+        //验证选项是否存在
+        validHasOrNoOption(key,rules){
+            rules.forEach(els=>{
+                let keyFlag=false//判断子活动中是否存在该条件
+                //活动条件
+                if(els.ruleConditions.length!=0){
+                    for (let i =0; i < els.ruleConditions.length; i++) {
+                        if(els.ruleConditions[i].key==key){
+                            keyFlag=true;
+                            break
+                        }
+                    }
+                }
+                if(!keyFlag){
+                    //插入 会员等级
+                    if(key=="customerLevelCode"){
+                        els.ruleConditions.push({
+                            category: "SaleInfo",
+                            groupId: 101,
+                            key: "customerLevelCode",
+                            opUniqueName: "normalIn",
+                            text: "",
+                            value: ""
+                        })
+                    }
+                    //插入 支付方式(柜台用)
+                    if(key=="payTypeCode"){
+                        els.ruleConditions.push({
+                            category: "SaleInfo",
+                            groupId: 86,
+                            key: "payTypeCode",
+                            opUniqueName: "normalIn",
+                            text: "",
+                            value: ""
+                        })
+                    }
+                   
+                }
+            })
+        },
+        //数据迁移过滤数据rules(临时状态)
+        transferRules(rules){
+            rules.forEach(els=>{
+                //活动条件
+                if(els.ruleConditions.length!=0){
+                    for (let i = els.ruleConditions.length-1; i >=0; i--) {
+                        console.log(els.ruleConditions[i],"els.ruleConditions[i].key",i)
+
+                        try {
+                            //消费者身份,临时处理（数据迁移）
+                            if(els.ruleConditions[i].key == "consumerTypeKey" || els.ruleConditions[i].key == "cardTypeKey"){
+                            els.ruleConditions.splice(i,1)
+                            els.ruleConditions.push({
+                                category: "SaleInfo",
+                                groupId: 101,
+                                key: "customerLevelCode",
+                                opUniqueName: "normalIn",
+                                text: "",
+                                value: ""
+                            })
+                        }
+                        } catch (error) {
+                            console.log(error)
+                        }
+                       
+                        try {
+                            //交易客商,临时处理（数据迁移）
+                            if(els.ruleConditions[i].key == "businessCode"){
+                                els.ruleConditions.splice(i,1)
+                            }
+                        } catch (error) {
+                            console.log(error)
+                        }
+                       
+                        try {
+                            //交易渠道,临时处理（数据迁移）
+                            if(els.ruleConditions[i].key == "consumeWayCode"){
+                                els.ruleConditions.splice(i,1)
+                            }
+                        } catch (error) {
+                            console.log(error)
+                        }
+                       
+                        try {
+                            //交易影院,临时处理（数据迁移）
+                            if(els.ruleConditions[i].key == "cinemaCode"){
+                                els.ruleConditions.splice(i,1)
+                            }
+                        } catch (error) {
+                            console.log(error)
+                        }
+
+                        //清空弹窗内的值让用户重新选择
+                        this.transferOptions.rules.ruleConditions.forEach(item=>{
+                            if(els.ruleConditions[i] 
+                                && els.ruleConditions[i].groupId == item.groupId
+                                && els.ruleConditions[i].key == item.key
+                            ){
+                                els.ruleConditions[i].value=item.value
+                                els.ruleConditions[i].text=item.text
+                            }
+                        })
+                    }
+                }
+                // 执行条件-清空弹窗内的值让用户重新选择
+                if(els.actions.length!=0){
+                    els.actions.forEach(el=>{
+                        this.transferOptions.rules.actions.forEach(item=>{
+                            if(el.groupId == item.groupId && el.key == item.key){
+                                el.value=item.value
+                                el.text=item.text
+                            }
+                        })
+                    })
+                }
+            })
+            console.log("rules数据迁移",rules)
+        },
         //回显公共规则
         showCommonInfo(commonInfo) {
             for (let item of commonInfo) {
+                //交易类型
+                if(item.key=="tradeType"){
+                    this.basicDataForm.tradeTypeId=item.value
+                    this.basicDataForm.tradeTypeInput=item.text
+                }
+
                 //排除日期
                 if (item.key == "appointInvalidDate") {
                     this.basicDataForm.excludeDate.push("指定排除日期范围");
@@ -1269,24 +1712,22 @@ export default {
                                 }
                             }
                         obj.checkAllWorkDay = false;
-                        if (
-                            obj.workDay &&
-                            obj.workDay.length > 0 &&
-                            obj.workDay.length == 5
-                        ) {
+                        if (obj.workDay && obj.workDay.length > 0 && obj.workDay.length == 5) {
                             obj.checkAllWorkDay = true;
+                            obj.isIndeterminateWithWorkDay = false;
+                        } else if(obj.workDay.length == 0){
+                            obj.checkAllWorkDay = false;
                             obj.isIndeterminateWithWorkDay = false;
                         } else {
                             obj.checkAllWorkDay = false;
                             obj.isIndeterminateWithWorkDay = true;
                         }
                         obj.checkAllWeekend = false;
-                        if (
-                            obj.weekend &&
-                            obj.weekend.length > 0 &&
-                            obj.weekend.length == 2
-                        ) {
+                        if (obj.weekend && obj.weekend.length > 0 && obj.weekend.length == 2) {
                             obj.checkAllWeekend = true;
+                            obj.isIndeterminateWithWeekend = false;
+                        } else if(obj.weekend.length == 0){
+                            obj.checkAllWeekend = false;
                             obj.isIndeterminateWithWeekend = false;
                         } else {
                             obj.checkAllWeekend = false;
@@ -1314,15 +1755,20 @@ export default {
             if (this.basicDataForm.activityBudgetCycle != "") {
                 this.basicDataForm.activityBudgetCycleInput = bizPropertyMap.runAmount;
             }
-            this.basicDataForm.totalDiscountAmount =
-                bizPropertyMap.totalDiscountAmount;
+            this.basicDataForm.totalDiscountAmount = bizPropertyMap.totalDiscountAmount;
             this.basicDataForm.totalTicketsAmount = bizPropertyMap.totalTicketsAmount;
-            if (
-                bizPropertyMap.totalDiscountAmount &&
-                bizPropertyMap.totalTicketsAmount
-            ) {
+
+            if (bizPropertyMap.totalDiscountAmount || bizPropertyMap.totalTicketsAmount) {
                 this.basicDataForm.activityBudgetSum = "1";
+                if(this.basicDataForm.totalDiscountAmount){
+                    this.basicDataForm.activityBudgetSumCheckList.push("限制总补贴金额")
+                }
+                if(this.basicDataForm.totalTicketsAmount){
+                    this.basicDataForm.activityBudgetSumCheckList.push("限制总票数")
+                }
+                console.log(this.basicDataForm.activityBudgetSumCheckList)
             }
+
         },
 
         //回显所有规则
@@ -1345,7 +1791,12 @@ export default {
                     actions: this.setActions(rule, actMap)
                 };
                 this.rules.push(target);
+                if(this.transferStatus==5){
+                    //数据迁移验证(临时状态)
+                    this.validateStatus.push(false)
+                }
             }
+            console.log("showRules-rules",this.rules)
 
         },
 
@@ -1384,6 +1835,7 @@ export default {
             ]
          */
         setActions(rule, actMap) {
+             console.log("setActions")
             let targetActions = [];
             for (let action of rule.actions) {
                 let key = action.key + action.groupId;
@@ -1437,10 +1889,14 @@ export default {
                         }
                     }
                 } else {
-                    targetActions.push({
-                        key: key,
-                        value: actMap.get(key)
-                    });
+                    try {
+                        targetActions.push({
+                            key: key,
+                            value: actMap.get(key)
+                        });
+                    } catch (error) {
+                        console.log(error)
+                    }
                 }
             }
             
@@ -1474,12 +1930,12 @@ export default {
                                 targetConditions.push(item)
                             }
                         })
-                         this.tradeOptions.forEach(item=>{
+                        this.tradeOptions.forEach(item=>{
                             if(value.fvalue==item.value){
                                 targetConditions.push(item)
                             }
                         })
-                         this.movieTicketsOptions.forEach(item=>{
+                        this.movieTicketsOptions.forEach(item=>{
                             if(value.fvalue==item.value){
                                 targetConditions.push(item)
                             }
@@ -1522,11 +1978,15 @@ export default {
                         }
                     }
                 } else {
-                     console.log("else-object");
-                    targetConditions.push({
-                        key: key,
-                        value: value
-                    });
+                    console.log("else-object");
+                    try {
+                        targetConditions.push({
+                            key: key,
+                            value: value
+                        });
+                    } catch (error) {
+                        console.log(error)
+                    }
                 }
             }
            
@@ -1535,40 +1995,66 @@ export default {
         },
 
         setFormData(rule, map, actMap) {
+            console.log("setFormData")
             let formData =  JSON.parse(JSON.stringify(FormData)); //formData初始数据
             formData.activityName = rule.name
+             console.log("setFormData1")
             for (let cond of rule.ruleConditions) {
                 let key = cond.key + cond.groupId;
                 let value = map.get(key);
                 // console.log(formData[key])
 
                 if (typeof value == "object") {
-                    formData[value.fkey][key].opUniqueName = cond.opUniqueName ?
-                        cond.opUniqueName :
-                        "";
-                    formData[value.fkey][key].value = cond.value ? cond.value : "";
-                    formData[value.fkey][key].text = cond.text ? cond.text : "";
+                    console.log("object")
+                    try {
+                        formData[value.fkey][key].opUniqueName = cond.opUniqueName ?
+                            cond.opUniqueName :
+                            "";
+                        formData[value.fkey][key].value = cond.value ? cond.value : "";
+                        formData[value.fkey][key].text = cond.text ? cond.text : "";
+                    } catch (error) {
+                        console.log(error)
+                    }
                 } else {
-                    formData[key].opUniqueName = cond.opUniqueName ?
+                    console.log("NO")
+                    console.log(formData)
+                    console.log(key)
+                    try {
+                        formData[key].opUniqueName = cond.opUniqueName ?
                         cond.opUniqueName :
                         "";
-                    formData[key].value = cond.value ? cond.value : "";
-                    formData[key].text = cond.text ? cond.text : "";
+                        formData[key].value = cond.value ? cond.value : "";
+                        formData[key].text = cond.text ? cond.text : "";
+                    } catch (error) {
+                        console.log(error)
+                    }
+                  
                 }
             }
-
+            console.log("setFormData2")
             for (let action of rule.actions) {
                 let key = action.key + action.groupId;
                 let value = actMap.get(key);
                 if (typeof value == "object") {
-                    formData[value.fkey][key].value = action.value ? action.value : "";
-                    formData[value.fkey][key].text = action.text ? action.text : "";
+                    try {
+                        formData[value.fkey][key].value = action.value ? action.value : "";
+                        formData[value.fkey][key].text = action.text ? action.text : "";
+                    } catch (error) {
+                        console.log(error)
+                    }
                 } else {
-                    formData[key].value = action.value ? action.value : "";
-                    formData[key].text = action.text ? action.text : "";
+                    try {
+                        console.log(key)
+                        formData[key].value = action.value ? action.value : "";
+                        formData[key].text = action.text ? action.text : "";
+                    } catch (error) {
+                        console.log(error)
+                    }
+                   
                 }
             }
 
+            console.log("setFormData3")
 
             return formData;
         },
@@ -1576,7 +2062,7 @@ export default {
         /********** 编辑数据回显 **********/
 
         returnList() {
-            this.$emit("refreshDataList");
+            this.$emit("refreshDataList",false);
         },
         handleChange(val) {
             console.log(val);
@@ -1613,7 +2099,29 @@ export default {
                 this.$refs["basicDataForm"].clearValidate(["dateOption"]);
             }
         },
-
+        //活动总预算 监听
+        activityBudgetAmountOptionChange(val){
+            if(val==""){
+                this.basicDataForm.activityBudgetSumCheckList=[]
+                this.basicDataForm.totalTicketsAmount=""
+                this.basicDataForm.totalDiscountAmount=""
+            }
+        },
+        //活动总预算-指定预算限制 监听
+        activityBudgetSumChange(val){
+            if(val.length!=0){
+                if(val.indexOf("限制总票数")==-1){
+                    this.basicDataForm.totalTicketsAmount=""
+                }
+                if(val.indexOf("限制总补贴金额")==-1){
+                    this.basicDataForm.totalDiscountAmount=""
+                }
+            }else{
+                this.basicDataForm.totalTicketsAmount=""
+                this.basicDataForm.totalDiscountAmount=""
+            }
+            console.log(val)
+        },
         /* 修改排除日期 */
         setExcludeDate(val) {
             this.basicDataForm.excludeDateOption = val;
@@ -1832,12 +2340,12 @@ export default {
                     opUniqueName: this.basicDataForm.tradingMerchant 
                 });
             }
-            
+            //交易类型
             this.commonInfo.push({
                 category: "SaleInfo",
                 key: "tradeType",
-                value: "BUY",
-                text: "",
+                value: this.basicDataForm.tradeTypeId || "BUY",
+                text: this.basicDataForm.tradeTypeInput || '["消费"]',
                 opUniqueName: "normalEqual"
             });
             //过滤
@@ -1910,8 +2418,11 @@ export default {
                 );
                 rule.actions = this.buildActionsData(item.formData, item.actions);
                 this.targetRules.push(rule);
+                console.log(this.targetRules)
             }
             // console.log("targetRules",this.targetRules)
+            console.log("buildTargetRules",this.rules)
+
         },
         /* 组装活动条件数据 */
         buildRuleConditionsData(formData, tmpCond) {
@@ -2024,11 +2535,34 @@ export default {
         filterAllData(ruleGroup){
             ruleGroup.commonInfo=this.filterCommonInfoData(ruleGroup.commonInfo)
         },
+        //数据迁移验证(临时状态)
+        validTransferStatusList(){
+            let flag=false
+            // this.validateStatus.forEach(item=>{
+            //     if(!item){
+            //         flag=false
+            //         break;
+            //     }else{
+            //         flag=true
+            //     }
+            // })
+            for(let i =0; i<this.validateStatus.length;i++){
+                if(!this.validateStatus[i]){
+                    flag=false
+                    break;
+                }else{
+                    flag=true
+                }
+            }
+
+            return flag;
+        },
         // 表单提交
         dataFormSubmit(flag) {
             this.isDisabled = true;
             this.validAppointDays();
             this.$refs["basicDataForm"].validate(valid => {
+                console.log("dataFormSubmit",this.rules)
                 if(this.rules.length == 0){
                     this.$message.error("请添加分组活动执行条件");
                     this.isDisabled = false;
@@ -2041,64 +2575,96 @@ export default {
                     this.isDisabled = false;
                 }else{
                     if (valid) {
-                        if (valid) {
-                            /* 公共规则 */
-                            this.buildCommonInfoData();
-
-                            /* 活动预算 */
-                            this.buildBizPropertyMap();
-
-                            /* 组装活动规则 */
-                            this.buildTargetRules();
-                            let ruleGroup = {
-                                flag: flag,
-                                tenantId: this.basicDataForm.tenantId,
-                                bizId:  this.activityId, //营销活动id
-                                bizOrderCode: this.basicDataForm.activityCode, //营销活动编号
-                                id: this.activityId,
-                                templateId: this.basicDataForm.activityType,
-                                name: this.basicDataForm.activityName,
-                                remark: this.basicDataForm.activityDesc,
-                                executeMode: this.basicDataForm.executeMode,
-                                priority: this.basicDataForm.priority == 1 ?
-                                    this.basicDataForm.priorityNum : 100,
-                                validDateStart: this.basicDataForm.validDateStart + " 00:00:00",
-                                validDateEnd: this.basicDataForm.validDateEnd + " 00:00:00",
-                                commonInfo: this.commonInfo,
-                                ruleType: "SaleActivity",
-                                rules: this.targetRules ? this.targetRules : []
-                            };
-                            console.log("ruleGroup  " + JSON.stringify(ruleGroup));
-                            this.$cmmList
-                                .marketingAdd(ruleGroup)
-                                .then(data => {
-                                    if (data && data.code === 200) {
-                                        this.$message({
-                                            message: "操作成功",
-                                            type: "success",
-                                            duration: 1500,
-                                            onClose: () => {
-                                                this.$emit("refreshDataList");
-                                            }
-                                        });
-                                    } else {
-                                        this.$message.error(data.msg);
-                                        this.isDisabled = false;
-                                    }
-                                })
-                                .catch(err => {
-                                    console.log(err);
-                                });
+                        console.log("valid-success")
+                        // 迁移数据
+                        if(this.transferStatus==5){
+                            let transferFlag=false//迁移数据,是否允许提交执行(临时状态)
+                            transferFlag=this.validTransferStatusList()//迁移数据,是否允许提交执行(临时状态)
+                            if(!transferFlag){//迁移数据状态特殊处理
+                                this.$message.error("请完成分组活动执行条件的修改");
+                                this.isDisabled = false;
+                                return false;
+                            }
                         }
+
+                        /* 公共规则 */
+                        this.buildCommonInfoData();
+                        /* 活动预算 */
+                        this.buildBizPropertyMap();
+                        /* 组装活动规则 */
+                        this.buildTargetRules();
+                        let ruleGroup = {
+                            flag: flag,
+                            tenantId: this.basicDataForm.tenantId,
+                            bizId:  this.activityId, //营销活动id
+                            bizOrderCode: this.basicDataForm.activityCode, //营销活动编号
+                            id: this.activityId,
+                            templateId: this.basicDataForm.activityType,
+                            name: this.basicDataForm.activityName,
+                            remark: this.basicDataForm.activityDesc,
+                            executeMode: this.basicDataForm.executeMode,
+                            priority: this.basicDataForm.priority == 1 ?
+                                this.basicDataForm.priorityNum : 100,
+                            validDateStart: this.basicDataForm.validDateStart + " 00:00:00",
+                            validDateEnd: this.basicDataForm.validDateEnd + " 00:00:00",
+                            commonInfo: this.commonInfo,
+                            ruleType: "SaleActivity",
+                            rules: this.targetRules ? this.targetRules : []
+                        };
+                        console.log("ruleGroup  " + JSON.stringify(ruleGroup));
+                        this.$cmmList
+                            .marketingAdd(ruleGroup)
+                            .then(data => {
+                                if (data && data.code === 200) {
+                                    //临时处理（迁移数据）
+                                    // if(this.transferStatus == 5){
+                                        // this.deleteHandle(this.transferId)
+                                    // }
+                                    this.$message({
+                                        message: "操作成功",
+                                        type: "success",
+                                        duration: 1500,
+                                        onClose: () => {
+                                            this.$emit("refreshDataList");
+                                        }
+                                    });
+                                } else {
+                                    this.$message.error(data.msg);
+                                    this.isDisabled = false;
+                                }
+                            })
+                            .catch(err => {
+                                this.isDisabled = false;
+                                console.log(err);
+                            });
                     }else{
                         this.isDisabled = false;
                     }
                 }
                 
             });
+
+        },
+        // 删除
+        deleteHandle(id) {
+            this.$cmmList.marketingDel({
+                id: id,
+                tenantId: this.tenantId
+            }).then(data => {
+                if (data && data.code === 200) {
+                   
+                } else {
+                    this.$message.error(data.msg)
+                }
+            }).catch(err => {
+                console.log(err)
+            })
         },
         // 添加分组活动执行条件
         addGroup(rule, index) {
+            if(rule){
+                rule=JSON.parse(JSON.stringify(rule))
+            }
             this.addGroupShow = true;
             this.$nextTick(() => {
                 this.$refs.addGroup.init(rule, index);
@@ -2106,6 +2672,13 @@ export default {
         },
         close() {
             this.addGroupShow = false;
+        },
+        //验证是否迁移成功数据(处理数据迁移临时状态)
+        handleTransferStatus(data){
+            console.log("data",data)
+            if(data.status){
+                this.validateStatus[data.index]=data.status
+            }
         },
         transferData(data) {
             if (data.index !== "" && data.index != null) {
@@ -2116,12 +2689,21 @@ export default {
                 }
             } else {
                 this.rules.push(data);
+                if(this.transferStatus==5){
+                    //数据迁移验证(临时状态)
+                    this.validateStatus.push(true)
+                }
             }
 
             this.close()
         },
+        //删除分组活动条件
         removeRule(index) {
             this.rules.splice(index, 1);
+            //数据迁移(临时状态)
+            if(this.transferStatus==5){
+                this.validateStatus.splice(index, 1);
+            }
         }
     }
 }
@@ -2129,6 +2711,9 @@ export default {
 
 
 <style lang="scss" scoped>
+/deep/ .el-form-item.is-error .el-input__inner{
+    border-color: #F56C6C!important;
+}
 /deep/.movie-plan_default {
     .input-activity-name{
         width:360px;
@@ -2176,6 +2761,12 @@ export default {
                 background-color: #3b74ff;
                 color: #ffffff;
             }
+        }
+        .validate-status-green{
+            border: 1px solid #67C23A;
+        }
+        .validate-status-red{
+            border: 1px solid #F56C6C;
         }
         .addBtn{
             text-align: center;

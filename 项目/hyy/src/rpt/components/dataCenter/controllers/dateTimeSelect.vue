@@ -1,43 +1,37 @@
 <template>
   <el-date-picker
     unlink-panels
-    v-model="dateTime"
+    class="rpt-datetime-picker"
+    v-model="dateTimeSelectObj.dateTime"
     type="datetimerange"
     range-separator="至"
     start-placeholder="开始日期"
     end-placeholder="结束日期"
     value-format="yyyy-MM-dd HH:mm:ss"
+    :default-time="['06:00:00', '05:59:59']"
     @change="dateTimeChange"
   ></el-date-picker>
 </template>
 
 <script>
 import Moment from "moment";
-import mixins from "src/frame_cpm/mixins/cacheMixin.js";
 export default {
-  mixins: [mixins.cacheMixin],
   props: {
     resetStatus: Boolean,
-    queryName: String
+    queryName: String,
+    dateTimeSelectObj: Object
   },
   data() {
-    return {
-      cacheField: [
-        "dateTime",
-      ],
-      subComName: "dateTimeSelect",
-      dateTime: []
-    };
+    return {};
   },
   methods: {
     dateTimeChange() {
       this.getStrTime();
     },
     getStrTime() {
-      let time = this.dateTime;
-      console.log(this.dateTime);
-      if (time != null) {
-        let endTime = time[1].replace("06:00:00", "06:00:00");
+      let time = this.dateTimeSelectObj.dateTime;
+      if (time != null && time.length != 0) {
+        let endTime = time[1].replace("06:00:00", "05:59:59");
         time[1] = endTime;
         this.$emit("selectDateTimeData", time.join(","), this.queryName);
       } else {
@@ -49,11 +43,14 @@ export default {
         .add(-1, "days")
         .format("YYYY-MM-DD");
       let today = Moment().format("YYYY-MM-DD");
-      this.dateTime = [`${yesterday} 06:00:00`, `${today} 06:00:00`];
+      this.dateTimeSelectObj.dateTime = [
+        `${yesterday} 06:00:00`,
+        `${today} 05:59:59`
+      ];
     }
   },
   mounted() {
-    this.init();
+    if (this.dateTimeSelectObj.dateTime.length === 0) this.init();
     this.getStrTime();
   },
   watch: {
@@ -67,7 +64,15 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
+.rpt-datetime-picker {
+  width: 356px !important;
+    .el-input__icon,
+    .el-range-separator,
+    .el-range-input {
+      font-size: 12px;
+    }
+}
 </style>
 
 

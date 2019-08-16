@@ -5,6 +5,7 @@
             :visible.sync="showStatus"
             :modal-append-to-body='false'
             :append-to-body="false"
+            :close-on-click-modal="false"
             center>
             <div >
                 <ul class="more-list">
@@ -109,7 +110,7 @@ export default {
                         position: absolute;
                         right: 0;
                         top: 0;
-                        font-size: 32px;
+                        font-size: 2.2vw;
                         color: #3B74FF;
                         }
                 }

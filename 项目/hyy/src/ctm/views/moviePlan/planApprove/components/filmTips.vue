@@ -43,7 +43,7 @@
                         class: 'success',
                     },
                     {
-                        text: '审批中',
+                        text: '待审批',
                         class: 'going',
                     },
                     {

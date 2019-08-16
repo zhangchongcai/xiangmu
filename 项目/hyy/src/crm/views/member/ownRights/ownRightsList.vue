@@ -103,7 +103,7 @@ export default {
         { name: "影票折扣", value: "movie" },
         { name: "卖品折扣", value: "goods" },
         { name: "生日赠券", value: "birthday" },
-        { name: "代金卷", value: "voucher" }
+        { name: "代金券", value: "voucher" }
       ] //权益类别列表
     };
   },

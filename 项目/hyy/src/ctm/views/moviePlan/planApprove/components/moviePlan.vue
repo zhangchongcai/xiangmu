@@ -101,7 +101,7 @@
     },
     watch: {
         baseParam(data, old_data) {
-            this.initMoivePlan()
+            this.initMoviePlan()
         },
         initFlag(data, oData) {
             if (data.movie && data.plan && data.hall) {
@@ -343,7 +343,7 @@
         /**
          *  @planData 排片数据连接的一维数组(不包括连排)
          */
-        initPlanAdvice(planData) {
+        initPlanAdviceOld(planData) {
             getPlanAdvice({
                 cinemaUid: this.baseParam.uidCinema,
                 planDate: this.baseParam.planDate
@@ -428,6 +428,224 @@
                     })
                     if (!item.color) item.color = this.colorBox[0]
                 })
+            })
+        },
+
+        // 初始化排片指导数据
+        initPlanAdvice(planData) {
+            getPlanAdvice({
+                cinemaUid: this.baseParam.uidCinema,
+                planDate: this.baseParam.planDate
+            }).then(res => {
+                if (res.code != 200) return this.error(res.msg)
+                if (res.code == 200) {
+                    // debugger
+                    let originData = JSON.parse(JSON.stringify(res.data))
+                    originData.forEach(item => {
+                        item.myNum = 0
+                        item.myPer = 0
+                    })
+                    // 计算出 当前排片场次和占比
+                    originData.forEach(item => {
+                        item.goldTimeCheck = item.movieDetailVoList.some(hall => hall.detailType == 'h')
+                        if (item.movieDetailVoList.find(hall => hall.detailType != 'h')) {
+                            item.rangeNoCheck = item.movieDetailVoList.find(hall => hall.detailType != 'h').numberOrRatio == 1
+                            item.numNoCheck = item.movieDetailVoList.find(hall => hall.detailType != 'h').numberOrRatio == 0
+                        }
+                        item.goldNocheck = !item.movieDetailVoList.find(hall => hall.detailType == 'h')
+
+                        let myNum = item.movieInfoVoList.reduce((count , movie) => {
+                            let everyCount = planData.reduce((data, plan) => {
+                                // 判断影片是否连排
+                                if (!plan.joinFlag) {
+                                    return movie.movieCodeList.find(singleMoive => singleMoive.movieCode == plan.movieCode) ? data + 1 : data
+                                } else {
+                                    return data + plan.planTimeVoList.reduce((cData, citem) => {
+                                        return movie.movieCodeList.find(singleMoive => singleMoive.movieCode == citem.movieCode) ? cData + 1 : cData
+                                    }, 0)
+                                }
+                            }, 0)
+                            return count + everyCount
+                        }, 0)
+
+                        let allPlansNum = planData.reduce((data, plan) => {
+                                return !plan.joinFlag ? data + 1 : data + plan.planTimeVoList.length
+                            }, 0),
+                            myPer = allPlansNum ? (myNum / allPlansNum * 100).toFixed(2) : '0.00'
+                        item.allPlansNum = allPlansNum
+                        console.log(item)
+                        item.myNum = myNum || 0
+                        item.myPer = myPer || '0.00'
+                        item.isAdvice = true
+                        if (this.goldTimeStart && this.goldTimeEnd) {
+                            let goldTimeStart = new Date(this.goldTimeStart).getTime(), goldTimeEnd = new Date(this.goldTimeEnd).getTime()
+                            let goldTotal = planData.reduce((data, film) => {
+                                if (!film.joinFlag) {
+                                    let startTime = film.startTime.hours < 6 ?
+                                        new Date(`${this.baseParam.planDate} ${film.startTime.hours}:${film.startTime.minute}`).getTime() + 24 * 60 * 60 * 1000 :
+                                        new Date(`${this.baseParam.planDate} ${film.startTime.hours}:${film.startTime.minute}`).getTime()
+                                    let endTime = film.endTime.hours < 6 ?
+                                        new Date(`${this.baseParam.planDate} ${film.endTime.hours}:${film.endTime.minute}`).getTime() + 24 * 60 * 60 * 1000 :
+                                        new Date(`${this.baseParam.planDate} ${film.endTime.hours}:${film.endTime.minute}`).getTime()
+                                    return startTime >= goldTimeStart && startTime <= goldTimeEnd ? data + 1 : data + 0
+                                } else {
+                                    return data + film.planTimeVoList.reduce((cData, citem) => {
+                                        let startTime = new Date(citem.planTimeStart).getTime(),
+                                            endTime = new Date(citem.planTimeEnd).getTime()
+                                        return startTime >= goldTimeStart && startTime <= goldTimeEnd ? cData + 1 : cData + 0
+                                    }, 0)
+                                }
+
+                            }, 0)
+
+                            item.goldNum = planData.reduce((data, film) => {
+                                if (!film.joinFlag) {
+                                    if (item.movieInfoVoList.find(citem => citem.cmcBaseMovieId == film.cmcBaseMovieId)) {
+                                        let startTime = film.startTime.hours < 6 ?
+                                            new Date(`${this.baseParam.planDate} ${film.startTime.hours}:${film.startTime.minute}`).getTime() + 24 * 60 * 60 * 1000 :
+                                            new Date(`${this.baseParam.planDate} ${film.startTime.hours}:${film.startTime.minute}`).getTime()
+                                        let endTime = film.endTime.hours < 6 ?
+                                            new Date(`${this.baseParam.planDate} ${film.endTime.hours}:${film.endTime.minute}`).getTime() + 24 * 60 * 60 * 1000 :
+                                            new Date(`${this.baseParam.planDate} ${film.endTime.hours}:${film.endTime.minute}`).getTime()
+
+                                        return startTime >= goldTimeStart && startTime <= goldTimeEnd ? data += 1 : data += 0
+                                    } else {
+                                        return data += 0
+                                    }
+                                } else {
+                                    return data + film.planTimeVoList.reduce((cData, citem) => {
+                                        if (item.movieInfoVoList.find(movie => movie.cmcBaseMovieId == citem.cmcBaseMovieId)) {
+                                            let startTime = new Date(citem.planTimeStart).getTime(), endTime = new Date(citem.planTimeEnd).getTime()
+                                            return startTime >= goldTimeStart && startTime <= goldTimeEnd ? cData + 1 : cData + 0
+                                        } else {
+                                            return cData + 0
+                                        }
+                                    }, 0)
+                                }
+                            }, 0)
+                            item.goldPer = (item.goldScene / goldTotal * 100) ? (item.goldScene / goldTotal * 100).toFixed(2) : '0.00'
+                        }
+                    })
+
+                    let needSortOriginData = originData.filter(item => !item.rangeNoCheck)
+                    needSortOriginData.sort((a, b) => b.movieDetailVoList.find(item => item.detailType != 'h').timeRatioLower - a.movieDetailVoList.find(item => item.detailType != 'h').timeRatioLower)
+                    let noNeedSortOriginData = originData.filter(item => item.rangeNoCheck)
+                    originData = needSortOriginData.concat(noNeedSortOriginData)
+
+                    let noAdviceData = planData.filter(plan => originData.every(item => !item.movieInfoVoList.some(citem => citem.movieCodeList.find(singleMovie => singleMovie.movieCode == plan.movieCode))) && !plan.joinFlag)
+                    let concatData = []
+                    noAdviceData.forEach(plan => {
+                        if (concatData.every(item => !item.movieInfoVoList.some(citem => citem.movieCodeList.find(singleMovie => singleMovie.movieCode == plan.movieCode)))) {
+                            concatData.push({
+                                isAdvice: false,
+                                movieInfoVoList: [
+                                    {
+                                        movieCodeList: [{
+                                            movieCode: plan.movieCode
+                                        }],
+                                        movieName: plan.movieName
+                                    }
+                                ],
+
+                            })
+                        }
+                    })
+
+                    concatData.forEach(item => {
+                        let myNum = item.movieInfoVoList.reduce((count , movie) => {
+                            let everyCount = planData.reduce((data, plan) => {
+                                // 判断影片是否连排
+                                if (!plan.joinFlag) {
+                                    return movie.movieCodeList.find(singleMoive => singleMoive.movieCode == plan.movieCode) ? data + 1 : data
+                                } else {
+                                    return data + plan.planTimeVoList.reduce((cData, citem) => {
+                                        return movie.movieCodeList.find(singleMoive => singleMoive.movieCode == citem.movieCode) ? cData + 1 : cData
+                                    }, 0)
+                                }
+                            }, 0)
+                            return count + everyCount
+                        }, 0)
+
+                        let allPlansNum = planData.reduce((data, plan) => {
+                                return !plan.joinFlag ? data + 1 : data + plan.planTimeVoList.length
+                            }, 0),
+
+                            myPer = allPlansNum ? (myNum / allPlansNum * 100).toFixed(2) : '0.00'
+                        item.myNum = myNum || 0
+                        item.myPer = myPer || '0.00'
+                        if (this.goldTimeStart && this.goldTimeEnd) {
+                            let goldTimeStart = new Date(this.goldTimeStart).getTime(), goldTimeEnd = new Date(this.goldTimeEnd).getTime()
+                            let goldTotal = planData.reduce((data, film) => {
+                                if (!film.joinFlag) {
+                                    let startTime = film.startTime.hours < 6 ?
+                                        new Date(`${this.baseParam.planDate} ${film.startTime.hours}:${film.startTime.minute}`).getTime() + 24 * 60 * 60 * 1000 :
+                                        new Date(`${this.baseParam.planDate} ${film.startTime.hours}:${film.startTime.minute}`).getTime()
+                                    let endTime = film.endTime.hours < 6 ?
+                                        new Date(`${this.baseParam.planDate} ${film.endTime.hours}:${film.endTime.minute}`).getTime() + 24 * 60 * 60 * 1000 :
+                                        new Date(`${this.baseParam.planDate} ${film.endTime.hours}:${film.endTime.minute}`).getTime()
+                                    return startTime >= goldTimeStart && startTime <= goldTimeEnd ? data + 1 : data + 0
+                                } else {
+                                    return data + film.planTimeVoList.reduce((cData, citem) => {
+                                        let startTime = new Date(citem.planTimeStart).getTime(),
+                                            endTime = new Date(citem.planTimeEnd).getTime()
+                                        return startTime >= goldTimeStart && startTime <= goldTimeEnd ? cData + 1 : cData + 0
+                                    }, 0)
+                                }
+
+                            }, 0)
+
+                            item.goldNum = planData.reduce((data, film) => {
+                                if (!film.joinFlag) {
+                                    if (item.movieInfoVoList.find(citem => citem.cmcBaseMovieId == film.cmcBaseMovieId)) {
+                                        let startTime = film.startTime.hours < 6 ?
+                                            new Date(`${this.baseParam.planDate} ${film.startTime.hours}:${film.startTime.minute}`).getTime() + 24 * 60 * 60 * 1000 :
+                                            new Date(`${this.baseParam.planDate} ${film.startTime.hours}:${film.startTime.minute}`).getTime()
+                                        let endTime = film.endTime.hours < 6 ?
+                                            new Date(`${this.baseParam.planDate} ${film.endTime.hours}:${film.endTime.minute}`).getTime() + 24 * 60 * 60 * 1000 :
+                                            new Date(`${this.baseParam.planDate} ${film.endTime.hours}:${film.endTime.minute}`).getTime()
+
+                                        return startTime >= goldTimeStart && startTime <= goldTimeEnd ? data += 1 : data += 0
+                                    } else {
+                                        return data += 0
+                                    }
+                                } else {
+                                    return data + film.planTimeVoList.reduce((cData, citem) => {
+                                        if (item.movieInfoVoList.find(movie => movie.cmcBaseMovieId == citem.cmcBaseMovieId)) {
+                                            let startTime = new Date(citem.planTimeStart).getTime(), endTime = new Date(citem.planTimeEnd).getTime()
+                                            return startTime >= goldTimeStart && startTime <= goldTimeEnd ? cData + 1 : cData + 0
+                                        } else {
+                                            return cData + 0
+                                        }
+                                    }, 0)
+                                }
+                            }, 0)
+                            item.goldPer = (item.goldScene / goldTotal * 100) ? (item.goldScene / goldTotal * 100).toFixed(2) : '0.00'
+                        }
+                    })
+                    concatData.sort((a, b) => b.myPer - a.myPer)
+                    // TODO 检查是否需要重写检验方法
+                    this.checkUpAdvice(originData)
+                    this.adviceData = originData.concat(concatData)
+                    this.adviceData.forEach(item => {
+                        this.films.some(film => {
+                            item.movieInfoVoList.forEach(citem => {
+                                console.log(citem)
+                                citem.movieCodeList.some(singleMoive => {
+                                    if (singleMoive.movieCode == film.movieCode) {
+                                        item.color = film.color
+                                        return true
+                                    }
+                                })
+                            })
+
+                        })
+                        if (!item.color) item.color = this.colorBox[0]
+                    })
+                    // if (this.$refs.filmPlan) {
+                    //     // TODO 检查是否需要重写检验方法
+                    //     this.$refs.filmPlan.changeAllowApprove()
+                    // }
+                }
             })
         },
 
@@ -546,7 +764,7 @@
             );
         },
         /* 获取影厅初始化数据 */
-        initMoivePlan(turnPageParam) {
+        initMoviePlan(turnPageParam) {
         //    this.turnPageParamType = turnPageParam ?  turnPageParam.type : null
         //    this.turnPageParam = turnPageParam ? turnPageParam : null
             // 打开时间轴
@@ -578,10 +796,10 @@
                 'current': 1,
                 'size': 100
                 }).then(res => {
+                    if (res.code != 200) return this.error(res.msg)
                     if (res.code == 200 && res.data) {
                         let movieData = []
-                        // let movie_obj = {}
-                        res.data.records.forEach((item, i) => {
+                        res.data.forEach((item, i) => {
                             movieData.push({
                                 movieName: item.movieName,
                                 language: item.moviedesclanguage,
@@ -589,10 +807,16 @@
                                 timeLong: item.timeLong,
                                 baseMovieUid: item.uid,
                                 movieCode: item.movieCode,
-                                color: this.colorBox[i % res.data.records.length],
+                                color: (i % res.data.length) < (this.colorBox.length - 1) ? this.colorBox[i % res.data.length] : this.colorBox[(i % res.data.length) % this.colorBox.length],
                                 boxOffice: item.boxOffice,
                                 countrySeatRate: item.countrySeatRate,
                                 hallSeatRate: item.hallSeatRate,
+                                id: item.id,
+                                oftenUse: item.oftenUse,
+                                languageCode: item.languageCode,
+                                isOftenUse: item.oftenUse == 1 ? true : false,
+                                dateShowFirst: item.dateShowFirst,
+                                dateShowOff: item.dateShowOff
                             })
                         })
                         

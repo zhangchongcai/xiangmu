@@ -15,13 +15,13 @@
           <el-form-item label="用户姓名" class="one_search">
             <el-input v-model="userName" style="width:184px;"></el-input>
           </el-form-item>
-          <el-button type="primary">查询</el-button>
+          <el-button type="primary" @click="searchWorker">查询</el-button>
         </div>
         <div v-show="showWhich == 'moneyPerson'">
           <el-form-item label="抽钞人" class="one_search">
             <el-input v-model="userName" style="width:184px;"></el-input>
           </el-form-item>
-          <el-button type="primary">查询</el-button>
+          <el-button type="primary" @click="searchWorker">查询</el-button>
         </div>
         <!-- <div v-show="showWhich == 'creater'">
           <el-form-item label="用户姓名" class="one_search">
@@ -100,7 +100,7 @@
       </div>
       <div class="btn-area">
         <el-button type="primary" @click="chooseUser">确定</el-button>
-        <el-button @click="dialogTableVisible = false">取消</el-button>
+        <el-button @click="dialogTableVisible = false" style="margin-left:32px;">取消</el-button>
       </div>
     </el-dialog>
   </div>
@@ -170,15 +170,19 @@
   .my_dialog {
     .el-button{
       width: 80px;
+      height: 32px;
     }
     /deep/ .el-dialog {
       width: 576px;
       height: 576px;
-
+      .el-dialog__title{
+        color: #333;
+      }
       .el-form-item__label,
       .el-form-item__content {
         font-size: 12px;
         line-height: 32px;
+        color: #666;
       }
 
       .el-form-item {

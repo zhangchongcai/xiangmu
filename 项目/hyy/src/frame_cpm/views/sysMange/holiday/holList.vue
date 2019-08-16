@@ -2,12 +2,12 @@
     <div class="content-wrapper">
         <div class="list-wrapper">
             <div class="form">
-                <el-form :inline="true" :model="formInline" size="mini" label-width="94px">
+                <el-form :inline="true" :model="formInline" size="mini" >
                     <el-form-item label="假日编码：" prop="code">
-                        <el-input v-model="formInline.code"></el-input>
+                        <el-input v-model.trim="formInline.code"></el-input>
                     </el-form-item>
                     <el-form-item label="假日名称：" prop="name">
-                        <el-input v-model="formInline.name"></el-input>
+                        <el-input v-model.trim="formInline.name"></el-input>
                     </el-form-item>
                     <el-form-item label="年份：" prop="year">
                         <el-date-picker
@@ -23,7 +23,7 @@
                 </el-form>
             </div>
             <div class="create-wrapper">
-                <el-button  type="primary" @click="toCreate">新建</el-button>
+                <el-button v-auth="'system_holiday_add'" type="primary" @click="toCreate">新建</el-button>
             </div>
             <div class="table">
                 <el-table
@@ -33,49 +33,59 @@
                     <el-table-column
                             prop="code"
                             label="假日编码"
-
+                            show-overflow-tooltip
                     >
                     </el-table-column>
                     <el-table-column
                             prop="name"
                             label="假日名称"
-
+                            show-overflow-tooltip
                     >
                     </el-table-column>
                     <el-table-column
                             prop="startTime"
                             label="开始日期"
-
+                            show-overflow-tooltip
                     >
                         <template slot-scope="scope">{{scope.row.startTime | timeFilter}}</template>
                     </el-table-column>
                     <el-table-column
                             prop="endTime"
                             label="结束日期"
-
+                            show-overflow-tooltip
                     >
                         <template slot-scope="scope">{{scope.row.endTime | timeFilter}}</template>
                     </el-table-column>
                     <el-table-column
                             prop="type"
                             label="类型"
-
+                            show-overflow-tooltip
                     >
                         <template slot-scope="scope">{{scope.row.type?'自定义':'法定'}}</template>
                     </el-table-column>
                     <el-table-column
                             prop="isOpen"
                             label="状态"
-
+                            show-overflow-tooltip
                     >
                         <template slot-scope="scope">{{scope.row.isOpen?'启用':'禁用'}}</template>
                     </el-table-column>
-                    <el-table-column label="操作" width="120">
+                    <el-table-column label="操作" width="120" fixed="right">
                         <template slot-scope="scope">
-                            <span @click="editCus(scope.row)" class="table-btn-mini" v-if="scope.row.platform==2">修改</span>
-                            <span @click="changeStatus(scope.row)" class="table-btn-mini" v-if="scope.row.platform==2" style="padding:0;margin:0;">
-                                {{scope.row.isOpen?'禁用':'启用'}}
-                            </span>
+                            <el-button
+                                    v-if="scope.row.platform==2"
+                                    v-auth="'system_holiday_update'"
+                                    class="table-btn-mini"
+                                    @click="editCus(scope.row)"
+                                    type="text"
+                            >编辑</el-button>
+                            <el-button
+                                    v-if="scope.row.platform==2"
+                                    v-auth="'system_holiday_enableDisabling'"
+                                    class="table-btn-mini"
+                                    @click="changeStatus(scope.row)"
+                                    type="text"
+                            >{{scope.row.isOpen?'禁用':'启用'}}</el-button>
                         </template>
                     </el-table-column>
                 </el-table>
@@ -230,6 +240,10 @@
             .form{
                 background: #f5f5f5;
                 padding:10px 0;
+                .el-input{
+                    width:192px;
+                }
+
             }
             .create-wrapper {
                 width: 100%;

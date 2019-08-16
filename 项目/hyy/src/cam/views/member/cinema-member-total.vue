@@ -9,17 +9,16 @@
           <authority-name :orgType="orgType" :orgName="orgName"></authority-name>
         </div>
         <div class="time-item">
-            <label class="label-title">时间选择：
-                <calendar-view size="mini"  v-model="time"
-                :dateType="dateType"
-                :dateTypeActive="timeType"
-                @emitCalendarType="getTimeType"
-                @change="changeTime"
-                ></calendar-view>
-            </label>
+          <span class="label-title">时间选择:</span>
+          <calendar-view size="mini"  v-model="time"
+          :dateType="dateType"
+          :dateTypeActive="timeType"
+          @emitCalendarType="getTimeType"
+          @change="changeTime"
+          ></calendar-view>
         </div>
         <div class="time-item">
-            <el-button type="primary" size="mini" style="margin-left:30px" @click="search">查询</el-button>
+          <el-button type="primary" size="mini"  @click="search">查询</el-button>
         </div>
       </div>
     </div>

@@ -13,7 +13,7 @@
         </el-select>
       </el-form-item>
       <el-form-item label="卡政策：" prop="cardProductId">
-        <el-select v-model="formData.cardProductId" placeholder="卡政策" clearable>
+        <el-select v-model="formData.cardProductId" placeholder="卡政策" filterable clearable>
           <el-option v-for="item in cardNameOptions" :key="item.id" :label="item.cardName" :value="item.id"></el-option>
         </el-select>
       </el-form-item>

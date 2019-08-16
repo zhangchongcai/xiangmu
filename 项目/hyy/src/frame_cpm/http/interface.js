@@ -8,16 +8,16 @@ export const provinceData = () => {
     return axios({
         url: '/cpm/area/getParentArea',
         method: 'get',
-    })
-}
+    });
+};
 
 export const areaData = params => {
     return axios({
         url: '/cpm/area/listAreasByParentCode',
         method: 'get',
         params
-    })
-}
+    });
+};
 export const testGet = (params) => {
     //接口备注
     return axios({
@@ -27,15 +27,15 @@ export const testGet = (params) => {
     });
 };
 
-export const sendCode = (params) => {
+export const sendCode = data => {
   //接口备注
   return axios({
-    url: '/cpm/user/sendSmsVerifyCode',
-    method: 'get',
-    params
+    url: '/cpm/user/sendSmsVerifyCodeWithSlider',
+    method: 'post',
+    data
   });
 };
-export const mobileLogin = (params) => { //登录接口
+export const mobileLogin = params => { //登录接口
   return axios({
     url: '/cpm/user/loginByMobileVerifyCode',
     method: 'post',
@@ -49,7 +49,7 @@ export const LoginApi = data => { //登录接口
         data
     });
 };
-export const LoginOutApi = data => { //登录接口
+export const LoginOutApi = data => {
     return axios({
         url: '/cpm/user/logout',
         method: 'get',
@@ -75,6 +75,38 @@ export const getFirstMenu = () => {
     return axios({
         url: '/cpm/menu/listNavigationMenu/1',
         method: 'get'
+    })
+}
+
+export const commonFunctions  = params => {
+    return axios({
+        url: '/cpm/commonfunctions/listAllCommonfunctions',
+        method: 'get',
+        params
+    })
+}
+
+export const functionSort  = data => {
+    return axios({
+        url: '/cpm/commonfunctions/sort',
+        method: 'post',
+        data
+    })
+}
+
+export const addFunction  = data => {
+    return axios({
+        url: '/cpm/commonfunctions/addCommonfunctions',
+        method: 'post',
+        data
+    })
+}
+
+export const removeCommonFunctions  = params => {
+    return axios({
+        url: '/cpm/commonfunctions/deleteById',
+        method: 'get',
+        params
     })
 }
 export const getUser = data => {
@@ -208,6 +240,13 @@ export const deleteRole  = params => {
     })
 }
 
+export const useRole  = params => {
+    return axios({
+        url: '/cpm/role/updateRoleStatus',
+        method: 'post',
+        params
+    })
+}
 export const roleMenuTree  = params => {
     return axios({
         url: '/cpm/role/getRoleMenuTreeModel/'+params,
@@ -313,6 +352,13 @@ export const oplogDetail  = params => {
         method: 'get',
     })
 }
+export const opNames = params => {
+    return axios({
+        url: '/cpm/operationLog/getAllOpName',
+        method: 'get',
+        params
+    })
+}
 
 //**************数据字典***************
 export const queryDictList  = params => {
@@ -337,9 +383,17 @@ export const queryDictPropertyList  = params => {
         params
     })
 }
+
 export const  updateDictProperty  = params => {
     return axios({
         url: '/cpm/dict/updateDictProperty',
+        method: 'post',
+        params
+    })
+}
+export const  updateDictPropertyStatus  = params => {
+    return axios({
+        url: '/cpm/dict/updateDictPropertyStatus',
         method: 'post',
         params
     })
@@ -478,6 +532,13 @@ export const  sendSingleMsg = params => {
         params
     })
 }
+export const resendSmsMsg = params => {
+    return axios({
+        url: '/cpm/sms/resendSmsMsg',
+        method: 'post',
+        params
+    })
+}
 //
 export const createSmsTemplate  = data => {
     return axios({
@@ -487,11 +548,34 @@ export const createSmsTemplate  = data => {
     })
 }
 // 短信记录 querySmsRecord
-export const  querySmsRecord = data => {
+export const  querySmsRecord = params => {
     return axios({
         url: '/cpm/sms/querySmsRecord',
         method: 'get',
-        data
+        params
+    })
+}
+export const sendSameContentBatchMsg  = params => {
+    // 短信批量发送
+    return axios({
+      url: '/cpm/sms/sendSameContentBatchMsg',
+      method: 'post',
+      params
+    });
+  };
+export const  reSendSameContentBatchMsg = params => {
+    // 短信批量发送
+    return axios({
+      url: '/cpm/sms/reSendSameContentBatchMsg',
+      method: 'post',
+      params
+    });
+  };
+export const  querySmsRecordBatch  = params => {
+    return axios({
+        url: '/cpm/sms/querySmsRecordBatch',
+        method: 'get',
+        params
     })
 }
 export const cpmFilmList  = params => {
@@ -534,6 +618,13 @@ export const cpmFilmget  = params => {
 export const updateSmsTemplate  = data => {
     return axios({
         url: '/cpm/sms/updateSmsTemplate',
+        method: 'post',
+        data
+    })
+}
+export const updateSmsTemplateStatus  = data => {
+    return axios({
+        url: '/cpm/sms/updateSmsTemplateStatus',
         method: 'post',
         data
     })

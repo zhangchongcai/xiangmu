@@ -285,6 +285,32 @@ export const getChannelList = params => {
     })
 }
 
+// 用户
+export const getUser  = data => {
+    return axios({
+        url: '/common/user/listUserByCondition',
+        method: 'post',
+        data
+    })
+}
+
+//组织结构模块
+export const organizationList = params => {
+    return axios({
+        url: '/common/consumer/listOrganizationMessage',
+        method: 'post',
+        params
+    })
+}
+
+//角色管理
+export const roleList  = data => {
+    return axios({
+        url: '/common/role/listCustomerRoleByRequirements',
+        method: 'post',
+        data
+    })
+}
 
 export default {
     // 影票活动管理接口
@@ -304,5 +330,9 @@ export default {
     getCinemaProjectionEffectList,
     //卖品接口
     goodsDataQueryGoodsList,
-    getChannelList
+    getChannelList,
+    // 公共接口
+    getUser,
+    organizationList,
+    roleList
 };

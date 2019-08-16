@@ -60,19 +60,19 @@ export default {
   left: 0;
   min-height: 100vh;
   min-width: 100vw;
-  z-index: 2001;
+  z-index: 2000;
   overflow: auto;
   .bottom-warp {
     position: absolute;
     width: 100%;
     overflow: hidden;
-    z-index: 2001;
+    z-index: 2000;
     .bottom {
       position: relative;
       margin: 0 auto;
       margin-top: 15vh;
       margin-bottom: 15vh;
-      z-index: 2001;
+      z-index: 2000;
       width: 892px;
       background: #ffffff;
       box-shadow: rgba(0, 0, 0, 0.1);
@@ -98,8 +98,8 @@ export default {
       }
       .iconBox {
         position: absolute;
-        right: 2vw;
-        top: 5vh;
+        right: 20px;
+        top: 20px;
         .el-icon-close {
           cursor: pointer;
           color: #999;
@@ -132,5 +132,3 @@ export default {
   }
 }
 </style>
-
-

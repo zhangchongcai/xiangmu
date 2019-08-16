@@ -14,6 +14,7 @@
       </el-form-item>
       <el-button @click="handleCinemalDialogQuery"  type="primary" class="query-btn">搜索</el-button>
     </el-form> -->
+    <!-- {{this.cinemalTableData}} -->
     <el-row>
       <el-col :span="multiple  ? 19 : 24">
         <el-table class="table-box"
@@ -179,7 +180,7 @@ export default {
               }
             })
           }
-          this.cinemalTableData = resData.data.list.map(item => {
+          this.cinemalTableData = resData.data.map(item => {
             item.cinemaUid = item.uid;
             return item;
           })

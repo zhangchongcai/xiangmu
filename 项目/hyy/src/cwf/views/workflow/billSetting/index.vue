@@ -1,20 +1,18 @@
 <template>
-    <div>
-        <el-tabs v-model="activeName" type="card" @tab-click="handleClick">
-            <el-tab-pane label="通用设置" name="first">
-                <normal-setting></normal-setting>
-            </el-tab-pane>
-            <el-tab-pane label="按组织个性设置" name="second">
-                <merchant-setting></merchant-setting>
-            </el-tab-pane>
-        </el-tabs>
+    <div class="cwf_billSetting">
+        <el-radio-group v-model="activeName" style="margin:24px 0px;">
+            <el-radio-button label="first">通用设置</el-radio-button>
+            <el-radio-button label="second">按组织个性设置</el-radio-button>
+        </el-radio-group>
+        <normal-setting v-show="activeName=='first'"></normal-setting>
+        <merchant-setting v-show="activeName=='second'"></merchant-setting>
+
     </div>
 </template>
 
 <script>
-import '../../../assets/common.scss';
-import merchantSetting from './merchantSetting'
-import normalSetting from './normalSetting'
+import normalSetting from './normalSetting'//通用设置
+import merchantSetting from './merchantSetting'//按组织个性设置
 import minxins from 'frame_cpm/mixins/cacheMixin.js'
 export default {
     components: {
@@ -24,23 +22,22 @@ export default {
     mixins: [minxins.cacheMixin],
     data() {
         return {
-              /* 缓存数据 */
-            cacheField: ["activeName"],
-            subComName:"billSetting_activeName",
-            activeName:"first"//默认显示
+            activeName:this.$route.query.page||"first",//默认显示
+            cacheField: ["activeName"],//缓存对象数据
+            subComName:"billSetting_activeName",//缓存数据唯一标识
         }
     },
-     created() {
-      
+    created() {
+        
     },
     methods: {
-        handleClick(){
-
-        }
+      
     }
 }
 </script>
 
 <style lang="scss" scoped>
-
+.cwf_billSetting{
+   
+}
 </style>

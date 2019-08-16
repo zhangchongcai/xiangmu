@@ -69,7 +69,7 @@ export default {
             },
             itemStyle:{ // 指针样式
               color:'#3B74FF',
-              borderType:'dashed',
+              borderType:'solid',
             },
             detail:{
               show:false,

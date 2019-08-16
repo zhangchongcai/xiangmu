@@ -1,7 +1,7 @@
 <template>
   <div class="member-list">
     <el-form :inline="true" :model="formData" ref="formData" class="form-data-wrap _member-search-area-custom">
-      <el-form-item label="开卡时间：" prop="date">
+      <el-form-item label="注册时间：" prop="date">
         <el-date-picker v-model="formData.date" type="daterange" align="right" unlink-panels range-separator="至"
           start-placeholder="开始日期" end-placeholder="结束日期" :picker-options="pickerOptions"></el-date-picker>
       </el-form-item>
@@ -17,7 +17,7 @@
         </el-select>
       </el-form-item>
       <el-form-item label="来源：" prop="source">
-        <el-select v-model="formData.source" placeholder="全部来源" clearable @change="channelList">
+        <el-select v-model="formData.source" placeholder="全部来源" clearable>
           <el-option v-for="item in sourceOptions" :key="item.code" :label="item.desc" :value="item.code"></el-option>
         </el-select>
       </el-form-item>
@@ -63,41 +63,41 @@
     </div>
     <!-- 分页 end -->
     <!-- 变更历史dialog -->
-    <el-dialog title="变更历史" :visible.sync="historyVisible" class="_mbmber-history-visible">
-      <!-- <div> -->
-      <div class="_m-member-table-custom">
-        <el-table :data="logList" stripe style="width: 100%" :empty-text="tipMessage">
-          <el-table-column prop="operateTime" label="操作时间" min-width="140" :formatter="formateEmpty"
-            show-overflow-tooltip></el-table-column>
-          <el-table-column prop="operateTypeName" label="操作类型" min-width="90" :formatter="formateEmpty"
-            show-overflow-tooltip></el-table-column>
-          <el-table-column prop="oldMemberInfo" label="操作前" min-width="105" :formatter="formateEmpty"
-            show-overflow-tooltip>
-            <template slot-scope="scope">
-              {{scope.row.oldMemberInfo | formatMemberInfo}}
-            </template>
-          </el-table-column>
-          <el-table-column prop="memberInfo" label="操作后" min-width="105" :formatter="formateEmpty"
-            show-overflow-tooltip>
-            <template slot-scope="scope">
-              {{scope.row.memberInfo | formatMemberInfo}}
-            </template>
-          </el-table-column>
-          <el-table-column prop="channelName" label="操作渠道" min-width="95" :formatter="formateEmpty"
-            show-overflow-tooltip></el-table-column>
-          <el-table-column prop="operator" label="操作人" min-width="95" :formatter="formateEmpty" show-overflow-tooltip>
-          </el-table-column>
-        </el-table>
+    <el-dialog title="变更历史" :visible.sync="historyVisible" class="_mbmber-history-visible" width="896px">
+      <div class="__table-wrap">
+        <div class="_m-member-table-custom">
+          <el-table :data="logList" stripe style="width: 100%" :empty-text="tipMessage">
+            <el-table-column prop="operateTime" label="操作时间" min-width="140" :formatter="formateEmpty"
+              show-overflow-tooltip></el-table-column>
+            <el-table-column prop="operateTypeName" label="操作类型" min-width="90" :formatter="formateEmpty"
+              show-overflow-tooltip></el-table-column>
+            <el-table-column prop="oldMemberInfo" label="操作前" min-width="105" :formatter="formateEmpty"
+              show-overflow-tooltip>
+              <template slot-scope="scope">
+                {{scope.row.oldMemberInfo | formatMemberInfo}}
+              </template>
+            </el-table-column>
+            <el-table-column prop="memberInfo" label="操作后" min-width="105" :formatter="formateEmpty"
+              show-overflow-tooltip>
+              <template slot-scope="scope">
+                {{scope.row.memberInfo | formatMemberInfo}}
+              </template>
+            </el-table-column>
+            <el-table-column prop="channelName" label="操作渠道" min-width="95" :formatter="formateEmpty"
+              show-overflow-tooltip></el-table-column>
+            <el-table-column prop="operator" label="操作人" min-width="95" :formatter="formateEmpty" show-overflow-tooltip>
+            </el-table-column>
+          </el-table>
+        </div>
+        <!-- 分页 start -->
+        <div class="page-wrap _history-dialog-paginatioin">
+          <el-pagination background @size-change="handleDialogSizeChange" @current-change="handleDialogCurrentChange"
+            :current-page="logData.current-0" :page-size="logData.size - 0" layout="total, prev, pager, next, jumper"
+            :page-sizes="[20, 50, 100]" :total="historyTotal-0">
+          </el-pagination>
+        </div>
+        <!-- 分页 end -->
       </div>
-      <!-- 分页 start -->
-      <div class="page-wrap" style="padding:12px;">
-        <el-pagination background @size-change="handleDialogSizeChange" @current-change="handleDialogCurrentChange"
-          :current-page="logData.current-0" :page-size="logData.size - 0"
-          layout="total, sizes, prev, pager, next, jumper" :page-sizes="[20, 50, 100]" :total="historyTotal-0">
-        </el-pagination>
-      </div>
-      <!-- 分页 end -->
-      <!-- </div> -->
       <span slot="footer" class="dialog-footer">
         <el-button size="medium" @click="historyVisible = false" class="_el-btn-custom">关闭</el-button>
       </span>
@@ -156,16 +156,7 @@ export default {
         ]
       },
       memberLevelRuleVOList: [],
-      sourceOptions: [
-        {
-          label: "商务总部",
-          value: 0
-        },
-        {
-          label: "实体分部",
-          value: 1
-        }
-      ],
+      sourceOptions: [],
       formData: {
         date: [new Date().addMonths(-1), new Date()],
         startOpenDate: new Date().addDays(-30).formatDate("yyyy-MM-dd"),
@@ -316,11 +307,10 @@ export default {
       this.$router.push({
         path: "/member/member/detail",
         query: {
-          scope: scope,
+          levelNo: scope.levelId,
           id: scope.id,
           startOpenDate: this.formData.date[0].formatDate("yyyy-MM-dd"),
-          endOpenDate: this.formData.date[1].formatDate("yyyy-MM-dd"),
-          tenantId: this.tenantId
+          endOpenDate: this.formData.date[1].formatDate("yyyy-MM-dd")
         }
       });
     },
@@ -401,8 +391,47 @@ export default {
 }
 // 变更历史dialog
 ._mbmber-history-visible {
-  .el-dialog__body {
-    padding: 30px 20px 0;
+  .el-dialog {
+    height: 576px;
   }
+  .el-dialog__header {
+    padding: 10px 20px;
+  }
+  .el-dialog__body {
+    padding: 0px 20px;
+  }
+  .el-dialog__footer {
+    text-align: center;
+  }
+  .__table-wrap {
+    border-top: 1px solid #f5f5f5;
+    padding-top: 10px;
+    .el-form-item {
+      margin: 0 5px 5px 0;
+    }
+    .heightBug input {
+      height: 32px !important;
+    }
+    ._history-dialog-paginatioin {
+      padding: 6px 0;
+      border: 1px solid #e5e5e5;
+      border-top: 0;
+    }
+    .el-table__body-wrapper {
+      overflow-y: auto;
+      height: 380px;
+      .el-table__body {
+        border-collapse: collapse;
+        tbody {
+          tr:last-child {
+            border-bottom: 1px solid #f0f0f0;
+          }
+        }
+      }
+    }
+  }
+  // .el-dialog__body {
+  //   padding: 30px 20px 0;
+  // }
 }
 </style>

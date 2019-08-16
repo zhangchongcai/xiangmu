@@ -6,6 +6,7 @@
         <el-breadcrumb-item>{{typeText}}盘点方案</el-breadcrumb-item>
       </el-breadcrumb>
     </div> -->
+    <!-- {{this.goodList}} -->
     <div class="tittle"></div>
     <el-form
       :inline="true"
@@ -13,7 +14,7 @@
       ref="ruleForm"
       label-position="left"
       label-width="100px"
-      label-suffix=":"
+      label-suffix="："
       :rules="changeRules"
     >
     <el-collapse  v-model="activeNames">
@@ -135,7 +136,7 @@
       ></selected-goods>
       <div class="submit-box">
         <el-button type="primary" @click="handleSubmit" v-if="routeQuery.type!=3">保存</el-button>
-        <el-button @click="handleCancel">{{routeQuery.type!=3 ? "取 消":"关闭"}}</el-button>
+        <el-button @click="fanhuihandleCancel">{{routeQuery.type!=3 ? "取 消":"关闭"}}</el-button>
       </div>
     </el-form>
   </div>
@@ -225,14 +226,31 @@ export default {
   methods: {
     init() {
       if(this.$route.query.type != 1){
-        this.queryData.cinemaUid = JSON.parse(this.routeQuery.data).cinemaUid
-        this.queryData.cinemaName = JSON.parse(this.routeQuery.data).cinemaName
-        this.queryData.remarks = JSON.parse(this.routeQuery.data).remarks
-        this.queryData.uid = JSON.parse(this.routeQuery.data).uid
-        this.queryData.caseName = JSON.parse(this.routeQuery.data).caseName
-        this.goodList = JSON.parse(this.routeQuery.data).checkSolutionInfosVoList
-        this.queryData.checkSolutionMerEntityList = JSON.parse(this.routeQuery.data).checkSolutionInfosVoList
+        this.resCheckSolutionToPage(JSON.parse(this.routeQuery.data))
       }
+    },
+    resCheckSolutionToPage(row){
+      let val = {
+        uid:row
+      }
+      this.$cimList.inventoryPlan
+        .checkSolutionToPage(val)
+        .then(res => {
+          if (res.code === 200) {
+            this.queryData.cinemaUid = res.data.cinemaUid
+            this.queryData.cinemaName = JSON.parse(this.routeQuery.cinemaName)
+            this.queryData.remarks = res.data.remarks
+            this.queryData.uid = res.data.uid
+            this.queryData.caseName = res.data.caseName
+            this.goodList = res.data.checkSolutionInfosVoList
+            this.queryData.checkSolutionMerEntityList = res.data.checkSolutionInfosVoList
+           
+          } else {
+            this.$message(res.msg);
+            this.error(res.msg);
+          }
+        })
+        .catch(err => {});
     },
     // 查询
     onQuery() {
@@ -272,14 +290,14 @@ export default {
               this.$message("请添加商品");
             }else{
               this.resCheckSolutionSave(this.queryData)
-              this.handleCancel()
+              
             }
           }else{
             if(this.queryData.checkSolutionMerEntityList.length == 0 ){
               this.$message("请添加商品");
             }else{
               this.resCheckSolutionUpdate(this.queryData)
-              this.handleCancel()
+              
             }
           }
         }else{
@@ -301,10 +319,20 @@ export default {
       }
     },
     handleCancel() {
+      this.$store.commit("tagNav/removeTagNav", {
+          name: this.$route.name,
+          path: this.$route.path,
+          title: this.$route.meta.title,
+          query: this.$route.query
+      })
       console.log(JSON.stringify(this.queryData))
+      let queryData = {
+        cinemaUid:this.queryData.cinemaUid,
+        cinemaName:this.queryData.cinemaName
+      }
       this.returnList({
         returnType:true,
-        cinema: JSON.stringify(this.queryData)
+        cinema: JSON.stringify(queryData)
       });
     },
     returnList(param) {
@@ -314,15 +342,47 @@ export default {
       });
     },
     // 选泽门店回调
-    onCinemalSumit(val = []) {
+    setCinema(val = []) {
+      if(val.length == 0){
+        this.$nextTick(() => {
+          this.goodList = []
+        })
+      }
       if (val.length > 0) {
         this.queryData.cinemaName = val[0].name;
         this.queryData.cinemaUid = val[0].uid;
+        this.goodList = []
       } else {
         this.queryData.cinemaName = null;
         this.queryData.cinemaUid = null;
       }
       console.log(val);
+    },
+        // 选泽门店回调
+    onCinemalSumit(val = [],type) {
+      console.log(val," 选泽门店回调",type);
+      if (val.length > 0) {
+        if(type=="default"){
+          if(val.length==1){
+            this.setCinema(val)
+          }
+        }else{
+          this.setCinema(val)
+        }
+      } else {
+        this.setCinema()
+      }
+    },
+    fanhuihandleCancel() {
+      this.$store.commit("tagNav/removeTagNav", {
+          name: this.$route.name,
+          path: this.$route.path,
+          title: this.$route.meta.title,
+          query: this.$route.query
+      })
+      this.$router.push({
+          path: "/retail/InventoryManagement/inventoryPlan/list",
+      });
     },
     selectCinemalDialog() {
       this.$refs.myCinemalDialog.handleDialog(true);
@@ -360,6 +420,7 @@ export default {
         .checkSolutionSave(val)
         .then(res => {
           if (res.code === 200) {
+            this.handleCancel()
             this.$message("新建成功");
           } else {
             this.$message(res.msg);
@@ -373,6 +434,7 @@ export default {
         .checkSolutionUpdate(val)
         .then(res => {
           if (res.code === 200) {
+            this.handleCancel()
             this.$message("修改成功");
           } else {
             this.$message(res.msg);

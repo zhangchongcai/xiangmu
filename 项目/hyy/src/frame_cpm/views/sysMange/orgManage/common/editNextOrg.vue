@@ -4,7 +4,7 @@
       <div class="search-wrap ">
         <span>上级组织：</span>
         <el-input
-          v-model="parentOrgData.label"
+          v-model.trim="parentOrgData.label"
           placeholder="请输入内容"
           disabled
         ></el-input>
@@ -13,7 +13,7 @@
         <span>组织名称：</span>
         <template >
             <el-input
-            v-model="lastOrgData.text"
+            v-model.trim="lastOrgData.text"
             placeholder="请输入内容"
             clearable
             ></el-input>
@@ -29,8 +29,8 @@
     </div>
 
     <div class="confirm-cancel">
+      <el-button type="primary" @click="editOrgFun()">确 定</el-button>
 	    <el-button @click="cancel(false)">取 消</el-button>
-	    <el-button type="primary" @click="editOrgFun()">确 定</el-button>
     </div>
 
 
@@ -116,7 +116,7 @@ export default {
 </script>
 <style lang='scss' scoped>
 .role-list-wrap-1 {
-  margin-top:-30px;
+  /*margin-top:-30px;*/
   .modal-title-wrap {
     padding: 15px 30px;
     border-bottom: 2px solid #ff9f37;
@@ -135,8 +135,9 @@ export default {
     }
   }
   .modal-search {
-    padding: 8px 0px;
-    height: 203px;
+    padding: 40px 0px 0 0;
+    height: 160px;
+    text-align: center;
     .search-wrap {
           height: 32px;
           .el-input {
@@ -163,7 +164,7 @@ export default {
         padding-left: 44px;
     }
     .plian{
-      padding-right:30px;
+      /*padding-right:30px;*/
       margin-top:12px;
     }
     .plian2{

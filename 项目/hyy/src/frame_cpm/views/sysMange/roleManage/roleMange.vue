@@ -4,7 +4,7 @@
             <div class="form">
                 <el-form sizi="mini" :inline="true" :model="listQuery" class="demo-form-inline" label-width="100px">
                     <el-form-item label="角色名称：">
-                        <el-input v-model="listQuery.name" placeholder="请输入你要查询的名称"></el-input>
+                        <el-input v-model.trim="listQuery.name" placeholder="请输入你要查询的名称"></el-input>
                     </el-form-item>
                     <el-form-item label="状态：">
                         <el-select v-model="listQuery.status" filterable placeholder="请选择">
@@ -14,7 +14,7 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="primary" @click="onSearch" v-auth="'system_roleManage_view'">查询</el-button>
+                        <el-button type="primary" @click="onSearch">查询</el-button>
                     </el-form-item>
                 </el-form>
             </div>
@@ -29,9 +29,10 @@
                             <span>{{scope.row.status | stateFormat}}</span>
                         </template>
                     </el-table-column>
-                    <el-table-column label="操作">
+                    <el-table-column label="操作" width="180" fixed="right">
                         <template slot-scope="scope">
                             <el-button
+                                    v-auth="'system_roleManage_see'"
                                     class="table-btn-mini"
                                     @click="handleClick(scope.row)"
                                     type="text"
@@ -46,11 +47,13 @@
                             <!--{{scope.row.isOpen?'禁用':'启用'}}-->
                             <!--</span>-->
                             <el-button
-                                    v-auth="'system_roleManage_remove'"
                                     class="table-btn-mini"
-                                    @click="handleDelete(scope.row)"
+                                    @click="changeStatus(scope.row)"
                                     type="text"
-                            >删除</el-button>
+                                    v-auth="'system_roleManage_enableDisabling'"
+                            >
+                                {{scope.row.status==1?'禁用':'启用'}}
+                            </el-button>
                         </template>
                     </el-table-column>
                 </el-table>
@@ -74,7 +77,7 @@
 </template>
 
 <script>
-    import {roleList,deleteRole} from 'frame_cpm/http/interface.js'
+    import {roleList,useRole} from 'frame_cpm/http/interface.js'
     import mixins from '../../../mixins/cacheMixin.js'
   export default {
       name: "roleMange",
@@ -145,57 +148,64 @@
             this.$router.push({path: 'editRole',query:{isEdit,roleUid}})
         },
         handleClick(data){
-          console.log(data)
             localStorage.setItem('roleEdit',JSON.stringify(data))
             let isJustSee = true,
             roleUid = data.uid
             this.$router.push({path: 'seeRole',query:{isJustSee,roleUid}})
-        },
-        changeStatus(val) {
-          let data = {
-            isOpen: !val.isOpen,
-            id: val.id
-          }
-          if(val.isOpen){
-            this.$confirm(
-              `确认禁用后将不可用，是否继续禁用?`,
-              '提示',
-              {
-                confirmButtonText: '确定',
-                cancelButtonText: '再想想',
-                type: 'warning'
-              }
-            ).then(() => {
-              changeHolStatus(data)
-                .then(ret => {
-                  if(ret && ret.code == 200){
-                    this.success("禁用成功")
-                    val.isOpen = false
-                  }
-                })
-                .catch(() => {
-                  this.error('失败')
-                })
-            })
-          }else{
-            changeHolStatus(data)
-              .then(ret => {
-                if(ret && ret.code == 200){
-                  this.success("启用成功")
-                  val.isOpen = true
-                }
-              })
-              .catch(() => {
-                this.error('失败')
-              })
-          }
         },
         goBack() {
             this.detailFlag = false
             this.$router.push('index')
 
         },
-        handleDelete(data){
+        changeStatus(val) {
+          if(val.status==1){
+            this.$confirm(
+              `确认禁用后将不可用，是否继续禁用?`,
+              '提示',
+              {
+                confirmButtonText: '继续',
+                cancelButtonText: '返回',
+                type: 'warning'
+              }
+            ).then(() => {
+              let data = {
+                status: 0,
+                roleUid: val.uid,
+              }
+              useRole(data)
+                .then(ret => {
+                  if(ret && ret.code == 200){
+                    this.success("禁用成功")
+                    this.$nextTick(()=>{
+                      this.getList()
+                    })
+                  }
+                })
+                .catch(err => {
+                  console.log(err)
+                })
+            })
+          }else{
+            let data = {
+              status: 1,
+              roleUid: val.uid,
+            }
+            useRole(data)
+              .then(ret => {
+                if(ret && ret.code == 200){
+                  this.success("启用成功")
+                  this.$nextTick(()=>{
+                    this.getList()
+                  })
+                }
+              })
+              .catch(err => {
+                console.log(err)
+              })
+          }
+        },
+       /* handleDelete(data){
             let _this = this
             this.$confirm(`您确定要删除此角色吗? `, '提示', {
                     confirmButtonText: '确定',
@@ -213,7 +223,7 @@
               });
             }).catch(() => {})
 
-        },
+        },*/
         getList(){
             let _this = this;
             let queryObj = this.listQuery
@@ -265,7 +275,6 @@
     .list-wrapper {
         .form {
             background: #f5f5f5;
-            padding: 20px 0 0;
         }
 
         .create-wrapper {

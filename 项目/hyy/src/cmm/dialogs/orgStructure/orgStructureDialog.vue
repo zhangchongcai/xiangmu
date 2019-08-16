@@ -1,40 +1,45 @@
 <template>
   <div class="my_dialog">
     <el-dialog :close-on-click-modal="false" :title="title" :visible.sync="mydialogTableVisible">
-           <div class="header-wrap">
-              <div class="search-wrap">
-                <span>查询组织：</span>
-                <el-input size="small" placeholder="请输入查询内容" prefix-icon="el-icon-search" v-model="filterText"></el-input>
-              </div>
-              <div class="button-wrap">
-                <el-button type="primary" size="small" @click="searchOrganization">搜索</el-button>
-              </div>
-            </div>
-            <div class="org-sys">
-              <el-tree
-                @node-click="handleNodeClick"
-                show-checkbox
-                :data="dataTree"
-                node-key="id"
-                ref="tree"
-                default-expand-all
-                :filter-node-method="filterNode"
-                :check-strictly="false"
-                :expand-on-click-node="false"
-                :props="defaultProps">
-              </el-tree>
-            </div>
+      <!-- 查询 -->
+      <div class="header-wrap">
+        <div class="search-wrap">
+          <span style="color:#666666;">查询组织：</span>
+          <el-input size="small" placeholder="请输入查询内容" prefix-icon="el-icon-search" v-model="filterText"></el-input>
+        </div>
+        <div class="button-wrap">
+          <el-button type="primary" size="small" @click="searchOrganization">搜索</el-button>
+        </div>
+      </div>
+      <!-- 列表 -->
+      <div style="min-height: 405px;">
+        <el-tree
+          @node-click="handleNodeClick"
+          show-checkbox
+          :data="dataTree"
+          node-key="id"
+          ref="tree"
+          default-expand-all
+          :filter-node-method="filterNode"
+          :check-strictly="false"
+          :expand-on-click-node="false"
+          :props="defaultProps"
+          :default-checked-keys="reviewList"
+          >
+        </el-tree>
+      </div>
       <div style="height:12px;background:transparent;"></div>
+      <!-- 底部按钮 -->
       <div class="btn-area">
         <el-button @click="mydialogTableVisible = false">取消</el-button>
         <el-button type="primary" @click="chooseOrganization" style="margin-right:22px;">确定</el-button>
       </div>
     </el-dialog>
   </div>
-
 </template>
+
 <script>
-import {organizationList} from "frame_cpm/http/interface.js"
+import {organizationList} from "cmm/http/interface.js"
   export default {
     props: {
       dialogTableVisible: {
@@ -52,57 +57,64 @@ import {organizationList} from "frame_cpm/http/interface.js"
         mydialogTableVisible: this.dialogTableVisible,
         name:'',
         dataTree: [],
+        reviewList: [],
         defaultProps: {
-            children:'children',
-            label:'text'
+          children:'children',
+          label:'text'
         },
-        resultOneOrg:''
+        resultOneOrg:'',
+        tenantId:JSON.parse(localStorage.getItem('user')).consumerId
       }
-    },
-    methods: {
-        //过滤数据
-        filterNode(value, data) {
-          if (!value) return true;
-          return data.text.indexOf(value) !== -1;
-        },
-        //获取组织
-        handleNodeClick(data) {
-            this.resultOneOrg=data
-        },
-        //查询
-        searchOrganization(){
-          this.$refs.tree.filter(this.filterText);
-        },
-        // 确定选择
-        chooseOrganization() {
-            this.$emit("callBack", this.$refs.tree.getCheckedNodes());
-            this.mydialogTableVisible = false;
-        },
-        //打开弹窗
-        openDialog(val){
-            this.mydialogTableVisible=val
-            this.getOrganizationList()
-        },
-        //获取组织结构列表
-        getOrganizationList(){
-            let params={ }
-            organizationList(params).then(res=>{
-              if(res.data&&res.code==200){
-                this.dataTree = JSON.parse(JSON.stringify(res.data))
-              }
-               
-            })
-        },
     },
     watch: {
       dialogTableVisible(val) {
         this.mydialogTableVisible = val;
       },
-      
-      mydialogTableVisible(val) {
-
-      }
-    }
+    },
+    methods: {
+      //过滤数据
+      filterNode(value, data) {
+        if (!value) return true;
+        return data.text.indexOf(value) !== -1;
+      },
+      //获取组织
+      handleNodeClick(data) {
+        this.resultOneOrg=data
+      },
+      //查询
+      searchOrganization(){
+        this.$refs.tree.filter(this.filterText);
+      },
+      // 确定选择
+      chooseOrganization() {
+        this.$emit("callBack", this.$refs.tree.getCheckedNodes());
+        this.mydialogTableVisible = false;
+      },
+      //打开弹窗
+      openDialog(val,reviewList){
+        this.filterText=""
+        this.reviewList=[]
+        this.mydialogTableVisible=val
+        this.getOrganizationList(reviewList)
+      },
+      //获取组织结构列表
+      getOrganizationList(reviewList){
+        let params={
+          tenantId:this.tenantId
+        }
+        organizationList(params).then(res=>{
+          if(res.data&&res.code==200){
+            this.dataTree = JSON.parse(JSON.stringify(res.data))
+            //回显
+            if(reviewList){
+              this.reviewList = reviewList
+            }
+          }
+        }).catch(err => {
+          console.log(err)
+        })
+      },
+    },
   }
 </script>
 
@@ -146,6 +158,10 @@ import {organizationList} from "frame_cpm/http/interface.js"
           color: #333;
         }
       }
+      .el-checkbox__inner{
+        width: 12px;
+        height: 12px;
+      }
       .el-dialog__headerbtn{
         top: 15px;
       }
@@ -167,7 +183,7 @@ import {organizationList} from "frame_cpm/http/interface.js"
         font-size: 8px;
       }
       .el-dialog__body{
-        padding: 20px;
+        padding:6px 20px 20px 20px;
       }
       .btn-area {
         // margin-bottom: 10px;

@@ -290,9 +290,11 @@
             :current-page="page"
             :page-sizes="sizes"
             :page-size="size"
-            layout="sizes,total,prev, pager, next, jumper"
+            layout="total,sizes,prev, pager, next, jumper"
             :total="total"
           ></el-pagination>
+          <span class="page-else" v-else-if="total>0">共{{total}}条</span>
+          <span class="page-else" v-else></span>
         </div>
       </div>
     </div>
@@ -697,7 +699,6 @@ export default {
         }
       };
       this.$camList.saleTargetView(params).then(response => {
-        // console.log(response,'卖品指标概览')
         let res = response.data;
         if (res) {
           this.targetArr = res;
@@ -807,7 +808,6 @@ export default {
       };
       this.$camList.cityTabelData(params).then(response => {
         let res = response.data;
-        // console.log(res,'分页')
         if (res.sellGoodsList) {
           this.tableData = res.sellGoodsList.list;
           this.total = res.sellGoodsList.total;

@@ -2,20 +2,27 @@
 <transition name="fade">
     <div class="pay-wrap" v-if="visible">
         <div class="pay-show">
-            <i :class="['iconfont',isIconPic]"></i>
-            <p>{{statusText}}</p>
-            <input 
+            <i class="iconfont icondengdaisaomiaokehuzhifupingzheng" v-show="isIconPic"></i>
+            <img src="./wait_pay.png" v-show="!isIconPic" class="pay_wait">
+            <p style="padding-bottom:3vh;">{{statusText}}</p>
+            <el-button 
+                type="primary" 
+                class="common-btn"
+                v-if="payMethod === 'XRMB'" 
+                @click="cashPay">收款成功</el-button>
+            <input
+                v-else 
                 type="text" 
                 :value="barCode" 
                 @input="$emit('focusChange', $event.target.value)" 
                 ref="barCodeInp"
-                style="">
-                <!-- opacity:0 -->
+                style="opacity:0">
         </div>
     </div>
 </transition>
 </template>
 <script>
+import { mapState } from 'vuex'
 export default {
     name:'payLoading',
     model:{
@@ -29,19 +36,25 @@ export default {
         },
         barCode:{
             type:String
+        },
+        payMethod:{
+            type:String
         }
     },
     data(){
         return{
-            isIconPic:'icondengdaisaomiaokehuzhifupingzheng',
+            inheritAttrs:false,
+            isIconPic:true,
             statusText:'等待扫描客户支付凭证……'
         }
     },
+    computed: {
+        ...mapState(["member"]),
+    },
     async mounted(){
         let self = this;
-        await this.$nextTick();
+        // await this.$nextTick();
         document.addEventListener('keyup', function (e) {
-            //此处填写你的业务逻辑即可
             if (e.keyCode == 27) {
                 self.handleEsc();
             }
@@ -50,23 +63,35 @@ export default {
     methods:{
         handleEsc(){
             this.$emit('update:visible',false)
+        },
+        cashPay(){
+            this.member.cashBox = true;
+            this.$emit('update:visible',false)
         }
     },
     watch:{
         barCode(newVal){
             if(/\d{18}/.test(newVal.trim())){
-                this.isIconPic = 'iconzhifuzhongqingnaixindengdai';
+                this.isIconPic = false;
                 this.statusText = '支付中，请耐心等待......';
             }
         },
         async visible(newVal,oldVal){
             if(newVal){
                 await this.$nextTick();
-                this.$refs.barCodeInp.focus();
+                try{
+                    this.$refs.barCodeInp.focus();
+                }catch(err){}
             }else{
-                this.isIconPic = 'icondengdaisaomiaokehuzhifupingzheng';
+                this.isIconPic = true;
                 this.statusText = '等待扫描客户支付凭证……';
-                this.$emit('focusChange', '')
+                this.$emit('focusChange', '');
+            }
+        },
+        payMethod(val){
+            if(val === 'XRMB'){
+                this.isIconPic = false;
+                this.statusText = '请确认客户支付金额...';
             }
         }
     }
@@ -102,6 +127,11 @@ export default {
     display:inline-block;
     font-size:90px;
     color:#3B74FF
+}
+.pay_wait{
+    width:95px;
+    height:98px;
+    margin:7.5vh 0 3vh;
 }
 .fade-enter, .fade-leave-to {
     opacity: 0

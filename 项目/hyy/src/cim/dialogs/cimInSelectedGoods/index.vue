@@ -305,11 +305,7 @@ export default {
           }
         }
         this.tableData = res.data.list.map(item => {
-          if (item.merType == 2) {
-            if (item.skuName) {
-              item.merName = item.merName + "--" + item.skuName;
-            }
-          }
+          item.merName = item.skuName;
           return item;
         });
         this.tableLoding = false;

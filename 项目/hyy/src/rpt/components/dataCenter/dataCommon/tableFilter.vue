@@ -14,7 +14,7 @@
       <div slot="dialog-content">
         <div class="input-wrapper">
           <el-input
-            v-model="inputData"
+            v-model="tableFilterObj.inputData"
             placeholder="请输入内容"
             autocomplete
             :clearable="true"
@@ -27,8 +27,8 @@
         </div>
         <div class="data-wrapper">
           <template
-            v-if="(showData.length === 0 && inputData === '') ||
-            (showData.length !== 0 && inputData === '')"
+            v-if="(tableFilterObj.showData.length === 0 && tableFilterObj.inputData === '') ||
+            (tableFilterObj.showData.length !== 0 && tableFilterObj.inputData === '')"
           >
             <div
               class="data-item"
@@ -39,10 +39,10 @@
               @click="handleItemClick(item,index)"
             >{{item}}</div>
           </template>
-          <template v-if="showData.length !== 0 && inputData !== ''">
+          <template v-if="tableFilterObj.showData.length !== 0 && tableFilterObj.inputData !== ''">
             <div
               class="data-item"
-              v-for="(item,index) in showData"
+              v-for="(item,index) in tableFilterObj.showData"
               :ref="`dataItem${index}`"
               :key="index"
               :id="index"
@@ -52,7 +52,7 @@
 
           <div
             class="data-item data-empty"
-            v-if="showData.length == 0 && inputData != ''"
+            v-if="tableFilterObj.showData.length == 0 && tableFilterObj.inputData != ''"
           >没有匹配到相关数据！</div>
         </div>
       </div>
@@ -63,37 +63,23 @@
 <script>
 import datacenterBus from "src/rpt/util/datacenterBus.js";
 import MyDialog from "./myDialog.vue";
-import mixins from "src/frame_cpm/mixins/cacheMixin.js";
 
 export default {
-  mixins: [mixins.cacheMixin],
   props: {
     dialogVisible1: Boolean,
     searchData: Array,
     colKey: String,
     tableName: String,
     reportCode: String,
-    advancedData: Array
+    advancedData: Array,
+    tableFilterObj: Object
   },
   components: {
     MyDialog
   },
   data() {
     return {
-      cacheField: [
-        "colValue",
-        "submitColValue",
-        "showData",
-        "colData",
-        "inputData",
-      ],
-      subComName: "tableFilter",
-      colValue: "",
-      submitColValue: [],
       visible: false,
-      showData: [],
-      colData: [],
-      inputData: ""
     };
   },
   methods: {
@@ -107,21 +93,17 @@ export default {
     //清除筛选
     handleClearClick() {
       let clearData = {};
-      let selectedData = JSON.parse(JSON.stringify(this.colData));
+      let selectedData = JSON.parse(JSON.stringify(this.tableFilterObj.colData));
       this.visible = false;
       this.changeDataItemStatus("data-item", "white", "rgb(51, 51, 51)");
       this.$emit("sendSelectStatus", {
         select: false,
         value: this.colKey
       });
-      console.log(selectedData, this.advancedData);
       this.advancedData.forEach(element => {
         delete element.isAdvanced;
         selectedData.push(element);
       });
-      // console.log(this.colKey);
-      // console.log(this.colData);
-      console.log(selectedData);
       selectedData.forEach(element => {
         if (element.queryColKey === this.colKey) {
           clearData.operation = element.operation;
@@ -129,10 +111,9 @@ export default {
           clearData.queryColValue = element.queryColValue;
         }
       });
-      console.log(clearData);
-      for (let i = 0; i < this.colData.length; i++) {
-        if (this.colData[i].queryColKey === this.colKey) {
-          this.colData.splice(i, 1);
+      for (let i = 0; i < this.tableFilterObj.colData.length; i++) {
+        if (this.tableFilterObj.colData[i].queryColKey === this.colKey) {
+          this.tableFilterObj.colData.splice(i, 1);
         }
       }
       // datacenterBus.$emit("clearTableQueryData", clearData);
@@ -141,21 +122,21 @@ export default {
     //弹框关闭时的逻辑
     handleClose() {
       this.changeDataItemStatus("data-item", "#f5f5f5", "gray");
-      this.colValue = [];
-      this.showData = [];
+      this.tableFilterObj.colValue = [];
+      this.tableFilterObj.showData = [];
       this.visible = false;
       datacenterBus.$emit("visibleEvent", false);
     },
     //点击取消按钮时的逻辑
     handleCancelClick() {
-      this.showData = [];
-      this.colValue = [];
+      this.tableFilterObj.showData = [];
+      this.tableFilterObj.colValue = [];
       this.visible = false;
     },
     handleSubmitClick() {
       let colItem = {
         queryColKey: this.colKey,
-        queryColValue: this.colValue,
+        queryColValue: this.tableFilterObj.colValue,
         operation: "="
       };
       let selectStatus = {
@@ -163,39 +144,38 @@ export default {
         value: this.colKey
       };
       //保证提交筛选项时每个弹框有且仅有一个选中
-      if (this.colData.length != 0) {
-        for (let i = 0; i < this.colData.length; i++) {
-          if (this.colData[i].queryColKey == this.colKey) {
-            this.colData.splice(i, 1);
+      if (this.tableFilterObj.colData.length != 0) {
+        for (let i = 0; i < this.tableFilterObj.colData.length; i++) {
+          if (this.tableFilterObj.colData[i].queryColKey == this.colKey) {
+            this.tableFilterObj.colData.splice(i, 1);
           }
         }
       }
-      this.colData.push(colItem);
+      this.tableFilterObj.colData.push(colItem);
       //发出查询信息
       if (
-        this.colData[0].queryColValue != "" &&
-        this.colData[0].queryColValue != []
+        this.tableFilterObj.colData[0].queryColValue != "" &&
+        this.tableFilterObj.colData[0].queryColValue != []
       ) {
-        console.log(this.colData);
-        this.$store.commit("sendSearchData", this.colData);
+        this.$store.commit("sendSearchData", this.tableFilterObj.colData);
         //保存每次选择的数据
-        if (this.submitColValue.length === 0) {
-          this.submitColValue.push({
-            colValue: this.colValue,
+        if (this.tableFilterObj.submitColValue.length === 0) {
+          this.tableFilterObj.submitColValue.push({
+            colValue: this.tableFilterObj.colValue,
             colKey: this.colKey
           });
         } else {
-          for (let i = 0; i < this.submitColValue.length; i++) {
-            if (this.submitColValue[i].colKey === this.colKey) {
-              this.submitColValue.splice(i, 1);
+          for (let i = 0; i < this.tableFilterObj.submitColValue.length; i++) {
+            if (this.tableFilterObj.submitColValue[i].colKey === this.colKey) {
+              this.tableFilterObj.submitColValue.splice(i, 1);
             }
           }
-          this.submitColValue.push({
-            colValue: this.colValue,
+          this.tableFilterObj.submitColValue.push({
+            colValue: this.tableFilterObj.colValue,
             colKey: this.colKey
           });
         }
-        this.colValue = "";
+        this.tableFilterObj.colValue = "";
         this.visible = false;
         this.$emit("sendSelectStatus", selectStatus);
       } else {
@@ -206,18 +186,17 @@ export default {
           center: "true"
         });
       }
-      this.showData = [];
+      this.tableFilterObj.showData = [];
     },
     showDetailDialog() {
       this.$emit("showDetailDialog", true);
     },
     inputChange(data) {
-      this.inputData = data;
+      this.tableFilterObj.inputData = data;
     },
     //点击选中调整样式并处理选中数据
     handleItemClick(item, index) {
-      console.log(item, index);
-      this.colValue = item;
+      this.tableFilterObj.colValue = item;
       let dataItem = document.getElementsByClassName("data-wrapper")[0]
         .children;
       for (let i = 0; i < dataItem.length; i++) {
@@ -225,9 +204,7 @@ export default {
         dataItem[i].style.color = "#333333";
       }
       let selectItem = this.$refs[`dataItem${index}`][0];
-      console.log(selectItem);
       selectItem.style.background = "#F0F0F0";
-      console.log(selectItem.style.background);
     }
   },
   watch: {
@@ -241,36 +218,30 @@ export default {
             newVal
           )
           .then(res => {
-            this.showData = res.data.result;
+            this.tableFilterObj.showData = res.data.result;
           });
       }, 200);
     },
     visible(newVal, oldVal) {
-      this.inputData = "";
+      this.tableFilterObj.inputData = "";
     },
     dialogVisible1(newVal, oldVal) {
-      console.log(this.visible);
       this.visible = newVal;
-      console.log(this.visible);
     }
   },
   created() {
     datacenterBus.$on("sendSearchDataToDialog1", data => {
-      console.log(this.colData, data);
-      this.colData.push(data);
-      console.log(this.colData, data);
+      this.tableFilterObj.colData.push(data);
     });
   },
   updated() {
     datacenterBus.$on("sendSearchDataToDialog1", data => {
-      console.log(this.colData, data);
-      // this.colData.forEach(element => {
+      // this.tableFilterObj.colData.forEach(element => {
       //   if(element.queryColKey !== data.queryColKey) {
-      //     this.colData.push(data);
+      //     this.tableFilterObj.colData.push(data);
       //   }
       // })
-      this.colData.push(data);
-      console.log(this.colData, data);
+      this.tableFilterObj.colData.push(data);
     });
     if (document.getElementsByClassName("data-wrapper")[0]) {
       let dataItem = document.getElementsByClassName("data-wrapper")[0]
@@ -278,13 +249,13 @@ export default {
       for (let i = 0; i < dataItem.length; i++) {
         dataItem[i].style.background = "white";
         dataItem[i].style.color = "#333333";
-        this.submitColValue.forEach(element => {
+        this.tableFilterObj.submitColValue.forEach(element => {
           if (
             dataItem[i].innerHTML === element.colValue &&
             this.colKey === element.colKey
           ) {
             dataItem[i].style.background = "#F0F0F0 ";
-            this.colValue = dataItem[i].innerHTML;
+            this.tableFilterObj.colValue = dataItem[i].innerHTML;
           }
         });
       }

@@ -2,28 +2,28 @@
   <div class="_member-integral-history">
     <!-- 查询头 -->
     <el-form :inline="true" :model="formData" ref="formData" class="form-data-wrap _member-search-area-custom">
-      <el-form-item label="积分流水号：" prop="flowNo">
+      <el-form-item label="积分流水号：" label-width="84px" prop="flowNo">
         <el-input v-model="formData.flowNo" @blur="()=>{formData.flowNo = formData.flowNo.trim()}" placeholder="积分流水号" clearable></el-input>
       </el-form-item>
-      <el-form-item label="积分交易类型：" prop="integralType">
+      <el-form-item label="积分交易类型：" label-width="96px" prop="integralType">
         <el-select v-model="formData.integralType" placeholder="请选择积分交易类型" clearable>
           <el-option v-for="item in integralTypeOptions" :key="item.code" :label="item.desc" :value="item.code"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="交易时间：" prop="startTime">
-        <el-date-picker v-model="formData.startTime" value-format="yyyy-MM-dd HH:mm:ss" default-time="00:00:00" type="datetime" placeholder="选择开始日期"></el-date-picker>
-        <span style="margin:16px;">至</span>
-        <el-form-item prop="endTime" style="margin-bottom:0;">
-          <el-date-picker v-model="formData.endTime" value-format="yyyy-MM-dd HH:mm:ss" default-time="23:59:59" type="datetime" placeholder="选择结束日期"></el-date-picker>
+      <el-form-item label="交易时间：" label-width="72px" prop="startTime">
+        <el-date-picker v-model="formData.startTime" value-format="yyyy-MM-dd HH:mm:ss" default-time="00:00:00" type="datetime" placeholder="yyyy-MM-dd HH:mm:ss"></el-date-picker>
+        <span class="word-line">至</span>
+        <el-form-item prop="endTime" style="margin-right: 0px!important;">
+          <el-date-picker v-model="formData.endTime" value-format="yyyy-MM-dd HH:mm:ss" default-time="23:59:59" type="datetime" placeholder="yyyy-MM-dd HH:mm:ss"></el-date-picker>
         </el-form-item>
       </el-form-item>
-      <el-form-item label="交易渠道：" prop="channelName">
+      <el-form-item label="交易渠道：" label-width="72px" prop="channelName">
         <el-input v-model="formData.channelName" @blur="()=>{formData.channelName = formData.channelName.trim()}" placeholder="交易渠道" clearable></el-input>
       </el-form-item>
-      <el-form-item label="交易影院：" prop="cinemaName">
+      <el-form-item label="交易影院：" label-width="72px" prop="cinemaName">
         <el-input v-model="formData.cinemaName" @blur="()=>{formData.cinemaName = formData.cinemaName.trim()}" placeholder="交易影院" clearable></el-input>
       </el-form-item>
-      <el-form-item label="操作人：" prop="operator">
+      <el-form-item label="操作人：" label-width="60px" prop="operator">
         <el-input v-model="formData.operator" @blur="()=>{formData.operator = formData.operator.trim()}" placeholder="操作人" clearable></el-input>
       </el-form-item>
       <el-form-item class="btn-wrap">
@@ -140,7 +140,7 @@ export default {
       },
       integralDetailVisible: false, //查看积分交易dialog
       tipMessage: "",
-      total: 20,
+      total: 0,
       tenantId: this.$store.state.loginUser.consumerId, //租户id
       formData: {
         memberId:this.$route.query.memberId,//会员ID
@@ -198,12 +198,12 @@ export default {
         if (data.total == 0) {
           this.tipMessage = "暂无数据";
         }
-        this.tableData = data.records;
-        this.total = data.total;
+        this.tableData = data.records || [];
+        this.total = data.total || 0;
       })
       .catch(err => {
         console.log(err);
-        this.tipMessage = err.message;
+        this.tipMessage = err;
       });
     },
     // 条数
@@ -219,6 +219,24 @@ export default {
     // 搜索
     handleSearch() {
       this.formData.current = 1;
+      if(this.formData.startTime || this.formData.endTime){
+        if(!this.formData.startTime){
+          this.$message({
+            message: '开始时间不能为空',
+            type: 'warn',
+            duration: 1500,
+          })
+          return false;
+        }
+        if(!this.formData.endTime){
+          this.$message({
+            message: '结束时间不能为空',
+            type: 'warn',
+            duration: 1500,
+          })
+          return false;
+        }
+      }     
       this.search();
     },
     // 重置
@@ -252,10 +270,15 @@ export default {
     width:192px;
   }
   .form-data-wrap {
-    padding: 15px 20px 0;
+    padding:24px;
     background: #f5f5f5;
     .el-form-item {
-      margin-bottom: 15px;
+      margin-bottom: 0px;
+    }
+    .word-line{
+      padding:0 15px;
+      font-size:12px;
+      color: #666 ;
     }
     .el-form-item__label {
       font-size: 12px;

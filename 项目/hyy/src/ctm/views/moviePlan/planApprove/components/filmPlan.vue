@@ -12,7 +12,7 @@
                             <div>{{filmItem.movieName}}（{{filmItem.disversion}}/{{filmItem.language}}）{{filmItem.timeLong}}分钟</div>
                             <div>{{filmItem.startTime.hours+':'+filmItem.startTime.minute + '-' + filmItem.endTime.hours + ':' + filmItem.endTime.minute}}</div>
                             <div v-if="filmItem.originFlag">
-                                <div>审核状态：<span class="font-bold">{{filmItem.approve_text}}</span></div>
+                                <div>审批状态：<span class="font-bold">{{filmItem.approve_text}}</span></div>
                                 <div>放映计划状态：<span class="font-bold">{{filmItem.plan_text}}</span></div>
                                 <div>销售状态：<span class="font-bold">{{filmItem.sale_text}}</span></div>
                                 <div><span class="mr30">人次：{{filmItem.privateSaleSeatCount ? filmItem.privateSaleSeatCount : 0}}人</span> <span class="mr30"> 票房：0元</span> <span class="mr30">上座率：{{filmItem.seatPrecent}}%</span></div>
@@ -298,15 +298,15 @@ export default {
                     //     seatPrecent = 0
                     // }
 
-                    // 审核状态
+                    // 审批状态
                     let approveStatus = c_d[j].approveStatus
                     let approve_text
                     if (approveStatus == 'NOT_APPROVE') {
-                        approve_text = '未审核'
+                        approve_text = '未审批'
                     } else if (approveStatus == 'WAIT_APPROVE') {
-                        approve_text = '待审核'
+                        approve_text = '待审批'
                     } else if (approveStatus == 'APPROVED') {
-                        approve_text = '已审核'
+                        approve_text = '已审批'
                     } else if (approveStatus == 'REJECT') {
                         approve_text = '已驳回'
                     }

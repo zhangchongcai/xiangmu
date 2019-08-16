@@ -10,19 +10,21 @@
                 :label="item.menuName"
                 v-for="(item,id) in menuList"
                 :key="id"
+                @click="$router.push(item.resUrl)"
             >
-                <i class="default-style iconfont iconpiaowushouye" v-if="item.seq==1||item.seq==2"></i>
-                <a href="javascript:void(0);" @click="$router.push(item.resUrl)" class="default-style item-name">{{item.menuName}}</a>
+                <i :class="['default-style','iconfont',item.icon]" v-if="!!item.icon"></i>
+                <a href="javascript:void(0);" class="default-style item-name">{{item.menuName}}</a>
             </li>
             <li class="action-items" @click="openOthersNav" v-show="otherFlag">
                 <span class="default-style item-name">其他</span>
+                <i :class="['default-style','iconfont',$store.state.tickets.showMoreNav ? 'iconxiangxiazhankaixiaojiantou' : 'iconxiangshangzhankaixiaojiantou']" style="font-size:2vw"></i>
             </li>
-            <li class="action-items" @click="$router.push({name: 'setting'})">
+            <!-- <li class="action-items" @click="$router.push({name: 'setting'})">
                 <i class="default-style iconfont iconshezhi"></i>
                 <span class="default-style item-name">设置</span>
-            </li>
-            <li class="action-items">
-                <i class="default-style iconfont icontuichu" @click="dialogVisible=true"></i>
+            </li> -->
+            <li class="action-items"  @click="dialogVisible=true">
+                <i :style="{fontSize:'1.7vw'}" class="default-style iconfont icontuichu"></i>
             </li>
         </ul>
          <!--<ul class="lis-container">-->
@@ -63,17 +65,17 @@
          <!--</ul>-->
     </div>
     <el-dialog
-            title="提示"
+            title="操作提示"
             :visible.sync="dialogVisible"
             width="30%"
             >
             <div class="outInfo">
                 <i class="iconfont icontishigantanhao"></i>
-                <span>确认注销当前用户？</span>
+                <span>{{quitState ? '购物车中还有订单未处理，或座位没清空，不能注销系统！' : '确认注销当前用户？'}}</span>
             </div>
             <span slot="footer" class="dialog-footer">
-                <el-button @click="dialogVisible = false">取 消</el-button>
-                <el-button type="primary" @click="quit">确 定</el-button>
+                <el-button :type="quitState ? 'primary' : ''" @click="dialogVisible = false">{{quitState ? '确 定' : '取 消'}}</el-button>
+                <el-button  v-if="!quitState" type="primary" @click="quit">确 定</el-button>
             </span>
         </el-dialog>
 </div>
@@ -93,11 +95,15 @@ export default {
     },
     computed:{
         ...mapGetters([
-            'userName'
+            'userName',
+            'cartData'
         ]),
 
         currentPathName() {
             return this.$route.name
+        },
+        quitState(){
+            return this.cartData.goodsList && this.cartData.goodsList.length ?  true : false
         }
     },
 
@@ -143,6 +149,7 @@ export default {
 
         .logo {
             width: 5vw;
+            padding-right: 20px;
         }
 
         .items {
@@ -161,13 +168,14 @@ export default {
             height: 100%;
             justify-content: space-between;
             overflow: hidden;
-
+            flex:1;
             .action-items {
                 width: 9.5vw;
                 height: 100%;
                 display: flex;
                 justify-content: center;
                 align-items: center;
+                position: relative;
                 cursor: pointer;
 
                 &:hover {
@@ -182,6 +190,14 @@ export default {
 
                 .item-name {
                     margin-left: 6px;
+                }
+                &:nth-child(3), &:nth-child(7), &:nth-child(8){
+                    a:after,span:after{
+                        content: "|";
+                        position: absolute;
+                        right: 0;
+                        font-size: 1.04vw;
+                    }
                 }
             }
 

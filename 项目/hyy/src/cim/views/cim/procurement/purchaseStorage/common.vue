@@ -39,7 +39,7 @@
                                                 @focus="handleDialogEvent('refCinemalDialog')"
                                                 :rules="[{ required: routeQuery.type==3 ? false : true, message: '速记代码不能为空',trigger: 'change' }]"
                                         ></el-input>
-                                        <el-button type="primary" plain @click="handleDialogEvent('refCinemalDialog')">{{queryData.cinemaName?"编辑":"选择"}}</el-button>
+                                        <el-button type="primary" plain @click="handleDialogEvent('refCinemalDialog')">选择</el-button>
                                     </div>
                                 </el-form-item>
                             </el-col>
@@ -57,7 +57,7 @@
                                                  @focus="handleAddGood('chaseNote')"
                                                  placeholder="请选择采购单号"
                                          ></el-input>
-                                         <el-button type="primary" plain @click="handleAddGood('chaseNote')">{{queryData.purchaseBillCode?"编辑":"选择"}}</el-button>
+                                         <el-button type="primary" plain @click="handleAddGood('chaseNote')">选择</el-button>
                                     </div>
                                 </el-form-item>
                                 <el-form-item v-else label="供应商名称" class="select-input" prop="supName"
@@ -71,7 +71,7 @@
                                                 @focus="handleDialogEvent('refSuppliersDialog')"
                                                 placeholder="请选择供应商"
                                         ></el-input>
-                                        <el-button type="primary" plain @click="handleDialogEvent('refSuppliersDialog')">{{queryData.supName?"编辑":"选择"}}</el-button>
+                                        <el-button type="primary" plain @click="handleDialogEvent('refSuppliersDialog')">选择</el-button>
                                     </div>
                                 </el-form-item>
                             </el-col>
@@ -81,6 +81,19 @@
                                 </el-form-item>
                             </el-col>
                         </el-row>
+                        <el-row >
+                            <el-col :span="10"  v-if="queryData.agreementCode">
+                                <el-form-item label="协议编码" prop="code">
+                                    <span>{{queryData.agreementCode}}</span>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="10"  v-if="queryData.agreementName">
+                                <el-form-item label="协议名称">
+                                    <span>{{queryData.agreementName}}</span>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+
                         <el-row>
                             <el-col :span="10">
                                 <el-form-item  prop="storehouseCode"
@@ -104,6 +117,30 @@
                                 </el-form-item>
                             </el-col>
                         </el-row>
+                        <el-row v-if="routeQuery.type!=1">
+                            <el-col :span="10" v-if="queryData.billTime">
+                                <el-form-item label="制单日期">
+                                    <span>{{queryData.billTime}}</span>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="10" v-if="queryData.billUserName">
+                                <el-form-item label="制单员" >
+                                    <span>{{queryData.billUserName}}</span>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row v-if="routeQuery.type!=1">
+                            <el-col :span="10">
+                                <el-form-item label="单据状态">
+                                    <span>{{formatStatus}}</span>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="10">
+                                <el-form-item label="审核状态" >
+                                    <span>{{approvalStart(1)}}</span>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
                     </div>
                 </el-collapse-item>
                 <!-- 基础信息 end-->
@@ -114,7 +151,7 @@
                         <div class="text-right" v-if="routeQuery.billType==3 && routeQuery.type!=3">
                             <el-button @click="handleAddGood" type="primary" plain>添加商品</el-button>
                         </div>
-                        <el-table :data="queryData.billDetailList" stripe>
+                        <el-table :data="queryData.detailVoList" stripe>
                             <el-table-column
                                     v-for="item in formattedStorageTableColumn(storageTableColumn)"
                                     :key="item.key"
@@ -184,7 +221,7 @@
                 <!-- 赠送商品 start-->
                 <el-collapse-item :title="routeQuery.billType==2?'入库信息':'赠送商品'" name="3"  v-if="routeQuery.billType!=3">
                     <div>
-                        <div class="text-right" v-if="routeQuery.type!=3">
+                        <div class="text-right" v-if="routeQuery.type!=3 && queryData.status!='2'">
                             <el-button @click="handleAddGood">添加商品</el-button>
                         </div>
                         <el-table :data="freeGoodsTableData" stripe>
@@ -213,7 +250,7 @@
                                     </div>
                                     <div v-else>
                                         <div v-if="item.edit">
-                                            <el-input size="small" v-model="row[item.key]" placeholder></el-input>
+                                            <el-input size="small" v-model="row[item.key]"  type="number" placeholder></el-input>
                                         </div>
                                         <div v-else-if="item.selsect && item.selsect(row)">
                                             <el-select v-model="row[item.key]" v-if="row.purUnitVoList"
@@ -264,13 +301,13 @@
                         <span>{{billTypeText}}审核</span>
                     </el-form-item>
                     <el-steps :space="200" :active="approvalActive" finish-status="success">
-                        <el-step :title="approvalStart"></el-step>
+                        <el-step :title="approvalStart()"></el-step>
                         <el-step :title="item.auditMan" :key="item.auditTime" v-for="item in queryData.reviewRecordList"></el-step>
                         <el-step title="结束" v-if="queryData.approvalStatus==2"></el-step>
                     </el-steps>
                 </el-collapse-item>
                 <!--  审批记录-->
-                <el-collapse-item title="审批记录" name="3" v-if="routeQuery.type==3">
+                <el-collapse-item title="审批记录" name="4" v-if="routeQuery.type==3">
                     <div>
                         <el-table :data="queryData.reviewRecordList" stripe>
                             <el-table-column
@@ -287,7 +324,7 @@
             </el-collapse>
 
             <!-- 选择影院弹窗 -->
-            <cinemal-dialog ref="refCinemalDialog" @onSumit="onCinemalSumit" :dialogFeedbackData="[{cinemaUid:queryData.cinemaUid,cinemaName:queryData.cinemaName}]"></cinemal-dialog>
+            <cinemal-dialog ref="refCinemalDialog" title="选择门店" @onSumit="onCinemalSumit" :dialogFeedbackData="[{cinemaUid:queryData.cinemaUid,cinemaName:queryData.cinemaName}]"></cinemal-dialog>
             <!-- 选择采购单弹窗 -->
             <purchase-note-dialog ref="refPurchaseNoteDialog" :cinemaUid="queryData.cinemaUid" :approvalStatus="2"
                                   @onSumit="onPurchaseNoteSumit"></purchase-note-dialog>
@@ -298,12 +335,13 @@
                     :dialogVisible.sync="selectedGoodsDialogVisible"
                     :cinemaUid="queryData.cinemaUid"
                     :merType="'1,5'"
+                    canSale="-1"
                     @cimSelectedGoodsDialogCallBack="selectedGoodsDialogCallBack"
             ></selected-goods>
 
             <div class="submit-box" v-if="routeQuery.type!=3">
                 <el-button type="primary" @click="handleSubmit('2')" :loading="submitLoading">保存并提交</el-button>
-                <el-button type="primary" @click="handleSubmit('1')" :loading="submitLoading" v-if="queryData.status==1">保存为草稿</el-button>
+                <el-button v-if="queryData.status!=2" type="primary" @click="handleSubmit('1')" :loading="submitLoading">保存为草稿</el-button>
                 <el-button @click="handleCancel">取 消</el-button>
             </div>
             <div v-else class="submit-box">
@@ -339,7 +377,7 @@
                     storeType: "1", //库存类型，1：仓库，2：货架
                     storehouseCode: "", //库存编码
                     storehouseName: "", //库存名称
-                    billDetailList: [], //入库明细列表
+                    detailVoList: [], //入库明细列表
                     supName: "", //供应商名称
                     supUid: "", //供应商id
                     isReview: 1, //是否需要审核,0不需要,1需要
@@ -352,7 +390,7 @@
                 storageTableColumn: [
                     {
                         label: "商品名称",
-                        key: "merName"
+                        key: "skuName"
                     },
                     {
                         label: "SKU编码",
@@ -385,6 +423,10 @@
                         label: "入库数量",
                         key: "storeinCount",
                         edit: () => true
+                    },
+                    {
+                        label: "已入库数量",
+                        key: "inCount",
                     },
                     {
                         label: "采购成本(元)",
@@ -438,7 +480,7 @@
                 freeGoodsTableColumn: [
                     {
                         label: "商品名称",
-                        key: "merName"
+                        key: "skuName"
                     },
                     {
                         label: "SKU编码",
@@ -494,15 +536,14 @@
         },
         mounted() {
             this.init();
-            console.log(this.routeMerData);
         },
 
         methods: {
             init() {
                 this.onQuery();
-                let lastLevel = this.typeText + this.billTypeText + "单";
-                this.$route.meta.title = lastLevel;
-                this.$store.commit('getLevel', lastLevel);
+                // let lastLevel = this.typeText + this.billTypeText + "单";
+                // this.$route.meta.title = lastLevel;
+                // this.$store.commit('getLevel', lastLevel);
             },
             // 查询
             onQuery() {
@@ -533,21 +574,20 @@
                         this.routeQuery.billType = this.queryData.billType - 0;
                         this.storehouseChange(this.queryData.storeType)
                         this.queryData.storehouseCode = resData.data.storehouseCode;
-                        let tempArr = JSON.parse(JSON.stringify(this.queryData.billDetailList));
-                        this.queryData.billDetailList = [];//清空，重新赋值
+                        let tempArr = JSON.parse(JSON.stringify(this.queryData.detailVoList));
+                        this.queryData.detailVoList = [];//清空，重新赋值
                         this.freeGoodsTableData = [];//清空，重新赋值
                         tempArr.forEach(item => {
                             this.queryPurUnitBySpuUid({spuUid:item.merUid,tag:1},(data)=>{
                                 item.purUnitVoList = data
                                 // 1：主入库商品，2：附加入库，采购赠送
                                 if (item.inType == 1) {
-                                    this.queryData.billDetailList.push(item)
+                                    this.queryData.detailVoList.push(item)
                                 } else {
                                     this.freeGoodsTableData.push(item)
                                 }
                             })
                         })
-                        console.log(this.queryData.billDetailList,'asadas')
                     }
                 });
             },
@@ -581,7 +621,6 @@
                         row.purUnitRatio = item.purUnitRatio
                     }
                 })
-                console.log(value, row, key)
             },
             storehouseListChange(value) {
                 this.storehouseList.forEach(item => {
@@ -596,7 +635,9 @@
                     .queryStorehouse(param)
                     .then(resData => {
                         if (resData.code === 200) {
-                            this.storehouseList = resData.data.list
+                            this.storehouseList = resData.data.list.filter((item, merIndex) => {
+                                return item.status != 2
+                            })
                         }
                     })
                     .catch(err => {
@@ -609,7 +650,9 @@
                     .findStorageRackList(param)
                     .then(resData => {
                         if (resData.code === 200) {
-                            this.storehouseList = resData.data.list
+                            this.storehouseList = resData.data.list.filter((item, merIndex) => {
+                                return item.status != 2
+                            })
                         }
                     })
                     .catch(err => {
@@ -701,7 +744,7 @@
                 })
                     .then(() => {
                         if(type ==3 ){
-                            this.queryData.billDetailList = this.queryData.billDetailList.filter(
+                            this.queryData.detailVoList = this.queryData.detailVoList.filter(
                                 item => {
                                     return item.uid != row.uid;
                                 }
@@ -732,17 +775,63 @@
                         this.queryData.status = type;
                         let param = JSON.parse(JSON.stringify(this.queryData));
                         if (this.freeGoodsTableData.length > 0) {
-                            param.billDetailList.push(...this.freeGoodsTableData);
+                            param.detailVoList.push(...this.freeGoodsTableData);
                         }
-                        param.billDetailList = param.billDetailList.map(item=>{
+                        param.detailVoList = param.detailVoList.map(item=>{
                             item.storehouseCode = param.storehouseCode;
                             item.storehouseName = param.storehouseName;
                             return item
                         })
-                        if (param.billDetailList.length == 0) {
+                        if (param.detailVoList.length == 0) {
                             this.$message({
                                 message: "请添加一个商品!"
                             });
+                            return;
+                        }
+                        let flag =true;
+                        for(let item of param.detailVoList) {
+                            if(!item.purUnitUid){
+                                this.$message("请选择采购单位");
+                                flag = false
+                                break;
+                            }
+                            if(item.storeinCount<1){
+                                this.$message("入库数量必须是大于0的整数");
+                                flag = false
+                                break;
+                            }
+                            if(this.routeQuery.billType == 3){
+                                if(!item.purPrice){
+                                    this.$message("请填写采购成本");
+                                    flag = false
+                                    break;
+                                }else{
+                                    if(item.purPrice<0){
+                                        this.$message("采购成本必须大于0");
+                                        flag = false
+                                        break;
+                                    }
+                                }
+                                if(!item.taxRate){
+                                    this.$message("请填写税率");
+                                    flag = false
+                                    break;
+                                }else{
+                                    if(item.taxRate<0){
+                                        this.$message("税率必须大于0");
+                                        flag = false
+                                        break;
+                                    }
+                                }
+                                if(!item.amount){
+                                    this.$message("请写含税金额");
+                                    flag = false
+                                    break;
+                                }
+                            }
+
+                        }
+                        if(!flag){
                             return;
                         }
                         if (this.routeQuery.type == 1) {
@@ -759,17 +848,15 @@
                                 updateDetailList : [],//更新列表
                                 deleteDetailList : this.deleteDetailList,//删除列表
                             }
-                            param.billDetailList.forEach(item=>{
+                            param.detailVoList.forEach(item=>{
                                 if(item.addFlag){
                                     updateParam.addDetailList.push(item);
                                 }else{
                                     updateParam.updateDetailList.push(item);
                                 }
                             })
-                            console.log(updateParam)
                             this.storeBillUpdateStoreIn(updateParam);
                         }
-                        console.log(param);
                     } else {
                         this.$message("带*号的为必填项，请填写");
                         return false;
@@ -778,17 +865,30 @@
             },
 
             // 选泽门店回调
-            onCinemalSumit(val = []) {
+            onCinemalSumit(val = [],type) {
+                // console.log(val," 选泽门店回调",type);
                 if (val.length > 0) {
-                    this.queryData.cinemaName = val[0].cinemaName || val[0].name ;
-                    this.queryData.cinemaUid = val[0].cinemaUid || val[0].uid;
-                    this.storehouseChange(this.queryData.storeType)
+                    if(type=="default"){
+                        if(val.length==1){
+                            this.setCinema(val);
+                            this.storehouseChange(this.queryData.storeType)
+                        }
+                    }else{
+                        this.setCinema(val)
+                        this.storehouseChange(this.queryData.storeType)
+                    }
                 } else {
+                    this.setCinema()
+                }
+            },
+            setCinema(val=[]){
+                if(val.length>0){
+                    this.queryData.cinemaName =  val[0].name || val[0].cinemaName ;
+                    this.queryData.cinemaUid =  val[0].uid || val[0].cinemaUid;
+                }else{
                     this.queryData.cinemaName = "";
                     this.queryData.cinemaUid = "";
                 }
-
-                console.log(this.queryData);
             },
             // 选泽供应商回调
             onSupplierSumit(val = []) {
@@ -804,24 +904,31 @@
             onPurchaseNoteSumit(val = []) {
                 if (val.length > 0) {
                     if (this.routeQuery.billType == 1) {
-                        this.queryData.billDetailList = val[0].purchaseBillDetailVoList.map(
+                        let tempArr = [];
+                        val[0].purchaseBillDetailVoList.forEach(
                             item => {
-                                item.inType = 1;
-                                return item;
+                                if(item.inCount != item.purCount){
+                                    item.inType = 1;
+                                    tempArr.push(item)
+                                }
                             }
-                        );
+                        )
+                        this.queryData.detailVoList = tempArr;
                     }
                     this.queryData.purchaseBillCode = val[0].billCode;
                     this.queryData.purchaseBillUid = val[0].uid;
                     this.queryData.supUid = val[0].supUid;
                     this.queryData.supName = val[0].supName;
+                    this.queryData.agreementName = val[0].agreementName;
+                    this.queryData.agreementCode = val[0].agreementCode;
                 } else {
                     this.queryData.purchaseBillCode = "";
                     this.queryData.purchaseBillUid = "";
                     this.queryData.supUid = "";
                     this.queryData.supName = "";
+                    this.queryData.agreementName = "";
+                    this.queryData.agreementCode = "";
                 }
-                console.log(this.queryData.billDetailList);
             },
 
             handleDialogEvent(name) {
@@ -858,13 +965,13 @@
                                 item.merUid = item.uid;
                                 return item
                             })
-                            this.queryData.billDetailList.push(...result);
-                            this.queryData.billDetailList =  this.unRepeat(this.queryData.billDetailList)
+                            this.queryData.detailVoList.push(...result);
+                            this.queryData.detailVoList =  this.unRepeat(this.queryData.detailVoList)
                         }
 
                     }else{
                         this.$message({
-                            message: resData.message
+                            message: resData.msg
                         });
                     }
                 }).catch(resData => {
@@ -877,8 +984,8 @@
             unRepeat(arr) {
                 let hash = {};
                 return arr.reduce((item, next) => {
-                    if (!hash[next.merCode]) {
-                        hash[next.merCode] = true;
+                    if (!hash[next.skuUid]) {
+                        hash[next.skuUid] = true;
                         item.push(next);
                     }
                     return item;
@@ -886,30 +993,41 @@
             },
             selectedGoodsDialogCallBack(value) {
                 if (value.btnType == 1) {
-                    this.purchasePurchaseMer({flag: 1, purchaseMerVoList: value.data});
+                    if(value.data.length>0){
+                        this.purchasePurchaseMer({flag: 1, purchaseMerVoList: value.data});
+                    }
                 } else {
                 }
-
-                console.log(value);
             },
             inputEvent(value,row,key) {
-                console.log(value,row,key)
-                row[key] = value;
+                // console.log(value,row,key)
+                row[key] = value.replace(/^(.*\..{4}).*$/,"$1");
                 if(key =="storeinCount"  ||key =="purPrice" ){
-                    row.amount =  row.storeinCount * row.purPrice
+                    row.amount =  (row.storeinCount * row.purPrice).toFixed(4)
                 }
                 if(key =="amount"){
-                    row.purPrice =  (row.amount/row.storeinCount).toFixed(2)
+                    if(row.amount && row.storeinCount){
+                        row.purPrice =  (row.amount/row.storeinCount).toFixed(4)
+                    }
                 }
             },
             //计算成本
             calculateCost(row, item) {
+                if(typeof row.purPrice === 'number') {
+                    row.purPrice = row.purPrice.toFixed(4).toString();
+                }
+                if(typeof row.amount === 'number') {
+                    row.amount = row.amount.toFixed(4).toString();
+                }
+                if(typeof row.taxRate === 'number') {
+                    row.taxRate = row.taxRate.toString();
+                }
                 switch (item.key) {
                     case "excludingTaxCost":
                         // 不含税采购成本=采购成本-采购成本*税率
                         if (row.purPrice && row.taxRate) {
                             return row[item.key] =
-                                (row.purPrice - (row.purPrice * row.taxRate) / 100).toFixed(2);
+                                (row.purPrice - (row.purPrice * row.taxRate) / 100).toFixed(4);
                         } else {
                             return "";
                         }
@@ -918,7 +1036,7 @@
                         //不含税金额=含税金额-含税金额*税率
                         if (row.amount && row.taxRate) {
                             return row[item.key] =
-                                (row.amount - (row.amount * row.taxRate) / 100).toFixed(2);
+                                (row.amount - (row.amount * row.taxRate) / 100).toFixed(4);
                         } else {
                             return "";
                         }
@@ -926,7 +1044,7 @@
                     case "taxAmount":
                         //税额=含税金额-不含税金额
                         if (row.amount && row.excludingTaxAmount) {
-                            return row[item.key] = (row.amount - row.excludingTaxAmount).toFixed(2);
+                            return row[item.key] = (row.amount - row.excludingTaxAmount).toFixed(4);
                         } else {
                             return "";
                         }
@@ -948,14 +1066,38 @@
                 });
             },
             formattedStorageTableColumn(clumns) {
-                //直接入库不需要入库数量
+                //直接入库不需要采购数量和已入库数量
                 if (this.routeQuery.billType == 3) {
                     clumns = clumns.filter(item => {
-                        return item.key != "purCount"
+                        return(item.key != "purCount" && item.key != "inCount")
                     })
-
                 }
                 return clumns;
+            },
+            approvalStart(type){
+                let result = "";
+                switch (this.queryData.approvalStatus) {
+                    case 0:
+                        result = "未审核";
+                        break;
+                    case 1:
+                        result = "待审核";
+                        break;
+                    case 2:
+                        if(type==1){
+                            result = "审核通过";
+                        }else{
+                            result = "开始";
+                        }
+                        break;
+                    case 3:
+                        result = "审核不通过";
+                        break;
+                    case 4:
+                        result = "无需审核";
+                        break;
+                }
+                return result;
             },
         },
         computed: {
@@ -986,6 +1128,21 @@
                         break;
                 }
             },
+            formatStatus(){
+                let result = "";
+                switch (this.queryData.status) {
+                    case 1:
+                        result = "未提交";
+                        break;
+                    case 2:
+                        result = "已提交";
+                        break;
+                    case 3:
+                        result = "已入库";
+                        break;
+                }
+                return result;
+            },
             billTypeText() {
                 // debugger
                 switch (this.routeMerData.billType ||this.queryData.billType) {
@@ -999,27 +1156,6 @@
                         return "直接入库";
                         break;
                 }
-            },
-            approvalStart(){
-                let result = "";
-                switch (this.queryData.approvalStatus) {
-                    case 0:
-                        result = "未审核";
-                        break;
-                    case 1:
-                        result = "待审核";
-                        break;
-                    case 2:
-                        result = "开始";
-                        break;
-                    case 3:
-                        result = "审核不通过";
-                        break;
-                    case 4:
-                        result = "无需审核";
-                        break;
-                }
-                return result;
             },
             approvalActive(){
                 let result = 0;

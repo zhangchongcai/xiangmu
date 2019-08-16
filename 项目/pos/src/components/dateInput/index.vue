@@ -13,7 +13,7 @@
     </el-date-picker>
     <div class="dateItem">
       <div @click="yesterday"><i class="iconfont iconzuojiantouda"></i></div>
-      <div  class="itemStr"><span @click="toDay" class="today">今天</span><span @click="onDate" class="dateText">{{dateStr}}</span><span>{{getDay}}</span></div>
+      <div  class="itemStr"><span  class="today">{{a}}</span><span @click="onDate" class="dateText">{{dateStr}}</span><span>{{getDay}}</span></div>
       <div @click="tomorrow"><i class="iconfont iconyoujiantouda"></i></div>
     </div>
   </div>
@@ -33,6 +33,30 @@ export default {
     },
     getDay(){
       return this.dayArr[this.value.getDay()]
+    },
+    a(){
+      var date = this.value
+      var year = date.getFullYear();
+      var month = date.getMonth()+1;
+      var day = date.getDate();
+      var d1 = new Date(year+'/'+month+'/'+day);
+      var dd = new Date();
+      var y= dd.getFullYear();
+      var m=dd.getMonth()+1;
+      var d=dd.getDate();
+      var d2 = new Date(y+'/'+m+'/'+d);
+      var iday = parseInt(d2-d1)/1000/60/60/24;
+      console.log(iday)
+      let deyStr = ''
+      switch(iday){
+        case 0 : deyStr = '今天'; break;
+        case 1 : deyStr = '昨天'; break;
+        case -1 : deyStr = '明天'; break;
+        case -2 : deyStr = '后天'; break;
+        default : deyStr = '' ; break;
+      }
+      return deyStr
+      
     }
   },
   methods:{

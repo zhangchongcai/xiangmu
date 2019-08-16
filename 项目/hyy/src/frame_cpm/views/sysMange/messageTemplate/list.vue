@@ -1,5 +1,5 @@
 <template>
-    <div class="contentCenter">
+    <div class="contentCenter message-tml-list">
         <!-- <div class="breadcrumb">
             <el-breadcrumb separator-class="el-icon-arrow-right">
                 <el-breadcrumb-item>短信管理</el-breadcrumb-item>
@@ -7,18 +7,19 @@
             </el-breadcrumb>
         </div> -->
         <div class="list-wrapper">
-            <el-form :inline="true" :model="listQuery" class="demo-form-inline search-box" label-position="right"  label-width="100px" style="margin: 15px 0 10px 0">
+            <el-form :inline="true" :model="listQuery" class="demo-form-inline search-box" label-position="right"  label-width="100px">
                 <el-form-item label="场景名称：">
-                    <el-input v-model="listQuery.sceneName" placeholder="请输入你要查询的名称"></el-input>
+                    <el-input class="width192" v-model="listQuery.sceneName" placeholder="请输入你要查询的名称"></el-input>
                 </el-form-item>
                 <el-form-item>
-                    <el-button type="primary" @click="onSearch">查询</el-button>
+                    <el-button type="primary" class="searchBtn" @click="onSearch">查询</el-button>
                 </el-form-item>
             </el-form>
             <div class="content-line"></div>
             <div class="create-wrapper">
-                <el-button type="primary" @click="tocreate">新建</el-button>
+                <el-button type="primary" class="is-plain addBtn" v-auth="'system_messageTemplate_add'" @click="tocreate">新建</el-button>
             </div>
+             <!-- :empty-text="tipMessage" -->
             <el-table :data="tmplist" stripe style="margin-bottom:16px;" class="diy-header">
                 <el-table-column prop="sceneCode" label="场景CODE"></el-table-column>
                 <el-table-column prop="sceneName" label="场景名称"></el-table-column>
@@ -31,11 +32,11 @@
                 <el-table-column prop="updatetime" label="操作时间"></el-table-column>
                 <el-table-column label="操作">
                     <template slot-scope="scope">
-                        <span class="table-btn-mini" @click="handleClick(scope.row)">查看</span>
-                        <span class="table-btn-mini" @click="handleEdit(scope.row)">编辑</span>
-                        <!-- <span class="table-btn-mini" @click="handleDelete(scope.row)">删除</span> -->
-                        <span class="table-btn-mini" v-if="scope.row.status == 1" @click="disableBtn(scope.row)">禁用</span>
-                        <span class="table-btn-mini" v-if="scope.row.status == 0" @click="enableBtn(scope.row)">启用</span>
+                        <el-button class="table-btn-mini" type="text"  v-auth="'system_messageTemplate_see'" @click="handleClick(scope.row)">查看</el-button>
+                        <el-button class="table-btn-mini" type="text"  v-auth="'system_messageTemplate_update'" @click="handleEdit(scope.row)">编辑</el-button>
+                        <!-- <span class="table-btn-mini" @click="handleDelete(scope.row)">删除</el-button> -->
+                        <el-button class="table-btn-mini" type="text" v-auth="'system_messageTemplate_enableDisabling'" v-if="scope.row.status == 1" @click="disableBtn(scope.row)">禁用</el-button>
+                        <el-button class="table-btn-mini" type="text" v-auth="'system_messageTemplate_enableDisabling'" v-if="scope.row.status == 0" @click="enableBtn(scope.row)">启用</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -64,7 +65,7 @@
 
 <script>
     // import resouceDialog from './resouceDialog'
-    import {roleList,deleteRole,querySmsTemplate,deletSmsTemplate,updateSmsTemplate} from 'frame_cpm/http/interface.js'
+    import {roleList,deleteRole,querySmsTemplate,deletSmsTemplate,updateSmsTemplate,updateSmsTemplateStatus} from 'frame_cpm/http/interface.js'
   export default {
     name: "messageTemplateList",
       // components:{
@@ -77,6 +78,7 @@
                 // pageSize: 10,
                 sceneName: ''
             },
+            tipMessage: "",
             bitianxiangObj:{
               menuId:null
             },
@@ -122,7 +124,7 @@
        let operObj = obj
           operObj.status = 1;
           delete operObj.propertyList
-          updateSmsTemplate(operObj)
+          updateSmsTemplateStatus(operObj)
           .then((ret) => {
              if(ret.result){
                 this.getList()
@@ -147,7 +149,7 @@
         ).then(() => {         
           let operObj = obj
           operObj.status = 0;
-          updateSmsTemplate(operObj)
+          updateSmsTemplateStatus(operObj)
             .then((ret) => {
               if(ret.result){
                 this.getList()
@@ -215,12 +217,16 @@
         getList(){
             let _this = this;
             let queryObj = this.listQuery
+            // this.tipMessage = "数据加载中...";
             querySmsTemplate(queryObj)
               .then(ret => {
                 if(ret&&ret.code==200){
                   // _this.pageNum = ret.data.pageNum
                   // _this.pageSize = ret.data.pageSize
                   // _this.total = ret.data.total
+                  // if (ret.data.total == 0) {
+                  //   this.tipMessage = "暂无数据";
+                  // }
                   _this.tmplist = ret.data
                 }else{
                   _this.$message({
@@ -257,10 +263,47 @@
   }
 </script>
 
-<style  lang="scss" scoped>
-
+<style  lang="scss">
+  .message-tml-list{
+    .el-input__inner{
+      font-size: 12px;
+    }
+    .el-form--inline .el-form-item{
+     margin-bottom:0;
+    }
+    .el-input__inner{
+      font-size: 12px;
+    }
+    .el-select .el-input .el-input__inner{
+      font-size: 12px;
+    }
+    .el-range-editor .el-range-input{
+      font-size: 12px;
+    }
+    .el-date-editor .el-range__icon {
+      line-height: 24px;
+    }
+  }
 </style>
 <style  lang="scss" scoped>
+.width192{
+  width:192px;
+}
+.addBtn{
+  width: 80px;
+  padding-left: 0;
+  padding-right: 0;
+  height: 32px;
+  font-size: 12px;
+  border-color: #3B74FF;
+  color: #3B74FF;
+}
+.searchBtn{
+  width: 80px;
+  margin-left:12px;
+  height: 32px;
+  font-size: 12px;
+}
 .contentCenter{
     height: 100%;
     .breadcrumb{
@@ -272,8 +315,8 @@
         }
     }
     .search-box{
-      padding: 24px;
-      padding-bottom: 6px;
+      margin-bottom:10px;
+      padding: 20px 24px;
       background: #f5f5f5;
     }
     .bread-crumb{
@@ -282,7 +325,6 @@
     }
     .list-wrapper{
       width: 100%;
-      margin-top: 10px;
       margin-bottom: 8px;
       // border: 1px solid #ccc;
         height:100%;

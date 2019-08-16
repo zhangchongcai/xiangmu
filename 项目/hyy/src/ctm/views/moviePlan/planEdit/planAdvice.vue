@@ -17,28 +17,28 @@
                 <li v-for="(item, index) in adviceData" :key="index">
                     <div class="film-name">
                         <div :style="{background: item.color}"></div>
-                        <div class="text-hide" :title="item.movieName">{{item.movieName}}</div>
+                        <div class="text-hide" :title="item.movieInfoVoList.map(citem => citem.movieName).join(',')">{{item.movieInfoVoList.map(citem => citem.movieName).join(',')}}</div>
                     </div>
                     <div class="data-detail" v-show="!showIndex" v-if="item.isAdvice">
                         <el-tooltip class="guide-tip-class" effect="dark" :content="item.guideType == 1 ? '强制排片指导' : '建议排片指导'" placement="bottom">
-                            <div class="reference" v-if="!item.numNoCheck" :style="{color: item.guideType == 1 ? '#FC4040' : '#F5A623'}">{{item.timeNumLower + '-' + item.timeNumUpper}}场</div>
+                            <div class="reference" v-if="!item.numNoCheck" :style="{color: item.guideType == 1 ? '#FC4040' : '#F5A623'}">{{item.movieDetailVoList.find(citem => citem.detailType != 'h').timeNumLower == item.movieDetailVoList.find(citem => citem.detailType != 'h').timeNumLower ? item.movieDetailVoList.find(citem => citem.detailType != 'h').timeNumLower : item.movieDetailVoList.find(citem => citem.detailType != 'h').timeNumLower + '-' + item.movieDetailVoList.find(citem => citem.detailType != 'h').timeNumUpper}}场</div>
                         </el-tooltip>
-                        <div class="reference" v-if="item.numNoCheck">--</div>
+                        <div class="reference" v-if="item.numNoCheck">- -</div>
                         <div class="my-data" :style="{color: item.isNumErr ? item.guideType == 1 ? '#FC4040' : '#F5A623' : '#3B74FF'}"><span v-if="item.isNumErr">!</span>{{item.myNum}}场</div>
                     </div>
                     <div class="data-detail" v-show="!showIndex" v-if="!item.isAdvice">
-                        <div class="reference">--</div>
+                        <div class="reference">- -</div>
                         <div class="my-data" >{{item.myNum}}场</div>
                     </div>
                     <div class="data-detail" v-show="showIndex" v-if="item.isAdvice">
                         <el-tooltip class="guide-tip-class" effect="dark" :content="item.guideType == 1 ? '强制排片指导' : '建议排片指导'" placement="bottom">
-                            <div class="reference" v-if="!item.rangeNoCheck" :style="{color: item.guideType == 1 ? '#FC4040' : '#F5A623'}">{{item.timeRatioLower + '-' + item.timeRatioUpper}}%</div>
+                            <div class="reference" v-if="!item.rangeNoCheck" :style="{color: item.guideType == 1 ? '#FC4040' : '#F5A623'}">{{item.movieDetailVoList.find(citem => citem.detailType != 'h').timeRatioLower + '-' + item.movieDetailVoList.find(citem => citem.detailType != 'h').timeRatioUpper}}%</div>
                         </el-tooltip>
-                        <div class="reference" v-if="item.rangeNoCheck">--</div>
+                        <div class="reference" v-if="item.rangeNoCheck">- -</div>
                         <div class="my-data" :style="{color: item.isPerErr ? item.guideType == 1 ? '#FC4040' : '#F5A623' : '#3B74FF'}"><span v-if="item.isPerErr">!</span>{{item.myPer}}%</div>
                     </div>
                     <div class="data-detail" v-show="showIndex" v-if="!item.isAdvice">
-                        <div class="reference">--</div>
+                        <div class="reference">- -</div>
                         <div class="my-data" >{{item.myPer}}%</div>
                     </div>
                 </li>

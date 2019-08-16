@@ -1,28 +1,54 @@
 <template>
   <div class="my_dialog">
     <el-dialog :title="title" :visible.sync="dialogTableVisible">
-      <el-form label-width="" :inline="true">
+      <el-form label-width>
         <div>
-          <el-form-item label="影片名称">
+          <el-form-item :label="title" style="width:770px">
             <el-input v-model="movieName" style="width:184px !important"></el-input>
+            <el-button type="primary" style="position:relative;top:2px;" @click="searchUser">查询</el-button>
+            <el-button type="primary" style="position:relative;top:2px;" @click="rebackName">重置条件</el-button>
           </el-form-item>
-          <el-button type="primary" style="position:relative;top:5px;" @click="searchUser">查询</el-button>
-          <el-button type="primary" style="position:relative;top:5px;" @click="rebackName">重置条件</el-button>
         </div>
       </el-form>
       <!-- highlight-current-row  -->
       <div class="choose_table">
         <div>
-          <el-table :data="gridData" :cell-style={padding:0} :row-style={height:30} :header-cell-style={padding:0}
-            @select="select" ref="multipleTable" @select-all="selectAll" :row-key="getRowKeys" @selection-change="selectChange">
+          <el-table
+            :data="gridData"
+            :cell-style="{padding:0}"
+            :row-style="{height:30}"
+            :header-cell-style="{padding:0}"
+            @select="select"
+            ref="multipleTable"
+            @select-all="selectAll"
+            :row-key="getRowKeys"
+            @selection-change="selectChange"
+            max-height="350"
+          >
             <el-table-column type="selection" :reserve-selection="true" width="40"></el-table-column>
-            <el-table-column property="movieName" label="影片名称" ></el-table-column>
+            <el-table-column prop="movieCode" label="影片编码"></el-table-column>
+            <el-table-column prop="movieName" :label="title1">
+              <template slot-scope="scope">
+                <span>{{scope.row.movieName}}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="version" label="发行版本"></el-table-column>
+            <el-table-column prop="datePublicShow" label="公映日期">
+              <template slot-scope="scope">
+                <span>{{slice(scope.row.datePublicShow)}}</span>
+              </template>
+            </el-table-column>
           </el-table>
           <!-- 分页 -->
           <div class="block">
-            <el-pagination @current-change="handleCurrentChange" background :current-page.sync="pageData.pageNum"
-              :page-size="pageData.pageSize" layout="total,prev, pager, next, jumper" :total="pageData.total">
-            </el-pagination>
+            <el-pagination
+              @current-change="handleCurrentChange"
+              background
+              :current-page.sync="pageData.pageNum"
+              :page-size="pageData.pageSize"
+              layout="total,prev, pager, next, jumper"
+              :total="pageData.total"
+            ></el-pagination>
           </div>
         </div>
         <div class="choose_ul">
@@ -33,11 +59,12 @@
           <ul class="ul_body">
             <li v-for="(item,index) in chooseItem" :key="index">
               <span>{{item.movieName}}</span>
-              <span class="delate_span" @click="delateSpan(item)"> <i class="el-icon-close"></i></span>
+              <span class="delate_span" @click="delateSpan(item)">
+                <i class="el-icon-close"></i>
+              </span>
             </li>
           </ul>
         </div>
-
       </div>
 
       <div style="height:12px;background:transparent;"></div>
@@ -47,187 +74,226 @@
       </div>
     </el-dialog>
   </div>
-
 </template>
 <script>
-  export default {
-    data() {
-      return {
-        dialogTableVisible: false,
-        title: "",
-        gridData: [],
-        pageData: {},
-        chooseItem: [],
-        rows: [],
-        movieName: ""
+export default {
+  data() {
+    return {
+      dialogTableVisible: false,
+      title: "",
+      title1: "",
+      heightOver: "",
+      gridData: [],
+      pageData: {},
+      chooseItem: [],
+      rows: [],
+      movieName: "",
+      cList: [],
+      zx: null
+    };
+  },
+  methods: {
+    slice(val){
+      val = val.slice(0,10)
+      return val
+    },
+    // 点击选择数据（暂时储存的数据）
+    select(selection, row) {
+      console.log(selection, row);
+      if (selection && selection instanceof Array) {
+        this.chooseItem = selection;
+        // this.chooseItem.push(row)
       }
     },
-    methods: {
-      // 点击选择数据（暂时储存的数据）
-      select(selection, row) {
-        console.log(selection, row)
-        if (selection && selection instanceof Array) {
-          this.chooseItem = selection;
-          // this.chooseItem.push(row)
-        }
-      },
-      //储存状态
-      getRowKeys(row) {
-        return row.uid;
-      },
-      toggleRowSelection() {
+    //储存状态
+    getRowKeys(row) {
+      return row.movieCode;
+    },
+    toggleRowSelection() {},
+    // 全选
+    selectAll(selection) {
+      if (selection && selection instanceof Array) {
+        this.chooseItem = selection;
+      }
+    },
+    // 确定选择
+    chooseUser() {
+      this.dialogTableVisible = false;
+      // this.rows = this.chooseItem;
+      this.$emit("chooseUser", this.chooseItem);
+    },
+    checked() {
+      this.$nextTick(() => {
+        this.selectChange();
+        // this.$refs.multipleTable.toggleAllSelection()
 
-      },
-      // 全选
-      selectAll(selection) {
-        if (selection && selection instanceof Array) {
-          this.chooseItem = selection;
-        }
-      },
-      // 确定选择
-      chooseUser() {
-        this.dialogTableVisible = false;
-        // this.rows = this.chooseItem;
-        this.$emit("chooseUser", this.chooseItem);
-      },
-      checked() {
-        this.$nextTick(()=>{
-          this.selectChange()
-          // this.$refs.multipleTable.toggleAllSelection()
-          
-          // this.$refs.multipleTable.toggleRowSelection(this.gridData[1],true);
-        })
-      },
-      handleSelectionChange(val) {
-        this.multipleSelection = val;
-      },
-      // 数据改变
-      selectChange(selection){
-        console.log(selection)
-      },
-      // 页面改变
-      handleCurrentChange(val) {
-        console.log(val)
-        this.$emit("changeCurrentPage", val)
-      },
-      // 查询
-      searchUser() {
-        console.log(this.movieName)
-        this.$emit("searchUser", this.movieName)
-      },
-      // 删除
-      delateSpan(item) {
-        console.log(item)
-        if (item) {
-          this.$refs.multipleTable.toggleRowSelection(item,false);
-        }
-      },
-      clearSelection() {
-        this.$refs.multipleTable.clearSelection();
-        this.chooseItem = []
-      },
-      rebackName(){  // 清空选择项
-        this.movieName = "" 
+        // this.$refs.multipleTable.toggleRowSelection(this.gridData[1],true);
+      });
+    },
+    handleSelectionChange(val) {
+      this.multipleSelection = val;
+    },
+    // 数据改变
+    selectChange(selection) {
+      console.log(selection);
+    },
+    // 页面改变
+    handleCurrentChange(val) {
+      console.log(val);
+      this.$emit("changeCurrentPage", val,this.movieName);
+    },
+    // 查询
+    searchUser() {
+      console.log(this.movieName);
+      this.$emit("searchUser", this.movieName);
+    },
+    // 删除
+    delateSpan(item) {
+      console.log(item);
+      if (item) {
+        this.$refs.multipleTable.toggleRowSelection(item, false);
       }
     },
-    watch: {
-      dialogTableVisible(val) {
-        this.mydialogTableVisible = val;
-        this.dealType = "";
-        this.dealName = "";
-        this.chooseItem = [];
-        // this.isRember = false;
-        // this.checked(); 
-      },
-      gridData(){
-        this.timer = setTimeout(this.checked, 10);
-      }
+    clearSelection() {
+      this.$refs.multipleTable.clearSelection();
+      this.chooseItem = [];
     },
-    // mounted(){
-    //  
-    // },
-    beforeDestroy() {
-      clearTimeout(this.timer);
+    rebackName() {
+      // 清空选择项
+      this.movieName = "";
+    },
+    first(rows) {
+      this.$nextTick(() => {
+        this.$refs.multipleTable.toggleRowSelection(rows, true);
+      });
     }
+  },
+  watch: {
+    dialogTableVisible(val) {
+      this.mydialogTableVisible = val;
+      this.movieName = "";
+      console.log(this.gridData,this.cList)
+      if (this.cList.length > 0 && this.zx == 1) {
+        this.cList.forEach(item => {
+          this.gridData.forEach((i, index) => {
+            if (i.name == item.movieName) {
+              this.first(this.gridData[index]);
+            }
+          });
+        });
+        this.chooseItem = this.cList;
+        this.zx = 0;
+      }
+      // this.isRember = false;
+      // this.checked();
+    },
+    gridData() {
+      this.timer = setTimeout(this.checked, 10);
+    }
+  },
+  // mounted(){
+  //
+  // },
+  beforeDestroy() {
+    clearTimeout(this.timer);
   }
+};
 </script>
 
 <style lang="scss" scoped>
-  .my_dialog {
-    /deep/ .el-dialog {
-      // width: calc(576px + 224px);
-      width: 892px;
-      height: 576px;
-      border-radius: 4px;
-      .el-form-item .el-input__inner{
-        width: 184px;
-      }
-      .el-button{
-        width: 80px;
-        padding: 8px !important;
-      }
-      .el-dialog__header {
-        padding: 14px 20px 10px;
-      }
+.my_dialog {
+  /deep/ .el-dialog {
+    // width: calc(576px + 224px);
+    width: 892px;
+    height: 580px;
+    border-radius: 4px;
+    .el-form-item .el-input__inner {
+      width: 184px;
+    }
+    .el-button {
+      width: 80px;
+      padding: 8px !important;
+    }
+    .el-dialog__header {
+      padding: 14px 20px 10px;
+    }
 
-      .el-dialog__title {
-        font-family: MicrosoftYaHei;
-        font-size: 14px;
-        color: #333333;
-        letter-spacing: 0;
-        line-height: 28px;
-      }
+    .el-dialog__title {
+      font-family: MicrosoftYaHei;
+      font-size: 14px;
+      color: #333333;
+      letter-spacing: 0;
+      line-height: 28px;
+    }
 
-      .el-dialog__headerbtn .el-dialog__close {
-        color: #979797;
-        font-size: 16px;
-      }
+    .el-dialog__headerbtn .el-dialog__close {
+      color: #979797;
+      font-size: 16px;
+    }
 
-      .el-form-item__label {
-        font-size: 12px;
-      }
+    .el-form-item__label {
+      font-size: 12px;
+    }
 
-      .el-form-item {
-        margin-bottom: 0;
-      }
+    .el-form-item {
+      margin-bottom: 0;
+    }
 
-      .el-dialog__header::after {
-        content: "";
-        display: block;
-        // width: calc(536px + 224px);
-        width: 852px;
-        height: 1px;
-        background: #e5e5e5;
-      }
+    .el-dialog__header::after {
+      content: "";
+      display: block;
+      // width: calc(536px + 224px);
+      width: 852px;
+      height: 1px;
+      background: #e5e5e5;
+    }
 
-      .choose_table {
-        display: flex;
-        margin-top: 11px;
-        border-left: 1px solid #E5E5E5;
-        border-bottom: 1px solid #E5E5E5;
+    .choose_table {
+      display: flex;
+      margin-top: 11px;
+      border-left: 1px solid #e5e5e5;
+      border-bottom: 1px solid #e5e5e5;
 
-        .choose_ul {
-          background: #FFFFFF;
-          border: 1px solid #E5E5E5;
-          border-bottom: none;
-          width: 224px;
+      .choose_ul {
+        background: #ffffff;
+        border: 1px solid #e5e5e5;
+        border-bottom: none;
+        width: 224px;
 
-          .ul_header {
+        .ul_header {
+          display: flex;
+          padding: 10px 16px;
+          justify-content: space-between;
+          position: relative;
+
+          // border-bottom: 1px solid #F5F5F5;
+          &::after {
+            display: block;
+            position: absolute;
+            top: 37px;
+            content: "";
+            width: 192px;
+            height: 1px;
+            background-color: #f5f5f5;
+          }
+
+          span {
+            font-family: MicrosoftYaHei;
+            font-size: 12px;
+            color: #666666;
+            letter-spacing: 0;
+          }
+        }
+
+        .ul_body {
+          margin-top: 10px;
+          overflow-y: scroll;
+          height: 350px;
+
+          li {
+            padding: 4px 16px;
             display: flex;
-            padding: 10px 16px;
             justify-content: space-between;
-            position: relative;
-
-            // border-bottom: 1px solid #F5F5F5;
-            &::after {
-              display: block;
-              position: absolute;
-              top: 37px;
-              content: "";
-              width: 192px;
-              height: 1px;
-              background-color: #F5F5F5;
-            }
 
             span {
               font-family: MicrosoftYaHei;
@@ -235,103 +301,84 @@
               color: #666666;
               letter-spacing: 0;
             }
-          }
 
-          .ul_body {
-            margin-top: 10px;
-            overflow-y: scroll;
-            height: 350px;
-
-            li {
-              padding: 4px 16px;
-              display: flex;
-              justify-content: space-between;
-
-              span {
-                font-family: MicrosoftYaHei;
-                font-size: 12px;
-                color: #666666;
-                letter-spacing: 0;
-              }
-
-              .delate_span {
-                cursor: pointer;
-              }
+            .delate_span {
+              cursor: pointer;
             }
           }
         }
       }
+    }
 
-      .el-dialog__body {
-        padding: 0 20px;
+    .el-dialog__body {
+      padding: 0 20px;
 
-        tr th,
-        tr td {
-          height: 30px;
-          line-height: 30px;
+      tr th,
+      tr td {
+        height: 30px;
+        line-height: 30px;
+      }
+
+      .two_search {
+        width: 214px;
+        font-size: 12px;
+      }
+
+      .one_search {
+        width: 268px;
+      }
+
+      .el-table__header-wrapper,
+      .el-table__body-wrapper,
+      .el-table__footer-wrapper {
+        // width: 536px;
+        width: calc(536px + 92px);
+      }
+
+      .el-table {
+        height: 353px;
+        // width: 536px;
+        width: calc(536px + 92px);
+        flex: 0 1 auto;
+        box-sizing: border-box;
+
+        .has-gutter tr th {
+          padding: 0;
         }
 
-        .two_search {
-          width: 214px;
+        .cell {
           font-size: 12px;
+          line-height: 30px;
+          // float: left;
+          // text-align: center;
         }
 
-        .one_search {
-          width: 268px;
-        }
-
-        .el-table__header-wrapper,
-        .el-table__body-wrapper,
-        .el-table__footer-wrapper {
-          // width: 536px;
-          width: calc(536px + 92px);
-        }
-
-        .el-table {
-          height: 353px;
-          // width: 536px;
-          width: calc(536px + 92px);
-          flex: 0 1 auto;
-          box-sizing: border-box;
-
-          .has-gutter tr th {
-            padding: 0;
-          }
-
-          .cell {
-            font-size: 12px;
-            line-height: 30px;
-            // float: left;
-            // text-align: center;
-          }
-
-          .el-radio__label {
-            padding: 0;
-            display: none;
-          }
-        }
-
-        .block {
-          padding: 10px;
-
-          .el-pagination {
-            text-align: center;
-          }
-          .el-input__inner{
-            width: 46px;
-          }
+        .el-radio__label {
+          padding: 0;
+          display: none;
         }
       }
 
-      .btn-area {
-        display: flex;
-        justify-content: center;
-      }
+      .block {
+        padding: 10px;
 
-      /deep/ .content .el-input {
-        width: 50px;
-
+        .el-pagination {
+          text-align: center;
+        }
+        .el-input__inner {
+          width: 46px;
+        }
       }
     }
+
+    .btn-area {
+      display: flex;
+      justify-content: center;
+    }
+
+    /deep/ .content .el-input {
+      width: 50px;
+    }
   }
+}
 </style>

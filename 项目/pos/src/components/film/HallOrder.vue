@@ -58,11 +58,6 @@ export default {
           background: #ffffff;
           color: $font-color-blue;
       }
-
-      &:hover {
-          background: #ffffff;
-          color: $font-color-blue;
-      }
   }
 </style>
 

@@ -107,8 +107,8 @@ export default {
 			font-size: 12px;
 			cursor: pointer;
 		.fix-step-icon {
-			width: 5px;
-			height: 5px;
+			width: 4px;
+			height: 4px;
 			display: inline-block;
 			border-radius: 50%;
 			background-color: rgb(188, 188, 188);
@@ -127,7 +127,7 @@ export default {
 		.connect-line,
 		.connect-line-first {
 			position: absolute;
-			width: 2px;
+			width: 1px;
 			height: 46px;
 			left: 2px;
 			bottom: -45px;

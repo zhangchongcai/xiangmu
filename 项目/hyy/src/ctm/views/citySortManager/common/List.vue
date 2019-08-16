@@ -5,38 +5,11 @@
 */
 <template>
   <div class="brand-dealer-manager">
-    <div class="m-t-10">
-      <dy-table
-        ref="dyTable"
-        v-loading="loading"
-        :columns="columns"
-        :rows="rows"
-      ></dy-table>
+    <div>
+      <dy-table ref="dyTable" v-loading="loading" :columns="columns" :rows="rows"></dy-table>
     </div>
-    <el-pagination
-      v-if="total>pageSize"
-      class="m-t-10 a-c"
-      background
-      @current-change="pageNumChange"
-      @size-change="pageSizeChange"
-      :page-size="pageSize"
-      :current-page="pageNum"
-      layout="total,prev, pager, next, jumper"
-      :total="total"
-    ></el-pagination>
-    <TableSelect
-      :formItems="formItems"
-      nameKey="areaName"
-      rowKey="areaCode"
-      :request="requestApi"
-      :columns="brandColumns"
-      :multiSelect="true"
-      title="修改城市级别分类"
-      :modelVisible="modelVisible"
-      @close="modelVisible=false"
-      @select="selectedTable"
-      :defaultSelectRows="defaultSelectRows"
-    />
+    <el-pagination v-if="total>pageSize" class="m-t-10 a-c" background @current-change="pageNumChange" @size-change="pageSizeChange" :page-size="pageSize" :current-page="pageNum" layout="total,prev, pager, next, jumper" :total="total"></el-pagination>
+    <TableSelect :formItems="formItems" nameKey="areaName" :cacheAble="false" rowKey="areaCode" :request="requestApi" :columns="brandColumns" :multiSelect="true" title="修改城市级别分类" :modelVisible="modelVisible" @close="modelVisible=false" @select="selectedTable" :defaultSelectRows="defaultSelectRows" />
   </div>
 </template>
 
@@ -133,9 +106,14 @@ export default {
             <div>
               {
                 row.grade != 'C' ?
-                  <a class="table-btn-color m-r-10 f-12" onClick={() => this.edit(row)} round>
-                    编辑
-              </a>
+                  (
+                    this.$_has('ctm_city_sort_manager_edit') ?
+                    <a class="table-btn-color m-r-10 f-12" onClick={() => this.edit(row)} round>
+                      编辑
+                    </a>
+                      : ""
+                  )
+
                   : ""
               }
 

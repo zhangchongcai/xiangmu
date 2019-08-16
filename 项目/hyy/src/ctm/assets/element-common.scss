@@ -31,15 +31,20 @@
 
   .el-form.base-form {
 
-    // .el-form-item {
-    //   margin-bottom: 24px;
-    // }
+    .el-form-item {
+      margin-bottom: 16px;
+    }
+
     .el-date-editor .el-range__close-icon {
       line-height: 24px;
     }
 
     .el-input {
-      width: 192px;
+      width: 256px;
+    }
+
+    .el-input-number.is-without-controls .el-input__inner {
+      text-align: left;
     }
 
     .el-date-editor--daterange.el-input,
@@ -49,8 +54,12 @@
       width: 256px;
     }
 
-    .el-textarea {
+    .el-date-editor.el-input.el-date-editor--time {
       width: 192px;
+    }
+
+    .el-textarea {
+      width: 256px;
     }
 
     .el-textarea__inner {
@@ -104,6 +113,31 @@
     }
   }
 
+  .el-form.base-form.scan {
+    .el-form-item__label {
+      color: #666666;
+      padding-right: 10px;
+    }
+
+    .el-form-item__content {
+      line-height: 32px;
+    }
+
+    .el-form-item__label {
+      line-height: 32px;
+    }
+
+    .el-form-item {
+      margin-bottom: 5px;
+    }
+
+    .c-view {
+      color: #666666;
+      font-size: 12px;
+    }
+
+  }
+
   .el-collapse {
 
     .el-collapse-item__header::after {
@@ -115,5 +149,9 @@
     .el-collapse-item__content {
       padding-bottom: 0;
     }
+  }
+
+  .el-button {
+    padding: 9px 22px;
   }
 }

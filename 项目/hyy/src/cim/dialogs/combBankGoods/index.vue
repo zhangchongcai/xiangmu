@@ -266,42 +266,7 @@ export default {
         children: "subTree",
         label: "name"
       },
-      tableData: [
-        {
-          barCode:"BRAND_00010",
-          brandName:"喜之郎",
-          catCode:"",
-          catName:"",
-          catUid:10,
-          classCode:"CIM_LEVEL2_SEQ2",
-          className:"休闲食品",
-          classUid:"",
-          code:"DP0000001",
-          merSpec:"250ml",
-          merType:5,
-          name:"单品1",
-          skuCode:"DP000000101",
-          unitCode:"UNIT_00003",
-          unitName:"包",
-        },
-        {
-          barCode:"BRAND_000101",
-          brandName:"喜之郎1",
-          catCode:"",
-          catName:"",
-          catUid:101,
-          classCode:"CIM_LEVEL2_SEQ12",
-          className:"休闲食品1",
-          classUid:"",
-          code:"DP0000101",
-          merSpec:"250ml",
-          merType:5,
-          name:"单品1",
-          skuCode:"DP100000101",
-          unitCode:"UNIT_000031",
-          unitName:"包1",
-        }
-      ],
+      tableData: [],
       newtableData:[],
       tableLoding: false,
       selectedgoods: [],
@@ -366,13 +331,13 @@ export default {
     onCinemalSumit(val = []) {
       if (val.length > 0) {
         this.newtableData.forEach((hval,hindex,harr)=>{
-          harr[val[0].newrowId].catName = hval.name
-          harr[val[0].newrowId].catCode = hval.code
+          harr[this.newrow.newrowId].catName = val[0].name
+          harr[this.newrow.newrowId].catCode = val[0].code
         })
       } else {
         this.newtableData.forEach((hval,hindex,harr)=>{
-            harr[val[0].newrowId].catName = ""
-            harr[val[0].newrowId].catCode = ""
+            harr[this.newrow.newrowId].catName = ""
+            harr[this.newrow.newrowId].catCode = ""
         })
       }
     },
@@ -433,7 +398,6 @@ export default {
     // 根据商品分类查询总部商品信息
     goodsDataQueryGoodsList(param, type) {
       this.tableLoding = true;
-      debugger
       this.$cimList.headquartersGoods
         .goodsDataQueryGoodsList(param)
         .then(res => {
@@ -537,8 +501,22 @@ export default {
         }
         
       }else{
-        this.resSynproSynCmcBaseMer(this.newtableData)
-        this.closeCallBack();
+        let newAvtive = {}
+        let dqActive = ""
+        this.newtableData.some((val,newindex,arr)=>{
+          if(val.catName == "" && val.catCode == ""){
+            return newAvtive = {a1:true,a2:val}
+          }
+        })
+        if(newAvtive.a1 === true){
+          this.$message(newAvtive.a2.name+":没有选择商品分类");
+        }else{
+          let data = {
+            list:this.newtableData
+          }
+          this.resSynproSynCmcBaseMer(data)
+          
+        }
       }
       
       
@@ -549,6 +527,7 @@ export default {
         .synproSynCmcBaseMer(param)
         .then(res => {
           if (res.code === 200) {
+            this.closeCallBack();
             this.$message("添加成功");
             // this.tableData = res.data
             // this.total = res.data.total;

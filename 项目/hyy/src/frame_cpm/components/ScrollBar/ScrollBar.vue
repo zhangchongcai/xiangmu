@@ -11,7 +11,7 @@ export default {
     data(){
         return {
             left: 0,
-            wheelSpeed: 180,
+            wheelSpeed: 140,
             msg: '',
         }
     },
@@ -26,6 +26,7 @@ export default {
     },
     methods: {
         scroll() {
+          // debugger
           const scrollWrapWidth = this.$refs.scrollWrap.offsetWidth
           const scrollContWidth = this.$refs.scrollCont.offsetWidth
           if(scrollContWidth > scrollWrapWidth) {

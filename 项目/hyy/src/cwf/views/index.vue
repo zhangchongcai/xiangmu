@@ -1,5 +1,5 @@
 <template>
-<div>
+<div class="cwf_view">
     <router-view></router-view>
 </div>
 </template>
@@ -11,34 +11,126 @@ export default {
 </script>
 
 <style lang="scss">
-@each $type in (left, right, bottom, top) {
-    @each $margin in (0,5, 10, 15, 20) {
-        .margin-#{$type}-#{$margin} {
-            margin-#{$type}: #{$margin}px;
+//实在无法改动的全局样式
+.el-select-dropdown__item {
+    font-size: 12px !important;
+    font-family: "MicrosoftYaHei" !important;
+}
+//审批页面-公共样式
+.cwf_view{
+    // 常规业务审批-公共样式
+    .cwf_normalApproval{
+        
+    }
+    // 审批流程设置-公共样式
+    .cwf_approvalSetting{
+        
+
+    }
+    // 审批流程设置-编辑-公共样式
+    .cwf_editApprovalSetting{
+        .el-input {
+            font-size: 12px!important;
+            .el-input__inner{
+                font-size: 12px!important;
+                color: #666666;
+            }
         }
-        .margin-#{$type}-#{$margin}-important {
-            margin-#{$type}: #{$margin}px !important;
+        .input-disabled{
+            background-color: #f5f5f5;
+            border-color: #BCBCBC;
+            color: #666666;
+        }
+    }
+    //业务单据审批设置-公共样式
+    .cwf_billSetting {
+        .box{
+            .el-select{
+                .el-input{
+                    width: 300px;
+                    .el-input__inner{
+                        font-size: 12px !important;
+                        font-family: "MicrosoftYaHei" !important;
+                        color: #BCBCBC;
+                    }
+                }
+            }
+           
+        }
+        .el-radio-button__inner{
+            display: inline-block;
+            width: 144px;
+            height: 32px;
+            line-height: 32px;
+            text-align: center;
+            padding: 0;
+            font-size: 12px!important;
+        }
+    }
+    //业务单据审批设置-编辑-公共样式
+    .cwf_editBillSetting{
+        .box{
+            .el-select{
+                .el-input{
+                    width: 300px;
+                    .el-input__inner{
+                        font-size: 12px !important;
+                        font-family: "MicrosoftYaHei" !important;
+                        color: #BCBCBC;
+                    }
+                }
+            }
+        }
+        .el-tree-node{
+            background-color: #F5F5F5;
+            .el-tree-node__label{
+                font-family: PingFangSC-Regular;
+                font-size: 12px;
+                color: #666666;
+            }
+        }
+        .el-checkbox__inner{
+            width: 12px;
+            height: 12px;
+        }
+        .el-tree__empty-block{
+            background-color: #F5F5F5;
+        }
+    }
+    // 折叠面板样式调整
+    .el-collapse {
+        padding-bottom: 0 !important;
+        .el-collapse-item__header {
+            display: flex;
+            color: #333333;
+            border: 0;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+        }
+        .el-collapse-item__header::after {
+            height: 0;
+        }
+        .el-collapse-item__arrow {
+            margin: 0 8px 0 0;
+        }
+        .el-collapse-item__wrap {
+            border: 0;
+            padding-top: 7px !important;
+            .el-collapse-item__content {
+                padding-bottom: 15px;
+            }
+        }
+        .el-radio{
+            .el-radio__label{
+                font-size: 12px!important;
+            }
+        }
+        .el-textarea__inner{
+            height: 153px;
+            font-size: 12px!important;
         }
     }
 }
 
-@each $title, $content in (end:flex-end,center:center,between:space-between,start:flex-start) {
-    .flex-#{$title} {
-        justify-content: $content;
-    }
-}
-
-/* 设计规范 输入框 选择框宽度 */
-@each $i in 360,
-217,
-166,
-124,
-94 {
-    .input-type-#{$i} {
-        width: #{$i}px;
-    }
-}
-  .el-step__icon.is-text {
-        margin-bottom: 5px;
-    }
+ 
 </style>

@@ -24,6 +24,8 @@ var  member = {
     name:'会员概览',
     data() {
         return {
+            channelDataEmpty:null,
+            cardDataEmpty:null,
             naveList:[{name:'会员分析'},{name:"会员概况"}],
             brandId: null,
             cinemaBrand: [],
@@ -87,6 +89,7 @@ var  member = {
         // console.log('页面创建')
         this.getOnce(); 
         this.initData();
+
       },
     
       watch:{
@@ -97,9 +100,7 @@ var  member = {
             }else{
                 orgType = this.orgType;
             }
-            // console.log(this.orgType,from.path,to.path,1)
             if(to.name == from.name && to.path.endsWith(`${orgType}/member/total`)){
-                // console.log('新页面刷新',this.orgType,from.path,to.path,2)
                 this.initData()
             }
         }

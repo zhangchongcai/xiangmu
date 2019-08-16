@@ -2,12 +2,34 @@ const state = {
     // 是否要缓存页面，默认不缓存
     cachePage: false,
     // 已经打开的页面
-    openedPageList:localStorage.getItem('tagNavList')?JSON.parse(localStorage.getItem('tagNavList')):[],
+    openedPageList:sessionStorage.getItem('tagNavList')?JSON.parse(sessionStorage.getItem('tagNavList')):[],
     // 缓存的页面
     cachedPageName: [],
-    closedItem: {}
+    closedItem: {},
+    recentVisits:sessionStorage.getItem('recentVisits')?JSON.parse(sessionStorage.getItem('recentVisits')):[],
+
 }
 const mutations = {
+    addRecentVisits(state, data) {
+        if(data){
+            if(state.recentVisits.some(page => page.menuCode == data.menuCode)){
+                return
+            }else{
+                state.recentVisits.push(data)
+                sessionStorage.setItem('recentVisits',JSON.stringify( state.recentVisits))
+            }
+        }
+        if(state.recentVisits.length>20){
+            state.recentVisits.splice(0,1)
+        }
+    },
+    removeRecentVisits(state, data) {
+        let index = state.recentVisits.findIndex(page => page.menuCode == data.menuCode)
+        if(index >-1){
+            state.recentVisits.splice(index, 1)
+            sessionStorage.setItem('recentVisits',JSON.stringify( state.recentVisits))
+        }
+    },
     addTagNav(state, data){
         if (state.openedPageList.some(v => v.path === data.path)) {
             if (data.query) {
@@ -20,7 +42,7 @@ const mutations = {
             return
         }
         state.openedPageList.push(data)
-        localStorage.setItem('tagNavList',JSON.stringify(state.openedPageList))
+        sessionStorage.setItem('tagNavList',JSON.stringify(state.openedPageList))
         if(state.cachePage){
             state.cachedPageName.push(data.name)
         }
@@ -32,7 +54,7 @@ const mutations = {
             for(let [i, v] of state.openedPageList.entries()){
                 if(v.path === data.path){
                     state.openedPageList.splice(i, 1)
-                    localStorage.setItem('tagNavList',JSON.stringify(state.openedPageList))
+                    sessionStorage.setItem('tagNavList',JSON.stringify(state.openedPageList))
                 }
             }
             if(state.cachePage){

@@ -1,15 +1,12 @@
 <template>
   <div class="cinemaList">
-    <!-- 面包屑 -->
-    <!-- <el-breadcrumb separator-class="el-icon-arrow-right">
-      <el-breadcrumb-item>首页</el-breadcrumb-item>
-      <el-breadcrumb-item>班次收银管理</el-breadcrumb-item>
-      <el-breadcrumb-item :to="{ path: 'list' }">班次收银管理</el-breadcrumb-item>
-      <el-breadcrumb-item :to="{ path: 'detail',query:$route.query }">清机结算详情</el-breadcrumb-item>
-      <el-breadcrumb-item :to="{ path: 'moneyAdjust' }">资金调整单</el-breadcrumb-item>
-    </el-breadcrumb> -->
     <div class="searchAdition">
+     
       <el-form :inline="true" class="demo-form-inline search-form" size="small" label-width="100px">
+         <!-- <el-form-item label="影院名称：">
+            <el-button @click="singleCinemaVisible = true, $refs.frameSingleCinema.listAuthCommCinemas()" style="width:176px;height:32px;">
+                {{ cinemaName }}</el-button>
+          </el-form-item> -->
         <el-form-item label="资金科目:">
           <el-select v-model="searchAdition.subjectName">
             <el-option label="全部" value>全部</el-option>
@@ -57,20 +54,36 @@
     @changeDialogTableVisible="changeDialogTableVisible" @changeCurrentPage="changeCurrentPage" @addSuccess="addSuccess"></ShowDialog>
        <textDialog ref="textDialog" @callback="chooseWorker" @searchWorker="searchWorker"></textDialog>
     </div>
+    <singleCinema ref="frameSingleCinema" :framedialogVisible.sync="singleCinemaVisible" :type="singleCinemaType"
+      :innerData="innerData" @callBackSingle="callBackSingle">
+      <div slot="footerId">
+        <el-button @click="singleCinemaVisible = false">取 消</el-button>
+        <el-button type="primary" @click="$refs.frameSingleCinema.confirmData(), singleCinemaVisible = false">确
+          定</el-button>
+      </div>
+    </singleCinema>
   </div>
 </template>
 <script type="text/javascript">
+  import singleCinema from "frame_cpm/dialogs/cinemaDialog/singleCinema"
   import ShowDialog from "../public/moneyDialog"
   import mydialog from "../public/searchDialog"
   import textDialog from "../public/textDialog"
   export default {
     components:{
+      singleCinema,
       ShowDialog,
       mydialog,
       textDialog
     },
     data() {
       return {
+        singleCinemaVisible: false,
+        singleCinemaType: 2,
+        innerData: {
+            id: '',
+        },
+        cinemaName: "", //影院名字
         total: 1, //总数
         current: 1, //当前页
         size: 10, //当前页数大小 
@@ -208,7 +221,38 @@
       addSuccess(){  // 添加成功之后
         this.getList();
         this.$refs.dataDialog.tableData = [];
-      }
+      },
+      // 打开影院
+      callback(val) {
+        console.log(val)
+        this.cinemaName = val.orgName
+        this.queryData.cinemaUid = val.cinemaUID
+      },
+
+     callBackSingle(data) {
+          console.log(data, '-----> data')
+          this.queryData.cinemaUid = data.data.id
+          this.cinemaName = data.data.name
+          this.cinemaName = this.cinemaName.length> 10?this.cinemaName.substring(0,9)+"...": this.cinemaName
+          this.innerData.id = data.data.id
+          this.singleCinemaVisible = data.framedialogVisible
+          // this.search() 
+      },
+      getUserInfo() {
+          this.$ctmList.getUserInfo().then(res => {
+              console.log(res)
+              if (res.code === 200) {
+                  this.cinemaName = res.data.cinemaName
+                  this.queryData.cinemaUid = res.data.cinemaUid
+                  this.innerData.id = Number(res.data.cinemaUid)
+
+                  this.search()
+
+              } else {
+                  this.error(res.msg)
+              }
+          })
+      },
     },
     created() {
       this.getList();

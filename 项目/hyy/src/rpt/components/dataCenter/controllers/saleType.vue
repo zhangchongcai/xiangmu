@@ -2,7 +2,7 @@
   <!-- 销售类型 -->
   <el-select
     popper-class="rpt-select"
-    v-model="saleTypeValue"
+    v-model="saleTypeObj.saleTypeValue"
     placeholder="请选择"
     @focus="getSaleType('POS_SALE_TYPE',4)"
   >
@@ -17,24 +17,19 @@
 </template>
 
 <script>
-import mixins from "src/frame_cpm/mixins/cacheMixin.js";
 export default {
-  mixins: [mixins.cacheMixin],
   props: {
-    resetStatus: Boolean
+    resetStatus: Boolean,
+    saleTypeObj: Object
   },
   data() {
     return {
-      cacheField: ["saleTypeValue"],
-      subComName: "saleType",
-      saleTypeValue: "",
       options: [[]]
     };
   },
   methods: {
     getSaleType(name, index) {
       this.$rptList.getMoudelData("1", 100, name).then(data => {
-        console.log(data, index);
         if (data && data.code === 200) {
           // 创建二维数组 添加数据
           this.$set(this.options, index, data.data.list);
@@ -44,13 +39,12 @@ export default {
   },
   watch: {
     saleTypeValue(val) {
-      console.log(this.options);
-      this.$emit("selectSaleTypeData", this.saleTypeValue);
+      this.$emit("selectSaleTypeData", this.saleTypeObj.saleTypeValue);
     }
   },
   resetStatus(newVal) {
     if (newVal) {
-      this.saleTypeValue = "";
+      this.saleTypeObj.saleTypeValue = "";
     }
   }
 };

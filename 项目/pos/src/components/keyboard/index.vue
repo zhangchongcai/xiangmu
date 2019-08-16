@@ -21,6 +21,7 @@
   </transition>
 </template>
 <script>
+import { mapGetters } from 'vuex'
 export default {
   model:{
     prop:'value',
@@ -66,6 +67,11 @@ export default {
   updated(){
     
   },
+  computed:{
+    ...mapGetters([
+      'configData'
+    ])
+  },
   methods:{
     keydown(e){
       console.log(e)
@@ -103,6 +109,7 @@ export default {
       this.$emit('input', value);
     },
     show(){
+      if(!this.configData.fictitious_keyboard) return
       this.showState = 1;
       setTimeout(()=>{
         document.addEventListener('click',this.clickSide)

@@ -23,20 +23,23 @@
 import KeyBoadr from 'src/components/numberKeyBoard'
 import {mapMutations , mapGetters} from 'vuex'
 import {SHOW_CART_KEYBOARD , SET_CART_NUMBER} from 'types'
+import { VM_CART_NUMBER_CHANGE } from 'types/vmOnType'
 export default {
     components:{ KeyBoadr },
     data() {
         return {
-            number:1
+            number:''
         }
     },
     computed: {
         ...mapGetters([
             "showCartKeyBoard",
-            "cartGoodlistIndex"
+            "cartGoodlistIndex",
+            "cartDatalist"
         ]),
         showStatus: {
             get() {
+                
                 return this.showCartKeyBoard
             },
             set(vel) {
@@ -46,6 +49,17 @@ export default {
             }
         },
 
+    },
+    mounted(){
+        
+    },
+    watch:{
+        showStatus(){
+            if(this.cartDatalist.length){
+                this.number =  this.cartDatalist[this.cartGoodlistIndex].saleNum
+                this.$refs.keyboard.keyValue = this.number 
+            }
+        }
     },
     methods: {
         ...mapMutations([
@@ -57,8 +71,9 @@ export default {
         },
         comfirmNumber() {
             if(!this.number || this.number < 1) return this.$message.warning('数量不能小于1！');
-            this.SET_CART_NUMBER(this.number)
             this.SHOW_CART_KEYBOARD(this.cartGoodlistIndex);
+            this.$vm.$emit('VM_CART_NUMBER_CHANGE',this.number)
+            // this.SET_CART_NUMBER(this.number)
             this.$refs.keyboard.keyValue = ""
             this.number=""
         },

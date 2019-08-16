@@ -12,7 +12,7 @@
          <span class="tab-box">
              <span v-for="(item, index) in tabNav" :key="'nav' + index" :class="['tab-btn', currentNav == item.id ? 'sel-nav' : '']" @click="changeTab(item.id)">{{item.name}}</span>
          </span>
-         <el-checkbox class="check-font" v-model="outline">只显示可售场次</el-checkbox>
+         <el-checkbox class="check-font" :checked="salable == 'salabletrue'"  v-model="salableBoolean" @change="changeCheckBox">只显示可售场次</el-checkbox>
          <i class="iconfont iconshuaxin" @click="refreshCurrentOrder"></i>
        </div>
 
@@ -26,22 +26,26 @@
                         <span class="film-name">{{item.name}}</span>
                         <span class="film-tip">
                             <span class="tip">{{item.play_effect}}</span>
-                            <span class="tip">{{item.language}}</span>
+                            <span v-show="item.language" class="tip">{{item.language}}</span>
                         </span>
                         <i class="iconfont iconyoujiantouda"></i>
                     </div>
 
                     <div class="item-right">
-                    <div ref="scorllUnit" v-for="(plan, index) in item.arr_plan_list" :key="'plan' + index" :class="['item-right-item', currentFilmId == plan.id ? 'selected' : '']" @click="setId(plan.id, plan.plan_code, plan.allow_single_sold)">
-                        <span class="play-time">{{plan.show_time.substring(10, 16)}}</span>
-                        <span class="play-hall">{{plan.hall_name}}</span>
-                        <span class="hall-info">
-                            <span>已售{{plan.soldnum + '/' + plan.seatnum}}</span>
-                        </span>
-
-                        <i v-show="currentFilmId == plan.id" class="iconfont selection-pos iconchangcixuanzhongzhuangtai"></i>
+                        <div ref="scorllUnit" v-for="(plan, index) in item.arr_plan_list" :key="'plan' + index" :class="['item-right-item', currentFilmId == plan.id ? 'selected' : '']" @click="setId(plan.id, plan.plan_code, plan.allow_single_sold, plan.salable)">
+                            <div v-show="!plan.salable" class="unsalable-style"></div>
+                            <span class="play-time">{{plan.show_time.substring(10, 16)}}</span>
+                            <span class="play-hall">{{plan.hall_name}}</span>
+                            <span class="hall-info">
+                                <span>已售{{plan.soldnum + '/' + plan.seatnum}}</span>
+                            </span>
+                            <img v-show="currentFilmId == plan.id" class="selection-pos" src="/static/imgs/selected.png" alt="选中">
+                            <!-- <i v-show="currentFilmId == plan.id" class="iconfont selection-pos iconchangcixuanzhongzhuangtai1"></i> -->
+                        </div>
                     </div>
-                    </div>
+                </div>
+                <div style="text-align: center; line-height: 30px" v-show="!allfilmData.length">
+                    无电影排期
                 </div>
          </div>
           
@@ -54,20 +58,24 @@
                     </div>
 
                     <div class="item-right">
-                    <div ref="scorllUnit" v-for="(plan, index) in item.arr_plan_list" :key="'plan' + index" :class="['item-right-item-time', currentFilmId == plan.id ? 'selected' : '']" @click="setId(plan.id, plan.plan_code, plan.allow_single_sold)">
+                    <div ref="scorllUnit" v-for="(plan, index) in item.arr_plan_list" :key="'plan' + index" :class="['item-right-item-time', currentFilmId == plan.id ? 'selected' : '']" @click="setId(plan.id, plan.plan_code, plan.allow_single_sold, plan.salable)">
+                        <div v-show="!plan.salable" class="unsalable-style"></div>
                         <span class="play-name">{{plan.name}}</span>
                         <span class="play-time">{{plan.show_time.substring(10, 16)}}</span>
                         <span class="hall-info">
                             <span class="film-tip">
                                 <span class="tip">{{plan.play_effect}}</span>
-                                <span class="tip">{{plan.language}}</span>
+                                <span v-show="plan.language" class="tip">{{plan.language}}</span>
                             </span> 
                             <span>已售{{plan.soldnum + '/' + plan.seatnum}}</span>
                         </span>
-
-                        <i v-show="currentFilmId == plan.id" class="iconfont selection-pos iconchangcixuanzhongzhuangtai"></i>
+                        <img v-show="currentFilmId == plan.id" class="selection-pos" src="/static/imgs/selected.png" alt="选中">
+                        <!-- <i v-show="currentFilmId == plan.id" class="iconfont selection-pos iconchangcixuanzhongzhuangtai1"></i> -->
                     </div>
                     </div>
+                </div>
+                <div style="text-align: center; line-height: 30px" v-show="!allTimeData.length">
+                    无电影排期
                 </div>
           </div>
 
@@ -81,21 +89,25 @@
                     </div>
 
                     <div class="item-right">
-                    <div ref="scorllUnit" v-for="(plan, index) in item.arr_plan_list" :key="'plan' + index" :class="['item-right-item-time',  currentFilmId == plan.id ? 'selected' : '']" @click="setId(plan.id, plan.plan_code, plan.allow_single_sold)">
+                    <div ref="scorllUnit" v-for="(plan, index) in item.arr_plan_list" :key="'plan' + index" :class="['item-right-item-time',  currentFilmId == plan.id ? 'selected' : '']" @click="setId(plan.id, plan.plan_code, plan.allow_single_sold, plan.salable)">
+                        <div v-show="!plan.salable" class="unsalable-style"></div>
                         <span class="play-name">{{plan.name}}</span>
                         <span class="play-time">{{plan.show_time.substring(10, 16)}}</span>
                         <span class="hall-info">
                             <span class="film-tip">
                                 <span class="tip">{{plan.play_effect}}</span>
-                                <span class="tip">{{plan.language}}</span>
+                                <span v-show="plan.language" class="tip">{{plan.language}}</span>
                             </span> 
                             <span>已售{{plan.soldnum + '/' + plan.seatnum}}</span>
                         </span>
-
-                        <i v-show="currentFilmId == plan.id" class="iconfont selection-pos iconchangcixuanzhongzhuangtai"></i>
+                        <img v-show="currentFilmId == plan.id" class="selection-pos" src="/static/imgs/selected.png" alt="选中">
+                        <!-- <i v-show="currentFilmId == plan.id" class="iconfont selection-pos iconchangcixuanzhongzhuangtai1"></i> -->
                     </div>
                     
                     </div>
+                </div>
+                <div style="text-align: center; line-height: 30px" v-show="!allHallData.length">
+                    无电影排期
                 </div>
           </div>
 
@@ -103,13 +115,13 @@
        <!-- 底部翻页 -->
        <div class="full-footer">
          <div class="pager">
-             <i class="iconfont iconshangjiantouanniu" @click="turnUp"></i>
-             <i class="iconfont iconxiajiantouanniu" @click="turnDown"></i>
+             <i :style="{color: noScroll ? '#BCBCBC' : '#3B74FF'}" class="iconfont iconshangjiantouanniu" @click="turnUp"></i>
+             <i :style="{color: noScroll ? '#BCBCBC' : '#3B74FF'}" class="iconfont iconxiajiantouanniu" @click="turnDown"></i>
          </div>
 
          <div class="close">
              <span class="btn-common close-btn" @click="closeFull">关闭</span>
-             <span class="btn-common history-btn">历史排期</span>
+             <span class="btn-common history-btn" @click="salable = 'history'">历史排期</span>
          </div>
        </div>
     </div>
@@ -117,14 +129,16 @@
 
 <script>
 import {mapMutations, mapGetters} from 'vuex'
-import { SHOW_FULL_ORDER, SET_FILM_CURRENT_SEL_ID, SHOW_DATE_PICKER, SET_CURRENT_PLANCODE, SET_CURRENT_FILM_TITLE } from 'types'
+import { SHOW_FULL_ORDER, SET_FILM_CURRENT_SEL_ID, SHOW_DATE_PICKER, SET_CURRENT_PLANCODE, SET_CURRENT_FILM_TITLE, FILTER_FILMS} from 'types'
 export default {
     data() {
         return {
-            outline: false,
+            noScroll: false,
+            salableBoolean: false,
+            salable: '',
             tabNav: [
                 {
-                    name: '按电影',
+                    name: '按影片',
                     id: 'film'
                 },
                 {
@@ -149,7 +163,17 @@ export default {
             'currentFilmId',
             'getDatePicker',
             'currentDateStr'
-       ])
+       ]),
+    },
+
+    // watch: {
+    //    salable(val) {
+    //       this.FILTER_FILMS(val)
+    //    }
+    // },
+
+    mounted() {
+       this.$refs.scrollContainer.scrollTop == 0 ? this.noScroll = true : this.noScroll = false
     },
 
     methods: {
@@ -160,8 +184,24 @@ export default {
            SHOW_FULL_ORDER,
            SHOW_DATE_PICKER,
            SET_CURRENT_PLANCODE,
-           SET_CURRENT_FILM_TITLE
+           SET_CURRENT_FILM_TITLE,
+        //    FILTER_FILMS
         ]),
+
+        //显示可售状态或者全部状态
+        // filterFilm(arr, val) {
+        //   arr.forEach((item) => {
+        //       item.arr_plan_list.filter((film) => {
+        //           if(val == 'salabletrue') {
+        //               return film.salable == 1
+        //           }else if(val == 'history'){
+        //               return film.salable == 0
+        //           }else {
+        //              return film.salable == 1 || film.salable == 0
+        //           }
+        //       })
+        //   })
+        // },
 
         //刷新
         refreshCurrentOrder() {
@@ -176,15 +216,17 @@ export default {
            this.$emit('nextDate')
         },
 
-        setId(id, code, allowSingle) {
-            let codeAndSingle = {
-                code,
-                allowSingleSold: parseInt(allowSingle) ? true : false
+        setId(id, code, allowSingle, salable) {
+            if(salable) {
+                let codeAndSingle = {
+                    code,
+                    allowSingleSold: parseInt(allowSingle) ? true : false
+                }
+                this.SET_FILM_CURRENT_SEL_ID(id)
+                this.SET_CURRENT_PLANCODE(codeAndSingle)
+                this.SET_CURRENT_FILM_TITLE()
+                this.SHOW_FULL_ORDER()
             }
-            this.SET_FILM_CURRENT_SEL_ID(id)
-            this.SET_CURRENT_PLANCODE(codeAndSingle)
-            this.SET_CURRENT_FILM_TITLE()
-            this.SHOW_FULL_ORDER()
         },
 
         //打开日历
@@ -228,6 +270,14 @@ export default {
 
         turnDown() {
           this.handerScroll('down', 'scrollContainer', 'scorllUnit', 15)
+        },
+
+        changeCheckBox(val) {
+          if(val) {
+              this.salable = 'salabletrue'
+          }else {
+              this.salable = ''
+          }
         },
         
         //打开日历
@@ -305,6 +355,7 @@ export default {
 
            .check-font {
                color: $font-color-white;
+               font-size: $font-size12;
            }
 
 
@@ -357,6 +408,11 @@ export default {
                        font-size: $font-size14;
                        font-weight: bold;
                        margin-bottom: 2px;
+                       color: #333;
+                       width:100%;
+                       overflow:hidden; 
+                       text-overflow:ellipsis;
+                       white-space:nowrap;
                    }
 
                    .film-seats {
@@ -374,7 +430,7 @@ export default {
 
                        .tip {
                            font-size: $font-size12;
-                           color:$font-color-white;
+                           color:$font-color-white !important;
                            height: 2.4vh;
                            border-radius: 1.2vh;
                            padding: 0 0.6vw;
@@ -411,11 +467,14 @@ export default {
                             position: absolute;
                             right: 0;
                             top:0;
-                            font-size: $font-size12;
+                            width: 2.2vw;
                         }
 
                        &.selected {
                            box-shadow: 0 0 1px 1px inset $btn-background-color-theme;
+                       }
+                       &.selected span {
+                          color: $btn-background-color-theme !important;
                        }
 
 
@@ -426,12 +485,22 @@ export default {
                        .play-time {
                            color: $font-color3;
                            font-weight: bold;
-                           font-size: $font-size16;
+                           font-size: $font-size14;
                        }
 
                        .play-hall, .hall-info {
                            color: $font-color6;
                            font-size: $font-size12;
+                       }
+
+                       .unsalable-style {
+                           position: absolute;
+                           left: 0;
+                           right: 0;
+                           top: 0;
+                           bottom: 0;
+                           background: rgba(0, 0, 0, 0.288);
+                           z-index: 10;
                        }
                    }
 
@@ -450,15 +519,28 @@ export default {
                        cursor: pointer;
                        position: relative;
 
+                       .unsalable-style {
+                           position: absolute;
+                           left: 0;
+                           right: 0;
+                           top: 0;
+                           bottom: 0;
+                           background: rgba(0, 0, 0, 0.288);
+                           z-index: 10;
+                       }
+
                        &.selected {
                            box-shadow: 0 0 1px 1px inset $btn-background-color-theme;
+                       }
+                       &.selected span {
+                          color: $btn-background-color-theme !important;
                        }
 
                        .selection-pos {
                             position: absolute;
                             right: 0;
                             top:0;
-                            font-size: $font-size12;
+                            width: 2.2vw;
                         }
 
                        &:hover {
@@ -468,6 +550,10 @@ export default {
                        .play-name {
                            color: $font-color3;
                            font-size: $font-size13;
+                           width:100%;
+                           overflow:hidden; 
+                           text-overflow:ellipsis;
+                           white-space:nowrap;
                        }
 
                        .play-time {
@@ -490,7 +576,7 @@ export default {
 
                                 .tip {
                                     font-size: $font-size12;
-                                    color:$font-color-white;
+                                    color:$font-color-white !important;
                                     height: 2.4vh;
                                     display: inline-flex;
                                     justify-content: center;
@@ -525,7 +611,7 @@ export default {
 
                .iconshangjiantouanniu,
                 .iconxiajiantouanniu {
-                    font-size: $font-size22;
+                    font-size: $font-size23;
                     margin: 0 14px;
                     color: $font-color-blue;
                 }

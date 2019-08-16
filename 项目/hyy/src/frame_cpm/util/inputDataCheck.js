@@ -106,6 +106,10 @@ export const ip4Pattern = function(str){    //IP4匹配
     var reg = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
     return reg.test(str);
 }
+export const isNormalName = function(str){ // 普通名称 特殊字符限制
+    var reg = /^[\u4e00-\u9fa50-9a-zA-Z\s\~\`\·\！\!\@\#\￥\%\^\……\&\*\（\）\——\-\+\=\【\】\{\}\|\、\\\：\；\:\;\“\”\‘\’\'\"\[\]\{\}\<\,\>\.\《\》\，\。\？\、\?\/\(\)\_]+$/;
+    return reg.test(str);
+}
 
 export const isEmojiCharacter = function (substring) {
     if (substring) {

@@ -10,19 +10,18 @@
       :cardJudge='true'
       :isshow='isshow'
     >
-      <div slot="addBlock" v-show="isshow && member.cardNoOrphoneNumState">
+      <div slot="addBlock" v-show="isshow">
         <el-form
           @submit.native.prevent
           :model="ruleForm"
           :rules="rules"
           ref="ruleForm"
-          label-width="110px"
           style="width:100%"
           class="demo-ruleForm"
         >
-          <div style="position:relative;margin-top:-22px">
-            <div class="recharge-info-title">验证身份</div>
-            <el-form-item label="短信验证码" prop="validateCode" v-if="numberType === 'phone'">
+          <div style="position:relative;">
+            <div class="member-info-title">验证身份</div>
+            <el-form-item label="短信验证码" prop="validateCode" v-if="numberType === 'phone'" class="row-line-center">
               <el-input 
                 v-model="ruleForm.validateCode" 
                 class="psd-inp"></el-input>
@@ -34,21 +33,21 @@
               icon="el-icon-search" circle
               @click="handleSearch">查询</el-button>
             </el-form-item>
-            <el-form-item label="输入密码" prop="password" v-else>
+            <el-form-item label="输入密码" prop="password" v-else class="row-line-center">
               <el-input type="password" 
                 v-model="ruleForm.password" 
                 class="psd-inp" 
                 @keyup.enter.native="handleSearch"></el-input>
               <el-button class="start-btn" @click="startKeyBorad" v-text="pwdText"></el-button>
               <el-button class="start-btn" 
-              icon="el-icon-search" circle
+              icon="el-icon-search"
               @click="handleSearch">查询</el-button>
             </el-form-item>
           </div>
           <div
             style="position:relative;margin-top:22px"
             v-if="orderList">
-            <div class="recharge-info-title">订单列表</div>
+            <div class="member-info-title">订单列表</div>
           </div>  
             <el-table 
               stripe
@@ -59,19 +58,17 @@
                 <el-table-column
                   label="订单编号">
                   <template slot-scope="scope">
-                      {{scope.row.outOrderNo | filterData}}
+                      {{scope.row.payFlowNo | filterData}}
                   </template>
                 </el-table-column>
                 <el-table-column
-                  label="交易时间"
-                  width="180">
+                  label="交易时间">
                   <template slot-scope="scope">
                       {{scope.row.transactionTime | filterData}}
                   </template>
                 </el-table-column>
                 <el-table-column
-                  label="交易编号"
-                  width="180">
+                  label="交易编号">
                   <template slot-scope="scope">
                       {{scope.row.flowNo | filterData}}
                   </template>
@@ -89,6 +86,12 @@
                   </template>
                 </el-table-column>
                 <el-table-column
+                  label="交易方式">
+                  <template slot-scope="scope">
+                      {{scope.row.payMethodName | filterData}}
+                  </template>
+                </el-table-column>
+                <el-table-column
                   label="冲销状态">
                    <template slot-scope="scope">
                       {{scope.row.isCancel === 0 ? '未冲销' : '已冲销'}}
@@ -97,7 +100,7 @@
                 <el-table-column
                   label="操作">
                   <template slot-scope="scope">
-                      <el-button @click="handleSter(scope.row)" type="text" size="small" :disabled="scope.row.isCancel != 0">冲销</el-button>
+                      <el-button @click="handleSter(scope.row)" size="small" :disabled="scope.row.isCancel != 0">冲销</el-button>
                   </template>
                 </el-table-column>
             </el-table>
@@ -106,8 +109,8 @@
           background
           layout="prev, pager, next"
           :total="total"
-          :page-size="3"
-          :current-page="pageNo"
+          :page-size="2"
+          :current-page.sync="pageNo"
           @current-change='handleCurrentChange'
           v-if="total != 0"
           class="pagination">
@@ -122,7 +125,7 @@
 import memberInfoAndCard from "./components/memberInfoAndCard";
 import { mapState, mapGetters } from "vuex";
 import { MemberAjax, memeberApi } from "src/http/memberApi";
-import { readCard ,secKeyBoard ,statusDeter , cardStatusCN} from './util/utils';
+import { readCard ,secKeyBoard ,statusDeter , cardStatusCN ,routerJump} from './util/utils';
 import getVilidateCode from './mixins/getVilidateCode'
 export default {
   mixins:[getVilidateCode],
@@ -170,26 +173,28 @@ export default {
       }
     },
     isShow(data) {
-      this.$refs['ruleForm'].resetFields();
-      this.orderList = null;
-      this.total = 0;
-      this.ruleForm.password = '';
-      this.ruleForm.validateCode = '';
-      if(statusDeter.call(this,data,'normal',`该卡状态为${cardStatusCN(this.member.cardState)},不能冲销操作`)){
-        if(this.member.cardTypeCode && this.member.cardTypeCode !== 'stored_card'){
-          this.$message.warning(`${this.member.cardTypeCode === 'equity_card' ? '权益卡' : '联名卡'}不能冲销`);
-          this.member.memberCardInfo = '';
-          return;
-        }
+      if(routerJump.call(this)){
         this.isshow = data;
+        this.$refs['ruleForm'].resetFields();
+        this.orderList = null;
+        this.total = 0;
+        this.ruleForm.password = '';
+        this.ruleForm.validateCode = '';
+        if(statusDeter.call(this,data,'normal',`该卡状态为${cardStatusCN(this.member.cardState)},不能冲销操作`)){
+          if(this.member.cardTypeCode && this.member.cardTypeCode !== 'stored_card'){
+            this.$message.warning(`${cardStatusCN(this.member.cardTypeCode)}不能冲销`);
+            this.member.memberCardInfo = '';
+          }
+        }
       }
     },
     getOrderList(pageNo){
+      this.pageNo = pageNo;
       let paramsObj = {
           cardNo:this.member.cardNo,
           current:pageNo,
-          memberId:this.member.memberCardInfo['memberId'],
-          size:3,
+          fromChargeOff:true,
+          size:2,
           tenantId:this.tenantId,
           validateCode:this.ruleForm.validateCode,
           password:this.ruleForm.password ? this.$md5(this.ruleForm.password) : '',
@@ -210,7 +215,7 @@ export default {
       this.getOrderList(val)
     },
     handleSter(item){
-      this.$confirm('确定冲销该订单么？', '冲销确认', {
+      this.$confirm(`确定冲销该订单(${item.flowNo})么？`, '冲销确认', {
           distinguishCancelAndClose: true,
           confirmButtonText: '确认',
           cancelButtonText: '取消'
@@ -225,7 +230,7 @@ export default {
     handleSubmit(item){
       let data = Object.assign({},{
         oldFlowNo:item.flowNo,
-        tenantId:this.tenantId,
+        tenantId:this.tenantId
       },JSON.parse(sessionStorage['payParams']));
       MemberAjax.offset(data).then(res => {
         if(res.code === 200 && res.data){
@@ -275,13 +280,27 @@ export default {
   }
 };
 </script>
-<style scoped>
-.psd-inp{
-    width:20vw!important
-}
+<style scoped lang='scss'>
 .pagination{
   text-align:center;
   margin:4vh 0 0 ;
+}
+/deep/ .cell{
+  font-size:1vw;
+}
+/deep/ .el-icon-search{
+  font-size:$font-size12;
+}
+/deep/ .el-table th, /deep/  .el-table td{
+  padding:.5vh 0;
+}
+/deep/ .el-table .cell {
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-all;
+  white-space: nowrap;
+  line-height: 23px;
 }
 </style>
 

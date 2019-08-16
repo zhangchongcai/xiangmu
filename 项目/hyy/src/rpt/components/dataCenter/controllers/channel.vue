@@ -1,5 +1,5 @@
 <template>
-  <el-select popper-class="rpt-select" v-model="channelValue" placeholder="请选择" @focus="getChannel('POS_CHANNEL_TYPE',3)">
+  <el-select popper-class="rpt-select" v-model="channelObj.channelValue" placeholder="请选择" @focus="getChannel('POS_CHANNEL_TYPE',3)">
     <el-option label="全部" value></el-option>
     <el-option
       v-for="(item,index) in options[3]"
@@ -11,18 +11,13 @@
 </template>
 
 <script>
-import mixins from "src/frame_cpm/mixins/cacheMixin.js";
 export default {
-  mixins: [mixins.cacheMixin],
   props: {
-    resetStatus: Boolean
+    resetStatus: Boolean,
+    channelObj: Object
   },
   data() {
     return {
-      cacheField: [
-        "channelValue",
-      ],
-      subComName: "channel",
       channelValue: "",
       options: [[]]
     };
@@ -38,12 +33,15 @@ export default {
     }
   },
   watch: {
-    channelValue(val) {
-      this.$emit("selectChannelData", this.channelValue);
+    channelObj: {
+      handler(newVal, oldVal) {
+        this.$emit("selectChannelData", this.channelObj.channelValue);
+      },
+      deep: true
     },
     resetStatus(newVal) {
       if (newVal) {
-        this.channelValue = "";
+        this.channelObj.channelValue = "";
       }
     }
   }

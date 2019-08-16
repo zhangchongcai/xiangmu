@@ -1,20 +1,20 @@
 <template>
-    <div class="diydialog-filmsingle">
         <el-dialog
-        title="选择影院"
-        :show-close="false"
+        :title="dialogTitle"
+        :show-close="true"
         :visible.sync="framedialogVisible"
         :before-close="beforeClose"
         :close-on-click-modal="false"
-        width="600px">
-<!--  -->
+        :append-to-body="appendToBody"
+        class="diydialog-filmsingle"
+        width="672px">
         <div class="film-top">
-            <el-form :inline="true" ref="ruleForm" label-width="78px" size="small" label-position="right" class="film-search">
-                <el-form-item label="影院编码：">
-					<el-input v-model.trim="searchAdition.code" style="width:160px;"></el-input>
+            <el-form :inline="true" ref="ruleForm" label-width="62px" size="small" label-position="right" class="film-search">
+                <el-form-item label="影院编码">
+					<el-input v-model.trim="searchAdition.code" style="width:160px;margin-left:6px;"></el-input>
 				</el-form-item>
-                <el-form-item label="影院全称：">
-					<el-input v-model.trim="searchAdition.fullName" style="width:160px;"></el-input>
+                <el-form-item label="影院全称">
+					<el-input v-model.trim="searchAdition.fullName" style="width:160px;margin-left:6px;"></el-input>
 				</el-form-item>
                 <!-- <el-form-item class="width100" label="地区选择：" prop="area">
                         <el-select size="small" style="width: 110px" v-model="searchAdition.provinceCode" v-on:change="getProv($event)" placeholder="请选择省份">
@@ -30,12 +30,12 @@
                         </el-option>
                     </el-select>
                 </el-form-item> -->
-                <el-button type="primary" @click="searchFunc"  style=" width:80px; height:32px; margin-top: 1px;margin-left:8px;">搜索</el-button>
+                <el-button type="primary" @click="searchFunc"  class="search-btn">搜索</el-button>
             </el-form>
         </div>
         <div class="film-body">
                 <!-- class="diy-header" -->
-                <el-table :data="filmList" @row-click= "showRow" style="height:336px;" @current-change="handleRowChange" ref="filmListRef" highlight-current-row>
+                <el-table :data="filmList" @row-click= "showRow" style="height:352px;" stripe @current-change="handleRowChange" ref="filmListRef" highlight-current-row>
                     <!-- <el-table-column
                         type="selection"
                         width="55">
@@ -49,7 +49,7 @@
 					<el-table-column prop="name" label="影院全称" show-overflow-tooltip></el-table-column>
                     <el-table-column prop="name" label="城市地区" show-overflow-tooltip>
                         <template slot-scope="scope">
-                            {{scope.row.provinceName}} {{scope.row.cityName}} {{scope.row.areaName}}
+                             {{(scope.row.provinceName != null &&  scope.row.provinceName!= 'null') ?scope.row.provinceName:''}} {{(scope.row.cityName != null &&  scope.row.cityName!= 'null')?scope.row.cityName:''}} {{(scope.row.areaName != null &&  scope.row.areaName!= 'null')?scope.row.areaName:''}}
                         </template>
                     </el-table-column>
                     <!-- <el-table-column prop="area" label="城市地区" show-overflow-tooltip></el-table-column> -->
@@ -91,7 +91,6 @@
         </span>
         
     </el-dialog>
-    </div>
 </template>
 
 <script>
@@ -107,8 +106,18 @@ export default {
         innerData:{
             type:Object,
             default:{},
-            required: true
+            required: false
+        },
+        dialogTitle:{
+            type:String,
+            default:'选择影院',
+            required: false
+        },
+        appendToBody: {
+            type: Boolean,
+            default: false,
         }
+        
     },
     data(){
         return {
@@ -130,28 +139,28 @@ export default {
             pageSize:10,
             pageNum:1,
             selectedId: '',
-		    selectedRows:null
+		    selectedRows:{}
         }
     },
     created(){
         // this.getAreaByparentCode()
         // this.filterCinemaList()
-        this.selectedId = this.innerData.id
-          let postObj = {
-                    cinemaName: this.searchAdition.fullName,
-                    cinemaCode: this.searchAdition.code,
-                    resourceCode: this.innerCinemaMultiData && this.innerCinemaMultiData.resourceCode,
-                    type: this.$attrs.type,
-                    pageSize: 30000,
-                    pageNum: 1
-                }
-                authQueryUserCinemas(postObj).then( ret => {
-                    if (ret && ret.code === 200) {
-                        this.filmListAll = ret.data.rows
-                    }
-                }).catch( err => {
-                    console.log(err)
-                })
+        // this.selectedId = this.innerData.id
+        //   let postObj = {
+        //             cinemaName: this.searchAdition.fullName,
+        //             cinemaCode: this.searchAdition.code,
+        //             resourceCode: this.innerData && this.innerData.resourceCode,
+        //             type: this.$attrs.type,
+        //             pageSize: 30000,
+        //             pageNum: 1
+        //         }
+        //         authQueryUserCinemas(postObj).then( ret => {
+        //             if (ret && ret.code === 200) {
+        //                 this.filmListAll = ret.data.rows
+        //             }
+        //         }).catch( err => {
+        //             console.log(err)
+        //         })
     },
        watch: {
         framedialogVisible: {
@@ -189,9 +198,23 @@ export default {
             })
         },
         beforeClose(){
-            this.$emit('introduce',{
-                framedialogVisible: false,
+            let _this = this;
+            let singleData = this.filmListAll.filter(item=>{
+                return item.id == this.selectedRows.id
             })
+            // let cinemaIdss = this.multipleSelection.map(item=> item.id)
+            let cinemaIdss = this.selectedRows && this.selectedRows.fullName?this.selectedRows:singleData[0]
+            if(!cinemaIdss){
+                cinemaIdss = {}
+            }
+            this.$emit('callBackSingle',{
+                framedialogVisible: false,
+                isCloseWindow:true,
+                data: cinemaIdss,
+            }) 
+            //  this.$emit('callbackClose',{
+            //     framedialogVisible: false,
+            // }) 
         },
         confirmData(){
             let _this = this;
@@ -219,6 +242,9 @@ export default {
             //     console.log(err)
             // })
             console.log(cinemaIdss)
+            if(!cinemaIdss){
+                cinemaIdss = {}
+            }
             _this.$emit('callBackSingle',{
                 framedialogVisible: false,
                 data: cinemaIdss,
@@ -310,7 +336,7 @@ export default {
                 let postObj = {
                     cinemaName: this.searchAdition.fullName,
                     cinemaCode: this.searchAdition.code,
-                    resourceCode: this.innerCinemaMultiData && this.innerCinemaMultiData.resourceCode,
+                    resourceCode: this.innerData && this.innerData.resourceCode,
                     type: this.$attrs.type,
                     pageSize: this.pageSize,
                     pageNum: this.pageNum
@@ -322,7 +348,7 @@ export default {
                         _this.filmList.map(item=>{
                                 item.area = !!item.provinceName?item.provinceName:'' + ' ' + !!item.cityName?item.cityName:'' + ' ' + !!item.areaName?item.areaName:''
                             })
-                        _this.selectedId = params.id
+                        _this.selectedId = typeof params.id == "number"?params.id: Number(params.id)
                         if(!!params.id || !!_this.selectedRows){
                             // _this.selectedRows = this.filmList.filter(item=>params.id == item.id)[0]
                             let selectedSingleData = this.filmList.filter(item=>params.id == item.id)[0]
@@ -339,8 +365,6 @@ export default {
                                 }
                             })
                         }
-                        
-                       
                     } else {
 
                     }
@@ -380,15 +404,33 @@ export default {
 
 <style lang="scss">
     .diydialog-filmsingle{
-        width:576px;
+        .search-btn{
+           width:80px; 
+           height:32px; 
+           margin-top: 1px;
+           margin-left:30px; 
+        }
         .el-dialog__header{
-            border-bottom: 1px solid #ccc !important;   
+            border-bottom: 1px solid #e5e5e5 !important;   
+            padding: 16px 20px 4px 0;
+            font-weight: normal;
+            margin-left: 17px;
+            margin-right: 20px;
+        }
+       .el-dialog__title{
+           font-weight: normal;
+       }
+       .el-icon-close {
+            font-size: 14px;
+        }
+        .el-dialog__footer {
+            padding: 2px 14px 18px 14px;
         }
         .el-table{
             border:0 !important;
             th, td {
-                height: 30px !important;  
-                line-height: 30px !important;  
+                height: 32px !important;  
+                line-height: 32px !important;  
             }
         }
         .el-dialog__title{
@@ -410,11 +452,11 @@ export default {
                 padding: 0 !important;
             }
         }
-        /deep/ .el-dialog {
+        // .el-dialog {
             .el-table--enable-row-hover .el-table__body tr:hover>td {
-            background-color: #e7ebff !important;
+                background-color: #f5f5f5 !important;
             }
-        }
+        // }
         .el-table tr:nth-child(1n){
             background-color: #fff;
         }
@@ -432,7 +474,7 @@ export default {
         //   background:#e7ebff;
         // }
         .el-table__body tr.current-row > td{
-          background:#e7ebff;
+          background:#fff;
         }
         .el-table .cell{
           padding-left: 8px;
@@ -447,34 +489,50 @@ export default {
           }
         }
         .el-table th.is-leaf{
-            border-bottom: 1px solid #e5e5e5;
+            border-bottom: 0 none!important;
             // border-left: 1px solid #e5e5e5;
             background: #e7ebff;
             color: #333;
         }
         .el-table td {
-            border-bottom: 1px solid #e5e5e5;
+            // border-bottom: 1px solid #e5e5e5;
         }
-        .el-table th.is-leaf:nth-child(1), .el-table td:nth-child(1) {
+        .el-table th.is-leaf:nth-child(1), .el-table th.is-leaf:nth-child(4),.el-table td:nth-child(1),.el-table td:nth-child(4) {
             border-left: 0;
         }
-        .el-dialog {
+        // .el-dialog {
             .el-dialog__body{
                 // border-top:1px solid #ccc;
                 // border-bottom:1px solid #ccc;
-                padding: 16px 0px 0 !important;
+                padding: 12px 0px 0 !important;
+                border: 0 none;
             }
-        }
+        // }
     }
 </style>
 <style lang="scss" scoped>
     .page-wrap{
-        padding: 24px 0 24px 0;
+        padding: 10px 0 10px 0;
         text-align: left;
-        margin-left:18px;
+        border-top: 1px solid #e5e5e5;
+        // margin-left:18px;
+        .el-pagination {
+            display: block;
+            margin: 0 auto;
+            text-align: center;
+            &.is-background .btn-next, &.is-background .btn-prev, &.is-background .el-pager li {
+                color: #666;
+            }
+        }
+        .el-pagination__jump {
+            color: #666;
+        }
+        .el-pagination__total {
+            color: #666;
+        }
     }
     .film-body{
-        margin: 16px;
+        margin: 12px 20px 14px 20px;
         border: 1px solid #e5e5e5;
         .aside_left{
             display: flex;

@@ -55,6 +55,7 @@ export default {
       ticketUids: [],
       flag : true,
       goodReforData:[],
+      loading:null,
     }
   },
   mounted(){
@@ -68,6 +69,9 @@ export default {
   },
   methods: {
       async getData(){
+        this.data = []  
+        this.tableData=[] 
+        this.tableData2 = [];
         const val = this.$route.query.val
         const data = await posticketGetTicket({
           getCode:val
@@ -87,10 +91,11 @@ export default {
           const { showDay, showTime, hall, name, seat, week } = data.data.movieTicketReturn;
           let showDayArr = showDay.split('-');
           let showTimeArr = showTime.split(':');
-          
+          let weekday = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+          let day = weekday[new Date(parseInt(week)).getDay()];
           this.tableData.push(...[
               {
-              str:`${name} | ${showDayArr[0]}年${showDayArr[1]}月${showDayArr[2]}日 ${week} | ${hall} ${showTimeArr[0]}:${showTimeArr[1]}`
+              str:`${name} | ${showDayArr[0]}年${showDayArr[1]}月${showDayArr[2]}日 ${day} | ${hall} ${showTimeArr[0]}:${showTimeArr[1]}`
               },
               {
                 str:seat.join('、')
@@ -122,6 +127,13 @@ export default {
           getCode : val
         })
         if(data.code != 200) return this.$message.error(data.msg)
+        this.ticketUids = [];
+        this.loading = this.$loading({
+          lock: true,
+          text: '打印中...',
+          spinner: 'el-icon-loading',
+          background: 'rgba(0, 0, 0, 0.7)'
+        });
         this.printTicket(data.data,data.data.length,this.reforPrintTicket)
         // this.printTicket(this.printData,this.printData.length,()=>{console.log(123)})
       },
@@ -151,6 +163,7 @@ export default {
               this.flag = false;
             }
             if(length -1 === 0){
+              this.loading.close()
               callback()
             }else{
               this.printTicket(dataArr,length-1,callback)

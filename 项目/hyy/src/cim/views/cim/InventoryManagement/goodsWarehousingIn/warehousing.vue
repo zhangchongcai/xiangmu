@@ -1,6 +1,6 @@
 <template>
 <div class="grIn-style">
-  <!-- {{this.goodList}} -->
+  <!-- {{this.queryData}} -->
   <div class="content">
     <!-- <div class="breadcrumb">
       <el-breadcrumb separator-class="el-icon-arrow-right">
@@ -15,7 +15,7 @@
       :model="queryData"
       label-position="left"
       label-width="100px"
-      label-suffix=":"
+      label-suffix="："
       >
       <el-collapse  v-model="activeNames">
         <!-- 基础信息 start-->
@@ -36,7 +36,7 @@
                   prop="cinemaName"
                   :rules="[{ required: routeQuery.type==3 ? false : true, message: '选择登记门店',trigger: 'change' }]"
                   >
-                  <template v-if="routeQuery.type=='1'">     
+                  <template v-if="routeQuery.type!='3'">     
                     <el-input
                             v-model="queryData.cinemaName"
                             clearable
@@ -56,7 +56,7 @@
                   prop="allotBillCode"
                   :rules="[{ required: routeQuery.type==3 ? false : true, message: '选择调拨申请单号',trigger: 'change' }]"
                   >
-                  <template v-if="routeQuery.type=='1'">     
+                  <template v-if="routeQuery.type!='3'">     
                     <el-input
                             v-model="queryData.allotBillCode"
                             clearable
@@ -72,6 +72,18 @@
             </el-row>
             <el-row>
               <el-col :span="10">
+                <el-form-item label="调入门店">
+                  <span>{{this.queryData.inCinemaName}}</span>
+                </el-form-item>
+              </el-col>
+              <el-col :span="10">
+                <el-form-item label="调出门店">
+                  <span>{{this.queryData.outCinemaName}}</span>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="10">
                 <el-form-item label="单据类型">
                   <span>{{SelbillType(this.queryData.billType)}}</span>
                 </el-form-item>
@@ -80,15 +92,16 @@
                 <el-form-item 
                   label='' 
                   prop="storehouseCode"
+                  ref="shruleForm"
                   :rules="[{ required: true, message: '选择出库仓库或货架',trigger: 'change' }]"
                   >
-                  <span v-if="routeQuery.type=='3'">{{this.queryData.storeType == "1" ? '入库仓库' : '入库货架'}}</span>
+                  <span v-if="routeQuery.type=='3'" class="wid100">{{this.queryData.storeType == "1" ? '入库仓库：' : '入库货架：'}}</span>
                   <el-select v-model="queryData.storeType" @focus="ckhjEvent()" v-else>
                     <!-- <el-option label="全部" value></el-option> -->
                     <el-option label="入库仓库" value="1" key="1"></el-option>
                     <el-option label="入库货架" value="2" key="2"></el-option>
                   </el-select>
-                  <span>:</span>
+                  <!-- <span>:</span> -->
                   <span v-if="routeQuery.type=='3'">{{this.queryData.storehouseName}}</span>
                   <el-select v-model="queryData.storehouseCode" @focus="storeSelEvent()" @change="changeStoreEvent()" v-else>
                     <el-option 
@@ -108,14 +121,14 @@
         <!-- 商品清单 start-->
         <el-collapse-item title="商品清单" name="2">
           <div>
-            <div class="text-right" v-if="routeQuery.type!='3'">
+            <!-- <div class="text-right" v-if="routeQuery.type!='3'">
               <button @click="addgoodsEvent" type="button" class="el-button el-button--primary is-plain">
                 <span>添加商品</span>
               </button>
-            </div>
+            </div> -->
             <el-table :data="goodList" stripe>
               <el-table-column
-                v-for="item in routeQuery.type == '3' ? tableColumn1:tableColumn"
+                v-for="item in tableColumn"
                 :key="item.key"
                 :prop="item.key"
                 :label="item.label"
@@ -137,11 +150,11 @@
                   </div>
                 </template>
               </el-table-column>
-              <el-table-column label="操作" style="width:180px;" v-if="routeQuery.type!='3'">
+              <!-- <el-table-column label="操作" style="width:180px;" v-if="routeQuery.type!='3'">
                 <template slot-scope="{row,$index}">
                   <el-button type="text" size="small" @click.stop="handleOperateEvent(row,$index)">删除</el-button>
                 </template>
-              </el-table-column>
+              </el-table-column> -->
             </el-table>
             <el-row>
               <el-col :span="12" style="margin-top: 6px;">
@@ -165,7 +178,7 @@
       <!-- 选择影院弹窗 -->
     <cinemal-dialog ref="myCinemalDialog" @onSumit="onCinemalSumit" :dialogFeedbackData="[{cinemaUid:queryData.cinemaUid,cinemaName:queryData.cinemaName}]"></cinemal-dialog>
       <!-- 选择采购单弹窗 -->
-      <purchase-note-dialog ref="allocationDialog" :cinemaUid="queryData.cinemaUid" :approvalStatus="2"
+      <purchase-note-dialog ref="allocationDialog" :inCinemaUid="queryData.cinemaUid" :approvalStatus="2" :status="3"
                                   @onSumit="onPurchaseNoteSumit"></purchase-note-dialog>
       <!-- 选择商品 -->
       <selected-goods
@@ -177,7 +190,7 @@
       <div class="submit-box">
         <el-button type="primary" @click="ThandleSubmit" v-if="this.routeQuery.type!='3'">保存并提交</el-button>
         <el-button type="primary" @click="ChandleSubmit" v-if="this.routeQuery.type!='3'">保存为草稿</el-button>
-        <el-button @click="handleCancel">{{routeQuery.type !="3" ? "取消":"关闭"}}</el-button>
+        <el-button @click="fanhuihandleCancel">{{routeQuery.type !="3" ? "取消":"关闭"}}</el-button>
       </div>
     </el-form>
   </div>
@@ -205,6 +218,8 @@ export default {
       //查询数据
       newqueryData:{},
       queryData: {
+        inCinemaName:"",
+        outCinemaName:"",
         allotBillCode:"",
         allotBillUid:"",
         billCode:"",
@@ -241,39 +256,7 @@ export default {
         },
         {
           label: "入库数量",
-          key: "storeinCount",
-          edit:true,
-        },
-        {
-          label: "基本单位成本价（元）",
-          key: "price"
-        },
-        {
-          label: "金额（元）",
-          key: "amount"
-        }
-      ],      
-      // 表格表头
-      tableColumn1: [
-        {
-          label: "商品名称",
-          key: "merName"
-        },
-        {
-          label: "商品规格",
-          key: "merSpec"
-        },
-        {
-          label: "SKU编码",
-          key: "skuCode"
-        },
-        {
-          label: "基本单位",
-          key: "unitName"
-        },
-        {
-          label: "入库数量",
-          key: "storeinCount",
+          key: "storeinCount"
         },
         {
           label: "基本单位成本价（元）",
@@ -303,28 +286,62 @@ export default {
           break;
         case "2":
           //编辑
-          this.queryData = JSON.parse(this.$route.query.data)
-          this.queryData.storeType =this.queryData.storeType.toString()
-          this.goodList = JSON.parse(this.$route.query.data).detailVoList
-          this.queryData.addDetailList = JSON.parse(this.$route.query.data).detailVoList
-          let newArr = []
-          let newObj = {}
-          newObj.label = this.queryData.storehouseName
-          newObj.value = this.queryData.storehouseCode
-          newArr.push(newObj)
-          this.storeData = newArr
-          this.queryData.cinemaUid = JSON.parse(this.$route.query.cinema).cinemaUid
-          this.queryData.cinemaName = JSON.parse(this.$route.query.cinema).cinemaName
+          this.resStoreInDetail(JSON.parse(this.$route.query.data))
+          // this.queryData = JSON.parse(this.$route.query.data)
+          // this.queryData.storeType =this.queryData.storeType.toString()
+          // this.goodList = JSON.parse(this.$route.query.data).detailVoList
+          // this.queryData.addDetailList = JSON.parse(this.$route.query.data).detailVoList
+          // let newArr = []
+          // let newObj = {}
+          // newObj.label = this.queryData.storehouseName
+          // newObj.value = this.queryData.storehouseCode
+          // newArr.push(newObj)
+          // this.storeData = newArr
+          // this.queryData.cinemaUid = JSON.parse(this.$route.query.cinema).cinemaUid
+          // this.queryData.cinemaName = JSON.parse(this.$route.query.cinema).cinemaName
           break;
         case "3":
           //查看
-          this.queryData = JSON.parse(this.$route.query.data)
-          this.goodList = JSON.parse(this.$route.query.data).detailVoList
-          this.queryData.addDetailList = JSON.parse(this.$route.query.data).detailVoList
-          this.queryData.cinemaUid = JSON.parse(this.$route.query.cinema).cinemaUid
-          this.queryData.cinemaName = JSON.parse(this.$route.query.cinema).cinemaName
+          this.resStoreInDetail(JSON.parse(this.$route.query.data))
+          // this.queryData = JSON.parse(this.$route.query.data)
+          // this.goodList = JSON.parse(this.$route.query.data).detailVoList
+          // this.queryData.addDetailList = JSON.parse(this.$route.query.data).detailVoList
+          // this.queryData.cinemaUid = JSON.parse(this.$route.query.cinema).cinemaUid
+          // this.queryData.cinemaName = JSON.parse(this.$route.query.cinema).cinemaName
           break;
       }
+    },
+            // 查看修改进入详情页请求
+    resStoreInDetail(row){
+      let val = {
+        uid:row
+      }
+      this.$cimList.goodsWarehousingIn
+        .storeInDetail(val)
+        .then(res => {
+          if (res.code === 200) {
+            if(this.routeQuery.type == "3"){
+              this.queryData = res.data
+              this.goodList = this.queryData.detailVoList
+              this.queryData.addDetailList = this.queryData.detailVoList
+            }else if(this.routeQuery.type == "2"){
+              this.queryData =  res.data
+              this.queryData.storeType =this.queryData.storeType.toString()
+              this.goodList = this.queryData.detailVoList
+              this.queryData.addDetailList = this.queryData.detailVoList
+              let newArr = []
+              let newObj = {}
+              newObj.label = this.queryData.storehouseName
+              newObj.value = this.queryData.storehouseCode
+              newArr.push(newObj)
+              this.storeData = newArr
+            }
+               
+          } else {
+            this.$message(res.msg);
+          }
+        })
+        .catch(err => {});
     },
     // 查询
     onQuery() {
@@ -337,7 +354,7 @@ export default {
       if(row.price == null || row.price == ""){
         row.price = 0
       }
-      row.amount = row.storeinCount * row.price    
+      row.amount = (parseInt(row.storeinCount) * row.price).toFixed(4)   
     },
     // 获取分类列表
     getCategoryTrees(param) {
@@ -351,12 +368,23 @@ export default {
     },
     // 选择商品回调
     selectedGoodsDialogCallBack(value) {
-      this.goodList = value.data;
+      this.goodList = this.unRepeat(this.goodList.concat(value.data))
       this.queryData.addDetailList = this.goodList
+    },
+    //去重
+    unRepeat(arr) {
+        let hash = {};
+        return arr.reduce((item, next) => {
+            if (!hash[next.merCode]) {
+                hash[next.merCode] = true;
+                item.push(next);
+            }
+            return item;
+        }, []);
     },
     // 入库选择事件
     ckhjEvent(){
-      this.resetForm('ruleForm')
+      // this.clearValidate('shruleForm')
       this.queryData.storehouseName = ""
       this.queryData.storehouseCode = ""
     },
@@ -367,6 +395,14 @@ export default {
           this.$refs[formName].resetFields();
         }
       })
+    },
+    // 重置验证事件
+    clearValidate(formName) {
+      // this.$nextTick(()=>{
+      //   if (this.$refs[formName] !== undefined) {
+          this.$refs[formName].clearValidate();
+        // }
+      // })
     },
     // 仓库货架事件
     storeSelEvent(){
@@ -399,22 +435,64 @@ export default {
        this.queryData.storehouseName = selectedWorkName.label
     },
         // 选泽门店回调
-    onCinemalSumit(val = []) {
-      if(val.length == 0){
-        this.$nextTick(() => {
-          this.queryData.storehouseCode = ""
-          this.queryData.storehouseName = ""  
-        })
-      }
+    setCinema(val = []) {
       if (val.length > 0) {
+        if(this.queryData.cinemaUid != val[0].uid){
+          this.$nextTick(() => {
+            this.queryData.storehouseCode = ""
+            this.queryData.storehouseName = "" 
+            this.goodList = []
+            this.queryData.addDetailList = [] 
+            this.queryData.allotBillCode = ""
+            this.queryData.allotBillUid = ""
+            this.queryData.outCinemaName = ""
+            this.queryData.inCinemaName = ""
+          })
+        }
         this.queryData.cinemaName = val[0].name;
         this.queryData.cinemaUid = val[0].uid;
       } else {
-        // debugger
         this.queryData.cinemaName = "";
         this.queryData.cinemaUid = "";
+        this.queryData.storehouseCode = ""
+        this.queryData.storehouseName = "" 
+        this.goodList = []
+        this.queryData.addDetailList = [] 
+        this.queryData.allotBillCode = ""
+        this.queryData.allotBillUid = ""
+        this.queryData.outCinemaName = ""
+        this.queryData.inCinemaName = ""
       }
       console.log(val);
+    },
+    // 选泽门店回调
+    onCinemalSumit(val = [],type) {
+      console.log(val," 选泽门店回调",type);
+      if (val.length > 0) {
+        if(type=="default"){
+          if(val.length==1){
+            this.setCinema(val)
+          }
+        }else{
+          this.setCinema(val)
+        }
+      } else {
+        this.setCinema()
+      }
+    },
+    // fanhuihandleCancel() {
+    //   this.$router.go(-1);
+    // },
+    fanhuihandleCancel() {
+       this.$store.commit("tagNav/removeTagNav", {
+          name: this.$route.name,
+          path: this.$route.path,
+          title: this.$route.meta.title,
+          query: this.$route.query
+      })
+      this.$router.push({
+          path: "/retail/InventoryManagement/goodsWarehousingIn/list",
+      });
     },
     // 选择调拨单回调
     onPurchaseNoteSumit(val = []) {
@@ -424,21 +502,50 @@ export default {
       //     this.queryData.storehouseName = ""  
       //   })
       // }
-      // if (val.length > 0) {
-      //   this.queryData.cinemaName = val[0].name;
-      //   this.queryData.cinemaUid = val[0].uid;
-      // } else {
-      //   // debugger
-      //   this.queryData.cinemaName = "";
-      //   this.queryData.cinemaUid = "";
-      // }
+      if (val.length > 0) {
+        this.queryData.inCinemaName = val[0].inCinemaName;
+        this.queryData.outCinemaName = val[0].outCinemaName;
+        this.queryData.allotBillCode = val[0].billCode;
+        this.queryData.allotBillUid = val[0].uid;
+      } else {
+        this.queryData.inCinemaName = "";
+        this.queryData.outCinemaName = "";
+        this.queryData.allotBillCode = "";
+        this.queryData.allotBillUid = "";
+      }
+      this.resAllotBillFind(val[0].uid)
       console.log(val);
     },
+        // 调拨单详情接口
+    resAllotBillFind(data) {
+      let newData = {
+        uid:data
+      }
+      this.$cimList.goodsWarehousingApply
+        .allotBillFind(newData)
+        .then(res => {
+          if (res.code == 200) {
+            this.goodList = res.data.detailList
+            res.data.detailList.forEach((val,index,arr)=>{
+              this.goodList[index].storeinCount = val.allotCount
+              this.goodList[index].price = val.costPrice
+              this.goodList[index].purPrice = val.costPrice
+              this.goodList[index].amount = (val.allotCount * val.costPrice).toFixed(4)
+              this.goodList[index].baseUnitUid = val.unitUid
+            })
+            this.queryData.addDetailList = this.goodList
+          }
+        });
+    },
     selectCinemalDialog() {
-      this.$refs.myCinemalDialog.handleDialog(true);
+        this.$refs.myCinemalDialog.handleDialog(true);
     },
     selectAllocationDialog() {
+      if(this.queryData.cinemaUid == ""){
+        this.$message("请选择门店");
+      }else{
       this.$refs.allocationDialog.handleDialog(true);
+      }
     },
     handleOperateEvent(row,index) {
       this.goodList.splice(index, 1)
@@ -466,16 +573,11 @@ export default {
               }else{
                 if(this.routeQuery.type == "1"){
                         this.queryData.status = 2
-                        this.queryData.storeType = parseInt(this.queryData.storeType)
-                        this.queryData.addDetailList.forEach((val,index,arr)=>{
-                          val.merUid = val.merUid
-                          val.baseUnitUid = val.unitUid
-                          val.purPrice = val.price  
+                        // this.queryData.storeType = parseInt(this.queryData.storeType)
+                        this.queryData.addDetailList.forEach((val,index,arr)=>{  
                           delete val.uid
-                          delete val.unitUid
                         })
                         this.resStoreInBillRegisterSave(this.queryData)
-                        this.handleCancel()
                 }else if(this.routeQuery.type == "2"){
                         let newArr = []
                         this.goodList.forEach((val,index,arr)=>{
@@ -521,10 +623,11 @@ export default {
                           storehouseCode:this.queryData.storehouseCode,
                           storehouseName:this.queryData.storehouseName,
                           storehouseuid:this.queryData.storehouseuid,
-                          uid:this.queryData.uid
+                          uid:this.queryData.uid,
+                          allotBillCode:this.queryData.allotBillCode,
+                          allotBillUid:this.queryData.allotBillUid
                         }
                         this.resStoreInUpdate(val)
-                        this.handleCancel()
                 }
               }
             }
@@ -556,16 +659,12 @@ export default {
               }else{
                 if(this.routeQuery.type == "1"){
                         this.queryData.status = 1
-                        this.queryData.storeType = parseInt(this.queryData.storeType)
-                        this.queryData.addDetailList.forEach((val,index,arr)=>{
-                          val.merUid = val.merUid
-                          val.baseUnitUid = val.unitUid  
-                          val.purPrice = val.price     
+                        // this.queryData.storeType = parseInt(this.queryData.storeType)
+                        this.queryData.addDetailList.forEach((val,index,arr)=>{  
                           delete val.uid
-                          delete val.unitUid
                         })
+                        console.log(this.queryData)
                         this.resStoreInBillRegisterSave(this.queryData)
-                        this.handleCancel()
                 }else if(this.routeQuery.type == "2"){
                         let newArr = []
                         this.goodList.forEach((val,index,arr)=>{
@@ -593,7 +692,7 @@ export default {
                             }else{
                               val.merUid = val.merUid
                               val.baseUnitUid = val.unitUid  
-                              val.purPrice = val.price       
+                              val.purPrice = val.price      
                               delete val.uid
                               delete val.unitUid
                               newArr.push(val)
@@ -611,10 +710,11 @@ export default {
                           storehouseCode:this.queryData.storehouseCode,
                           storehouseName:this.queryData.storehouseName,
                           storehouseuid:this.queryData.storehouseuid,
-                          uid:this.queryData.uid
+                          uid:this.queryData.uid,
+                          allotBillCode:this.queryData.allotBillCode,
+                          allotBillUid:this.queryData.allotBillUid
                         }
                         this.resStoreInUpdate(val)
-                        this.handleCancel()
                 }
               }
             }
@@ -624,11 +724,37 @@ export default {
         })  
       }
     },
+    // resStoreInDetail(row){
+    //   let val = {
+    //     uid:row
+    //   }
+    //   this.$cimList.goodsWarehousingIn
+    //     .storeInDetail(val)
+    //     .then(res => {
+    //       if (res.code === 200) {
+    //         this.queryData = res.data
+    //         this.goodList = this.queryData.detailVoList 
+    //       } else {
+    //         this.$message(res.msg);
+    //       }
+    //     })
+    //     .catch(err => {});
+    // },
     handleCancel() {
+      this.$store.commit("tagNav/removeTagNav", {
+          name: this.$route.name,
+          path: this.$route.path,
+          title: this.$route.meta.title,
+          query: this.$route.query
+      })
       console.log(JSON.stringify(this.queryData))
+      let queryData = {
+        cinemaUid:this.queryData.cinemaUid,
+        cinemaName:this.queryData.cinemaName
+      }
       this.returnList({
         returnType:true,
-        cinema: JSON.stringify(this.queryData)
+        cinema: JSON.stringify(queryData)
       });
     },
     returnList(param) {
@@ -658,9 +784,6 @@ export default {
           return "调拨入库";
           break;
       }
-    },
-    selectCinemalDialog() {
-      this.$refs.myCinemalDialog.handleDialog(true);
     },
     selectSuppliersDialog() {
       this.$refs.mySuppliersDialog.handleDialog(true);
@@ -735,7 +858,8 @@ export default {
         .storeInBillRegisterSave(val)
         .then(res => {
           if (res.code === 200) {
-            console.log(res)
+            this.queryData.storeType = parseInt(this.queryData.storeType)
+            this.handleCancel()
             this.$message("新增成功");
           } else {
             this.$message(res.msg);
@@ -750,6 +874,7 @@ export default {
         .then(res => {
           if (res.code === 200) {
             console.log(res)
+            this.handleCancel()
             this.$message("修改成功");
           } else {
             this.$message(res.msg);

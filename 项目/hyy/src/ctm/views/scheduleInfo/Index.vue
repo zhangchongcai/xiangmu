@@ -46,6 +46,16 @@
         .el-row-btns {
             padding: 8px 0;
         }
+        .el-form {
+            .el-form-item__label {
+                font-size: 12px;
+            }
+            .el-form-item__content {
+                .el-input__inner {
+                    font-size: 12px;
+                }
+            }
+        }
     }
 
 </style>

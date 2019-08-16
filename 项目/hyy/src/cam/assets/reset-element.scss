@@ -11,6 +11,9 @@ $font-path: '~element-ui/lib/theme-chalk/fonts';
     line-height: 42px;
     font-size: 12px;
 }
+.el-checkbox__label{
+    font-size:12px;
+}
 // 单选按钮的字体大小
 .reset-radios-group {
     .el-radio__label {
@@ -38,7 +41,7 @@ $font-path: '~element-ui/lib/theme-chalk/fonts';
         line-height: 32px;
     }
     .el-form-item{
-        margin-bottom:24px;
+        margin-bottom:20px;
     }
     .el-form-item__content{
         line-height:30px;
@@ -116,12 +119,13 @@ $font-path: '~element-ui/lib/theme-chalk/fonts';
     text-align: center;
     padding-left:10px;
     padding-right:10px;
+    line-height:24px;
     overflow:auto;
     .el-input__inner {
-        height: 30px;
+        height: 24px;
     }
     .el-input__icon {
-        line-height: 30px
+        line-height: 24px
     }
     .el-pager li.active{
         color: #fff;
@@ -131,13 +135,17 @@ $font-path: '~element-ui/lib/theme-chalk/fonts';
     }
     .el-pager li{
         box-sizing: border-box;
-        border-radius:2px;
+        border-radius:4px;
         border:1px solid #BCBCBC;
         background:#fff;
-        margin-right:10px;
+        margin-right:8px;
         padding:0;
         font-size:12px;
         color:'#666';
+        min-width: 24px;
+        width:24px;
+        height:24px;
+        line-height: 24px; 
     }
     .el-pager li.active + li{
         border-left:1px solid  #BCBCBC;
@@ -146,21 +154,37 @@ $font-path: '~element-ui/lib/theme-chalk/fonts';
         border:1px solid #BCBCBC;
         background-color: #fff;
         box-sizing: border-box;
-        border-radius:2px;
+        min-width: 24px;
+        width:24px;
+        height:24px;
+        border-radius:4px;
         margin-right:10px;
     }
     .el-pagination .btn-next{
         border:1px solid #BCBCBC;
         background-color: #fff;
         box-sizing: border-box;
-        border-radius:2px;
+        min-width: 24px;
+        width:24px;
+        height:24px;
+        border-radius:4px;
         padding-left:8px;
     }
     .el-pagination__editor.el-input .el-input__inner{
-        border-radius:2px;
+        width:24px;
+        height:24px;
+        border-radius:4px;
     }
     .el-pagination .el-select .el-input .el-input__inner{
-        border-radius:2px;
+        height:24px;
+        border-radius:4px;
+    }
+    .el-pagination span:not([class*=suffix]){
+        height:24px;
+        line-height: 24px;
+    }
+    .el-pagination .el-pagination__sizes,.el-pagination .el-pagination__jump{
+        // margin-left:24px
     }
 
 }
@@ -169,22 +193,30 @@ $font-path: '~element-ui/lib/theme-chalk/fonts';
     .el-dialog{
         width:576px;
         .el-dialog__header{
+            box-sizing:border-box;
             line-height: 50px;
+            height:50px;
             padding:0;
-            // padding-left:20px;
             margin:0 20px;
             color:#333;
             border-bottom:1px solid  #E5E5E5;
+            .el-dialog__headerbtn{
+                top:14px
+            }
         }
         .el-dialog__title{
             color:#333;
             font-size:14px;
+            font-weight:normal;
+
         }
         .el-dialog__body{
             padding:0 20px 0 20px
         }
         .el-dialog__headerbtn .el-dialog__close{
-            color:#999 !important;
+            color:#979797 !important;
+            font-size:18px;
+
         }
     }
     .el-checkbox{
@@ -207,13 +239,12 @@ $font-path: '~element-ui/lib/theme-chalk/fonts';
     .content{
         color:#666;
         font-size:12px;
-        // border-top:1px solid  #E5E5E5;
-        padding-top:10px;
         max-height:470px;
         overflow: auto;
        .reset-form{
            width:80%;
            margin:0 auto;
+           padding-top:20px;
            .tip{
                font-size:12px;
            }
@@ -221,13 +252,25 @@ $font-path: '~element-ui/lib/theme-chalk/fonts';
     }
     // 注解
     .note-wrap{
+        height:40px;
         line-height:40px;
         font-size:12px;
-        color:#f33430
+        // color:#f33430;
+    }
+    .reset-page{
+        padding:0;
+        overflow: hidden;
+    }
+    .search-section{
+        height:54px;
+        line-height: 54px;
+        span {
+            font-size: 12px
+        }  
     }
     .footer{
-        padding-top:12px;
-        padding-bottom:12px;
+        height:56px;
+        line-height: 56px;
         text-align:center;
         border-top:1px solid  #E5E5E5;
     }
@@ -288,4 +331,17 @@ $font-path: '~element-ui/lib/theme-chalk/fonts';
         }
     }  
 }
- }
+.el-progress{
+   padding-left:0;
+   width:400px;
+    .el-progress-bar{
+        padding-right:0;
+        width:324px;
+        margin-right:0;
+    }
+    .el-progress__text {
+        font-size: 14px!important;
+        color: #333;
+    }
+}
+}

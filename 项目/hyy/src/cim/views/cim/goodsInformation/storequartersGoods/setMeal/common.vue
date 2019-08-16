@@ -8,13 +8,14 @@
       </el-breadcrumb>
     </div> -->
     <!-- {{this.queryData}} -->
+    <!-- {{this.selectedChannelName}} -->
     <div class="tittle"></div>
     <el-form
       :inline="true"
       :model="queryData"
       label-position="left"
       label-width="85px"
-      label-suffix=":"
+      label-suffix="："
     >
       <!-- 基础信息 start-->
       <div>
@@ -88,7 +89,7 @@
           v-show="item.options.length>0"
           >
           <div class="add-material clearfix">
-            <div class="left" v-if="item.isOption != 0">{{item.name}} 可替换为以下商品</div>
+            <div class="left" v-if="item.isOption != 0">{{item.merName}} 可替换为以下商品</div>
           </div>
           <div>
             <el-table :data="item.options" stripe v-loading="tableLoding">
@@ -156,18 +157,31 @@
       <div>
         <div class="sub-tittle">销售信息</div>
         <el-row>
-          <el-col :span="8">
+          <!-- <el-col :span="8">
             <el-form-item prop="price" label="价格">
               <span v-if="routeQuery.type==3">{{queryData.price}}</span>
               <el-input v-else class="basic-input" v-model="queryData.price"></el-input>
             </el-form-item>
-          </el-col>
-          <el-col :span="8">
+          </el-col> -->
+          <el-col :span="12">
+                  <el-form-item
+                    label="售价"
+                    prop="price"
+                    :rules="[
+                    { required: true, message: '售价不能为空',trigger: 'change' },
+                    { pattern: /^([1-9][0-9]{0,5})$|^([0]\.[0-9]{1,2})$|^([1-9][0-9]{0,5}\.[0-9]{1,2})$|^([0])$|^\\./, message: '请输入最多5位数字和2位小数',trigger: 'change' }
+                    ]"
+                  >
+                    <el-input placeholder class="basic-input200 widthInput100" v-model="queryData.price" v-if="routeQuery.type != 3"></el-input>
+                    <span v-if="routeQuery.type == 3">{{queryData.price}}</span>元
+                  </el-form-item>
+                </el-col>
+          <el-col :span="12">
             <el-form-item label="销售状态" prop="canSale">
-              <span v-if="routeQuery.type==3">{{queryData.canSale == 1 ? '允许':'禁止'}}</span>
+              <span v-if="routeQuery.type==3">{{queryData.canSale == 1 ? '允许销售':'禁止销售'}}</span>
               <el-radio-group v-model="queryData.canSale" v-else>
-                <el-radio label="1">允许</el-radio>
-                <el-radio label="0">禁止</el-radio>
+                <el-radio label="1">允许销售</el-radio>
+                <el-radio label="0">禁止销售</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>
@@ -178,7 +192,7 @@
               <span v-if="routeQuery.type==3">{{queryData.upTime}}</span>
               <el-date-picker
                 v-else
-                class="date-picker"
+                class="date-picker widthInput100"
                 v-model="queryData.upTime"
                 type="datetime"
                 format="yyyy-MM-dd HH:mm"
@@ -191,7 +205,7 @@
             <el-form-item prop="downTime" label="下架时间">
               <span v-if="routeQuery.type==3">{{queryData.downTime == null || queryData.downTime == "" ? '不限制' : queryData.downTime}}</span>
               <div v-else>
-                <el-select v-model="queryData.downTimeType" placeholder="请选择" class="endTime-input" @change="downTimeEvent()">
+                <el-select v-model="queryData.downTimeType" placeholder="请选择" class="apply-select" @change="downTimeEvent()">
                   <el-option key="0" label="不限制" value="0"></el-option>
                   <el-option key="1" label="指定时间" value="1"></el-option>
                 </el-select>
@@ -199,7 +213,7 @@
                   v-if="queryData.downTimeType==1"
                   format="yyyy-MM-dd HH:mm"
                   value-format="yyyy-MM-dd HH:mm"
-                  class="date-picker"
+                  class="date-picker widthInput100"
                   v-model="queryData.downTime"
                   type="datetime"
                   placeholder="选择日期"
@@ -216,7 +230,16 @@
           </el-col>
           <el-col :span="12">
                 <el-form-item label="适用渠道">
-                  <span v-if="routeQuery.type==3">{{queryData.saleChannel==1?"全部渠道": selectedChannelName}}</span>
+                  <!-- <span v-if="routeQuery.type==3">{{queryData.saleChannel==1?"全部渠道": selectedChannelName}}</span> -->
+                  <template v-if="routeQuery.type==3 && this.queryData.saleChannel === 0">
+                    <div class="see-style">
+                      <span  class="c-type" @click="channelClick()">{{selectedChannelName}}</span>
+                      <span class="c-type" @click="channelClick()">...共{{this.seechannelArr == null || this.seechannelArr == "" ? 0:this.seechannelArr.length}}家</span>
+                    </div>
+                  </template>
+                  <template v-else-if="routeQuery.type==3 && this.queryData.saleChannel === 1">
+                      <span>全部渠道</span>
+                  </template>
                   <div v-else>
                     <el-select v-model="queryData.saleChannel" placeholder="请选择" class="apply-select" @change="saleChannelEvent()">
                       <el-option
@@ -250,8 +273,17 @@
         <el-row>
           <el-col :span="12">
                 <el-form-item label="销售地点">
-                  <span v-if="routeQuery.type==3">{{queryData.salePlace==1?"全部地点":salesPlaceName}}</span>
+                  <!-- <span v-if="routeQuery.type==3">{{queryData.salePlace==1?"全部地点":salesPlaceName}}</span> -->
                   <!-- <span v-if="routeQuery.type==3">{{salesPlaceName}}</span> -->
+                  <template v-if="routeQuery.type==3 && this.queryData.salePlace ==0 ">
+                    <div class="see-style">
+                      <span  class="c-type" @click="placeClick()">{{salesPlaceName}}</span>
+                      <span class="c-type" @click="placeClick()">...共{{this.seeplacelArr == null || this.seeplacelArr == "" ? 0:this.seeplacelArr.length}}家</span>
+                    </div>
+                  </template>
+                  <template v-else-if="routeQuery.type==3 && this.queryData.salePlace ==1">
+                      <span>全部地点</span>
+                  </template>
                   <div v-else>
                     <el-select v-model="queryData.salePlace" placeholder="请选择" class="apply-select" @change="salePlaceEvent()">
                       <el-option
@@ -281,7 +313,7 @@
       <!-- 销售信息 end-->
       <div class="submit-box">
         <el-button type="primary" @click="handleSubmit" v-if="routeQuery.type!=3">保 存</el-button>
-        <el-button @click="handleCancel">取 消</el-button>
+        <el-button @click="handleCancel">{{routeQuery.type !=3 ? "取消":"关闭"}}</el-button>
       </div>
     </el-form>
 
@@ -423,7 +455,7 @@
       multiple>
     </sales-place>
     <!-- 选择渠道弹窗 -->
-    <channel-dialog ref="myChannelDialog" @onSumit="onChanneSumit" multiple :title="'选择适应渠道'" :dialogFeedbackData="queryData.channels"></channel-dialog>
+    <channel-dialog ref="myChannelDialog" @onSumit="onChanneSumit" multiple :title="'选择适应渠道'" :dialogFeedbackData="queryData.channels" :cinemaUid="routeQuery.cinemaUid"></channel-dialog>
     <!-- 选择商品 -->
     <selected-goods
       :dialogVisible.sync="selectedGoodsDialogVisible"
@@ -431,6 +463,16 @@
       :merType="'1,2'"
       @cimSelectedGoodsDialogCallBack="selectedGoodsDialogCallBack"
     ></selected-goods>
+    <seechannel-dialog
+      :dialogVisible.sync="dialogVisibleseechannel"
+      :needData="JSON.stringify(this.seechannelArr)"
+      >
+    </seechannel-dialog>
+    <seeplace-dialog
+          :dialogVisible.sync="dialogVisibleseeplace"
+          :needData="JSON.stringify(this.seeplacelArr)"
+          >
+    </seeplace-dialog> 
   </div>
 </div>  
 </template>
@@ -444,10 +486,16 @@ import applyChannel from "cim/components/applyChannel/applyChannel.vue";
 import salesPlace from "cim/components/salesPlace/salesPlace.vue";
 import channelDialog from "cim/components/channelDialog/channelDialog.vue";
 import selectedGoods from "cim/dialogs/cimSelectedGoods/index.vue";
+import seechannelDialog from "cim/components/seeChannelDialog/seeCinemalDialog.vue";
+import seeplaceDialog from "cim/components/seePlaceDialog/seeCinemalDialog.vue";
 export default {
   mixins: [mixin],
   data() {
     return {
+      dialogVisibleseeplace:false,
+      seeplacelArr:[],
+      dialogVisibleseechannel:false,
+      seechannelArr:[],
       selectedGoodsDialogVisible: false, //添加套餐弹窗
       goodList: [],
       newcinemaUid:"",
@@ -615,7 +663,7 @@ export default {
     init() {
       this.setCheckedKys(this.applyStoresRadios);
       this.setCheckedKys(this.applyChannelRadios);
-      this.setmealLoadCategoies({});
+      // this.setmealLoadCategoies({});
       switch (this.routeQuery.type) {
         // 新建
         case "1":
@@ -629,7 +677,7 @@ export default {
           this.newcinemaUid = JSON.parse(this.$route.query.cinemaUid)
           console.log(this.queryData.cinemaUid)
           let val1 = {
-            uid:this.routeMerData.uid,
+            uid:JSON.parse(this.$route.query.data),
             cinemaUid:this.queryData.cinemaUid.toString()
           }
           this.setmealQuery(val1);
@@ -638,7 +686,7 @@ export default {
         case "3":
           this.queryData.cinemaUid = JSON.parse(this.$route.query.cinemaUid)
           let val = {
-            uid:this.routeMerData.uid,
+            uid:JSON.parse(this.$route.query.data),
             cinemaUid:this.queryData.cinemaUid.toString()
           }
           this.setmealQuery(val);
@@ -657,6 +705,10 @@ export default {
                 return item.placeName;
               })
               .join(",");
+    },
+        //删除销售地点
+    handleplaceDeleteChanne() {
+      this.onSalesPlaceSumit([]);
     },
     handleDialog(name) {
       this.$refs[name].handleDialog(true);
@@ -694,10 +746,17 @@ export default {
         .then(resData => {
           if (resData.code == 200) {
             this.queryData = resData.data;
+            this.seechannelArr = resData.data.channels
+            // if(res.data.hasOwnProperty('places')){
+            //   this.seeplacelArr = []
+            // }else{
+            //   this.seeplacelArr = res.data.places === null ? []:res.data.places
+            // }
             this.queryData.canSale = this.queryData.canSale.toString();
             this.queryData.saleChannel = this.queryData.saleChannel
             if(this.queryData.hasOwnProperty('places')){
-
+              this.queryData.salePlace = this.queryData.places == null || this.queryData.places == "" ? 1:0
+              this.seeplacelArr = this.queryData.places === null ? []:this.queryData.places
             }else{
               Vue.set(this.queryData,"salePlace", 1)
             }
@@ -738,6 +797,9 @@ export default {
         })
         .catch(err => {});
     },
+    placeClick(){
+      this.dialogVisibleseeplace = true
+    },
     downTimeEvent(){
       if(this.queryData.downTimeType == "0"){
         this.queryData.downTime = ""
@@ -773,13 +835,16 @@ export default {
         }
       }
     },
+    channelClick(){
+      this.dialogVisibleseechannel = true
+    },
     // 新增
     setmealSave(param) {
       this.$cimList.storequartersGoods
         .cinmaSetmealSave(param)
         .then(resData => {
           if (resData.code == 200) {
-            this.$router.go(-1);
+            this.handleCancel();
             this.$message("修改成功");
           } else {
             this.$message(resData.msg);
@@ -910,8 +975,19 @@ export default {
       return tempArr;
     },
     // 取消提交信息
+    // handleCancel() {
+    //   this.$router.go(-1);
+    // },
     handleCancel() {
-      this.$router.go(-1);
+      this.$store.commit("tagNav/removeTagNav", {
+          name: this.$route.name,
+          path: this.$route.path,
+          title: this.$route.meta.title,
+          query: this.$route.query
+      })
+      this.$router.push({
+          path: "/retail/commodityInformationStore/list",
+      });
     },
     //确认提交修改
     handleModificationSubmit() {
@@ -1152,7 +1228,9 @@ export default {
     applyChannel,
     salesPlace,
     channelDialog,
-    selectedGoods
+    selectedGoods,
+    seechannelDialog,
+    seeplaceDialog
   }
 };
 </script>

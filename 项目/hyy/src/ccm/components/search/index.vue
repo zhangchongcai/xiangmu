@@ -1,5 +1,5 @@
 <template>
-<div class="search-window">
+<div class="coupon-search-window">
     <el-form v-if="isShowForm" :inline="true" :model="baseConfig.form">
         <template v-for="(item,index) in baseConfig.system">
             <el-form-item v-if="isShowLevelItem(item)" :key="index" :prop="item.keyName" :required="item.required" :label="item.name+':'" :rules="item.rules">
@@ -8,14 +8,14 @@
                     <el-row class="flex-base">
                         <el-input class="input-type-166" v-if="!item.alertButton" :clearable="item.clearable" @clear="clearInputVal(item.keyName,item.alertButton)" :readonly="item.readonly" v-model="baseConfig.form[`${item.keyName}`]" :placeholder="item.placeholider"></el-input>
                         <template v-if="item.alertButton">
-                            <el-input class="input-type-166" 
+                            <el-input class="input-type-166 popup-input alter-input " 
                             :clearable="item.clearable" 
                             @clear="clearInputVal(item.keyName,item.alertButton)" 
                             :readonly=true  
                             v-model="baseConfig.form[`${item.keyName}`].text" 
                             :placeholder="item.placeholider"
                             >
-                            <i slot="suffix" class="el-icon-circle-close" @click="clearInputVal(item.keyName,item.alertButton)" v-show="baseConfig.form[`${item.keyName}`].text"></i>
+                            <i slot="suffix" class="el-icon-close popup-close" @click="clearInputVal(item.keyName,item.alertButton)" v-show="baseConfig.form[`${item.keyName}`].text"></i>
                             </el-input>
                             <el-button type="primary callWindowBtn" plain @click="callWindow(item.alertCompontsName,item.keyName,item.isNeedReturn)">{{item.alertButtonText ? item.alertButtonText : '选择'}}</el-button>
                         </template>
@@ -42,7 +42,13 @@
                 </template>
                 <!-- 日期选择 -->
                 <template v-if="item.type == 'date-picker'">
-                    <el-date-picker v-model="baseConfig.form[`${item.keyName}`]" :type="item.dateType ? item.dateType : 'daterange'" :placeholder="item.placeholder ? item.placeholder : '选择日期'" :range-separator="item.rangeSeparator ? item.rangeSeparator : '至'" :start-placeholder="item.startPlaceholder ? item.startPlaceholder : '请选择开始日期'" :end-placeholder="item.endPlaceholder ? item.endPlaceholder : '请选择结束日期'"></el-date-picker>
+                    <el-date-picker v-model="baseConfig.form[`${item.keyName}`]" 
+                    :type="item.dateType ? item.dateType : 'daterange'" 
+                    :placeholder="item.placeholder ? item.placeholder : '选择日期'" 
+                    :range-separator="item.rangeSeparator ? item.rangeSeparator : '至'" 
+                    :start-placeholder="item.startPlaceholder ? item.startPlaceholder : '开始日期'" 
+                    :end-placeholder="item.endPlaceholder ? item.endPlaceholder : '结束日期'"
+                    ></el-date-picker>
                 </template>
             </el-form-item>
         </template>
@@ -101,7 +107,7 @@ export default {
                 }]
             },
             /* 缓存数据 */
-            cacheField: ["baseConfig"],
+            cacheField: ["baseConfig","isShowHightLevel"],
             subComName:['searBar'],
             /* 唤起弹窗后,需填入输入框的名 */
             currentInputName: '',
@@ -123,12 +129,15 @@ export default {
         this.init()
     },
     methods: {
-        init(){
+        init(data){
             /* 根据输入config 构建form */
             let form = {};
             let system = {}
-               system = JSON.parse(JSON.stringify(this.config));
+            system = JSON.parse(JSON.stringify(this.config))
             
+            if(data){
+                system = JSON.parse(JSON.stringify(data))
+            }
             try {
                 for (let i = 0; i < system.length; i++) {
                     let item = system[i];
@@ -166,11 +175,11 @@ export default {
             let _form = this.baseConfig.form
             let cacheForm = false
             for(var item of Object.keys(_form)){
-                // console.log(item)
-                if(typeof(_form[item])=='object'){
+                console.log(item)
+                if(typeof(_form[item])=='object'&&_form[item] ){
+                    console.log(_form)
+                    console.log('类型：',typeof(_form[item]),'item:',item,',值:',_form[item])
                     if(_form[item].text !=''){
-                        // console.log(_form[item])
-                        // console.log(`有值的项${item}:`,_form[item].text)
                         cacheForm = true
                     }
                 }else if(typeof(_form[item])=='string'){
@@ -179,8 +188,9 @@ export default {
                         cacheForm = true
                     }
                 }
-            }
-            if(cacheForm) {
+            } 
+            // data 是销售单的查询带过来的
+            if(cacheForm&&!data) {
                 form = _form
             }
             /*-----end---------*/
@@ -310,6 +320,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '../../assets/css/element-reset.scss' ;
+
 .flex-base {
     display: flex;
     display: -webkit-flex;
@@ -317,14 +329,14 @@ export default {
     justify-content: center;
 }
 
-.search-window {
+.coupon-search-window {
     background: #F5F5F5;
 
     .el-form {
-        padding: 24px;
-
+        padding: 24px 0;
+        margin: 0;
         .el-form-item {
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
 
         .btn-group {
@@ -379,4 +391,43 @@ export default {
         width: #{$i}px;
     }
 }
+/deep/ .alter-input{
+    input {
+        background: #f5f5f5;
+    }
+}
 </style>
+<style lang="scss">
+@import "../../assets/css/element-reset.scss";
+.coupon-search-window{
+    .el-form{
+        margin:24px 0;
+    }
+    .el-form-item{
+        margin-left:20px;
+    }
+    .el-date-editor .el-range-input {
+      font-size: 12px;
+    }
+    .el-date-editor .el-range-separator {
+      font-size: 12px;
+    }
+    .el-date-editor--daterange.el-input__inner {
+      width: 252px;
+      color: #717171;
+      font-size: 12px;
+    }
+    .el-range-separator{
+        width:50px;
+    }
+    .el-range__icon,.el-range__close-icon{
+        line-height:20px
+    }
+    .el-form-item__label{
+        font-size:12px;
+        color:#666;
+    }
+}
+
+</style>
+

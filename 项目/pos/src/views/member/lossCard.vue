@@ -15,13 +15,14 @@
         :model="ruleFormData"
         :rules="rules"
         ref="ruleForm"
-        label-width="100px"
         class="demo-ruleForm">
-        <div style="position:relative;margin-top:-22px">
-          <div class="recharge-info-title">密码验证</div>
+        <div style="position:relative">
+          <div class="member-info-title">密码验证</div>
           <el-form-item
             label="输入密码"
             prop="passwd"
+            class="row-line-center"
+            style="margin-top:1vw"
           >
             <el-input type="password" v-model="ruleFormData.passwd" class="psd-inp"></el-input>
             <el-button class="start-btn" @click="secKeyBoard">启动密码输入</el-button>
@@ -35,10 +36,10 @@
 
 <script>
 import memberInfoAndCard from "./components/memberInfoAndCard";
-import { num10_999float2 } from "./util/validate.js";
-import { toFormModel ,readCard ,secKeyBoard, cardStatusCN, statusDeter} from "./util/utils";
+import { num10_999float2 ,passwdReg} from "./util/validate.js";
+import { toFormModel ,readCard ,secKeyBoard, cardStatusCN, statusDeter ,routerJump} from "./util/utils";
 import {MemberAjax,memeberApi} from "src/http/memberApi";
-import { mapState, mapGetters } from "vuex";
+import { mapState, mapGetters} from "vuex";
 export default {
   data() {
     return {
@@ -50,7 +51,7 @@ export default {
       },
       cardStatus:['normal','loss'],
       rules: {
-        passwd: [{ required: true, message: "请输入密码", trigger: "blur" }]
+        passwd: [{ validator:passwdReg,trigger:'change'}]
       }
     };
   },
@@ -65,6 +66,7 @@ export default {
   },
   methods: {
     isShow(data) {
+      if(routerJump.call(this))
       this.isshow = statusDeter.call(this,data,'loss','normal',`该卡状态为${cardStatusCN(this.member.cardState)},不能挂失或解操作`);
       if(this.isshow)this.$refs['ruleForm'].resetFields();
     },

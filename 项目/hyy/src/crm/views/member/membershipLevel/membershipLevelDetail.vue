@@ -8,8 +8,11 @@
           <span class="unit-desc">个月</span>
           <div class="cycle-tips">注：每日1点进行会员升级调整，定级周期内最后一月月末1点进行会员降级调整，修改会员等级后，新等级将在次日1点生效。</div>
         </div>
-
-        <el-button type="primary" @click="handleEdit">编辑</el-button>
+        <el-tooltip class="item" :disabled="isEdit" effect="dark" content="数据请求中，请稍后编辑" placement="left">
+          <span>
+            <el-button type="primary" @click="handleEdit" :disabled="!isEdit">编辑</el-button>
+          </span>
+        </el-tooltip>
       </div>
     </div>
     <!-- 内容区 -->
@@ -54,7 +57,8 @@
       </el-collapse-item>
       <!-- 成长值获取规则 -->
       <el-collapse-item title="成长值获取规则" name="2" class="get-rules">
-        <div class="growth-value-options" v-for="(domain, index) in searchData.memberGrowthRuleAndChannelVOList" :key="index">
+        <div class="growth-value-options" v-for="(domain, index) in searchData.memberGrowthRuleAndChannelVOList"
+          :key="index">
           <div class="item-inner"><label class="lable-name">获取渠道：</label>{{domain.memberGrowthRuleChannelVOList |
             foematChannel}}</div>
           <div class="rules-selection">
@@ -89,6 +93,7 @@ export default {
   name: "MembershipLevelDetail",
   data() {
     return {
+      isEdit: false,
       id: "",
       activeNames: ["0", "1", "2"],
       stepData: {
@@ -139,25 +144,30 @@ export default {
     this.$crmList
       .getLevelDetail({ tenantId: this.$store.state.loginUser.consumerId })
       .then(res => {
+        this.isEdit = true;
         var data = res;
         // this.searchData = res;
         this.id = res.id;
-        if(res.memberLevelRuleVOList == null || res.memberLevelRuleVOList.length == 0 ){
-          data.memberLevelRuleVOList = [{
-            levelNo: "1",
-            levelName: "普通会员",
-            levelupGrowth: "0",
-            saveGrowth: "0"
-          }]
+        if (
+          res.memberLevelRuleVOList == null ||
+          res.memberLevelRuleVOList.length == 0
+        ) {
+          data.memberLevelRuleVOList = [
+            {
+              levelNo: "1",
+              levelName: "普通会员",
+              levelupGrowth: "0",
+              saveGrowth: "0"
+            }
+          ];
 
-          this.searchData = data
-
-        }else {
+          this.searchData = data;
+        } else {
           data.memberLevelRuleVOList[0].levelNo = 1;
           data.memberLevelRuleVOList[0].levelupGrowth = 0;
           data.memberLevelRuleVOList[0].saveGrowth = 0;
-          this.searchData = data
-          console.log('this.searchData=====',this.searchData)
+          this.searchData = data;
+          console.log("this.searchData=====", this.searchData);
         }
       })
       .catch(err => {

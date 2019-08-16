@@ -2,7 +2,7 @@ import {formateSearch} from '../../util/utils';
 
 const pageData = {}
 pageData.columnData = [
-    {prop:'operateTime',label:'操作时间',search:true,type:'date',width:'180'},
+    {prop:'operateTime',label:'操作时间',search:true,type:'date'},
     {prop:'operateTypeName',label:'操作类型'},
     {prop:'oldMemberInfo',label:'操作前信息'},
     {prop:'memberInfo',label:'操作后信息'},

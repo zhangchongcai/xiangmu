@@ -41,8 +41,28 @@ export default {
        }
     },
 
+    mounted() {
+      let that = this;
+    //   window.addEventListener("keyup", function(event) {
+    //       if(event.keyCode == '8') {
+    //           that.keyValue = that.keyValue.substring(0,that.keyValue.length-1);
+    //           that.$emit('keynumber', that.keyValue)
+    //       }
+    //   })
+    },
+
+    destroyed() {
+    //   window.removeEventListener('keyup', function(event) {
+    //       if(event.keyCode == '8') {
+    //           that.keyValue = that.keyValue.substring(0,that.keyValue.length-1);
+    //           that.$emit('keynumber', that.keyValue)
+    //       }
+    //   })
+    },
+
     methods:{
         onKey(item){ //键盘点击事件：通过事件keynumber传递值
+        this.keyValue = this.keyValue + '';
             switch(item.type){
                 case 'del':
                 if(this.keyValue == '') return;
@@ -78,9 +98,9 @@ export default {
     .keyItem{
         display: block;
         width: 30%;
-        font-size: 1em;
+        font-size: 1.4vw;
         text-align: center;
-        padding: 1.4vw 0;
+        padding: 1.18vw 0;
         border:1px solid #A7B8E4;
         border-radius: 4px;
         transition: all 0.2s;

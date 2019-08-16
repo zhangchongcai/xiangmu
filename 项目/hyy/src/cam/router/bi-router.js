@@ -99,7 +99,7 @@ let routes = [
         meta: {
             title: '卖品概览',
         },
-        component: (resolve) => require(['../views/group/sale-total.vue'], resolve),
+        component: (resolve) => require(['../views/sellGoods/overview/sale-group-total.vue'], resolve),
         name: '卖品概览'
     },
     {
@@ -107,7 +107,7 @@ let routes = [
         meta: {
             title: '卖品概览',
         },
-        component: (resolve) => require(['../views/area/sale-total.vue'], resolve),
+        component: (resolve) => require(['../views/sellGoods/overview/sale-area-total.vue'], resolve),
         name: '卖品概览'
     }, 
     {
@@ -115,7 +115,7 @@ let routes = [
         meta: {
             title: '卖品概览',
         },
-        component: (resolve) => require(['../views/cinema/sale-total.vue'], resolve),
+        component: (resolve) => require(['../views/sellGoods/overview/sale-cinema-total.vue'], resolve),
         name: '卖品概览'
     },{
         path: 'group/member/total',
@@ -171,24 +171,24 @@ let routes = [
           title:'进销存分析',
           keepAlive:true
       },
-      component:(resolve) => require(['../views/group/inventory.vue'],resolve),
+      component:(resolve) => require(['../views/sellGoods/inventory/inventory-use.vue'],resolve),
       name:'进销存分析'
     },
     {
         path:'cinema/replenish',
         meta:{
-            title:'影院补货明细',
+            title:'影院缺货明细',
             keepAlive:true
         },
-        component:(resolve) => require(['../views/cinema/replenish.vue'],resolve),
-        name:'影院补货明细'
+        component:(resolve) => require(['../views/sellGoods/inventory/outof-stock.vue'],resolve),
+        name:'影院缺货明细'
     },{
         path:'cinema/unsale',
         meta:{
             title:'影院滞销明细',
             keepAlive:true
         },
-        component:(resolve) => require(['../views/cinema/unsale.vue'],resolve),
+        component:(resolve) => require(['../views/sellGoods/inventory/slow-sale.vue'],resolve),
         name:'影院滞销明细'
     },{
         path:'group/cinema/manage',
@@ -294,6 +294,37 @@ let routes = [
         },
         component: (resolve) => require(['../views/sellGoods/channel/channel-use.vue'], resolve),
         name: '渠道分析'
+    },{
+        path: 'group/commodity/total',
+        meta: {
+            title: '商品分析',
+        },
+        component: (resolve) => require(['../views/sellGoods/commodity/commodity-use.vue'], resolve),
+        name: '商品分析'
+    },
+    {
+        path: 'area/commodity/total',
+        meta: {
+            title: '商品分析',
+        },
+        component: (resolve) => require(['../views/sellGoods/commodity/commodity-use.vue'], resolve),
+        name: '商品分析'
+    },
+    {
+        path: 'cinema/commodity/total',
+        meta: {
+            title: '商品分析',
+        },
+        component: (resolve) => require(['../views/sellGoods/commodity/commodity-use.vue'], resolve),
+        name: '商品分析'
+    },
+    {
+        path: 'common/commodity/detail',
+        meta: {
+            title: '商品详情',
+        },
+        component: (resolve) => require(['../views/sellGoods/commodity/commodity-detail-use.vue'], resolve),
+        name: '商品详情'
     },
     
 ];

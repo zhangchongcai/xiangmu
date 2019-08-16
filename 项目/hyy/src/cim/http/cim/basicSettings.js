@@ -358,7 +358,7 @@ export const findStorageRackList = data => {
 export const delStorageRack = data => {
     return axios({
         baseURL: config.baseURL,
-        url: '/storage/rack/delStorageRack/',
+        url: '/storage/rack/delStorageRack',
         method: 'post',
         data
     })

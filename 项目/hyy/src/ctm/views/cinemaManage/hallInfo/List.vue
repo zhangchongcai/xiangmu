@@ -2,7 +2,7 @@
     <div class="cinemaWall_list">
 		<div class="content">
 			<div class="title">
-				<el-button type="primary" plain  size="mini" @click="wall_build">新建</el-button>
+				<el-button type="primary" plain  size="mini" @click="wall_build" style="width:80px;height:32px">新建</el-button>
 			</div>
 		
 			<el-table

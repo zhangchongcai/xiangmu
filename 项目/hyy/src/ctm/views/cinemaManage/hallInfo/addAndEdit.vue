@@ -249,7 +249,7 @@ export default {
       },
       //获得影厅类型
       getmovieType() {
-          this.$ctmList.cinemagetByName('?name=CI_HALL_TYPE').then( data => {
+          this.$ctmList.cinemagetByName({name:'CI_HALL_TYPE'}).then( data => {
             if (data && data.code === 200) {
                 this.movieType = data.data;
             } else {

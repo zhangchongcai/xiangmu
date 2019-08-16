@@ -1,9 +1,9 @@
 <template>
-  <div class="app-container">
+  <div id="app" class="app-container">
     <router-view></router-view>
     <el-dialog title="操作提示" :visible.sync="show" width="50%">
       <div class="dialogContent">
-        <div class="payByCard" v-if="type == 1">
+        <div class="payByCard" v-if="type == 2">
           <div><i class="iconfont iconqingshuaqiatuikuan"></i></div>
           <div>请刷卡退款</div>
         </div>
@@ -23,14 +23,20 @@
         <el-button type="primary" @click="refor">确 定</el-button>
       </div>
     </el-dialog>
+    <UseInfo :isShow="useInfoShow" :value="useInfoValue" @useInfoSureClick="useInfoSureClick"></UseInfo>
   </div>
 </template>
 
 <script>
 import { mapState,mapMutations,mapActions } from 'vuex'
-import { EMPOWER_SET_SHOW,EMPOWER_SET_TYPE,EMPOWER_SET_USER,EMPOWER_SET_PASSWORD,GLOBAL_SET_NAV_DATAS } from 'types'
-import { userAuthorize,getMenuTree } from 'http/apis'
+import { EMPOWER_SET_SHOW,EMPOWER_SET_TYPE,EMPOWER_SET_USER,EMPOWER_SET_PASSWORD,GLOBAL_SET_NAV_DATAS,GLOBAL_USER_CONFIG, SAVE_ALL_PAY,GLOBAL_PAY_SORT } from 'types'
+import { VM_LOGIN_SET_MENU , VM_AUTHORIZATION_CALLBACK,VM_AUTHORIZATION_CLOSE,VM_ON_SORT_GET_PAY_LIST,VM_ON_LOGIN_UESINFO} from 'types/vmOnType'
+import { userAuthorize,getMenuTree,userGetConfig, payType,getUseInfo } from 'http/apis'
+import UseInfo from 'components/useInfo/userInfo'
 export default {
+  components:{
+    UseInfo
+  },
   data() {
     return {
       modelUser:'',
@@ -39,6 +45,8 @@ export default {
       otherFlag: false,
       otherList: [],
       arr: [],
+      useInfoShow:false,
+      useInfoValue:null,
     };
   },
   computed:{
@@ -47,7 +55,17 @@ export default {
       user : state => state.empower.user,
       password : state => state.empower.password,
       type : state => state.empower.type,
+      typesCode: state => state.empower.typesCode,
+      configData : state => state.config.configData,
     })
+  },
+  watch: {
+    $route() {
+            let token = localStorage.getItem('token')
+            if(token) {
+              this.getAllPayType()
+            }  
+          }
   },
   methods:{
     ...mapMutations({
@@ -56,12 +74,32 @@ export default {
       EMPOWER_SET_USER,
       EMPOWER_SET_PASSWORD,
       GLOBAL_SET_NAV_DATAS,
+      GLOBAL_USER_CONFIG,
+      SAVE_ALL_PAY,
+      GLOBAL_PAY_SORT
     }),
+    async getAllPayType() {
+                const payTypeData = await payType()
+                if(payTypeData.code == 200) {
+                    this.SAVE_ALL_PAY(payTypeData.data)
+                }else {
+                   this.$message({
+                            showClose: true,
+                            message: payTypeData.data && payTypeData.data.length == 0 ? '暂无支付方式数据' : payTypeData.msg,
+                            type: 'error'
+                        }); 
+                }
+            },
     close(){
       this.changeUser('')
       this.changePassword('')
-      this[EMPOWER_SET_SHOW](false);
-      if(this.$route.name !='toHome') this.$router.go(-1)
+      this[EMPOWER_SET_SHOW]({
+        show:false,
+        type:'',
+      });
+      // if(this.$route.name !='toHome') this.$router.go(-1)
+      this.$vm.$emit(VM_AUTHORIZATION_CLOSE)
+
     },
     changeUser(e){
       this[EMPOWER_SET_USER](e)
@@ -73,16 +111,30 @@ export default {
       if(!this.user) return this.$message.warning('请输入账号!');
       if(!this.password) return this.$message.warning('请输入密码!')
       const data = await userAuthorize({
-        userName : this.user,
-        password : this.password
+        cardCode: '',
+        userName: this.user,
+        passWord: this.password,
+        type:this.type,
+        funcCode : this.typesCode,
+
       })
 
       if(data.code != 200) return  this.$message.error(data.msg);
-      this[EMPOWER_SET_SHOW](false);
+      this.$message.success(data.msg)
+      this.$vm.$emit(VM_AUTHORIZATION_CALLBACK,data)
+      this[EMPOWER_SET_SHOW]({
+        show:false,
+        type:'',
+      });
     },
     getData() {
+      this.otherList = [];
+      this.menuList = [];
+      this.arr = [];
+      this.otherFlag = false;
       getMenuTree().then(ret=>{
           if(ret&&ret.code==200){
+          this.$addHomeNavIcon(ret.data);
           this.getArray(ret.data,4)
           if(this.arr.length>=0&&this.arr.length<=8){
               this.arr.forEach(item=>{
@@ -106,20 +158,87 @@ export default {
           }
       })
   },
+  async userGetConfig(){
+    let data = await userGetConfig()
+    if(data.code != 200) return this.$message.error(data.msg)
+    this[GLOBAL_USER_CONFIG](data.data)
+  },
   getArray(data,menuType) {
-    for (var i in data) {
+    // console.log(111)
+    let counterTypeValue = this.configData.counter_type_value;
+    for (let i in data) {
         if (data[i].menuType == menuType) {
-        this.arr.push(data[i])
+          switch(data[i].menuCode){
+            case  'csm_pos_extract_fund_authorize' :
+            case  'csm_pos_extract_fund_regulation' :
+            case  'csm_pos_open_money_box': //开钱箱
+            case  'csm_pos_handsel' : //赠送
+            case  'csm_pos_reportloss' : //报损
+            case  'csm_pos_reprint_voucher': //重打印凭证
+            case  'csm_pos_preparemeals_register': //备餐登记
+            case  'csm_pos_preparemeals_detailed'://备餐明细
+            case  'csm_pos_vip_write_card': //会员卡写卡
+            case  'csm_pos_sale_tictket_roll': //票券销售
+            case  'csm_pos_print_tickets': //票券批量打印
+            case  'csm_pos_sale_ranking': //我的销售排名
+                break
+            case  'csm_pos_pay_type_seq': //支付排序
+                this[GLOBAL_PAY_SORT](true)
+                break;
+            case  'csm_pos_sale_ticket_manager' : //影票
+                if(counterTypeValue == 'goods') break;
+                this.arr.push(data[i])
+                break;
+            case 'csm_pos_sale_goods_manager': //卖品
+                if(counterTypeValue == 'movie') break;
+                this.arr.push(data[i])
+                break;
+            default :
+                this.arr.push(data[i])
+                break;
+          }
         } else {
         this.getArray(data[i].submenu, menuType);
         }
     }
   },
+  //请求领用信息
+    async requestUseInfo(val){
+      let res = await getUseInfo({current:1,size:999,workTimeUid:val})
+      let data = res.data || {}
+      if(res.code == 200){
+          this.useInfoShow = true
+          this.useInfoValue = data
+      }
+    },
+    useInfoSureClick(){
+        this.useInfoShow = false
+      },
   },
   created() {
-    this.getData()
+    setTimeout(() => {
+       document.body.removeChild(document.getElementById('loadingImg'))
+    }, 1500)
+    if(localStorage.getItem('token')){
+      this.getData()
+      this.userGetConfig()
+    }
   },
-  mounted() {}
+  mounted() {
+    this.$vm.$on(VM_LOGIN_SET_MENU,()=>{
+      this.getData()
+      this.userGetConfig()
+    })
+    this.$vm.$on(VM_ON_SORT_GET_PAY_LIST,()=>{
+      this.getAllPayType()
+    })
+    this.$eventHub.$on(VM_ON_LOGIN_UESINFO, (val) => {
+      console.log(313131)
+        if(val != null){
+            this.requestUseInfo(val)
+        }
+      }) 
+  }
 };
 </script>
 
@@ -195,6 +314,7 @@ td {
   vertical-align: baseline;
   background: transparent;
   user-select: none;
+  -webkit-user-select: none;
 }
 html,
 body,
@@ -205,7 +325,7 @@ body,
 body {
   margin: 0px;
   padding: 0px;
-  font-family: "Microsoft YaHei",微软雅黑,"Microsoft JhengHei",华文细黑,STHeiti,MingLiu !important;
+  font-family: "MicrosoftYaHei",微软雅黑,"Microsoft JhengHei",华文细黑,STHeiti,MingLiu !important;
   font-size: 14px;
   -webkit-font-smoothing: antialiased;
   background: #fff;
@@ -316,6 +436,10 @@ a:hover {
   /*  //border:1px solid #dfe6ec;*/
   margin: 10px 0px;
 }
+.el-dialog__headerbtn .el-dialog__close {
+    color: #909399;
+    font-size: 1.24vw;
+}
 .toolbar .el-form-item {
   margin-bottom: 10px;
 }
@@ -360,6 +484,8 @@ a:hover {
 
 // 重写框架样式
 .el-button {
+  border-color:#3B74FF ;
+  color:#3B74FF ;
 }
 // 默认按钮
 // .el-button--default {

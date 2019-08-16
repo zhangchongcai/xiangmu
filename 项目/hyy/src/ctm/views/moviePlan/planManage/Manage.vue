@@ -1,4 +1,4 @@
-<template>
+ <template>
     <div class="manage">
 
         <singleCinema
@@ -8,8 +8,8 @@
                 :innerData="innerData"
                 @callBackSingle="callBackSingle">
             <div slot="footerId">
-                <el-button @click="singleCinemaVisible = false">取 消</el-button>
                 <el-button type="primary" @click="$refs.frameSingleCinema.confirmData(), singleCinemaVisible = false">确 定</el-button>
+                <el-button @click="singleCinemaVisible = false">取 消</el-button>
             </div>
         </singleCinema>
 
@@ -157,12 +157,16 @@
         methods: {
 
             callBackSingle(data) {
+                this.singleCinemaVisible = data.framedialogVisible
+                if(data.isCloseWindow) return
+
                 console.log(data, '-----> data')
                 this.cinemaName = data.data.name
+                 this.cinemaName = this.cinemaName.length> 10?this.cinemaName.substring(0,9)+"...": this.cinemaName
                 this.formData.cinemaUid = data.data.id
                 this.copyPlanForm.cinemaUid = data.data.id
                 this.innerData.id = data.data.id
-
+                this.singleCinemaVisible = data.framedialogVisible
                 this.$store.commit('changeCurCinema', {
                     cinemaName: this.cinemaName,
                     cinemaUid: this.formData.cinemaUid

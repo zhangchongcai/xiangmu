@@ -251,7 +251,7 @@ export default {
     },
     mounted() {
         this.cinemaUid = this.$route.query.cinemaUid ? this.$route.query.cinemaUid : ''
-        this.curReCinema = this.$route.query.consultCinemaCode ? this.$route.query.consultCinemaCode : 'default'
+        // this.curReCinema = this.$route.query.consultCinemaCode ? this.$route.query.consultCinemaCode : 'default'
         this.planDate = this.$route.query.cinemaUid ? this.$route.query.planDate : this.formatDateTime(new Date().getTime(), 1)
         this.goldTimeStart = this.$route.query.goldTimeStart ? this.$route.query.goldTimeStart : this.formatDateTime(new Date().getTime(), 0)
         this.goldTimeEnd = this.$route.query.goldTimeEnd ? this.$route.query.goldTimeEnd : this.formatDateTime(new Date().getTime(), 0)

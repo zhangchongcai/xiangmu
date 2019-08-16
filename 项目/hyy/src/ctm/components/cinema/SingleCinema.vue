@@ -28,13 +28,13 @@
       </div>
       <div class="film-body p-h-20">
         <!-- class="diy-header" -->
-        <el-table :data="filmList" @row-click="showRow" @current-change="handleRowChange" height="308px" ref="filmListRef" highlight-current-row>
+        <el-table :data="filmList" @row-click="showRow" @current-change="handleRowChange" height="358px" ref="filmListRef" highlight-current-row>
           <!-- <el-table-column
                         type="selection"
                         width="55">
                     </el-table-column> -->
           <el-table-column label="选择" width="50" align="center">
-            <template scope="scope">
+            <template slot-scope="scope">
               <el-radio class="radio" v-model="selectedId" :label="scope.row.id">&nbsp;</el-radio>
             </template>
           </el-table-column>

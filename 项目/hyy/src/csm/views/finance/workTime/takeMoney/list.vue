@@ -8,9 +8,13 @@
     </el-breadcrumb> -->
     <div class="searchAdition">
       <el-form :inline="true" class="demo-form-inline search-form" size="small" label-width="100px">
-        <el-form-item label="影院选择:">
+        <!-- <el-form-item label="影院选择:">
           <el-input v-model="cinemaName" @focus="openCinema()"></el-input>
-        </el-form-item>
+        </el-form-item> -->
+         <el-form-item label="影院名称：">
+            <el-button @click="singleCinemaVisible = true, $refs.frameSingleCinema.listAuthCommCinemas()" style="width:176px;height:32px;">
+                {{ cinemaName }}</el-button>
+          </el-form-item>
         <el-form-item label="收银员:">
           <el-input v-model="searchAdition.workerName" @focus="openWorker"></el-input>
         </el-form-item>
@@ -57,12 +61,21 @@
           layout="total, sizes, prev, pager, next, jumper" :total="total"></el-pagination>
       </div>
     </div>
-    <singeCinema ref="singeCinema" @callback="callback"></singeCinema>
+    <singleCinema ref="frameSingleCinema" :framedialogVisible.sync="singleCinemaVisible" :type="singleCinemaType"
+      :innerData="innerData" @callBackSingle="callBackSingle">
+      <div slot="footerId">
+        <el-button @click="singleCinemaVisible = false">取 消</el-button>
+        <el-button type="primary" @click="$refs.frameSingleCinema.confirmData(), singleCinemaVisible = false">确
+          定</el-button>
+      </div>
+    </singleCinema>
+    <!-- <singeCinema ref="singeCinema" @callback="callback"></singeCinema> -->
     <mydialog ref="searchDialog" @callback="chooseWorker" @searchWorker="searchWorker"></mydialog>
   </div>
 </template>
 <script type="text/javascript">
-  import singeCinema from '../publicModule/singeCinema'
+  import singleCinema from "frame_cpm/dialogs/cinemaDialog/singleCinema"
+  // import singeCinema from '../publicModule/singeCinema'
   import mydialog from "../public/searchDialog"
   function timeStampToString(time) {
     var datetime = new Date();
@@ -77,11 +90,17 @@
   }
   export default {
     components: {
-      singeCinema,
+      singleCinema,
       mydialog
     },
     data() {
       return {
+        singleCinemaVisible: false,
+        singleCinemaType: 2,
+        innerData: {
+            id: '',
+        },
+        cinemaName: '',
         total: 1, // 总数
         current: 1, // 当前页
         pageSize: 10, // 当前页数大小 
@@ -296,17 +315,34 @@
         this.getWorker(current,userName,userAccount)
       },
        // 打开影院
-       openCinema(){
-        this.$refs.singeCinema.opendialog = true;
+       callBackSingle(data) {
+          console.log(data, '-----> data')
+          this.searchAdition.cinemaUid = data.data.id
+          this.cinemaName = data.data.name
+           this.cinemaName = this.cinemaName.length> 10?this.cinemaName.substring(0,9)+"...": this.cinemaName
+          this.innerData.id = data.data.id
+          this.singleCinemaVisible = data.framedialogVisible
+          // this.search() 
       },
-      callback(val){
-        console.log(val)
-        this.cinemaName = val.orgName
-        this.searchAdition.cinemaUid = val.cinemaUID
-      }
+      getUserInfo() {
+          this.$ctmList.getUserInfo().then(res => {
+              console.log(res)
+              if (res.code === 200) {
+                  this.cinemaName = res.data.cinemaName
+                  this.searchAdition.cinemaUid = res.data.cinemaUid
+                  this.innerData.id = Number(res.data.cinemaUid)
+
+                  this.search()
+
+              } else {
+                  this.error(res.msg)
+              }
+          })
+      },
     },
     created() {
       this.cinemaName && this.getList();
+      this.getUserInfo()
     }
   };
 </script>
@@ -390,62 +426,62 @@
   }
 
   // dialog的样式
-  /deep/ .el-dialog {
-    width: 576px;
-    height: 576px;
+  // /deep/ .el-dialog {
+  //   width: 576px;
+  //   height: 576px;
 
-    .el-dialog__header::after {
-      content: "";
-      display: block;
-      width: 536px;
-      height: 1px;
-      background: #e5e5e5;
-    }
+  //   .el-dialog__header::after {
+  //     content: "";
+  //     display: block;
+  //     width: 536px;
+  //     height: 1px;
+  //     background: #e5e5e5;
+  //   }
 
-    .el-dialog__body {
-      padding: 0 20px;
+  //   .el-dialog__body {
+  //     padding: 0 20px;
 
-      .two_search {
-        width: 214px;
-        height: 32px;
-      }
+  //     .two_search {
+  //       width: 214px;
+  //       height: 32px;
+  //     }
 
-      .one_search {
-        width: 268px;
-      }
+  //     .one_search {
+  //       width: 268px;
+  //     }
 
-      .el-form-item__label {
-        font-size: 12px;
-      }
+  //     .el-form-item__label {
+  //       font-size: 12px;
+  //     }
 
-      .el-table {
-        margin-top: 11px;
-        height: 340px;
+  //     .el-table {
+  //       margin-top: 11px;
+  //       height: 340px;
 
-        .cinemaList .has-gutter tr th {
-          padding: 0;
-        }
+  //       .cinemaList .has-gutter tr th {
+  //         padding: 0;
+  //       }
 
-        .cell {
-          font-size: 12px;
-          line-height: 30px;
-          // text-align: center;
-        }
+  //       .cell {
+  //         font-size: 12px;
+  //         line-height: 30px;
+  //         // text-align: center;
+  //       }
 
-        .el-radio__label {
-          padding: 0;
-          display: none;
-        }
-      }
+  //       .el-radio__label {
+  //         padding: 0;
+  //         display: none;
+  //       }
+  //     }
 
-      .block {
-        margin-top: 15px;
-      }
-    }
+  //     .block {
+  //       margin-top: 15px;
+  //     }
+  //   }
 
-    .btn-area {
-      display: flex;
-      justify-content: center;
-    }
-  }
+  //   .btn-area {
+  //     display: flex;
+  //     justify-content: center;
+  //   }
+  // }
 </style>

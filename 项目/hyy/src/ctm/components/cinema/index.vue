@@ -57,8 +57,8 @@
         </div>
          <span slot="footer" class="dialog-footer">
               <slot name="footerId"></slot>
-            <el-button @click="closeDialog(false)">取 消</el-button>
             <el-button type="primary" @click="confirmData()">确 定</el-button>
+            <el-button @click="closeDialog(false)">取 消</el-button>
             <!-- <div class="class" slot="dialogfooter"></div> -->
         </span>
         

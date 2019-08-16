@@ -2,8 +2,11 @@
   <div class="cinemaList">
     <div class="searchAdition">
       <el-form :inline="true" class="demo-form-inline search-form" size="small" label-width="100px">
-        <el-form-item label="影院选择:">
-          <el-input v-model="cinemaName" @focus="openCinema"></el-input>
+
+        <el-form-item label="影院名称：">
+          <el-button @click="singleCinemaVisible = true, $refs.frameSingleCinema.listAuthCommCinemas()"
+            style="width:176px;height:32px;">
+            {{ cinemaName }}</el-button>
         </el-form-item>
         <el-form-item label="制单人:">
           <el-input v-model="searchAdition.createUserName" @focus="openCreate"></el-input>
@@ -39,30 +42,30 @@
       </el-row>
       <br style="clear:both;">
       <!-- <el-row> -->
-        <el-table :data="tableData" stripe border style="width: 100%">
-          <el-table-column prop="timeCode" label="单据标号" width="200"></el-table-column>
-          <el-table-column prop="workerName" label="收银员"></el-table-column>
-          <el-table-column prop="createUserName" label="制单人" width="150" show-overflow-tooltip></el-table-column>
-          <el-table-column prop="createTime" label="制作时间" width="200" show-overflow-tooltip></el-table-column>
-          <el-table-column prop="workEndTime" label="班次结束时间" width="200" show-overflow-tooltip></el-table-column>
-          <el-table-column prop="preAmount" label="备用金领用" width="100" show-overflow-tooltip></el-table-column>
-          <el-table-column prop="thingCount" label="卡劵领用" show-overflow-tooltip></el-table-column>
-          <el-table-column prop="status" label="状态" show-overflow-tooltip></el-table-column>
-          <el-table-column prop="workStartTime" label="班次起始时间" width="200" show-overflow-tooltip></el-table-column>
-          <el-table-column prop="updateUserName" label="清机人" width="150" show-overflow-tooltip></el-table-column>
-          <el-table-column label="操作" width="300" fixed="right">
-            <template slot-scope="scope">
-              <el-button size='small' type="text" @click="detail(scope.row)">查看</el-button>
-              <el-button size='small' type="text" @click="adjust(scope.row)" v-show="scope.row.detail">追加领用</el-button>
-              <el-button size='small' type="text" @click="workClose(scope.row)" v-show="scope.row.adjust">清机结算
-              </el-button>
-              <el-button size='small' type="text" @click="cinema_edit(scope.row.uid)">导出</el-button>
-              <el-button size='small' type="text" @click="wall_edit(scope.row.uid)">打印</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+      <el-table :data="tableData" stripe border style="width: 100%">
+        <el-table-column prop="timeCode" label="单据编号" width="200"></el-table-column>
+        <el-table-column prop="workerName" label="收银员"></el-table-column>
+        <el-table-column prop="createUserName" label="制单人" width="150" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="createTime" label="制单时间" width="200" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="workEndTime" label="班次结束时间" width="200" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="preAmount" label="备用金领用" width="100" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="thingCount" label="卡劵领用" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="status" label="状态" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="workStartTime" label="班次起始时间" width="200" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="updateUserName" label="清机人" width="150" show-overflow-tooltip></el-table-column>
+        <el-table-column label="操作" width="300" fixed="right">
+          <template slot-scope="scope">
+            <el-button size='small' type="text" @click="detail(scope.row)">查看</el-button>
+            <el-button size='small' type="text" @click="adjust(scope.row)" v-show="scope.row.detail">追加领用</el-button>
+            <el-button size='small' type="text" @click="workClose(scope.row)" v-show="scope.row.adjust">清机结算
+            </el-button>
+            <el-button size='small' type="text" @click="exportThis(scope.row)">导出</el-button>
+            <el-button size='small' type="text" @click="printThis(scope.row)">打印</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
       <!-- </el-row> -->
-       
+
       <!-- <div class="page-wrap" ref="page_div">
         <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange"
           :current-page="current" :page-size="pageSize" :total="total"
@@ -70,11 +73,19 @@
       </div> -->
     </div>
     <div class="page-wrap" ref="page_div">
-        <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange"
-          :current-page="page.current" :page-sizes="[15, 20, 30]" :page-size="page.pageSize"
-          layout="total, sizes, prev, pager, next, jumper" :total="page.total"></el-pagination>
+      <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange"
+        :current-page="page.current" :page-sizes="[15, 20, 30]" :page-size="page.pageSize"
+        layout="total, sizes, prev, pager, next, jumper" :total="page.total"></el-pagination>
+    </div>
+    <singleCinema ref="frameSingleCinema" :framedialogVisible.sync="singleCinemaVisible" :type="singleCinemaType"
+      :innerData="innerData" @callBackSingle="callBackSingle">
+      <div slot="footerId">
+        <el-button type="primary" @click="$refs.frameSingleCinema.confirmData(), singleCinemaVisible = false">确
+          定</el-button>
+        <el-button @click="singleCinemaVisible = false" style="margin-left:32px;">取 消</el-button>
       </div>
-    <singeCinema ref="singeCinema" @callback="callback"></singeCinema>
+    </singleCinema>
+    <!-- <singeCinema ref="singeCinema" @callback="callback"></singeCinema> -->
     <mydialog ref="searchDialog" @callback="chooseWorker" @searchWorker="searchWorker"></mydialog>
   </div>
 </template>
@@ -90,21 +101,28 @@
     var second = datetime.getSeconds() < 10 ? "0" + datetime.getSeconds() : datetime.getSeconds();
     return year + "-" + month + "-" + date;
   }
-  import singeCinema from '../publicModule/singeCinema'
+  import singleCinema from "frame_cpm/dialogs/cinemaDialog/singleCinema"
+  // import singeCinema from '../publicModule/singeCinema'
   import mydialog from "../public/searchDialog"
   export default {
     components: {
-      singeCinema,
+      singleCinema,
       mydialog
     },
     data() {
       return {
+        singleCinemaVisible: false,
+        singleCinemaType: 2,
+        innerData: {
+          id: '',
+        },
+        cinemaName: '',
         page: {
           total: 1, //总数
           current: 1, //当前页
           pageSize: 15, //当前页数大小 
         },
-        val:true,
+        val: true,
         tableData: [], //列表
         timeRange: "", // 时间查询条件
         pickerOptions: {
@@ -141,9 +159,7 @@
     methods: {
       // 上班登记
       account_add() {
-        !this.cinemaName ? this.$alert('请先选择影院', '提示', {
-          confirmButtonText: '确定',
-        }) : this.$router.push({
+        !this.cinemaName ? this.$message("请先选择影院") : this.$router.push({
           path: 'add',
           query: {
             cinemaUid: this.searchAdition.cinemaUid
@@ -172,26 +188,83 @@
           }
         });
       },
+      exportThis(row) { // 导出
+        if (row.detail) {
+          this.$router.push({
+            path: "exportSimple",
+            query: {
+              uid: row.uid
+            }
+          })
+        } else {
+          this.$router.push({
+            path: "export",
+            query: {
+              uid: row.uid
+
+            }
+          })
+        }
+      },
+      printThis(row) { // 打印
+        //  row.detail true 上班中  false 
+        console.log(row.status)
+        if (row.detail) {
+          this.$router.push({
+            path: "printSimple",
+            query: {
+              uid: row.uid
+
+            }
+          })
+        } else {
+          this.$router.push({
+            path: "print",
+            query: {
+              uid: row.uid
+
+            }
+          })
+        }
+
+      },
       //开始结算
       workClose(row) {
-        row.status == '收银中' && this.$router.push({
-          path: "close",
-          query: {
-            uid: row.uid,
-          }
-        });
-        row.status == '清机中' && this.$router.push({
-          path: "detail",
-          query: {
-            uid: row.uid,
-            parentPage: 'clear'
-          }
-        });
+        console.log(row)
+        if (row.status == '收银中') {
+          this.$confirm(`对收银员${row.workerName}进行清机结算，系统将强制其退出POS销售，是否确定进行清机结算？`, '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            this.$router.push({
+              path: "close",
+              query: {
+                uid: row.uid,
+              }
+            });
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消清机结算'
+            });
+          })
+        } else {
+          this.$router.push({
+            path: "detail",
+            query: {
+              uid: row.uid,
+              parentPage: 'clear'
+            }
+          });
+        }
+
       },
       //查询
       search() {
-        !this.cinemaName ? this.$alert('请先选择影院', '提示', {
-          confirmButtonText: '确定',
+        !this.cinemaName ? this.$message({
+          message: '请先选择影院',
+          type: 'warning'
         }) : this.getList();
       },
       // 清除时间
@@ -228,7 +301,7 @@
                     break;
                 }
               })
-              this.$refs.page_div.style.display = data.data.total < 16? "none":"block"  // 分页是否显示  15条不显示
+              this.$refs.page_div.style.display = data.data.total < 16 ? "none" : "block" // 分页是否显示  15条不显示
               this.$set(this.page, "total", data.data.total)
               this.$set(this.page, "pageSize", data.data.size)
               this.$set(this.page, "current", data.data.current)
@@ -326,18 +399,35 @@
       searchWorker(current, userName, userAccount) {
         this.getWorker(current, userName, userAccount)
       },
-      // 打开影院
-      openCinema() {
-        this.$refs.singeCinema.opendialog = true;
+      callBackSingle(data) {
+        console.log(data, '-----> data')
+        this.searchAdition.cinemaUid = data.data.id
+        this.cinemaName = data.data.name
+        this.cinemaName = this.cinemaName.length> 10?this.cinemaName.substring(0,9)+"...": this.cinemaName
+        this.innerData.id = data.data.id
+        this.singleCinemaVisible = data.framedialogVisible
+        // this.search() 
       },
-      callback(val) {
-        console.log(val)
-        this.cinemaName = val.orgName
-        this.searchAdition.cinemaUid = val.cinemaUID
-      }
+      getUserInfo() {
+        this.$ctmList.getUserInfo().then(res => {
+          console.log(res)
+          if (res.code === 200) {
+            this.cinemaName = res.data.cinemaName
+            this.cinemaName = this.cinemaName.length> 10?this.cinemaName.substring(0,9)+"...": this.cinemaName
+            this.searchAdition.cinemaUid = res.data.cinemaUid
+            this.innerData.id = Number(res.data.cinemaUid)
+
+            this.search()
+
+          } else {
+            this.error(res.msg)
+          }
+        })
+      },
     },
-    mounted(){
+    mounted() {
       this.$refs.page_div.style.display = "none"
+      this.getUserInfo()
     }
   };
 </script>
@@ -345,42 +435,51 @@
   .cinemaList {
     box-sizing: border-box;
     width: 100%;
+
     .search-form {
       background: #f5f5f5;
       padding: 16px 24px 8px;
       margin-bottom: 10px;
       // transition: all 1s linear;
       position: relative;
-      /deep/ .el-input__inner{
+
+      /deep/ .el-input__inner {
         width: 176px;
       }
-      .change_tip{
+
+      .change_tip {
         font-family: MicrosoftYaHei;
         font-size: 12px;
         color: #666666;
         letter-spacing: 0;
         cursor: pointer;
         position: absolute;
-        top:26px;
+        top: 26px;
         right: 40px;
-        .el-icon-arrow-down{
+
+        .el-icon-arrow-down {
           transition: all linear .3s;
         }
-        .is-active{
+
+        .is-active {
           transform: rotate(180deg);
           transition: all linear .3s;
         }
       }
     }
-    .el-form-item__label{
+
+    .el-form-item__label {
       font-size: 12px;
       color: #666;
     }
-    /deep/ .el-date-editor .el-range-separator {  //时间选择器样式
+
+    /deep/ .el-date-editor .el-range-separator {
+      //时间选择器样式
       line-height: 24px;
       width: 24px;
     }
   }
+
   .el-form-item {
     width: 300px;
     margin-bottom: 8px;
@@ -389,7 +488,7 @@
 
   .el-button--primary {
     width: 80px;
-    padding: 8px;
+    padding: 9px;
   }
 
   .el-form-item {
@@ -441,6 +540,7 @@
   .search-time {
     display: flex;
   }
+
   .search-btn {
     //   position: absolute;
     //   top: calc(50% - 24px);

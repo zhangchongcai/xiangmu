@@ -1,12 +1,11 @@
 <template>
   <div class="ccm-dialog">
-    <el-dialog title="选择组织节点或影院" 
+    <el-dialog 
+    title="选择入账影院" 
     :visible.sync="dialogVisible" 
-    width="50%"
+    width="576px"
     :close-on-click-modal="false"
     >
-      <el-form label-width="" :inline="true">
-      </el-form>
           <div class="tree-content">
             <el-tree
                     :data='orgArr'
@@ -17,19 +16,18 @@
                     :expand-on-click-node="false"
                     :highlight-current="true"
                     :props="defaultProps"
+                    :current-node-key='innerData'
             >
-                <span class="custom-tree-node" slot-scope="{ node, data }">
-                <span class="org-button">
-                    <i class="el-icon-menu" v-if="data.isCinema==0||data.isCinema==null"></i>
-                    <i class="el-icon-document" v-else></i>
-                    {{data.text}}
-                  </span>
-                </span>
+              <span style="padding:0px" slot-scope="{ node, data }">
+                <el-radio v-model="customTree" :label="data.id">
+                    {{ node.label }}
+                </el-radio>
+              </span>
             </el-tree>
         </div>
       <div class="btn-area" slot="footer" >
-        <el-button @click="dialogVisible = false">取消</el-button>
         <el-button type="primary" @click="chooseUser" style="margin-right:22px;">确定</el-button>
+        <el-button @click="dialogVisible = false">取消</el-button>
       </div>
     </el-dialog>
   </div>
@@ -44,6 +42,8 @@
     },
     data() {
       return {
+        customTree:'',
+        innerData:'',
         dialogVisible:false,
         orgArr:[],
         defaultProps: {
@@ -63,8 +63,8 @@
           node.checked  =  true
         },
         handleNodeClick(item) {
-            console.log('点击',item)
             this.selectItem = item 
+            this.customTree = item.id
         },
         // 确定选择
         chooseUser() {
@@ -72,12 +72,15 @@
             this.dialogVisible = false;
         },
         //打开弹窗
-        openDialog(val){
-            this.dialogVisible=val
+        openDialog(val,id){
+            this.innerData = id
+            this.dialogVisible=true
+            this.customTree = id
             this.searchData()
+            
         },
         // 查询
-        searchData(uid) {
+        searchData() {
             // orgList().then(res => {
             let params = {
               userUid:JSON.parse(localStorage.getItem('user')).uid, //商户id,
@@ -96,27 +99,23 @@
   }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
   .ccm-dialog{
-    .film-top{
-        position: relative;
-        margin-left:8px;
-    }
     .tree-content{
       height: 400px;
       overflow: auto;
     }
-    .el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content{
-      background-color:#3b74ff;
-      color: #fff; 
-    }
-    .el-dialog__header{
+    /deep/ .el-dialog__header{
       .el-dialog__title{
           padding-bottom: 5px;
           width: 100%;
           display: inline-block;
           border-bottom: 1px solid #e5e5e5;
       }
+    }
+    /deep/ .el-dialog__body{
+      padding:0px 20px;
+      border-bottom: 1px solid #e5e5e5;
     }
 }
 

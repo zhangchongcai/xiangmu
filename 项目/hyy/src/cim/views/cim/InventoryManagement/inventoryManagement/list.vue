@@ -4,14 +4,13 @@
       <el-form
         :inline="true"
         :model="queryData"
-        label-position="right"
-        label-width="100px"
-        label-suffix=":"
+        label-position="left"
+        label-suffix="："
         >
         <el-form-item label="盘点单号">
           <el-input
             v-model="queryData.billCode"
-            placeholder="请输内容"
+            placeholder="请输入"
           ></el-input>
         </el-form-item>
         <el-form-item label="盘点门店" class="select-input">
@@ -91,6 +90,7 @@
     <div>
       <div class="common-new-built">
         <el-button type="primary" size="small" plain @click="addinvent()">新建</el-button>
+        <el-button type="primary" plain @click="onPrint()" style="width:auto;">打印空白盘点单</el-button>
       </div>
       <div>
         <el-table :data="tableData" stripe :height="this.defaultTableHeight">
@@ -109,25 +109,19 @@
                 type="text" 
                 size="small" 
                 @click.stop="handleOperateEvent('2', row)"
-                v-if="row.status === 1 || row.approvalStatus === 0"
-                >编辑</el-button>
-              <!-- <el-button 
-                type="text" 
-                size="small" 
-                @click.stop="handleOperateEvent('3', row)"
                 v-if="row.status === 1 && row.approvalStatus === 0"
-                >提交</el-button> -->
+                >编辑</el-button>
               <el-button 
                 type="text" 
                 size="small" 
                 @click.stop="handleOperateEvent('4', row)"
-                v-if="row.status === 1 && row.approvalStatus === 0 || row.status === 4 && row.approvalStatus === 3"
+                v-if="row.status === 1 && row.approvalStatus === 0"
                 >删除</el-button>
               <el-button 
                 type="text" 
                 size="small" 
                 @click.stop="handleOperateEvent('5', row)"
-                v-if="row.status === 2 && row.approvalStatus === 0 || row.status === 4 && row.approvalStatus === 3"
+                v-if="row.status === 2 && row.approvalStatus === 0"
                 >差异处理</el-button>
             </template>
           </el-table-column>
@@ -307,36 +301,46 @@ export default {
       if(this.queryData.cinemaUid == "" || this.queryData.cinemaUid == null){
         this.$message("请选择影院");
       }else{
-        // if(this.queryData.storeType == "1" && this.queryData.storehouseCode == "" && this.queryData.storehouseName == ""){
-        //   this.$message("请选择仓库");
-        // }else if(this.queryData.storeType == "2" && this.queryData.storehouseCode == "" && this.queryData.storehouseName == ""){
-        //   this.$message("请选择货架");
-        // }else{
           this.resCheckBillQuery(this.queryData)
-        // }
       }
-      
-      // console.log(this.queryData)
-      // this.resCheckBillQuery(this.queryData)
-      // console.log(this.queryData);
     },
-    // 新建按钮
-    // handleNewPurchaseNote() {
-    //   console.log("新建");
-    //   this.$router.push({
-    //     path: "common",
-    //     query: {}
-    //   });
-    // },
-    handleNewPurchaseNote(param) {
+    // 打印空白盘点单
+    onPrint(){
+      this.handleNewCommonPrint()
+    },
+    handleNewPurchaseNote(param = {}) {
+      let router = '';
+      switch (param.type) {
+        case "1":
+          // 新增
+          router = 'common';
+          break;
+      }
       this.$router.push({
-        path: "common",
+        path: router,
         query: param
       });
     },
-    handleNewCommonSee(param) {
+    handleNewCommonSee(param = {}) {
+      let router = '';
+      switch (param.type) {
+        case "4":
+          // 处理
+          router = 'handle';
+          break;
+        case "3":
+          // 查看
+          router = 'details';
+          break;
+      }
       this.$router.push({
-        path: "commonSee",
+        path: 'commonSee'+router,
+        query: param
+      });
+    },
+    handleNewCommonPrint(param) {
+      this.$router.push({
+        path: "commonPrint",
         query: param
       });
     },
@@ -382,19 +386,32 @@ export default {
     },
     // 修改操作
     eaittable(row){
-      this.resCheckBillToPage(row,"2")
+       this.handleNewPurchaseNote({
+          type:"2",
+          data:JSON.stringify(row.uid)
+        })
+      // this.resCheckBillToPage(row,"2")
     },
     // 查看操作
     seetable(row){
       let seeStatus = row.status === 2 && row.approvalStatus === 0 || row.status === 4 && row.approvalStatus === 3
-      this.resCheckBillQueryCheckBill(row,"3",seeStatus)
+       this.handleNewCommonSee({
+          type:"3",
+          data:JSON.stringify(row.uid),
+          active:seeStatus
+        })
+      // this.resCheckBillQueryCheckBill(row,"3",seeStatus)
     },
     // 处理操作
     chuliable(row){
-      this.resCheckBillQueryCheckBill(row,"4")
+      this.handleNewCommonSee({
+          type:"4",
+          data:JSON.stringify(row.uid)
+        })
+      // this.resCheckBillQueryCheckBill(row,"4")
     },
     // 选泽门店回调
-    onCinemalSumit(data = []) {
+    setCinema(data = []) {
       if(data.length == 0){
         this.$nextTick(() => {
           this.queryData.storehouseCode = ""
@@ -416,6 +433,21 @@ export default {
         newArr.push(newObj)
       })
       this.saleCinemaList = newArr
+    },
+    // 选泽门店回调
+    onCinemalSumit(val = [],type) {
+      console.log(val," 选泽门店回调",type);
+      if (val.length > 0) {
+        if(type=="default"){
+          if(val.length==1){
+            this.setCinema(val)
+          }
+        }else{
+          this.setCinema(val)
+        }
+      } else {
+        this.setCinema()
+      }
     },
     selectCinemalDialog() {
       this.$refs.myCinemalDialog.handleDialog(true);
@@ -545,7 +577,6 @@ export default {
           }
         })
         .catch(err => {});
-
     },
     // 跳转修改页面请求
     resCheckBillQueryCheckBill(row,type,active){
@@ -591,12 +622,6 @@ export default {
 @import "../../../../assets/css/common.scss";
 @import "../../../../assets/css/element-common.scss";
 .itm-style{
-  .select-input {
-    .el-input {
-      width: 70%;
-    }
-  }
-
   .newPro-box {
     .title {
       margin: 10px 0;

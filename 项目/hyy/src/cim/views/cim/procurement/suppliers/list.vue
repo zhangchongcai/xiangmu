@@ -4,8 +4,7 @@
       <el-form
         :inline="true"
         :model="queryData"
-        label-position="right"
-        label-width="90px"
+        label-position="left"
         label-suffix="："
       >
         <el-form-item label="供应商编码">
@@ -81,7 +80,8 @@
 
 <script>
   import mixins from "frame_cpm/mixins/cacheMixin";
-export default {
+
+  export default {
   mixins: [mixins.cacheMixin],
   data() {
     return {
@@ -154,11 +154,11 @@ export default {
     // 初始化
     init() {
       this.onQuery();
-      this.$store.commit('getLevel',this.$route.meta.title)
+      // this.$store.commit('getLevel',this.$route.meta.title)
     },
     // 查询
     onQuery() {
-      console.log(this.queryData);
+      // console.log(this.queryData);
       this.supplierAdminQueryList(this.queryData);
     },
     // 查询
@@ -205,14 +205,28 @@ export default {
     },
     // 新建
     handleNewBuilt() {
-      console.log("新建");
       this.jumpPage({
         type: "1"
       });
     },
     jumpPage(param = {}) {
+      let router = '';
+      switch (param.type) {
+        case "1":
+          // 新增
+          router = 'add';
+          break;
+        case "2":
+          // 编辑
+          router = 'edit';
+          break;
+        case "3":
+          // 查看
+          router = 'details';
+          break;
+      }
       this.$router.push({
-        path: "/retail/procurement/suppliers/common",
+        path: "/retail/procurement/suppliers/" + router,
         query: param
       });
     },
@@ -222,14 +236,14 @@ export default {
           // 查看
           this.jumpPage({
             type: "3",
-            data: JSON.stringify(row)
+            data: JSON.stringify({uid:row.uid})
           });
           break;
         case "2":
           //编辑
           this.jumpPage({
             type: "2",
-            data: JSON.stringify(row)
+            data: JSON.stringify({uid:row.uid})
           });
           break;
         case "3":
@@ -258,16 +272,14 @@ export default {
     handleSizeChange(val) {
       this.queryData.pageSize = val;
       this.onQuery();
-      console.log(`每页 ${val} 条`);
     },
     handleCurrentChange(val) {
       this.queryData.page = val;
       this.onQuery();
-      console.log(`当前页: ${val}`);
     }
   },
   components: {
-    // ComBank
+
   }
 };
 </script>

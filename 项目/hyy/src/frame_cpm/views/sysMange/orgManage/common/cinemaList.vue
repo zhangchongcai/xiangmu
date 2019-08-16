@@ -8,14 +8,14 @@
       <div class="search-wrap plian2">
         <span>影院名称：</span>
         <el-input
-          v-model="cinemaName"
+          v-model.trim="cinemaName"
           clearable
         ></el-input>
       </div>
       <div class="search-wrap plian2">
         <span>影院编码：</span>
         <el-input
-          v-model="cinemaCode"
+          v-model.trim="cinemaCode"
           clearable
         ></el-input>
       </div>
@@ -25,6 +25,7 @@
       <div class="modal-table">
         <div class="role-list-table">
           <el-table
+                  height="320"
             :data="cinemaList"
             style="width: 100%"
             :row-class-name="tableRowClassName"
@@ -54,18 +55,17 @@
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
           :current-page.sync="currentPage"
-          :page-sizes="[10, 25, 50,100]"
           :page-size="pageSize"
-          layout="total, sizes, prev, pager, next, jumper"
+          layout="total,prev, pager, next, jumper"
           :total="total"
         ></el-pagination>
       </div>
     </div>
+    <div class="divider"></div>
     <div class="confirm-cancel">
+        <el-button type="primary" @click="addRelationFun()">确 定</el-button>
 	    <el-button @click="cancel(false)">取 消</el-button>
-	    <el-button type="primary" @click="addRelationFun()">确 定</el-button>
     </div>
-
   </div>
 </template>
 <script>
@@ -291,7 +291,7 @@ export default {
   // footer样式
   .role-detail-footer {
     text-align: center;
-    margin: 30px auto;
+    margin: 10px auto;
   }
   .confirm-cancel{
     width: 100%;

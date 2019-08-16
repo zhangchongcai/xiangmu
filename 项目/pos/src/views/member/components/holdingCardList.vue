@@ -6,7 +6,7 @@
         <swiper-slide v-for="(item, index) in memberCardList" :key="index">
           <div class="member-card-wrap">
             <template>
-              <div class="member-card-item" :class="item.cardTypeCode == 'stored_card'?'stored_card':item.cardTypeCode =='equity_card'?'equity_card':'cobranded_card'">
+              <div class="member-card-item" :class="item.cardTypeCode == 'stored_card'?'stored_card':item.cardTypeCode =='equity_card'?'equity_card':'cobranded_card'" @click="handleSelected(index)">
                 <div class="item-up">
                   <div class="card-type" :class="item.cardTypeCode == 'stored_card'?'stored_card_type':item.cardTypeCode =='equity_card'?'equity_card_type':'cobranded_card_type'">{{item.cardType}}</div>
                   <div class="card-info">
@@ -57,13 +57,14 @@ export default {
     };
   },
   mounted() {
-    if (this.memberCardList.length == 1) {
+    if (this.memberCardList.length) {
       this.selectedCard = 0;
       this.handleSelected(0);
     }
   },
   methods: {
     handleSelected(index) {
+      this.selectedCard = index;
       this.$emit("selectedCard", this.memberCardList[index]);
     }
   },
@@ -73,7 +74,7 @@ export default {
       handler(newV, oldV) {
         this.selectedCard = '';
         // do something, 可使用this
-        if (this.memberCardList.length == 1) {
+        if (this.memberCardList.length) {
           this.selectedCard = 0;
           this.handleSelected(0);
         }
@@ -160,7 +161,7 @@ export default {
 </script>
 <style lang="scss">
 ._member-card-list {
-    margin-top:3vh;
+    margin-top:2vh;
   .member-card-list-title {
     font-size: $font-size14;
     color: #333;

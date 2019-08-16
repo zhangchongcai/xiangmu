@@ -15,17 +15,19 @@
       </div>
       <!-- 饼图 -->
       <div class="section-content flex" v-if="showPie">
-        <div style="width:40%">
-          <ve-pie
+        <div style="width:50%">
+          <ve-ring
+            :data-empty="channelDataEmpty"
             :title="channelTitle"
             :data="channelData"
-            :settings="channelSettings"
+            :settings="ringSettings"
             :extend="pieExtend"
             :colors="colors"
-          ></ve-pie>
+          ></ve-ring>
         </div>
-         <div style="width:40%;margin:0 auto">
+         <div style="width:50%">
           <ve-ring
+            :data-empty="cardDataEmpty"
             :title="cardTitle"
             :data="cardData"
             :settings="ringSettings"
@@ -36,17 +38,18 @@
       </div>
       <!-- 柱状图 -->
       <div class="section-content flex" v-else>
-        <div style="width:40%">
+        <div style="width:50%">
             <ve-histogram
+                :data-empty="channelDataEmpty"
                 :title="channelTitle"
                 :data="channelBarData"
                 :extend="barExtend"
                 :legend-visible="false">
             </ve-histogram>
-          
         </div>
-        <div style="width:40%;margin:0 auto">
+        <div style="width:50%">
             <ve-histogram
+                :data-empty="cardDataEmpty"
                 :title="cardTitle"
                 :data="cardData"
                 :extend="barExtend"
@@ -74,31 +77,22 @@ export default {
         } 
     },
     data(){
-        this.colors = [
-            "#3B74FF",
-            "#FE6081",
-            "#FEC107",
-            "#A5F053",
-            "#FE825E",
-            "#8E7EFF",
-            "#ca8622",
-            "#bda29a",
-            "#6e7074",
-            "#546570",
-            "#c4ccd3"
-        ];
+        this.colors = ["#3B74FF","#FE6081","#FEC107","#A5F053","#FE825E","#8E7EFF","#ca8622","#bda29a", "#6e7074","#546570","#c4ccd3"];
         return{
+            unitNum:2,
             type:this.targetType,
             showPie:true,
             type:this.targetType,
+            channelDataEmpty:false,
+            cardDataEmpty:false,
             channelTitle: {
                 show: true,
-                text: "会员渠道",
+                text: `会\n\n员\n\n渠\n\n道`,
                 textStyle: {
                     fontSize: 12,
                     color: "#666"
                 },
-                padding: [20, 10, 10, 10]
+                top:'30%',
             },
             // 渠道
             channelData: {
@@ -117,12 +111,12 @@ export default {
             // 品类
             cardTitle: {
                 show: true,
-                text: "会员类型",
+                text: "会\n\n员\n\n类\n\n型",
                 textStyle: {
                     fontSize: 12,
                     color: "#666"
                 },
-                padding: [20, 10, 10, 10]
+                top:'30%'
             },
             // 品类
             cardData: {
@@ -135,7 +129,7 @@ export default {
             },
             // 环图扩展
             ringExtend:{
-                 legend: {
+                legend: {
                     top: "bottom",
                     itemWidth: 10,
                     itemHeight: 10,
@@ -144,6 +138,25 @@ export default {
                         fontSize: 12
                     }
                 },
+                label: {
+                    formatter: (params)=>{
+                        let value = this.formatNum(params.value,this.unitNum)+ this.unit;
+                        let percent = params.percent;
+                        return percent +'%' + '（' + value + '）'
+                    },
+                },
+                 grid:{
+                    left:'10%',
+                    right:'10%'
+                },
+                tooltip:{
+                    formatter:params =>{
+                        let name = params.data.name;
+                        let value = this.formatNum(params.data.value,this.unitNum) + this.unit;
+                        let percent = params.percent;
+                        return `${params.marker}${name}<br>${percent}%（${value}）`
+                    }
+                }
             },
             // 饼图设置
             pieSettings: {},
@@ -158,6 +171,30 @@ export default {
                         fontSize: 12
                     }
                 },
+                label: {
+                    formatter: (params)=>{
+                        let name = params.name;
+                        if(name == '线上' ||name == '线下' ){
+                            return name
+                        }else{
+                            let value = this.formatNum(params.value,this.unitNum)+ this.unit;
+                            let percent = params.percent;
+                            return percent +'%' + '（' + value + '）'
+                        }
+                    },
+                },
+                grid:{
+                    left:'8%',
+                    right:'8%'
+                },
+                tooltip:{
+                    formatter:params =>{
+                        let name = params.data.name;
+                        let percent = params.percent;
+                        let value = this.formatNum(params.data.value,this.unitNum) + this.unit;
+                        return `${params.marker}${name}<br>${percent}%（${value}）`
+                    }
+                }
             },
             //柱状图扩展
             barExtend: {
@@ -165,17 +202,35 @@ export default {
                 color: "#3B74FF",
                 tooltip: {
                     formatter: params => {
-                        // console.log(params[0])
                         let marker = params[0].marker;
                         let name = params[0].name;
-                        let value = this.formatNum(params[0].value);
+                        let value = this.formatNum(params[0].value,this.unitNum) + this.unit;
                         let str = marker + name + "<br>" + value;
                         return str;
                     }
                 },
                 'xAxis.0.axisLabel.interval': 0,
                 "xAxis.0.axisLabel.rotate": 45,
+                grid:{
+                    left:'8%',
+                    right:'8%'
+                }
             },
+        }
+    },
+    computed:{
+        unit(){
+            let type = this.type;
+            if(type){
+                if(Global.targetNum.includes(type)){
+                    this.unitNum = 0;
+                }else{
+                    this.unitNum = 2;
+                }
+                return Global.memberTargetUnitMap[type];
+            }else{
+                return ''
+            }
         }
     },
     watch:{
@@ -188,23 +243,37 @@ export default {
             let cardObj = allData.card;
             let channelObj = allData.channel;
             if(type){
-                if(cardObj[type]){
+                if(cardObj[type] && cardObj[type].length>0){
+                    this.cardDataEmpty = false;
+                    this.cardTitle.text = "会\n\n员\n\n类\n\n型";
                     this.$set(this.cardData,"rows",cardObj[type])
+                }else{
+                    this.cardDataEmpty = true;
+                    this.cardTitle.text = null;
+                    this.$set(this.cardData,"rows",[])
                 }
-                if(channelObj[type]) {
+                if(channelObj[type] && Object.keys(channelObj[type]).length>0) {
                     let resData = JSON.parse(JSON.stringify(channelObj[type]))
                     let lineData = resData.line;
                     let unline = resData.unLine;
-                    let channelData = [...lineData,...unline];
+                    let channelData = [...unline];
                     this.channelSettings.level[1] = unline.map(item=>{
                         return item.name
                     })
+                    this.channelTitle.text = "会\n\n员\n\n渠\n\n道";
+                    this.channelDataEmpty = false;
                     this.$set(this.channelData,"rows",channelData);
                     this.$set(this.channelBarData,'rows', unline)
+                }else{
+                    this.channelTitle.text = null;
+                    this.channelDataEmpty = true;
+                    this.$set(this.channelData,"rows",[]);
+                    this.$set(this.channelBarData,'rows',[])
                 }
             }else{
                 this.$set(this.cardData,"rows",[])
                 this.$set(this.channelData,"rows",[])
+                this.$set(this.channelBarData,'rows',[])
             } 
         }
     },
@@ -220,24 +289,34 @@ export default {
             }else{
                 this.showPie = true;
             }
-            if(allData.card[this.type]){
+            if(allData.card[this.type] && allData.card[this.type].length>0){
+                this.cardDataEmpty = false;
+                this.cardTitle.text = "会\n\n员\n\n类\n\n型";
                 cardData.rows = allData.card[this.type];
             }else{
-                cardData.rows = [{name:'1',value:'2'},{name:'2',value:'2'}];
+                this.cardDataEmpty = true;
+                this.cardTitle.text = null;
+                cardData.rows = []
             } 
-            if(allData.channel[this.type]) {
+            if(allData.channel[this.type] && Object.keys(allData.channel[this.type]).length>0) {
                 let resData = JSON.parse(JSON.stringify(allData.channel[this.type]))
                 let lineData = resData.line;
                 let unline = resData.unLine;
-                let channelData = [...lineData,...unline];
-                console.log(channelData,'hebibg')
+                let channelData = [...unline];
+                // let channelData = [...lineData,...unline];
                 this.channelSettings.level[1] = unline.map(item=>{
                     return item.name
                 })
+                this.channelDataEmpty = false;
+                this.channelTitle.text = "会\n\n员\n\n渠\n\n道";
                 this.$set(this.channelData,"rows",channelData);
                 this.$set(this.channelBarData,'rows', unline)
             }else{
-                channelData.rows = [{name:'1',value:'2'},{name:'2',value:'2'}];
+                this.channelDataEmpty = true;
+                this.channelTitle.text = null;
+                this.$set(this.channelData,"rows",[]);
+                this.$set(this.channelBarData,'rows', [])
+
             }
         },
         formatNum(num){

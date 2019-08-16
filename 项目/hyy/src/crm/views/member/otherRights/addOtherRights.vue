@@ -1,7 +1,7 @@
 <template>
   <div class="add-own-rights-type">
     <!-- 内容区 - 折叠面板 -->
-    <el-form :model="ruleForm" :rules="rules" ref="ruleForm" size="medium" label-width="120px" label-position="right">
+    <el-form :model="ruleForm" :rules="rules" ref="ruleForm" size="medium" label-width="120px" label-position="left">
       <el-collapse v-model="activeNames" class="card-type-content">
         <!-- 基础设置 -->
         <el-collapse-item :title="stepData.stepList[0].name" name="1">
@@ -364,6 +364,7 @@ export default {
               .then(res => {
                 // this.loading = false;
                 this.$message.success("编辑成功");
+                this.$store.commit("tagNav/removeTagNav", this.$route);
                 this.$router.push({
                   path: "/member/otherRights/otherRightsDetail",
                   query: {
@@ -382,6 +383,7 @@ export default {
               .then(res => {
                 // this.loading = false;
                 this.$message.success("添加成功");
+                this.$store.commit("tagNav/removeTagNav", this.$route);
                 this.$router.push({
                   path: "/member/otherRights/otherRightsDetail",
                   query: {
@@ -402,7 +404,7 @@ export default {
       });
     },
     resetForm(formName) {
-      this.$refs[formName].resetFields();
+      this.$store.commit("tagNav/removeTagNav", this.$route);
       this.$router.push({ path: "/member/otherRights/otherRightsList" });
     },
     getRowKeys(row) {

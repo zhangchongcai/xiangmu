@@ -1,5 +1,5 @@
 <template>
-    <div class="cam-tickets-wrap">
+    <div class="sale-content-wrap">
         <!-- <bread-crumb :dataList="naveList"></bread-crumb> -->
         <tickets-search 
             :orgType="orgType" 
@@ -18,7 +18,7 @@
                 :current-page="page"
                 :page-sizes="sizes"
                 :page-size="size"
-                layout="sizes,total,prev, pager, next, jumper"
+                layout="total,sizes,prev, pager, next, jumper"
                 :total="total"></el-pagination>
             <span class="page-else" v-else-if="total>0">共{{total}}条</span>
             <span class="page-else" v-else></span>

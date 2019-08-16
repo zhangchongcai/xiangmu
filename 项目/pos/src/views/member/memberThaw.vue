@@ -15,32 +15,24 @@
           :model="ruleForm"
           :rules="rules"
           ref="ruleForm"
-          label-width="100px"
           class="demo-ruleForm"
         >
-          <div style="position:relative;margin-top:-22px">
-            <div class="recharge-info-title">验证身份</div>
-            <!-- <el-form-item label="短信验证码" prop="validationCode" v-if="member.numberType === 'phone'">
-              <el-input v-model="ruleForm.validationCode" class="psd-inp"></el-input>
-              <el-button class="start-btn">获取验证码</el-button>
-            </el-form-item> v-else-->
-            <el-form-item label="输入密码" prop="passwd" >
+          <div style="position:relative">
+            <div class="member-info-title">验证身份</div>
+            <el-form-item label="输入密码" prop="passwd" class="row-line-center">
               <el-input type="password" v-model="ruleForm.passwd" class="psd-inp"></el-input>
               <el-button class="start-btn" @click="secKeyBoard">启动密码输入</el-button>
             </el-form-item>
           </div>
-          <!--  v-show="ruleForm.validationCode || ruleForm.passwd" -->
           <div
             style="position:relative;margin-top:22px">
-            <div class="recharge-info-title">解冻会员卡</div>
-            <el-form-item label="手续费" prop="cost">
-              <el-input v-model="ruleForm.cost" class="psd-inp" style="width:15vw"></el-input> 元
+            <div class="member-info-title">解冻会员卡</div>
+            <el-form-item label="手续费" prop="cost" class="row-line-center">
+              <el-input v-model="ruleForm.cost" class="psd-inp"></el-input> <em style="font-size:1.04vw;">元</em>
             </el-form-item>
             <el-form-item label="支付方式" prop="payWayCode" v-if="ruleForm.cost!=0">
               <el-radio-group v-model="ruleForm.payWayCode">
-                <el-radio label="alimicropay">支付宝</el-radio>
-                <el-radio label="wxmicropay">微信</el-radio>
-                <el-radio label="cash">现金</el-radio>
+                <el-radio :label="item.label" v-for="(item,index) in payWayCode" :key="index">{{item.value}}</el-radio>
               </el-radio-group>
             </el-form-item>
           </div>
@@ -48,7 +40,7 @@
       </div>
     </memberInfoAndCard>
 
-    <pay-loading v-model="ruleForm.barCode" :visible.sync="centerDialogVisible"></pay-loading>
+    <pay-loading v-model="ruleForm.barCode" :visible.sync="centerDialogVisible" :payMethod='ruleForm.payWayCode'></pay-loading>
   </div>
 </template>
 
@@ -56,8 +48,9 @@
 import memberInfoAndCard from "./components/memberInfoAndCard";
 import { mapState, mapGetters } from "vuex";
 import { MemberAjax, memeberApi } from "src/http/memberApi";
-import { readCard ,secKeyBoard ,cardStatusCN ,statusDeter ,stopPay ,payPolling} from './util/utils';
-import payMixins from './mixins/payMixins'
+import { readCard ,secKeyBoard ,cardStatusCN ,statusDeter ,stopPay ,payPolling ,routerJump} from './util/utils';
+import payMixins from './mixins/payMixins';
+import { passwdReg} from "./util/validate.js";
 export default {
   mixins:[payMixins],
   data() {
@@ -74,7 +67,7 @@ export default {
         barCode:''
       },
       rules: {
-        passwd: [{ required: true, message: "请输入密码", trigger: "blur" }],
+        passwd: [{ validator:passwdReg,trigger:'change'}],
         validationCode: [
           { required: true, message: "请输入验证码", trigger: "change" }
         ],
@@ -94,15 +87,18 @@ export default {
   },
   methods: {
     isShow(data) {
-      this.isshow = statusDeter.call(this,data,'frozen',`该卡状态为${cardStatusCN(this.member.cardState)},不能解冻`);
-      if(this.isshow)this.$refs['ruleForm'].resetFields();
+      if(data && routerJump.call(this)){
+        this.isshow = statusDeter.call(this,data,'frozen',`该卡状态为${cardStatusCN(this.member.cardState)},不能解冻`);
+        if(this.isshow)this.$refs['ruleForm'].resetFields();
+      }
     },
     handleSubmit() {
       var data = Object.assign({},this.ruleForm, {
         tenantId: this.tenantId,
         cardNo: this.member.cardNo,
         operator: this.operator,
-        actionType:'ACTIVE'
+        actionType:'ACTIVE',
+        cardProductId:this.member.cardProductId
       },JSON.parse(sessionStorage['payParams']));
       if(!!data.passwd) {
         data.passwd = this.$md5(data.passwd);
@@ -133,3 +129,9 @@ export default {
   }
 };
 </script>
+<style lang="scss" scoped>
+  .row-line-center{
+    margin-top:1vw
+  }
+</style>
+

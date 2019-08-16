@@ -14,15 +14,15 @@
           :model="ruleForm"
           :rules="rules"
           ref="ruleForm"
-          label-width="100px"
           class="demo-ruleForm">
-          <div style="position:relative;margin-top:-22px">
-            <div class="recharge-info-title">补发新卡</div>
+          <div style="position:relative">
+            <div class="member-info-title">补发新卡</div>
             <el-row>
               <el-col :span="12">
                 <el-form-item
                   label="旧密码"
-                  prop="passwd">
+                  prop="passwd"
+                  class="row-line-center">
                   <el-input type="password" 
                     v-model="ruleForm.passwd" 
                     class="psd-inp"></el-input>
@@ -30,7 +30,8 @@
                 </el-form-item>
                 <el-form-item
                   label="新会员卡"
-                  prop="newCardNo">
+                  prop="newCardNo"
+                  class="row-line-center">
                   <el-input  
                     v-model="ruleForm.newCardNo" 
                     class="psd-inp"
@@ -40,30 +41,32 @@
                 </el-form-item>
                 <el-form-item
                   label="新密码"
-                  prop="newPasswd">
+                  prop="newPasswd"
+                  class="row-line-center">
                   <el-input type="password" v-model="ruleForm.newPasswd" class="psd-inp"></el-input>
                   <el-button class="start-btn" @click="secKeyBoard(`newPasswd`)">启动密码输入</el-button>
                 </el-form-item>
               </el-col>
               <el-col :span="12">
                   <el-form-item
-                    label="手续费">
+                    label="手续费"
+                    class="row-line-center">
                     <el-input
                       v-show="!editMoney"
-                      v-model.number="ruleForm.cost" 
-                      style="width:10vw"></el-input>
-                    <span v-show="editMoney">{{ruleForm.cost}}</span>元
+                      v-model.number="ruleForm.cost"></el-input>
+                    <span v-show="editMoney" style="font-size:1.26vw">{{ruleForm.cost}}</span><em style="font-size:1.04vw">元</em> 
                     <el-button 
                       class="start-btn" 
                       @click="handleEdit">修改</el-button>
                   </el-form-item>
                   <el-form-item 
                   label="支付方式"
-                  prop="payWay"
+                  prop="payWayCode"
+                  class="row-line-center"
                   v-if="ruleForm.cost">
-                    <el-radio-group v-model="ruleForm.payWay">
+                    <el-radio-group v-model="ruleForm.payWayCode">
                       <el-radio  
-                        v-for="(item,index) in apyType"
+                        v-for="(item,index) in payWayCode"
                         :label="item.label"
                         :key="index">{{item.value}}</el-radio>
                     </el-radio-group>
@@ -74,7 +77,7 @@
         </el-form>
       </div>
     </memberInfoAndCard>
-    <pay-loading v-model="ruleForm.barCode" :visible.sync="centerDialogVisible"></pay-loading>
+    <pay-loading v-model="ruleForm.barCode" :visible.sync="centerDialogVisible" :payMethod='ruleForm.payWayCode'></pay-loading>
   </div>
 </template>
 
@@ -82,7 +85,8 @@
 import memberInfoAndCard from "./components/memberInfoAndCard";
 import { mapState, mapGetters } from "vuex";
 import { MemberAjax, memeberApi } from "src/http/memberApi";
-import { readCard ,secKeyBoard ,cardStatusCN , statusDeter ,cardPolicy} from "./util/utils";
+import { readCard ,secKeyBoard ,cardStatusCN , statusDeter ,cardPolicy ,routerJump} from "./util/utils";
+import { customPasswordReg , passwdReg} from "./util/validate.js";
 import payMixins from './mixins/payMixins'
 export default {
   mixins:[payMixins], //支付
@@ -99,16 +103,18 @@ export default {
         newCardNo:"",//新会员卡
         newPasswd:"",//新密码
         cost:0,//手续费
-        payWay:"", //支付方式
+        payWayCode:"", //支付方式
         barCode:''
       },
-      apyType:[{label:'wxmicropay',value:'微信'},{label:'alimicropay',value:'支付宝'},{label:'cash',value:'现金'}],
       rules: {
-        passwd: [{ required: true, message: "请输入密码", trigger: "blur" }],
+        passwd: [{ validator:passwdReg,trigger:'change'}],
         newCardNo: [{ required: true, message: "请输入新会员卡", trigger: "blur" }],
-        newPasswd: [{ required: true, message: "请输入新密码", trigger: "blur" }],
+        newPasswd: [
+          { required: true, message: "请输入新密码", trigger: "change" },
+          { validator: customPasswordReg, trigger: "change",passwordkType:1}
+          ],
         cost: [{  message: "请输入手续费金额", trigger: "change" }],
-        payWay:[{required: true, message: "请选择支付方式", trigger: "change"}]
+        payWayCode:[{required: true, message: "请选择支付方式", trigger: "change"}]
       }
     };
   },
@@ -118,6 +124,7 @@ export default {
   },
   methods: {
     isShow(data) {
+      if(routerJump.call(this))
       this.isshow = statusDeter.call(this,data,'loss',`该卡状态为${cardStatusCN(this.member.cardState)},不能补卡`);
       if(this.isshow)this.$refs['ruleForm'].resetFields();
     },
@@ -128,7 +135,8 @@ export default {
         cardNo: this.member.cardNo,
         operator: this.operator,
         passwd : this.$md5(this.ruleForm.passwd),
-        newPasswd : this.$md5(this.ruleForm.newPasswd)
+        newPasswd : this.$md5(this.ruleForm.newPasswd),
+        cardProductId:this.member.cardProductId
       },JSON.parse(sessionStorage['payParams']));
       return {
         url: memeberApi.payAndAct["url"],
@@ -158,18 +166,31 @@ export default {
     },
     validatorInp(){
         if(!/\d{14}/.test(this.ruleForm.newCardNo.trim())){
-            this.$message.warning('请输入正确会员卡号/手机号')
+            this.$message.warning('请输入正确会员卡号')
             return;
         }
         var data = { cardNo: this.ruleForm.newCardNo.trim(), tenantId: this.tenantId ,verifyPassword: false}
         MemberAjax.getCardInfoByNo(data).then(res => {
             if(res.code === 200 && res.data){
-                if(res.data.status !== 'normal' || res.data.cardTypeCode !== this.member.cardTypeCode){
-                    this.$message.warning(`请检查卡是否正常或为${cardStatusCN(this.member.cardTypeCode)}`);
+              this.$message.warning('该卡已注册')
+            }else if(res.code === 201){
+              this.$store.dispatch('cardPolicy',{cardNo:this.ruleForm.newCardNo.trim(),tenantId: this.tenantId}).then(response=>{
+                  if( response.data.cardTypeCode != this.member.cardTypeCode ){
+                      this.$message.warning(`卡类型不一致，不能补发新卡`);
+                      return;
+                  };
+                  //判断此卡是否可以在柜台开卡
+                  let flag = response.data.channelList.some((item,index)=>{
+                    if(item.channelNo == 0){
+                      return true;
+                    }
+                  })
+                  if(!flag){
+                    this.$message.warning('此卡政策柜台不可用');
                     return;
-                }
-            }else{
-                this.$message.warning(res.msg)
+                  }
+                  this.rules['newPasswd'][1].passwordkType = response.data.weakPassword;
+                })
             }
         }).catch((err)=>{
             // this.$message.warning(err.mag)
@@ -190,9 +211,12 @@ export default {
   }
 };
 </script>
-<style scoped>
+<style scoped lang='scss'>
 ._member-recharge .demo-ruleForm{
   width:100%!important;
+}
+.row-line-center{
+  margin-top:1.5vw
 }
 </style>
 

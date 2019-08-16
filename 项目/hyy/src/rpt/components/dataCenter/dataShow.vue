@@ -1,6 +1,7 @@
 <template>
   <div class="datacenter-pagination">
     <el-pagination
+      class="rpt-pagination"
       background
       @size-change="handleSizeChange"
       @current-change="handleCurrentChange"
@@ -9,7 +10,7 @@
       :page-size="Pagination.pagesize"
       layout="total, sizes, prev, pager, next, jumper"
       :total="Pagination.total"
-      v-if="Pagination.total > 15"
+      v-if="Pagination.total > 0"
     ></el-pagination>
   </div>
 </template>
@@ -32,19 +33,9 @@ export default {
     searchData: {
       type: Array,
       default: []
-    }
-  },
-  watch: {
-    Pagination: {
-      handler(newVal, oldVal) {
-        console.log(newVal);
-      },
-      deep: true
     },
-    searchData(newVal, oldVal) {
-      console.log(newVal);
-    },
-    deep: true
+    orderCol: String,
+    tableStyleColArr: Array
   },
   data() {
     return {};
@@ -53,6 +44,11 @@ export default {
     //请求页面参数
     askForPage(value) {
       datacenterBus.$emit("tableLoading");
+      let styleColList = [];
+      let colDataArr = [];
+      colDataArr.length == 0
+        ? this.$emit("sendStyleColArr", this.tableStyleColArr)
+        : styleColList;
       //拼接基础查询和扩展查询
       if (this.searchData.lenght != 0) {
         value = JSON.parse(JSON.stringify(this.searchData));
@@ -66,14 +62,26 @@ export default {
       if (this.styleExtQueryArr != null) {
         queryArr = queryArr.concat(this.styleExtQueryArr);
       }
+      let orderArr;
+
+      if (this.sortArray.length === 0) {
+        orderArr = [
+          {
+            colKey: this.orderCol === "" ? null : this.orderCol,
+            orderDesc: "DESC"
+          }
+        ];
+      } else {
+        orderArr = this.sortArray;
+      }
 
       //声明参数
       let param = {
         reportTableInfo: {
           reportCode: this.reportCode,
           tableName: this.tableName,
-          colArr: this.styleColArr,
-          orderArr: this.sortArray,
+          colArr: colDataArr.length == 0 ? this.tableStyleColArr : colDataArr,
+          orderArr: orderArr,
           queryArr: queryArr
         },
         pagingInfo: {

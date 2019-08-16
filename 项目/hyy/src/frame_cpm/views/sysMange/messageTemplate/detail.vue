@@ -1,5 +1,5 @@
 <template>
-<div class="page-wrapper page-justsee-message-channel page-justsee-basecenema-edit">
+<div class="page-wrapper page-justsee-message-channel page-justsee-messagetml-edit">
     <!-- <div class="breadcrumb">
         <el-breadcrumb separator-class="el-icon-arrow-right">
             <el-breadcrumb-item>短信管理</el-breadcrumb-item>
@@ -81,7 +81,7 @@
                     <!-- 修改调用接口 -->
                     <el-button type="primary" v-if="isModify && !isJustSee"  @click="submitForm('messageTemplate',true)">保存</el-button>
                     <el-button @click="out"  v-if="!isJustSee">取消</el-button>
-                    <el-button type="primary" @click="out"  v-if="isJustSee">返回</el-button>
+                    <el-button plain @click="out"  v-if="isJustSee">返回</el-button>
                 </div>
              </section>
 
@@ -188,6 +188,7 @@ import { createSmsChannel, querySmsTemplate, updateSmsTemplate, querySmsScene,se
                         createSmsTemplate(messageTemplateBase)
                         .then( ret => {
                             if (ret.result) {
+                                this.$store.commit("tagNav/removeTagNav", this.$route)
                                 this.success('创建短信模板成功')
                                 this.$router.go(-1)
                             } else {
@@ -202,6 +203,7 @@ import { createSmsChannel, querySmsTemplate, updateSmsTemplate, querySmsScene,se
                         updateSmsTemplate(messageTemplateBase)
                         .then( ret => {
                             if (ret.result) {
+                                this.$store.commit("tagNav/removeTagNav", this.$route)
                                 this.success('修改短信模板成功')
                                 this.$router.go(-1)
                             } else {
@@ -294,6 +296,7 @@ import { createSmsChannel, querySmsTemplate, updateSmsTemplate, querySmsScene,se
 
             //取消退出
             out(){
+                this.$store.commit("tagNav/removeTagNav", this.$route)
                 this.$router.push("/sys/message/messageTemplate")
             },
             templateTextareaFunc(){
@@ -387,8 +390,8 @@ import { createSmsChannel, querySmsTemplate, updateSmsTemplate, querySmsScene,se
                 let paramCurrentUse = itemScene && itemScene[0] && itemScene[0].paramList
                     // let templateInfo1 = '【大地电影】购买成功，卡号：{CardCode},支付金额{Money}元！'
                     // let templatetext = '【大地电影】购买成功，卡号：6669769,支付金额35元！'
-                     let templateInfo = '【大地电影】购买成功，'
-                     let templatetext = '【大地电影】购买成功，'
+                     let templateInfo = ''
+                     let templatetext = ''
                     for(let i=0;i<paramCurrentUse.length;i++){
                       templateInfo += paramCurrentUse[i].paramName +':' +'{'
                       templateInfo += paramCurrentUse[i].paramCode +'}';
@@ -431,6 +434,20 @@ import { createSmsChannel, querySmsTemplate, updateSmsTemplate, querySmsScene,se
     }
 </script>
 <style lang="scss">
+   .page-justsee-messagetml-edit{
+        .el-form-item__label {
+            font-size: 12px;
+        } 
+        .el-textarea__inner{
+            font-size: 12px;
+        }
+        .el-input--suffix .el-input__inner{
+            font-size: 12px;
+        }
+        .el-input__inner{
+            font-size: 12px;
+        }
+    }
     .page-justsee-message-channel{
         .temp-content{
             .el-textarea.is-disabled{

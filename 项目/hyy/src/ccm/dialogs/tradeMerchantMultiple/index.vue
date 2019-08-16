@@ -14,7 +14,7 @@
               <el-option label="全部" value>全部</el-option>
               <el-option label="大客户" value="1">大客户</el-option>
               <el-option label="第三方" value="2">第三方</el-option>
-            </el-select>
+            </el-select>   
           </el-form-item> -->
           <el-form-item label="状态:">
             <el-select v-model="customerStatus" style="width:150px" @change="change()">

@@ -4,12 +4,11 @@
             <el-form
                     :inline="true"
                     :model="queryData"
-                    label-position="right"
-                    label-width="80px"
+                    label-position="left"
                     label-suffix="："
             >
                 <el-form-item label="退货单号">
-                    <el-input v-model="queryData.billCode" placeholder="请输内容"></el-input>
+                    <el-input v-model="queryData.billCode" placeholder="请输入"></el-input>
                 </el-form-item>
                 <el-form-item label="退货门店" class="select-input">
                     <el-input
@@ -19,15 +18,15 @@
                             @focus="handleDialogEvent('myCinemalDialog')"
                             placeholder="请选择门店"
                     ></el-input>
-                    <el-button type="primary" plain @click="handleDialogEvent('myCinemalDialog')">{{queryData.cinemaName?"编辑":"选择"}}</el-button>
+                    <el-button type="primary" plain @click="handleDialogEvent('myCinemalDialog')">选择</el-button>
                 </el-form-item>
-                <el-form-item label="供应商名称" class="select-input"   label-width="90px">
+                <el-form-item label="供应商名称" class="select-input">
                     <el-input v-model="queryData.supName" clearable placeholder="请选择供应商"
                               @clear="onSuppliersSumit"
                               @focus="handleDialogEvent('mySuppliersDialog')">
 
                     </el-input>
-                    <el-button type="primary" plain @click="handleDialogEvent('mySuppliersDialog')">{{queryData.supName?"编辑":"选择"}}</el-button>
+                    <el-button type="primary" plain @click="handleDialogEvent('mySuppliersDialog')">选择</el-button>
                 </el-form-item>
                 <el-form-item label="制单日期">
                     <el-date-picker
@@ -75,7 +74,7 @@
                             :label="item.label"
                             :formatter="item.formatter"
                     ></el-table-column>
-                    <el-table-column label="操作" style="width:180px;">
+                    <el-table-column label="操作" width="200">
                         <template slot-scope="{row}">
                             <!--"审核状态", //,0：未审核，1：待审核，2：审核通过，3：审核不通过，4：无需审核'-->
                             <el-button type="text" size="small" @click.stop="handleOperateEvent('1', row)">查看
@@ -117,7 +116,7 @@
                             @size-change="handleSizeChange"
                             @current-change="handleCurrentChange"
                             :current-page="queryData.page"
-                            :page-sizes="[10,20,30]"
+                            :page-sizes="pageSizes"
                             :page-size="queryData.pageSize"
                             layout="total, sizes, prev, pager, next, jumper"
                             :total="total"
@@ -126,7 +125,7 @@
             </div>
         </div>
         <!-- 选择影院弹窗 -->
-        <cinemal-dialog ref="myCinemalDialog" @onSumit="onCinemalSumit" :dialogFeedbackData="[{cinemaUid:queryData.cinemaUid,cinemaName:queryData.cinemaName}]"></cinemal-dialog>
+        <cinemal-dialog ref="myCinemalDialog" @onSumit="onCinemalSumit" title="选择门店" :dialogFeedbackData="[{cinemaUid:queryData.cinemaUid,cinemaName:queryData.cinemaName}]"></cinemal-dialog>
         <!-- 选择供应商弹窗 -->
         <suppliers-dialog ref="mySuppliersDialog" @onSumit="onSuppliersSumit"></suppliers-dialog>
         <!-- 选择采购单弹窗 -->
@@ -159,7 +158,7 @@
                     status: "", //单据状态
                     approvalStatus: "", //审核状态
                     page: 1,
-                    pageSize: 10
+                    pageSize: 15
                 },
                 total: 0,
                 // 表格表头
@@ -244,12 +243,19 @@
         methods: {
             // 初始化
             init() {
-                this.onQuery();
-                this.$store.commit('getLevel',this.$route.meta.title)
+                // this.$store.commit('getLevel',this.$route.meta.title)
+                if(this.queryData.cinemaUid){
+                    this.onQuery();
+                }
             },
             // 查询
             onQuery() {
-                console.log(this.queryData);
+                if(!this.queryData.cinemaUid){
+                    this.$message({
+                        message: "请选择门店!"
+                    });
+                    return;
+                }
                 if (this.queryData.billTimeTotal) {
                     this.queryData.billTimeStart = this.queryData.billTimeTotal[0];
                     this.queryData.billTimeEnd = this.queryData.billTimeTotal[1];
@@ -274,14 +280,28 @@
             },
             // 新建
             handleNewBuilt() {
-                console.log("新建");
                 this.jumpPage({
                     type: "1",
                 });
             },
             jumpPage(param = {}) {
+                let router = '';
+                switch (param.type) {
+                    case "1":
+                        // 新增
+                        router = 'add';
+                        break;
+                    case "2":
+                        // 编辑
+                        router = 'edit';
+                        break;
+                    case "3":
+                        // 查看
+                        router = 'details';
+                        break;
+                }
                 this.$router.push({
-                    path: "/retail/procurement/purchaseReturn/common",
+                    path: "/retail/procurement/purchaseReturn/" + router,
                     query: param
                 });
             },
@@ -291,14 +311,14 @@
                         // 查看
                         this.jumpPage({
                             type: "3",
-                            data: JSON.stringify(row)
+                            data: JSON.stringify({uid: row.uid})
                         });
                         break;
                     case "2":
                         //编辑
                         this.jumpPage({
                             type: "2",
-                            data: JSON.stringify(row)
+                            data: JSON.stringify({uid: row.uid})
                         });
                         break;
                     case "3":
@@ -397,15 +417,29 @@
                 this.$refs[name].handleDialog(true);
             },
             // 选泽门店回调
-            onCinemalSumit(val = []) {
+            onCinemalSumit(val = [],type) {
+                // console.log(val," 选泽门店回调",type);
                 if (val.length > 0) {
-                    this.queryData.cinemaName = val[0].name;
-                    this.queryData.cinemaUid = val[0].uid;
+                    if(type=="default"){
+                        if(val.length==1){
+                            this.setCinema(val)
+                            this.onQuery();
+                        }
+                    }else{
+                        this.setCinema(val)
+                    }
                 } else {
+                    this.setCinema()
+                }
+            },
+            setCinema(val=[]){
+                if(val.length>0){
+                    this.queryData.cinemaName =  val[0].cinemaName || val[0].name ;
+                    this.queryData.cinemaUid =  val[0].cinemaUid || val[0].uid;
+                }else{
                     this.queryData.cinemaName = "";
                     this.queryData.cinemaUid = "";
                 }
-                console.log(val);
             },
             // 选泽供应商回调
             onSuppliersSumit(val = []) {
@@ -416,17 +450,14 @@
                     this.queryData.supName = "";
                     this.queryData.supUid = "";
                 }
-                console.log(val);
             },
             handleSizeChange(val) {
                 this.queryData.pageSize = val;
                 this.onQuery();
-                console.log(`每页 ${val} 条`);
             },
             handleCurrentChange(val) {
                 this.queryData.page = val;
                 this.onQuery();
-                console.log(`当前页: ${val}`);
             }
         },
         components: {

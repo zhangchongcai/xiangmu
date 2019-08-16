@@ -8,12 +8,16 @@
         :class="item.member_active?'select-one nowarp-One select-active' : 'select-one nowarp-One' " 
         v-for="(item,index) in dataList"
         :key="index" @click="clickSelectOne(index)">
-        <div class="name" v-text="name?item[name]:item.acticityName"> </div>
+        <div class="name" v-text="item.activityName"> </div>
         <div class="icon">
           <label :for="'lableID'+index" class="lable-icon" style="position:absolute;z-index:5">
             <i data-v-6018a2e2="" class="selectIcon iconfont iconyuanxingxialajiantou"></i>
           </label>
-          <el-popover placement="bottom" trigger="click" :visible-arrow="false" :content="remark?item[remark]:item.acticityName">
+          <el-popover placement="bottom" trigger="click" :visible-arrow="false" >
+            {{!!$attrs.openCard ? '开卡' : '充值'+ item.amount+'元，'}}赠送<br/>
+            {{!!item.presentPoint?item.presentPoint+'积分':''}}
+            {{!!item.presentMoney?item.presentMoney+'元':''}}
+            {{!!item.couponAmount?item.couponAmount+'张优惠券':''}}
             <el-button :id="'lableID'+index" slot="reference" class="icon-btn">
 
             </el-button>
@@ -26,12 +30,16 @@
         <div :class="item.memberwarp_active?'select-one nowarp-One select-active' : 'select-one nowarp-One' " v-for="(item,index) in dataListOther"
           :key="item.id" 
           @click="clickSelectWarpOne(index)">
-          <div class="name" v-text="name?item[name]:item.acticityName"> </div>
+          <div class="name" v-text="item.activityName"> </div>
           <div class="icon">
             <label :for="'lablewarID'+index" class="lable-icon" style="position:absolute;z-index:5">
-              <i data-v-6018a2e2="" class="selectIcon iconfont iconyuanxingxialajiantou"></i>
+              <i class="selectIcon iconfont iconyuanxingxialajiantou"></i>
             </label>
-            <el-popover placement="bottom" trigger="click" :visible-arrow="false" :content="remark?item[remark]:item.acticityName">
+            <el-popover placement="bottom" trigger="click" :visible-arrow="false" :content="item.activityName">
+              {{!!$attrs.openCard ? '开卡' : '充值'+ item.amount+'元，'}}赠送<br/>
+              {{!!item.presentPoint?item.presentPoint+'积分':''}}
+              {{!!item.presentMoney?item.presentMoney+'元':''}}
+              {{!!item.couponAmount?item.couponAmount+'张优惠券':''}}
               <el-button :id="'lablewarID'+index" slot="reference" class="icon-btn">
 
               </el-button>
@@ -51,7 +59,7 @@
               </el-pagination>
             </el-col>
             <el-col :span="2">
-              <el-button type="primary" @click="subOk">确定</el-button>
+              <el-button type="primary" @click="subOk" class="common-btn">确定</el-button>
             </el-col>
           </el-row>
         </div>
@@ -67,6 +75,7 @@ export default {
   },
   data() {
     return {
+      inheritAttrs:false,
       index: -1,
       warpIndex: -1,
       dialogTableVisible: false,
@@ -126,6 +135,7 @@ export default {
       this.$set(this.dataListOther[this.warpIndex], "memberwarp_active", false);
     },
     showDialog() {
+      console.log(1)
       this.dialogTableVisible = true;
     },
     clearDataActive(arr, str) {
@@ -212,6 +222,7 @@ export default {
   position: relative;
   width: 94.5vw;
   padding-bottom: 3px;
+  margin-top:1vw;
   .morecontent {
     margin: 0 auto;
     overflow: hidden;
@@ -230,19 +241,24 @@ export default {
     position: absolute;
     right: 0;
     top: 0;
-    height: 4.9;
+    height: 4.9vh;
     width: 7.8vw;
-    margin-top: 1.3vh;
+    // margin-top: 1.3vh;
     background: #ffffff;
     border: 1px solid #3559af;
     border-radius: 2px;
     line-height: 5vh;
     text-align: center;
     color: #3559af;
-    font-size: $font-size14;
+    font-size: $font-size12;
+    z-index:66;
   }
   .nowarp {
     position: relative;
+    // height:5.2vh;
+    .select-one{
+      margin-top:0;
+    }
   }
   .nowarp-One:not(:nth-of-type(3n + 1)) {
     margin-left: 1.6vw;
@@ -264,6 +280,7 @@ export default {
       top: 0;
       z-index: 2;
       line-height: 5.2vh;
+      font-size:$font-size12;
       text-indent: 1vw;
       border-radius: 3px;
       color: #333;

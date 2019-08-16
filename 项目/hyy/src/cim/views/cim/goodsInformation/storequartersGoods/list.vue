@@ -5,17 +5,9 @@
       <el-form
         :inline="true"
         :model="GoodsListQueryData"
-        label-position="right"
-        label-width="100px"
-        label-suffix=":"
-      >
-        <!-- <el-form-item label="门店名称">
-          <el-input v-model="GoodsListQueryData.cinemaName" placeholder="请选择门店" style="width:150px;">
-            <i class="el-icon-close el-input__icon" slot="suffix" @click="onCinemalSumit()"></i>
-          </el-input>
-          <el-button @click="selectCinemalDialog">选择</el-button>
-        </el-form-item> -->
-        <!-- {{this.cinemaList}} -->
+        label-position="left"
+        label-suffix="："
+        >
         <el-form-item label="门店名称" class="select-input">
             <el-input
                     v-model="GoodsListQueryData.cinemaName"
@@ -29,25 +21,25 @@
         <el-form-item label="商品名称">
           <el-input
             v-model="GoodsListQueryData.merName"
-            placeholder="请输内容"
+            placeholder="请输入"
           ></el-input>
         </el-form-item>
         <el-form-item label="商品编码">
           <el-input
             v-model="GoodsListQueryData.merCode"
-            placeholder="请输内容"
+            placeholder="请输入"
           ></el-input>
         </el-form-item>
         <el-form-item label="sku编码">
           <el-input
             v-model="GoodsListQueryData.skuCode"
-            placeholder="请输内容"
+            placeholder="请输入"
           ></el-input>
         </el-form-item>
         <el-form-item label="速记代码">
           <el-input
             v-model="GoodsListQueryData.shorthandCode"
-            placeholder="请输内容"
+            placeholder="请输入"
           ></el-input>
         </el-form-item>
         <el-form-item label="商品类型">
@@ -63,12 +55,18 @@
         <el-form-item label="销售状态">
           <el-select v-model="GoodsListQueryData.canSale">
             <el-option label="全部" value></el-option>
-            <el-option label="允许" value="1"></el-option>
-            <el-option label="禁止" value="0"></el-option>
+            <el-option label="允许销售" value="1"></el-option>
+            <el-option label="禁止销售" value="0"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item class="query-btn-box">
-          <el-button type="primary" @click="GoodsListQueryDataEvent()">查询</el-button>
+<!--        <el-form-item label="渠道类型">-->
+<!--          <el-select v-model="GoodsListQueryData.channelType">-->
+<!--            <el-option label="全部" value></el-option>-->
+<!--            <el-option :label="item.name" :value="item.uid" v-for="item in channelList"></el-option>-->
+<!--          </el-select>-->
+<!--        </el-form-item>-->
+        <el-form-item>
+          <el-button class="query-btn" type="primary"  @click="GoodsListQueryDataEvent()">查询</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -83,7 +81,7 @@
       ></el-tree>
     </div>
     <div class="common-right">
-      <div>
+     <div class="commin-new-table">
         <el-table :data="GoodsListData" stripe :height="this.defaultTableHeight">
           <el-table-column
             v-for="item in GoodsListDataColumn"
@@ -92,11 +90,11 @@
             :label="item.label"
             :formatter="item.formatter"
           ></el-table-column>
-          <el-table-column label="操作" width="150">
+          <el-table-column label="操作" width="190">
             <template slot-scope="{row,$index}">
               <el-button type="text" size="small" @click.stop="proSeeEvent($index, row)">查看</el-button>
               <el-button type="text" size="small" @click.stop="proModifyEvent($index, row)">编辑</el-button>
-              <el-button type="text" size="small" @click.stop="proStopEvent($index, row)">{{row.canSaleType == "0" ? "允许":"禁止"}}</el-button>
+              <el-button type="text" size="small" @click.stop="proStopEvent($index, row)">{{row.canSaleType == "0" ? "允许销售":"禁止销售"}}</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -135,7 +133,7 @@
     </el-dialog>
     <!-- <com-bank :ComBankdialogVisible.sync="ComBankdialogVisible"></com-bank> -->
     <!-- 选择影院弹窗 -->
-    <cinemal-dialog ref="myCinemalDialog" @onSumit="onCinemalSumit" :dialogFeedbackData="cinemaList"></cinemal-dialog>
+    <cinemal-dialog ref="myCinemalDialog" @onSumit="onCinemalSumit" :dialogFeedbackData="[{cinemaUid:GoodsListQueryData.cinemaUid,cinemaName:GoodsListQueryData.cinemaName}]"></cinemal-dialog>
   </div>
 </template>
 
@@ -171,9 +169,10 @@
       },
       // 新建状态
       statusRadio: 1,
+      channelList:[],
       //查询数据
       GoodsListQueryData: {
-        pageSize: 10,
+        pageSize: 15,
         page: 1,
         merName: "",
         merCode: "",
@@ -182,6 +181,7 @@
         merType: "",
         shorthandCode: "",
         skuCode: "",
+        channelType:'',
         classUid: "",
         cinemaName:"",
         cinemaUid:""
@@ -203,7 +203,11 @@
           key: "skuCode"
         },
         {
-          label: "类型",
+          label: "速记代码",
+          key: "shorthandCode"
+        },
+        {
+          label: "商品类型",
           key: "merType",
           formatter(row, column, cellValue) {
             let result = "";
@@ -232,20 +236,20 @@
           key: "unitName"
         },
         {
-          label: "价格",
+          label: "售价（元）",
           key: "price"
         },
         {
-          label: "状态",
+          label: "销售状态",
           key: "canSaleType",
           formatter(row, column, cellValue) {
             let result = "";
             switch (row.canSaleType) {
               case "1":
-                result = "允许";
+                result = "允许销售";
                 break;
               case "0":
-                result = "禁止";
+                result = "禁止销售";
                 break;
             }
             return result;
@@ -290,7 +294,7 @@
     },
     // 初始化
     init() {
-      this.GoodsListQueryData.pageSize = this.pageSize
+      // this.GoodsListQueryData.pageSize = this.pageSize
       if(this.GoodsListQueryData.cinemaName === "" && this.GoodsListQueryData.cinemaUid === ""){
         this.$message("请选择门店");
       }else{
@@ -311,15 +315,45 @@
       this.newProtitleArr.uid = "";
       this.resCreateMerCode(this.newPro(a).erCode);
     },
-    singleProPage(param) {
+    singleProPage(param = {}) {
+      let router = '';
+      switch (param.type) {
+        case "1":
+          // 新增
+          router = 'add';
+          break;
+        case "2":
+          // 编辑
+          router = 'edit';
+          break;
+        case "3":
+          // 查看
+          router = 'details';
+          break;
+      }
       this.$router.push({
-        path: "comSingle",
+        path: "comSingle"+router,
         query: param
       });
     },
-    comMaterialProPage(param) {
+    comMaterialProPage(param = {}) {
+      let router = '';
+      switch (param.type) {
+        case "1":
+          // 新增
+          router = 'add';
+          break;
+        case "2":
+          // 编辑
+          router = 'edit';
+          break;
+        case "3":
+          // 查看
+          router = 'details';
+          break;
+      }
       this.$router.push({
-        path: "comMaterial",
+        path: "comMaterial"+router,
         query: param
       });
     },
@@ -398,23 +432,68 @@
       console.log(data);
     },
     // 合成品页面跳转
-    comPositeJump(param) {
+    comPositeJump(param = {}) {
+      let router = '';
+      switch (param.type) {
+        case "1":
+          // 新增
+          router = 'add';
+          break;
+        case "2":
+          // 编辑
+          router = 'edit';
+          break;
+        case "3":
+          // 查看
+          router = 'details';
+          break;
+      }
       this.$router.push({
-        path: "comPosite",
+        path: "comPosite"+router,
         query: param
       });
     },
     // 服务商品页面跳转
-    serveGoodJump(param) {
+    serveGoodJump(param = {}) {
+      let router = '';
+      switch (param.type) {
+        case "1":
+          // 新增
+          router = 'add';
+          break;
+        case "2":
+          // 编辑
+          router = 'edit';
+          break;
+        case "3":
+          // 查看
+          router = 'details';
+          break;
+      }
       this.$router.push({
-        path: "serveGood",
+        path: "serveGood"+router,
         query: param
       });
     },
     // 套餐页面跳转
-    setMealJump(param) {
+    setMealJump(param = {}) {
+      let router = '';
+      switch (param.type) {
+        case "1":
+          // 新增
+          router = 'add';
+          break;
+        case "2":
+          // 编辑
+          router = 'edit';
+          break;
+        case "3":
+          // 查看
+          router = 'details';
+          break;
+      }
       this.$router.push({
-        path: "setMeal",
+        path: "setMeal"+router,
         query: param
       });
     },
@@ -430,6 +509,8 @@
             this.GoodsListData.forEach((val,index,arr)=>{
               if(val.merType === "2"){
                 val.merName = val.merName +"-"+ val.skuName
+              }else if(val.merType === "1" && val.skuName != ""){
+                val.merName = val.skuName
               }
             })
             this.total = res.data.total;
@@ -498,26 +579,54 @@
         this.getUid(value.children);
       });
     },
+    // 获取渠道列表
+    queryBaseChannel(param={}) {
+      this.$cimList.headquartersGoods
+              .queryBaseChannel(param)
+              .then(resData => {
+                if (resData.code == 200) {
+                  this.channelList = resData.data.list || [];
+                }
+
+              })
+              .catch(err => {
+
+              });
+    },
         // 选泽门店回调1111
-    onCinemalSumit(val = []) {
-      // alert(val)
-      // debugger
+    setCinema(val = []) {
       if (val.length > 0) {
-        this.GoodsListQueryData.cinemaName = val[0].name;
-        this.GoodsListQueryData.cinemaUid = val[0].uid || val[0].id;
+        this.GoodsListQueryData.cinemaName = val[0].cinemaName || val[0].name;
+        this.GoodsListQueryData.cinemaUid = val[0].cinemaUid || val[0].uid;
       } else {
         this.GoodsListQueryData.cinemaName = "";
         this.GoodsListQueryData.cinemaUid = "";
       }
-      console.log(val);
       let cinemaL = []
       val.forEach((newval)=>{
         let newObj = {}
-        newObj.cinemaUid = newval.cinemaUid
-        newObj.name = newval.name
+        newObj.cinemaUid = newval.cinemaUid || newval.uid
+        newObj.name = newval.name || newval.cinemaName
         cinemaL.push(newObj)
       })
       this.cinemaList = cinemaL
+      this.queryBaseChannel({cinemaUid:this.GoodsListQueryData.cinemaUid,cinemaName:this.GoodsListQueryData.cinemaName});
+    },
+    // 选泽门店回调
+    onCinemalSumit(val = [],type) {
+      console.log(val," 选泽门店回调",type);
+      if (val.length > 0) {
+        if(type=="default"){
+          if(val.length==1){
+            this.setCinema(val)
+          }
+          // this.GoodsListQueryDataEvent();
+        }else{
+          this.setCinema(val)
+        }
+      } else {
+        this.setCinema()
+      }
     },
     selectCinemalDialog() {
       this.$refs.myCinemalDialog.handleDialog(true);
@@ -661,7 +770,7 @@
         case "1":
           this.singleProPage({
             type: '3',
-            data: JSON.stringify(row),
+            data: JSON.stringify(row.uid),
             cinemaUid:JSON.stringify(this.GoodsListQueryData.cinemaUid)
           });
           break;
@@ -669,7 +778,7 @@
         case "2":
          this.comPositeJump({
             type: '3',
-            data: JSON.stringify(row),
+            data: JSON.stringify({merCode:row.merCode}),
             cinemaUid:this.GoodsListQueryData.cinemaUid,
             cinemaName: this.GoodsListQueryData.cinemaName,
           });
@@ -678,7 +787,7 @@
         case "3":
          this.serveGoodJump({
             type: '3',
-            data: JSON.stringify(row),
+            data: JSON.stringify({uid:row.uid}),
             cinemaUid:this.GoodsListQueryData.cinemaUid,
             cinemaName: this.GoodsListQueryData.cinemaName,
           });
@@ -687,7 +796,7 @@
         case "4":
          this.setMealJump({
             type: '3',
-            data: JSON.stringify(row),
+            data: JSON.stringify(row.uid),
             cinemaUid:JSON.stringify(this.GoodsListQueryData.cinemaUid)
           });
           break;
@@ -695,7 +804,7 @@
         case "5":
            this.comMaterialProPage({
             type: '3',
-            data: JSON.stringify(row),
+            data: JSON.stringify(row.uid),
             cinemaUid:JSON.stringify(this.GoodsListQueryData.cinemaUid)
           })
           break;
@@ -709,7 +818,7 @@
         case "1":
           this.singleProPage({
             type: '2',
-            data: JSON.stringify(row),
+            data: JSON.stringify(row.uid),
             cinemaUid:this.GoodsListQueryData.cinemaUid
           });
           break;
@@ -717,7 +826,7 @@
         case "2":
          this.comPositeJump({
             type: '2',
-            data: JSON.stringify(row),
+            data: JSON.stringify({merCode:row.merCode}),
            cinemaUid: this.GoodsListQueryData.cinemaUid,
            cinemaName: this.GoodsListQueryData.cinemaName,
           });
@@ -726,7 +835,7 @@
         case "3":
          this.serveGoodJump({
             type: '2',
-            data: JSON.stringify(row),
+            data: JSON.stringify({uid:row.uid}),
            cinemaUid: this.GoodsListQueryData.cinemaUid,
            cinemaName: this.GoodsListQueryData.cinemaName,
           });
@@ -735,7 +844,7 @@
         case "4":
          this.setMealJump({
             type: '2',
-            data: JSON.stringify(row),
+            data: JSON.stringify(row.uid),
             cinemaUid:JSON.stringify(this.GoodsListQueryData.cinemaUid)
           });
           break;
@@ -743,7 +852,7 @@
         case "5":
           this.comMaterialProPage({
             type: '2',
-            data: JSON.stringify(row),
+            data: JSON.stringify(row.uid),
             cinemaUid:this.GoodsListQueryData.cinemaUid
           })
           break;
@@ -812,6 +921,10 @@
 @import "../../../../assets/css/element-common.scss";
 @import "../../../../assets/css/common.scss";
 .store-style{
+    .commin-new-table{
+      padding: 24px 24px 0 24px;
+      background: #fff;
+    }
   .change-dialog {
     .el-form--inline .el-form-item {
       width: 100%;
@@ -832,7 +945,8 @@
   }
   .common-left {
     width: 200px;
-    height: 100px;
+    height: 694px;
+    overflow: auto;
     float: left;
   }
   .common-right {

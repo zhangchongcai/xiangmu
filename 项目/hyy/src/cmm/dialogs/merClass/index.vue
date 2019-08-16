@@ -14,7 +14,7 @@
       <div slot="dialog-content">
         <div class="search-content">
           <el-form>
-            <el-form-item label="商品类别:" >
+            <el-form-item label="商品类别:" label-width="80px">
               <el-select v-model="merClass" style="width:184px">
                 <el-option label="全部" value>全部</el-option>
                 <div v-if="this.merClassArr.length > 0">

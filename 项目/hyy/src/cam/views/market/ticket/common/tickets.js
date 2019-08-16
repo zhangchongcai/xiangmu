@@ -74,6 +74,7 @@ components: {BreadCrumb,TicketsDetail,TicketsSearch},
         this.endTime = params.endDate;
         this.size = params.pageSize;
         this.page = params.pageNo;
+        this.defaultSearch = Object.assign(params)
         this.getTableData(params)
     },
     goDetail(option){

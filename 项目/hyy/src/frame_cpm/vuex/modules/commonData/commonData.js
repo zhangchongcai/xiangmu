@@ -7,13 +7,11 @@ let state = {
   perms: JSON.parse(sessionStorage.getItem('perms') ? sessionStorage.getItem('perms') : '[]') || [],
   cache: {},
   level: {
-    // level1: '',
-    // level2:'',
-    // level3:''
-    level1: localStorage.getItem('level1')?localStorage.getItem('level1'):'',
-    level2:localStorage.getItem('level2')?localStorage.getItem('level2'):'',
-    level3:localStorage.getItem('level3')?localStorage.getItem('level3'):''
-  }
+    level1:sessionStorage.getItem('level1') ? sessionStorage.getItem('level3') : '',
+    level2:sessionStorage.getItem('level2') ? sessionStorage.getItem('level3') : '',
+    level3:sessionStorage.getItem('level3') ? sessionStorage.getItem('level3') : '',
+  },
+
 };
 
 let mutations = {
@@ -88,44 +86,27 @@ let mutations = {
       delete state.cache[data.key]
     }
   },
+  removeAllCache(state, data){
+    state.cache={};
+  },
   getLevel(state,data) {
       if(localStorage.getItem('leftTreeList')){
-        let level1Arr = JSON.parse(localStorage.getItem('leftTreeList')).map(item=>{
-          return {'name':item.menuName,'id':item.id}
-        })
-        let arr = JSON.parse(localStorage.getItem('leftTreeList')).map(item=>{
-          return item.submenu.map(item=>{
-            return {'name':item.menuName,'id':item.id,'parentId':item.parentId}
-          })
-        })
-        let level2Arr = []
-        for (var i = 0; i < arr.length; i++) {
-          for (var j = 0; j < arr[i].length; j++) {
-            level2Arr.push(arr[i][j]);
-          }
-        }
-        let level3Arr = utils.getMenuTree(JSON.parse(localStorage.getItem('leftTreeList')), 'submenu');
+        let level1Arr = JSON.parse(localStorage.getItem('level1Arr'))
+        let level2Arr = JSON.parse(localStorage.getItem('level2Arr'))
+        let level3Arr = JSON.parse(localStorage.getItem('level3Arr'))
         if(data){
-          level3Arr.forEach(item=>{
-            if(item.menuCode==data.menuCode){
-              state.level.level3 = data.menuName
-              localStorage.setItem('level3',data.menuName)
-              let str = item.parentId
-              level2Arr.forEach(it=>{
-                if(it.id == str){
-                  state.level.level2 = it.name
-                  localStorage.setItem('level2',it.name)
-                  let str1 = it.parentId
-                  level1Arr.forEach(i=>{
-                    if(i.id == str1){
-                      state.level.level1 = i.name
-                      localStorage.setItem('level1',i.name)
-                    }
-                  })
-                }
-              })
-            }
-          })
+          state.level.level3 = data.menuName
+          sessionStorage.setItem('level3',data.menuName)
+          let str = level3Arr.find(item=>item.menuCode==data.menuCode).parentId
+          let str1 = level2Arr.find(it=>it.id==str)
+          state.level.level2 = str1.name
+          sessionStorage.setItem('level2',str1.name)
+          let str2 = level1Arr.find(i=>i.id==str1.parentId)
+          state.level.level1 = str2.name
+          sessionStorage.setItem('level1',str2.name)
+        }else{
+          state.level.level3 = ''
+          sessionStorage.setItem('level3','')
         }
       }
   }

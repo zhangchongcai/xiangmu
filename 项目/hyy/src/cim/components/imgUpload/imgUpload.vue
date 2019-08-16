@@ -1,18 +1,33 @@
 <template>
-    <el-upload
-        class="avatar-uploader"
-        ref="upload"
-        :action="uploadHttpConfig"
-        :headers="uploadHeaders"
-        :before-upload="beforeAvatarUpload"
-        :on-success="successAvatarUpload"
-        :data="reqData"
-    >
-        <img v-if="queryData.imgUrl" :src="queryData.imgUrl" class="avatar">
-        <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-        <div class="el-upload__tip" slot="tip" v-if="type == 'img'">(请上传500kb以内的JPG/PNG文件，建议图片规格：150*150px)</div>
-    </el-upload>
+    <div id="img-upload">
+        <el-upload
+                class="avatar-uploader"
+                ref="upload"
+                :action="uploadHttpConfig"
+                :headers="uploadHeaders"
+                :before-upload="beforeAvatarUpload"
+                :on-success="successAvatarUpload"
+                :file-list="fileList"
+                :data="reqData"
+        >
+            <div v-if="queryData.imgUrl && isImg">
+                <img v-if="isImg" :src="queryData.imgUrl" class="avatar">
+            </div>
+            <div v-else>
+                <i v-if="type == 'img'" class="el-icon-plus  avatar-uploader-icon"></i>
+                <i v-else class="el-icon-plus accessory"> 添加附件</i>
+            </div>
 
+            <div class="el-upload__tip" slot="tip" v-if="type == 'img'">(请上传500kb以内的JPG/PNG文件，建议图片规格：150*150px)</div>
+            <div class="el-upload__tip" slot="tip" v-if="(type == 'accessory') && queryData.imgUrl && queryData.name">
+                <a target="_Blank" :href="queryData.imgUrl" :download="queryData.name">
+                    <span>点击下载: </span>
+                    <span class="download">{{queryData.name}}</span>
+                </a>
+                <i class="el-icon-close img-del" @click="handleDel"></i>
+            </div>
+        </el-upload>
+    </div>
 </template>
 <script>
     import httpConfig from "cim/http/config.js";
@@ -30,40 +45,77 @@
                 default: '',
                 required: false
             },
+            fileName: {
+                type: String,
+                default: '',
+                required: false
+            },
         },
         created() {
-
+            this.isImgFile({name: this.fileName})
         },
         data() {
             return {
                 queryData: {
-                    imgUrl: this.url
-                }
+                    imgUrl: this.url,
+                    name: this.fileName,
+                },
+                isImg: true,
+                fileList: [],
             }
         },
         watch:{
             url(){
-                this.queryData.imgUrl = this.url
-            }    
+                this.queryData.imgUrl = this.url;
+
+                // this.fileList = [{name:this.fileName,url:this.url}]
+            },
+            fileName() {
+                this.queryData.name = this.fileName;
+                this.isImgFile({name:this.queryData.name});
+            },
         },
         methods: {
             //图片上传前回调
             beforeAvatarUpload(file) {
-                if (file.size / 1024 >= 500) {
-                    this.$message.error('文件过大，不能超过500KB')
-                    return false
+                // console.log()
+                if (this.type == "accessory") {
+                    if (file.size / 1024 / 1024 >= 10) {
+                        this.$message.error('文件过大，不能超过10M');
+                        return false
+                    }
+                } else {
+                    if (file.size / 1024 >= 500) {
+                        this.$message.error('文件过大，不能超过500KB');
+                        return false
+                    }
                 }
+
             },
             //图片上传成功回调
             successAvatarUpload(response, file, fileList) {
-                console.log(response, file, fileList)
+                // console.log(response, file, fileList)
+                this.isImgFile(file);
+                this.queryData.name = file.name;
                 this.$refs.upload.clearFiles();
                 if (response.code == 200) {
                     this.queryData.imgUrl = response.data;
                     this.$emit("on-success",this.queryData.imgUrl)
+                    this.$emit("on-successUpload", {fileUrl: this.queryData.imgUrl, fileName: this.queryData.name})
                 } else {
                     this.$message.error(response.data.msg)
                 }
+            },
+            isImgFile(file) {
+                if (file.name.includes('.png') || file.name.includes('.jpg') || file.name.includes('.jpeg')) {
+                    this.isImg = true;
+                } else {
+                    this.isImg = false;
+                }
+            },
+            handleDel(){
+                this.$emit("on-success",'')
+                this.$emit("on-successUpload", {fileUrl: '', fileName: ''})
             },
         },
         computed: {
@@ -71,7 +123,7 @@
                 return `${httpConfig.baseURL}/upload/goodsImg`
             },
             uploadHeaders() {
-                return {"Cpm-User-Token": localStorage.getItem('token')}
+                return {"Cpm-User-Token": window.sessionStorage.getItem('token')}
             },
             reqData(){
                 if(this.type == "accessory"){
@@ -84,7 +136,21 @@
     };
 </script>
 <style lang="scss">
-  .el-upload__tip{
-      color: #999;
-  }
+    .accessory{
+        padding: 0 10px;
+    }
+
+    #img-upload{
+        .img-del{
+            margin-left: 10px;
+            cursor: pointer;
+            color: #F56C6C;
+            font-weight: 900;
+            font-size: 16px;
+        }
+        .el-upload__tip {
+            color: #999;
+        }
+    }
+
 </style>

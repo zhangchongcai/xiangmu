@@ -2,7 +2,7 @@
     <div class="pay-containers">
       <div class="left">
 
-          <div style="margin-bottom: 20px;">
+          <div style="margin-bottom: 8px;">
              <span>
                  <span class="pay-count">原价：</span>
                  <span class="count-num total-num">{{payData.originalAmount + "元"}}</span>
@@ -12,17 +12,19 @@
                  <span class="count-num total-num">{{payData.couponAmount + "元"}}</span>
              </span>
          </div>
-         <div style="margin-bottom: 20px;">
+         <div style="margin-bottom: 8px;">
              <span>
                  <span class="pay-count">应收：</span>
                  <span class="count-num total-num">{{payData.payAmount + "元"}}</span>
              </span>
              <span>
                  <span class="pay-count">已付款：</span>
-                 <span class="count-num total-num">{{payData.payedAmount + "元"}}</span>
+                 <span class="count-num total-num">{{payData.payedAmount + "元"}}
+                     <span v-show="payData.voucherAmount > 0" style="font-size: 1.02vw; margin-left: 10px">({{"券抵扣: " + payData.voucherAmount + "元"}})</span>
+                 </span>
              </span>
          </div>
-         <div style="margin-bottom: 20px;">
+         <div style="margin-bottom: 8px;">
              <span>
                  <span class="pay-count">待支付：</span>
                  <span class="count-num rest-num">{{payData.notPayAmount + "元"}}</span>
@@ -41,12 +43,13 @@
              </span>
          </div>
 
-         <div style="margin-top: 20px;">
+         <div style="margin-top: 2px; margin-bottom: 2px;">
              <span>
                  <span class="pay-count">找零：</span>
-                 <span class="count-num total-num">{{payNum.realChange + "元"}}</span>
+                 <span class="count-num total-num">{{(payNum.realChange).toFixed(2) + "元"}}</span>
              </span>
          </div>
+        <check-coupon-comp @openCouponCheckoutBox="openCouponCheckoutBox"></check-coupon-comp>
       </div>
 
       <div class="right">
@@ -54,16 +57,18 @@
         <div class="btn-container">
             <span class="result-btn" @click="cancle">取消</span>
             <span class="result-btn confirm-btn" @click="payIt">确定</span>
-            <span class="result-btn quickCash" @click="quickPay">快速结账</span>
+            <span v-show="getUserConfig.allow_fast_checkout == '1'" class="result-btn quickCash" @click="quickPay">快速结账</span>
         </div>
       </div>
     </div>
 </template>
 
 <script>
+import commonutil from 'util'
 import {mapGetters, mapMutations} from 'vuex'
 import {SAVE_CHANGE_CASH} from 'types'
 import NumberKeyBoard from 'components/numberKeyBoard'
+import CheckCouponComp from 'components/coupons/CheckCoupon'
 export default {
     data() {
         return {
@@ -89,13 +94,15 @@ export default {
       ...mapGetters([
           'payData',
           'returnPay',
-          'payNum'
+          'payNum',
+          'availableCouponList',
+          'getUserConfig'
       ])
     },
 
     watch: {
         cashes() {
-          this.cashes = this.NumberCheck(this.cashes)
+          this.cashes = commonutil.NumberTransform(this.cashes)
           let change =Number(this.cashes) -  Number(this.payData.notPayAmount)
           change = change <= 0 ? 0 : change
           this.SAVE_CHANGE_CASH({cash: this.cashes, change: change})
@@ -107,34 +114,12 @@ export default {
             SAVE_CHANGE_CASH
         ]),
 
-        NumberCheck(num) {
-            let str = num;
-            let len1 = str.substr(0, 1);
-            let len2 = str.substr(1, 1);
-            //如果第一位是0，第二位不是点，就用数字把点替换掉
-            if (str.length > 1 && len1 == 0 && len2 != ".") {
-                str = str.substr(1, 1);
-            }
-            //第一位不能是.
-            if (len1 == ".") {
-                str = "";
-            }
-            //限制只能输入一个小数点
-            if (str.indexOf(".") != -1) {
-                let str_ = str.substr(str.indexOf(".") + 1);
-                if (str_.indexOf(".") != -1) {
-                str = str.substr(0, str.indexOf(".") + str_.indexOf(".") + 1);
-                }
-            }
-            //正则替换，保留数字和小数点
-            str = str.replace(/[^\d^\.]+/g,'')
-            //如果需要保留小数点后两位，则用下面公式
-            // str = str.replace(/\.\d\d$/,'')
-            return str;
+        openCouponCheckoutBox() {
+           this.$emit("openCouponCheckoutBox")
         },
         
         payIt() {
-          if(this.cashes) {
+          if(this.cashes || this.payData.notPayAmount == 0) {
              this.$emit('payIt')
           }else {
                this.$message({
@@ -144,36 +129,16 @@ export default {
                              });
           }
         },
-
-        NumberCheck(num) {
-            let str = num;
-            let len1 = str.substr(0, 1);
-            let len2 = str.substr(1, 1);
-            //如果第一位是0，第二位不是点，就用数字把点替换掉
-            if (str.length > 1 && len1 == 0 && len2 != ".") {
-                str = str.substr(1, 1);
-            }
-            //第一位不能是.
-            if (len1 == ".") {
-                str = "";
-            }
-            //限制只能输入一个小数点
-            if (str.indexOf(".") != -1) {
-                let str_ = str.substr(str.indexOf(".") + 1);
-                if (str_.indexOf(".") != -1) {
-                str = str.substr(0, str.indexOf(".") + str_.indexOf(".") + 1);
-                }
-            }
-            //正则替换，保留数字和小数点
-            str = str.replace(/[^\d^\.]+/g,'')
-            //如果需要保留小数点后两位，则用下面公式
-            // str = str.replace(/\.\d\d$/,'')
-            return str;
+        
+        //清空上一笔支付金额
+        clearOldCash() {
+          this.cashes = ''
         },
 
 
         quickPay() {
-          this.cashes = String(this.payData.payAmount)
+          this.cashes = String(this.payData.notPayAmount)
+          this.SAVE_CHANGE_CASH({cash: this.cashes, change: 0})
           this.payIt();
         },
 
@@ -191,7 +156,8 @@ export default {
     },
 
     components: {
-        NumberKeyBoard
+        NumberKeyBoard,
+        CheckCouponComp
     }
 }
 </script>
@@ -201,7 +167,7 @@ export default {
     width: 100%;
     display: flex;
     justify-content: space-between;
-    padding-top: 18px;
+    padding-top: 6px;
 
     .left {
         width: 34vw;
@@ -210,12 +176,12 @@ export default {
             display: flex;
             justify-content: flex-start;
             align-items: center;
-            margin: 20px 0;
+            margin: 12px 0;
 
             .input-container {
                 display: block;
                 width: 17.6vw;
-                height: 4.9vh;
+                height: 4.2vh;
                 border: 1px solid #bcbcbc;
                 border-radius: 2px;
                 padding: 0 12px;
@@ -277,9 +243,19 @@ export default {
                 }
 
                 &:first-child{
-                    margin-left: 4.4vw;
+                    margin-left: 3.6vw;
                 }
             }
+        }
+
+        .open-coupon-btn {
+            width: 6.3vw;
+            height: 4.2vh;
+            background: #ffffff;
+            border-color: $blue-color;
+            color: $blue-color;
+            padding: 0;
+            font-size: $font-size12;
         }
     }
 

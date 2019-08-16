@@ -4,12 +4,11 @@
       <el-form
         :inline="true"
         :model="queryData"
-        label-position="right"
-        label-width="80px"
+        label-position="left"
         label-suffix="："
       >
         <el-form-item label="采购单号">
-          <el-input v-model="queryData.billCode" placeholder="请输内容"></el-input>
+          <el-input v-model="queryData.billCode" placeholder="请输入"></el-input>
         </el-form-item>
         <el-form-item label="采购门店" class="select-input">
             <el-input
@@ -19,13 +18,13 @@
                     @focus="selectCinemalDialog"
                     placeholder="请选择门店"
             ></el-input>
-            <el-button @click="selectCinemalDialog" type="primary" plain>{{queryData.cinemaName?"编辑":"选择"}}</el-button>
+            <el-button @click="selectCinemalDialog" type="primary" plain>选择</el-button>
         </el-form-item>
-        <el-form-item label="供应商名称" class="select-input" label-width="90px">
+        <el-form-item label="供应商名称" class="select-input">
             <el-input v-model="queryData.supName" clearable placeholder="请选择供应商"
                       @clear="onSupplierSumit"
                       @focus="selectSuppliersDialog"></el-input>
-            <el-button @click="selectSuppliersDialog" type="primary" plain>{{queryData.supName?"编辑":"选择"}}</el-button>
+            <el-button @click="selectSuppliersDialog" type="primary" plain>选择</el-button>
         </el-form-item>
         <el-form-item label="制单日期">
           <el-date-picker
@@ -73,7 +72,7 @@
             :label="item.label"
             :formatter="item.formatter"
           ></el-table-column>
-          <el-table-column label="操作" style="width:180px;">
+          <el-table-column label="操作" width="200">
             <template slot-scope="{row}">
               <el-button type="text" size="small" @click.stop="handleOperateEvent('1', row)">查看</el-button>
               <!--"审核状态", //,0：未审核，1：待审核，2：审核通过，3：审核不通过，4：无需审核'-->
@@ -104,7 +103,7 @@
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
             :current-page.sync="queryData.page"
-            :page-sizes="[10,20,30]"
+            :page-sizes="pageSizes"
             :page-size.sync="queryData.pageSize"
             layout="total, sizes, prev, pager, next, jumper"
             :total="total"
@@ -113,7 +112,7 @@
       </div>
     </div>
     <!-- 选择影院弹窗 -->
-    <cinemal-dialog ref="myCinemalDialog" @onSumit="onCinemalSumit" :dialogFeedbackData="[{cinemaUid:queryData.cinemaUid,cinemaName:queryData.cinemaName}]"></cinemal-dialog>
+    <cinemal-dialog ref="myCinemalDialog" title="选择门店" @onSumit="onCinemalSumit" :dialogFeedbackData="[{cinemaUid:queryData.cinemaUid,cinemaName:queryData.cinemaName}]"></cinemal-dialog>
     <!-- 选择供应商弹窗 -->
     <suppliers-dialog ref="mySuppliersDialog" @onSumit="onSupplierSumit"></suppliers-dialog>
   </div>
@@ -142,7 +141,7 @@ export default {
         conditions: [], //单据状态
         approvalStatus: "", //审核状态
         page: 1,
-        pageSize: 10
+        pageSize: 15
       },
       total: 0,
       // 表格表头
@@ -161,7 +160,7 @@ export default {
         },
         {
           label: "制单日期",
-          key: "billTime"
+          key: "billVoTime"
         },
         {
           label: "制单员",
@@ -226,12 +225,19 @@ export default {
   methods: {
     // 初始化
     init() {
-      this.onQuery();
-      this.$store.commit('getLevel',this.$route.meta.title)
+      if(this.queryData.cinemaUid){
+        this.onQuery();
+      }
     },
     // 查询
     onQuery() {
-      console.log(this.queryData);
+      // console.log(this.queryData);
+      if(!this.queryData.cinemaUid){
+        this.$message({
+          message: "请选择门店!"
+        });
+        return;
+      }
       if (this.queryData.billTimeTotal) {
         this.queryData.beginTime = this.queryData.billTimeTotal[0];
         this.queryData.endTime = this.queryData.billTimeTotal[1];
@@ -259,14 +265,29 @@ export default {
     },
     // 新建
     handleNewBuilt() {
-      console.log("新建");
+      // console.log("新建");
       this.jumpPage({
         type: "1"
       });
     },
     jumpPage(param = {}) {
+      let router = '';
+      switch (param.type) {
+        case "1":
+          // 新增
+          router = 'add';
+          break;
+        case "2":
+          // 编辑
+          router = 'edit';
+          break;
+        case "3":
+          // 查看
+          router = 'details';
+          break;
+      }
       this.$router.push({
-        path: "/retail/procurement/purchaseNote/common",
+        path: "/retail/procurement/purchaseNote/"+router,
         query: param,
       });
     },
@@ -277,14 +298,14 @@ export default {
           // 查看
           this.jumpPage({
             type: "3",
-            data: JSON.stringify(row)
+            data:  JSON.stringify({uid:row.uid,billCode:row.billCode})
           });
           break;
         case "2":
           //编辑
           this.jumpPage({
             type: "2",
-            data: JSON.stringify(row)
+            data:   JSON.stringify({uid:row.uid,billCode:row.billCode})
           });
           break;
         case "3":
@@ -310,7 +331,7 @@ export default {
     },
     // 删除操作
     handleeDlete(param) {
-      console.log(param);
+      // console.log(param);
       this.$cimList.procurement
         .purchaseDelete(param)
         .then(resData => {
@@ -362,23 +383,37 @@ export default {
     handleSizeChange(val) {
       this.queryData.pageSize = val;
       this.getPurchaseList(this.queryData);
-      console.log(`每页 ${val} 条`);
+      // console.log(`每页 ${val} 条`);
     },
     handleCurrentChange(val) {
       this.queryData.page = val;
       this.getPurchaseList(this.queryData);
-      console.log(`当前页: ${val}`);
+      // console.log(`当前页: ${val}`);
     },
     // 选泽门店回调
-    onCinemalSumit(val = []) {
+    onCinemalSumit(val = [],type) {
+      // console.log(val," 选泽门店回调",type);
       if (val.length > 0) {
+        if(type=="default"){
+          if(val.length==1){
+            this.setCinema(val);
+            this.onQuery();
+          }
+        }else{
+          this.setCinema(val)
+        }
+      } else {
+        this.setCinema()
+      }
+    },
+    setCinema(val=[]){
+      if(val.length>0){
         this.queryData.cinemaName =  val[0].cinemaName || val[0].name ;
         this.queryData.cinemaUid =  val[0].cinemaUid || val[0].uid;
-      } else {
+      }else{
         this.queryData.cinemaName = "";
         this.queryData.cinemaUid = "";
       }
-      console.log(this.queryData);
     },
     // 选泽供应商回调
     onSupplierSumit(val = []) {
@@ -389,7 +424,7 @@ export default {
         this.queryData.supName = "";
         // this.queryData.cinemaUid = "";
       }
-      console.log(this.queryData);
+      // console.log(this.queryData);
     }
   },
   components: {

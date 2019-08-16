@@ -2,7 +2,8 @@
   <div style="display:inline-block;">
     <el-date-picker
       unlink-panels
-      v-model="dateTime"
+      class="rpt-data-picker"
+      v-model="dateSelectObj.dateTime"
       type="daterange"
       range-separator="至"
       start-placeholder="开始日期"
@@ -15,45 +16,58 @@
 
 <script>
 import Moment from "moment";
-import mixins from "src/frame_cpm/mixins/cacheMixin.js";
 export default {
-  mixins: [mixins.cacheMixin],
   props: {
     resetStatus: Boolean,
-    queryName: String
+    queryData: Object,
+    dateSelectObj: Object
   },
   data() {
-    return {
-      cacheField: [
-        "dateTime",
-      ],
-      subComName: "dateSelect",
-      dateTime: []
-    };
+    return {};
   },
   methods: {
     dateTimeChange() {
       this.getStrTime();
     },
     getStrTime() {
-      if (this.dateTime === null) {
-        this.$emit("selectDateData", "", this.queryName);
-      } else if (this.dateTime.length !== 0) {
-        this.$emit("selectDateData", this.dateTime.join(","), this.queryName);
+      if (this.dateSelectObj.dateTime === null) {
+        this.$emit("selectDateData", "", this.queryData.queryName);
+      } else if (this.dateSelectObj.dateTime.length !== 0) {
+        this.$emit(
+          "selectDateData",
+          this.dateSelectObj.dateTime.join(","),
+          this.queryData.queryName
+        );
       } else {
-        this.$emit("selectDateData", "", this.queryName);
+        this.$emit("selectDateData", "", this.queryData.queryName);
       }
     },
-    init() {
-      let yesterday = Moment(new Date())
-        .add(-1, "days")
+    handleTime(timeType) {
+      return Moment(new Date())
+        .add(-Number(this.queryData.defVALUE[0]), timeType)
         .format("YYYY-MM-DD");
-      let today = Moment().format("YYYY-MM-DD");
-      this.dateTime = [yesterday, today];
+    },
+    init() {
+      let oldTime;
+      if (this.queryData.defVALUE === "" || this.queryData.defVALUE == null) {
+        oldTime = Moment(new Date())
+          .add(-1, "days")
+          .format("YYYY-MM-DD");
+      } else {
+        if (this.queryData.defVALUE[1] == "Y") {
+          oldTime = this.handleTime("years");
+        } else if (this.queryData.defVALUE[1] == "M") {
+          oldTime = this.handleTime("months");
+        } else if (this.queryData.defVALUE[1] == "D") {
+          oldTime = this.handleTime("days");
+        }
+      }
+      let nowTime = Moment().format("YYYY-MM-DD");
+      this.dateSelectObj.dateTime = [oldTime, nowTime];
     }
   },
   mounted() {
-    this.init();
+    if (this.dateSelectObj.dateTime.length === 0) this.init();
     this.getStrTime();
   },
   watch: {
@@ -67,5 +81,13 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
+.rpt-data-picker {
+  width: 256px !important;
+  .el-input__icon,
+  .el-range-separator,
+  .el-range-input {
+    font-size: 12px;
+  }
+}
 </style>

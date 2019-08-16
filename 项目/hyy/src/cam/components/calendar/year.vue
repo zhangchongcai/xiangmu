@@ -28,9 +28,6 @@ export default {
         value: {
             default: new Date() , 
             required: true
-        },
-        activeIndex:{
-            default: -1,
         }
     },
     data(){
@@ -52,13 +49,13 @@ export default {
     methods: {
         initData(){
             if(this.value instanceof Array){
-                let year = new Date(this.value[0]).getFullYear();
-                this.selectedIndex = year;
+                let year = new Date().getFullYear();
+                this.selectedIndex = new Date(this.value[0]).getFullYear();;
                 this.startYear = (Math.floor(year / 10)) * 10;
             }else{
                 // day --->year
-                let year = new Date(this.value).getFullYear();
-                this.selectedIndex = year;
+                let year = new Date().getFullYear();
+                this.selectedIndex = new Date(this.value).getFullYear();
                 this.startYear = (Math.floor(year / 10)) * 10; 
                 // this.selectedIndex = -1;
             }
@@ -78,9 +75,9 @@ export default {
             let selectedYear = new Date().getFullYear();
             // 
             if(this.value instanceof Array){
-                selectedYear = new Date(this.value[0]).getFullYear()
+                selectedYear = new Date().getFullYear()
             }else{
-                selectedYear = new Date(this.value).getFullYear()
+                selectedYear = new Date().getFullYear()
             }
             //    
             this.endYear = this.startYear + 9 ; 
@@ -103,7 +100,7 @@ export default {
             let year = item.label ; 
             let startDate = new Date(year , 0 , 1) , 
                 endDate = new Date(year , 11 , 31) ; 
-            this.selectedIndex = index;
+            // this.selectedIndex = index;
             this.$emit('valueChange' , [
                 startDate , 
                 endDate

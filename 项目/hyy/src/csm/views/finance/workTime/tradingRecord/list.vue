@@ -8,9 +8,13 @@
     </el-breadcrumb> -->
     <div class="searchAdition">
       <el-form :inline="true" class="demo-form-inline search-form" size="small" label-width="90px">
-         <el-form-item label="影院选择:">
+         <!-- <el-form-item label="影院选择:">
           <el-input v-model="cinemaName" @focus="openCinema()"></el-input>
-        </el-form-item>
+        </el-form-item> -->
+         <el-form-item label="影院名称：">
+            <el-button @click="singleCinemaVisible = true, $refs.frameSingleCinema.listAuthCommCinemas()" style="width:176px;height:32px;">
+                {{ cinemaName }}</el-button>
+          </el-form-item>
         <el-form-item label="订单单号:">
           <el-input v-model="searchAdition.saleBillCode"></el-input>
         </el-form-item>
@@ -51,9 +55,9 @@
           <el-form-item label="商品类型:">
             <el-select v-model="searchAdition.goodQueryType">
               <el-option label="全部" value>全部</el-option>
-              <el-option label="电影票" value="1">电影票</el-option>
+              <el-option label="影票" value="1">影票</el-option>
               <el-option label="卖品" value="2">卖品</el-option>
-              <el-option label="电影票+卖品" value="3">电影票+卖品</el-option>
+              <el-option label="影票+卖品" value="3">影票+卖品</el-option>
             </el-select>
           </el-form-item>
         
@@ -107,12 +111,12 @@
     <div class="content">
       <el-row>
         <el-table :data="tableData" stripe>
-          <el-table-column prop="saleBillCode" label="订单单号" show-overflow-tooltip></el-table-column>
+          <el-table-column prop="saleBillCode" label="订单单号" width="180" show-overflow-tooltip></el-table-column>
           <el-table-column prop="billType" label="订单类型" show-overflow-tooltip></el-table-column>
            <el-table-column prop="saleType" label="销售类型" show-overflow-tooltip></el-table-column>
            <el-table-column prop="saleGoodsType" label="商品类型" show-overflow-tooltip></el-table-column>
           <el-table-column prop="transactionTime" label="订单时间" show-overflow-tooltip width="180"></el-table-column>
-          <el-table-column prop="payAmount" label="订单金额（元）"  width="180" show-overflow-tooltip></el-table-column>
+          <el-table-column prop="payAmount" label="订单金额（元）"  width="120" show-overflow-tooltip></el-table-column>
           <!-- <el-table-column prop="billStatus" label="订单状态" show-overflow-tooltip  width="150"></el-table-column> -->
           <el-table-column prop="cinemaName" label="交易影院" show-overflow-tooltip  width="200"></el-table-column>
           <el-table-column prop="terminalCode" label="交易终端" show-overflow-tooltip  width="150"></el-table-column>
@@ -124,7 +128,15 @@
           </el-table-column>
         </el-table>
       </el-row>
-      <singeCinema ref="singeCinema" @callback="callback"></singeCinema>
+      <singleCinema ref="frameSingleCinema" :framedialogVisible.sync="singleCinemaVisible" :type="singleCinemaType"
+            :innerData="innerData" @callBackSingle="callBackSingle">
+            <div slot="footerId">
+                <el-button @click="singleCinemaVisible = false">取 消</el-button>
+                <el-button type="primary" @click="$refs.frameSingleCinema.confirmData(), singleCinemaVisible = false">确
+                    定</el-button>
+            </div>
+        </singleCinema>
+      <!-- <singeCinema ref="singeCinema" @callback="callback"></singeCinema> -->
       <mydialog ref="searchDialog" @callback="chooseWorker" @searchWorker="searchWorker"></mydialog>
       <div class="page-wrap">
         <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange"
@@ -136,8 +148,11 @@
 </template>
 <script type="text/javascript">
   import mydialog from "../public/searchDialog"
-  import singeCinema from '../publicModule/singeCinema'
+  // import singeCinema from '../publicModule/singeCinema'
+
+  import singleCinema from "frame_cpm/dialogs/cinemaDialog/singleCinema"
   import mixins from "src/frame_cpm/mixins/cacheMixin.js";
+  import config from 'frame_cpm/http/config.js';
   function timeStampToString(time){  
     var datetime = new Date();  
     datetime.setTime(time);  
@@ -147,19 +162,26 @@
     var hour = datetime.getHours()< 10 ? "0" + datetime.getHours() : datetime.getHours();  
     var minute = datetime.getMinutes()< 10 ? "0" + datetime.getMinutes() : datetime.getMinutes();  
     var second = datetime.getSeconds()< 10 ? "0" + datetime.getSeconds() : datetime.getSeconds();  
-    return year + "-" + month + "-" + date;  
+    // return year + "-" + month + "-" + date;  
+    return `${year}-${month}-${date}-${hour}-${minute}-${second}`
 	} 
    
   export default {
     components: {
-      singeCinema,
+      singleCinema,
       mydialog
     },
     mixins: [mixins.cacheMixin],
     data() {
-
       return {
-         cacheField:["searchAdition","cinemaName"],
+        singleCinemaVisible: false,
+        singleCinemaType: 2,
+        innerData: {
+            id: '',
+            resourceCode:'csm_order_manager'
+        },
+        cinemaName: '',
+        cacheField:["searchAdition","cinemaName"],
         subComName:"xxxxxxxxxxx",
         total: 1,//总数
         current: 1,//当前页
@@ -170,8 +192,9 @@
         // 日期
         pickerOptions: {
           onPick: ({ minDate, maxDate }) => {
-            this.searchAdition.dateStart = timeStampToString(minDate);
-            this.searchAdition.dateEnd = timeStampToString(maxDate);
+            console.log(minDate, maxDate)
+            // this.searchAdition.dateStart = timeStampToString(minDate);
+            // this.searchAdition.dateEnd = timeStampToString(maxDate);
           }
         },
         // 是否高级
@@ -255,7 +278,13 @@
         if(!val){
           this.searchAdition.dateStart = '';
           this.searchAdition.dateEnd = '';
+          return
         }
+        console.log(val)
+        this.searchAdition.dateStart = timeStampToString(val[0]);
+        this.searchAdition.dateEnd = timeStampToString(val[1]);
+        console.log(this.searchAdition.dateStart,this.searchAdition.dateEnd)
+       
       },
       //获取列表数据
       getList(page=1) {
@@ -281,16 +310,16 @@
           })
       },
       // 获取收银员
-      getWorker(current,userName,userAccount){
+      getWorker(current=1,userName){
         let limit = {
           current,
           size:10,
           userName,
-          userAccount,
+          // userAccount,
           cinemaUid:this.searchAdition.cinemaUid
         };
         // getCashier  之前是用getworker
-        this.$csmList.getCashier(Object.assign({}, limit))
+        this.$csmList.orderWorker(Object.assign({}, limit))
           .then(data => {
             if(data && data.code === 200){
               this.$refs.searchDialog.gridData = data.data.records
@@ -322,7 +351,7 @@
           this.getWorker()
           this.$refs.searchDialog.dialogTableVisible = true;
           this.$refs.searchDialog.title = "查找收银员";
-          this.$refs.searchDialog.showWhich = "worker";
+          this.$refs.searchDialog.showWhich = "creater";
         }
       },
       //  返回值
@@ -333,15 +362,40 @@
           // this.searchAdition.userName = obj.userName
           this.$set(this.searchAdition,"userName",obj.userName)
         }else if(whichOne == "creater"){
-          this.searchAdition.createUserName = obj.userName
+           this.$set(this.searchAdition,"userName",obj.userName)
+          // this.searchAdition.createUserName = obj.userName
         }
       },
       searchWorker(current,userName,userAccount){
         this.getWorker(current,userName,userAccount)
       },
-      // 打开影院
-      openCinema(){
+     
+      openCinema(){  // 打开影院
         this.$refs.singeCinema.opendialog = true;
+        // this.$refs.singeCinema.innerCinemaMultiData.resourceCode = "csm_order_manager";
+      },
+      callBackSingle(data) {
+          console.log(data, '-----> data')
+          this.searchAdition.cinemaUid = data.data.id
+          this.cinemaName = data.data.name
+          this.cinemaName = this.cinemaName.length> 10?this.cinemaName.substring(0,9)+"...": this.cinemaName
+          this.innerData.id = data.data.id
+          this.singleCinemaVisible = data.framedialogVisible
+          // this.search() 
+      },
+      getUserInfo() {
+          this.$ctmList.getUserInfo().then(res => {
+              console.log(res)
+              if (res.code === 200) {
+                  this.cinemaName = res.data.cinemaName
+                  this.cinemaName = this.cinemaName.length> 10?this.cinemaName.substring(0,9)+"...": this.cinemaName
+                  this.searchAdition.cinemaUid = res.data.cinemaUid
+                  this.innerData.id = Number(res.data.cinemaUid)
+                  this.search()
+              } else {
+                  this.error(res.msg)
+              }
+          })
       },
       callback(val){
         console.log(val)
@@ -358,6 +412,9 @@
         this.searchAdition.cinemaUid = tradingSearch.cinemaUid;
         this.cinemaName && this.getList() || this.getPayType;
       }
+     
+      this.getUserInfo()
+        
     }
   };
 </script>
@@ -462,6 +519,6 @@
     position: absolute;
     bottom: 16px;
     right: 120px;
-    padding: 8px 36px;
+    padding: 9px 36px;
   }
 </style>

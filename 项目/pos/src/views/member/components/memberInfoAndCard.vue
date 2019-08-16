@@ -14,9 +14,9 @@
     </div>
     <slot name="addBlock"></slot>
     <div class="bottom-btn-warp">
-      <el-button @click="back()">返回</el-button>
-      <el-button 
-        class="submit" 
+      <el-button  @click="back()" v-text="isshow && member.cardNoOrphoneNumState ? '取消' : '返回'" class="common-btn"></el-button>
+      <el-button
+        class="common-btn"
         v-show="isshow && !$attrs.submitShow && member.cardNoOrphoneNumState"
         @click="submit" type="primary">{{$attrs.submitText ? textState : '确定'}}</el-button>
     </div>
@@ -68,7 +68,9 @@ export default {
       this.isshow = true;
       this.member.cardNo = data.cardNo
       this.member.cardState = data.status;
-      // this.member.cardTypeCode = '';
+      this.member.cardTypeCode = data.cardTypeCode;
+      this.member.canCharge = data.canCharge;
+      this.member.cardProductId = data.cardProductId
     },
     // 点击查询按钮或敲回车
     back() {
@@ -94,7 +96,7 @@ export default {
           let cardArr = [];
           (this.$attrs.cardStatus).forEach((v,i)=>{
             (this.filterData(arr)).filter((val,index) => {
-              if(val.status === v){
+              if(val.status === v && val.cardTypeCode != 'gift_card'){
                 cardArr.push(val) 
               } 
             })
@@ -111,20 +113,21 @@ export default {
         // TODO 请求会员详情
         let params = { mobileNum: data.phoneOrCard, tenantId: this.tenantId, verifyCode:false,validateCode:''};
         MemberAjax.getInfoByPhone(params)
-          .then(data => {
+          .then(response => {
             this.member.cardState = '';
             this.member.cardNo = '';
             this.member.cardTypeCode = '';
+            this.member.canCharge = '';
             this.member.pageLoading = false;
-            var memberdata = data.data;
+            var memberdata = response.data;
+            this.member.memberCardInfo = this.memberInfo = memberdata;
             if (!memberdata) {
-              this.$message.warning(data.msg);
+              this.$message.warning(response.msg);
               this.$emit('isShow',false)
               return;
             }
-            this.member.memberCardInfo = this.memberInfo = memberdata;
             memberdata.memberCardList = this.cardStatusfilter(
-              data.data.memberCardList
+              response.data.memberCardList
             );
             if (memberdata.memberCardList.length == 0) {
               this.$emit('isShow',false)
@@ -141,19 +144,26 @@ export default {
         // TODO 请求会员卡详情
         let params = { cardNo: data.phoneOrCard, tenantId: this.tenantId,verifyPassword:false};
         MemberAjax.getCardInfoByNo(params)
-          .then(data => {
-            let info = data.data;
+          .then(reponse => {
+            let info = reponse.data;
             this.member.pageLoading = false;
             this.member.memberCardInfo = this.memberCardInfo = info;
             if (!info) {
-              this.$message.warning(data.msg);
+              this.$message.warning(reponse.msg);
               this.$emit('isShow',false) 
-              return;
+              return false;
             }
             this.member.cardState = info.status;//输入卡号获取卡状态
             this.member.cardNo = info.cardNo;
             this.member.phoneNum = info.phoneNumber;
             this.member.cardTypeCode = info.cardTypeCode;
+            this.member.canCharge = info.canCharge; //是否可充值
+            this.member.cardProductId = info.cardProductId;
+            if(info.cardTypeCode === 'gift_card'){
+              this.$message.warning(`${info.cardType}不支持此操作`);
+              this.$emit('isShow',false) 
+              return;
+            }
             this.$emit('isShow',true)           
           })
           .catch(err => {
@@ -181,31 +191,16 @@ export default {
 <style lang="scss">
 ._member-recharge {
   min-height: 93vh;
-  padding-bottom: 7vh;
   position: relative;
 
 
   .member-recharge-content {
-    padding: 0 2vw 2.6vh 2vw;
-  }
-  .recharge-info-title {
-    font-size: $font-size14;
-    color: #333;
-    font-weight: bold;
-    text-indent: 2vw;
-    padding-bottom:3vh;
-  }
-  .psd-inp{
-      width:65%;
+    padding: 0 2vw 0vh 2vw;
   }
   .demo-ruleForm {
-    margin-top:4vh;
+    margin-top:2vh;
     width: 60vw;
   }
-  .start-btn{
-      margin-left:1vw;
-      border-color:#dcdfe6;
-      border-radius:0;
-  }
+  
 }
 </style>

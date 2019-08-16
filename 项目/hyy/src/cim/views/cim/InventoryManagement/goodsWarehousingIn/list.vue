@@ -4,9 +4,8 @@
       <el-form
         :inline="true"
         :model="queryData"
-        label-position="right"
-        label-width="100px"
-        label-suffix=":"
+        label-position="left"
+        label-suffix="："
       >
         <el-form-item label="登记门店" class="select-input">
             <el-input
@@ -21,7 +20,7 @@
         <el-form-item label="单据号">
           <el-input
             v-model="queryData.billCode"
-            placeholder="请输内容"
+            placeholder="请输入"
           ></el-input>
         </el-form-item>
         <el-form-item label="制单日期">
@@ -260,7 +259,7 @@ export default {
       }
     },
     // 选泽门店回调
-    onCinemalSumit(val = []) {
+    setCinema(val = []) {
       if (val.length > 0) {
         this.queryData.cinemaName = val[0].name;
         this.queryData.cinemaUid = val[0].uid;
@@ -269,6 +268,21 @@ export default {
         this.queryData.cinemaUid = "";
       }
       console.log(val);
+    },
+    // 选泽门店回调
+    onCinemalSumit(val = [],type) {
+      console.log(val," 选泽门店回调",type);
+      if (val.length > 0) {
+        if(type=="default"){
+          if(val.length==1){
+            this.setCinema(val)
+          }
+        }else{
+          this.setCinema(val)
+        }
+      } else {
+        this.setCinema()
+      }
     },
     billTypeEvent(){
       if(this.queryData.billType == ""){
@@ -287,15 +301,15 @@ export default {
         // 领用退回入库
           case "1":
             return this.addReturn({
-              type: 1, //1新建，2修改，3查看
-              data: JSON.stringify(this.queryData)
+              type: '1'//1新建，2修改，3查看
+              // data: JSON.stringify(this.queryData)
             });
             break;
         // 盘点赔偿入库
           case "2":
             this.addInventory({
-              type: 1, //1新建，2修改，3查看
-              data: JSON.stringify(this.queryData)
+              type: '1'//1新建，2修改，3查看
+              // data: JSON.stringify(this.queryData)
             });
             break;
         // 调拨入库
@@ -308,23 +322,68 @@ export default {
         }
     },
     // 跳转领用退回入库
-    addReturn(param) {
+    addReturn(param = {}) {
+      let router = '';
+      switch (param.type) {
+        case "1":
+          // 新增
+          router = 'add';
+          break;
+        case "2":
+          // 编辑
+          router = 'edit';
+          break;
+        case "3":
+          // 查看
+          router = 'details';
+          break;
+      }
       this.$router.push({
-        path: "return",
+        path: "return"+router,
         query: param
       });
     },
     // 跳转盘点赔偿入库
-    addInventory(param) {
+    addInventory(param = {}) {
+      let router = '';
+      switch (param.type) {
+        case "1":
+          // 新增
+          router = 'add';
+          break;
+        case "2":
+          // 编辑
+          router = 'edit';
+          break;
+        case "3":
+          // 查看
+          router = 'details';
+          break;
+      }
       this.$router.push({
-        path: "inventory",
+        path: "inventory"+router,
         query: param
       });
     },
     // 跳转调拨入库
-    addWarehousing(param) {
+    addWarehousing(param = {}) {
+      let router = '';
+      switch (param.type) {
+        case "1":
+          // 新增
+          router = 'add';
+          break;
+        case "2":
+          // 编辑
+          router = 'edit';
+          break;
+        case "3":
+          // 查看
+          router = 'details';
+          break;
+      }
       this.$router.push({
-        path: "warehousing",
+        path: "warehousing"+router,
         query: param
       });
     },
@@ -351,12 +410,49 @@ export default {
     },
     // 查看操作
     seetable(row){
-      console.log(row)
-      this.resStoreInDetail(row,3)
+       if(row.billType == 4){
+          this.addReturn({
+            type: "3", //1新建，2修改，3查看
+            data: JSON.stringify(row.uid)
+            // cinema: JSON.stringify(this.queryData)
+          });
+        }else if(row.billType == 5){
+          this.addInventory({
+            type: "3", //1新建，2修改，3查看
+            data: JSON.stringify(row.uid)
+            // cinema: JSON.stringify(this.queryData)
+          });
+        }else if(row.billType == 6){
+          this.addWarehousing({
+            type: "3", //1新建，2修改，3查看
+            data: JSON.stringify(row.uid)
+            // cinema: JSON.stringify(this.queryData)
+          });
+        }
+      // this.resStoreInDetail(row,3)
     },
     // 修改操作
     edirtable(row){
-      this.resStoreInDetail(row,2)
+      if(row.billType == 4){
+          this.addReturn({
+            type: "2", //1新建，2修改，3查看
+            data: JSON.stringify(row.uid)
+            // cinema: JSON.stringify(this.queryData)
+          });
+        }else if(row.billType == 5){
+          this.addInventory({
+            type: "2", //1新建，2修改，3查看
+            data: JSON.stringify(row.uid)
+            // cinema: JSON.stringify(this.queryData)
+          });
+        }else if(row.billType == 6){
+          this.addWarehousing({
+            type: "2", //1新建，2修改，3查看
+            data: JSON.stringify(row.uid)
+            // cinema: JSON.stringify(this.queryData)
+          });
+        }
+      // this.resStoreInDetail(row,2)
     },
     // 提交操作
     tjtable(row){
@@ -463,6 +559,12 @@ export default {
                 data: JSON.stringify(res.data),
                 cinema: JSON.stringify(this.queryData)
               });
+            }else if(row.billType == "6"){
+              this.addWarehousing({
+                type: type, //1新建，2修改，3查看
+                data: JSON.stringify(res.data),
+                cinema: JSON.stringify(this.queryData)
+              });
             }
                
           } else {
@@ -483,12 +585,6 @@ export default {
 @import "../../../../assets/css/common.scss";
 @import "../../../../assets/css/element-common.scss";
 .goodsIn-style{
-  .select-input {
-    .el-input {
-      width: 70%;
-    }
-  }
-
   .newPro-box {
     .title {
       margin: 10px 0;

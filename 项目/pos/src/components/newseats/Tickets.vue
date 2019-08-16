@@ -70,7 +70,7 @@ export default {
 
      .tickets-header {
         width: 100%;
-        height: calc(16vh - 10.6vh);
+        height: calc(16vh - 10.75vh);
         display: flex;
         justify-content: flex-start;
         align-items: center;
@@ -96,8 +96,8 @@ export default {
              box-sizing: border-box;
              width: calc((100% - 1% * 3) / 3);
              margin-left: 0.5%;
-             margin-bottom: 2px;
-             padding: 1vh 0;
+             margin-bottom: 0.52%;
+             height: 5.2vh;
              border: 1px solid #A4BEFC;
              background: #ffffff;
              display: flex;
@@ -106,14 +106,15 @@ export default {
              color: $font-color3;
              font-size: $font-size12;
              position: relative;
+             border-radius: 2px;
              cursor: pointer;
          }
 
          .have-sel-pos {
            position: absolute;
            right: 0;
-           top: 0;
-           font-size: 32px;
+           top: -1px;
+           font-size: 2.2vw;
            color: #3B74FF;
          }
 

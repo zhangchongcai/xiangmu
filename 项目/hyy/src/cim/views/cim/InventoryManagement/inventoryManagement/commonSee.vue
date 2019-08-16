@@ -6,13 +6,14 @@
         <el-breadcrumb-item>{{typeText}}盘点单</el-breadcrumb-item>
       </el-breadcrumb>
     </div> -->
+    <!-- {{this.queryData}} -->
     <div class="tittle"></div>
     <el-form
       :inline="true"
       :model="queryData"
       label-position="left"
       label-width="100px"
-      label-suffix=":"
+      label-suffix="："
       >
       <el-collapse  v-model="activeNames">
         <!-- 基础信息 start-->
@@ -88,11 +89,16 @@
                 :key="item.key"
                 :prop="item.key"
                 :label="item.label"
+                :width="item.width"
                 :formatter="item.formatter"
               >
                 <template slot-scope="{row}" name="header">
                   <div v-if="item.edit">
                     <el-input size="small" v-model="row[item.key]" placeholder></el-input>
+                  </div>
+                  <div v-if="item.color">
+                    <span :style="tableColor(row)">{{row[item.key]}}</span>
+                    <!-- <el-input size="small" v-model="row[item.key]" placeholder :style="tableColor(row)"></el-input> -->
                   </div>
                   <div v-else-if="item.selsect">
                     <el-select  v-model="row[item.key]">
@@ -129,6 +135,33 @@
           </div>
         </el-collapse-item>
         <!-- 商品清单 end-->
+        <!--  审批流程-->
+        <el-collapse-item title="审批流程" name="3" v-if="routeQuery.type=='3'">
+            <el-form-item label="审批流程名称" label-width="110px">
+                <span>盘点单审核</span>
+            </el-form-item>
+            <el-steps :space="200" :active="approvalActive" finish-status="success">
+                <el-step :title="approvalStart()"></el-step>
+                <el-step :title="item.auditMan" :key="item.auditTime"
+                        v-for="item in queryData.reviewRecordList"></el-step>
+                <el-step title="结束" v-if="queryData.approvalStatus==2"></el-step>
+            </el-steps>
+        </el-collapse-item>
+        <!--  审批记录-->
+        <el-collapse-item title="审批记录" name="4" v-if="routeQuery.type=='3'">
+            <div>
+                <el-table :data="queryData.reviewRecordList" stripe>
+                    <el-table-column
+                            v-for="item in reviewRecordTableColumn"
+                            :key="item.key"
+                            :prop="item.key"
+                            :label="item.label"
+                            :formatter="item.formatter"
+                    >
+                    </el-table-column>
+                </el-table>
+            </div>
+        </el-collapse-item>
       </el-collapse>
       <!-- 选择供应商弹窗 -->
       <suppliers-dialog ref="mySuppliersDialog"></suppliers-dialog>
@@ -149,16 +182,25 @@
         <el-col>
           <el-form
               :inline="true"
+              ref="chayiruleForm"
               :model="chayiData"
               label-position="right"
               label-width="80px"
-              label-suffix=":"
+              label-suffix="："
               >
-              <span>实盘库存数：{{this.chayiData.checkStoreCount}} -系统库存数：{{this.chayiData.recordStoreCount}} ={{this.ykActive == true ? "盘盈：":"盘亏："}}{{Math.abs(this.ykVal)}}</span>
+              <span class="colred">{{this.chayiData.merName}}:</span>
+              <span>实盘库存数：{{this.chayiData.checkStoreCount}} -系统库存数：{{this.chayiData.recordStoreCount}} = <span class="colred">{{this.ykActive == true ? "盘盈：":"盘亏："}}{{Math.abs(this.ykVal)}}</span>
+              </span>
             <el-collapse  v-model="activeNames">
               <el-collapse-item title="差异说明" name="1">
                 <el-col>
-                    <el-form-item label="差异类别">
+                    <el-form-item 
+                      label="差异类别"
+                      prop="changeTypeCode"
+                      :rules="[
+                          { required: true, message: '请选择差异类别',trigger: 'change' }
+                        ]"
+                      >
                       <el-select v-model="chayiData.changeTypeCode" @focus="pdfnSelEvent()" @change="changePdfnEvent()" v-if="routeQuery.type==4">
                         <el-option 
                           v-for = "item in CYdata"
@@ -192,8 +234,8 @@
                     <span v-if="routeQuery.type==3">{{newchangeHandle}}</span>
                     <div v-if="routeQuery.type==4">
                       <el-radio-group v-model="chayiData.changeHandle" @change="changeHandleEvent()">
-                        <el-radio label=1>接受{{this.ykActive == true ? "盘盈：":"盘亏："}}</el-radio>
-                        <el-radio label=2>调整{{this.ykActive == true ? "盘盈：":"盘亏："}}</el-radio>
+                        <el-radio label=1>接受{{this.ykActive == true ? "盘盈":"盘亏"}}</el-radio>
+                        <el-radio label=2>调整{{this.ykActive == true ? "盘盈":"盘亏"}}</el-radio>
                       </el-radio-group>
                     </div>
                       <!-- <span v-if="routeQuery.type==3">{{chayiData.changeHandle === '1' ? "接受盘亏":"调整盘亏"}}</span> -->
@@ -220,8 +262,8 @@
                       </el-form-item>
                 </el-col>
               </el-collapse-item>
-              <div v-if="this.chayiData.changeHandle == 1">差异处理后{{this.ykActive == true ? "盘盈：":"盘亏："}}{{Math.abs(this.ykVal)}}</div>
-              <div v-if="this.chayiData.changeHandle == 2">差异处理后{{this.ykActive == true ? "盘盈：":"盘亏："}}{{Math.abs(this.newykval)}}</div>
+              <div v-if="this.chayiData.changeHandle == 1" class="fontbold">差异处理后{{this.ykActive == true ? "盘盈：":"盘亏："}}{{Math.abs(this.ykVal)}}</div>
+              <div v-if="this.chayiData.changeHandle == 2" class="fontbold">差异处理后{{jtshuzhi-this.chayiData.recordStoreCount >0 ? "盘盈：":"盘亏："}}{{Math.abs(this.newykval)}}</div>
             </el-collapse>
           </el-form>
         </el-col>
@@ -251,9 +293,9 @@ export default {
     return {
       newseeStatus:"",
       newchangeHandle:"",
-      activeNames:['1','2','3'],
-      remnant:"",
-      remnant1:"",
+      activeNames:['1','2','3','4'],
+      remnant:"0",
+      remnant1:"0",
       hhhh:{},
       // 盈亏状态
       ykActive:"",
@@ -312,6 +354,25 @@ export default {
           keyDesc:"漏盘错盘"
         },
       ],
+      // 查看审核表头
+      reviewRecordTableColumn:[
+        {
+            label: "审核时间",
+            key: "auditTime"
+        },
+        {
+            label: "审核人",
+            key: "auditMan"
+        },
+        {
+            label: "审核结果",
+            key: "arditResult"
+        },
+        {
+            label: "审核意见",
+            key: "auditOpinion"
+        },
+      ],
       selectedGoodsDialogVisible:false,
       goodList:[],
       pdfnData:[],
@@ -345,7 +406,7 @@ export default {
         value: "label",
         children: "cities"
       },
-      activeNames:['1','2','3'],
+      activeNames:['1','2','3','4'],
       total: 0,
       // 表格表头
       tableColumn: [
@@ -383,15 +444,18 @@ export default {
         },
         {
           label: "差异数",
-          key: "variance"
+          key: "variance",
+          color:"true",
         },
         {
           label: "差异成本金额（元）",
-          key: "varianceCostPrice"
+          key: "varianceCostPrice",
+          width:"160"
         },
         {
           label: "调整后差异数",
-          key: "resizeVariance"
+          key: "resizeVariance",
+          width:"160"
         }
       ],
       // 表格数据
@@ -437,21 +501,53 @@ export default {
         this.queryData = JSON.parse(this.$route.query.data)
         console.log(this.queryData)
       }else if(this.$route.query.type == "3"){
-        this.queryData = JSON.parse(this.$route.query.data)
-        this.queryData.checkBillMerEntityList = JSON.parse(this.$route.query.data).checkBillInfoVoList
-        this.newseeStatus = this.$route.query.active
-        //  this.$set(row,"seeStatus",seeStatus)
-        console.log(this.queryData)
+        this.resCheckBillQueryCheckBill(JSON.parse(this.$route.query.data))
       }else if(this.$route.query.type == "4"){
-        this.queryData = JSON.parse(this.$route.query.data)
-        this.queryData.checkBillMerEntityList = JSON.parse(this.$route.query.data).checkBillInfoVoList
-        console.log(this.queryData)
-        this.queryData.checkBillMerEntityList.forEach((val,newindex,arr)=>{
-          if(val.checkStoreCount === val.recordStoreCount){
-              val.doStatus = 1
+        this.resCheckBillQueryCheckBill(JSON.parse(this.$route.query.data))
+      }
+    },
+        // 跳转修改页面请求
+    resCheckBillQueryCheckBill(row){
+      let val = {
+        uid:row
+      }
+      this.$cimList.inventoryManagement
+        .checkBillQueryCheckBill(val)
+        .then(res => {
+          if (res.code === 200) {
+            if(this.$route.query.type == "3"){
+              this.queryData = res.data
+              this.queryData.checkBillMerEntityList = this.queryData.checkBillInfoVoList
+              this.newseeStatus = this.$route.query.active
+              this.queryData.reviewRecordList = this.queryData.reviewRecordList == null ? []:this.queryData.reviewRecordList
+              this.queryData.checkBillMerEntityList.forEach((val,newindex,arr)=>{
+                    if(val.variance >= 0){
+                      this.$set(arr[newindex],'color','red')
+                      val.variance = "+"+val.variance
+                    }else{
+                      this.$set(arr[newindex],'color','green')
+                    }
+              })
+            }else if(this.$route.query.type == "4"){
+              this.queryData = res.data
+              this.queryData.checkBillMerEntityList = this.queryData.checkBillInfoVoList
+              this.queryData.checkBillMerEntityList.forEach((val,newindex,arr)=>{
+                if(val.checkStoreCount === val.recordStoreCount){
+                    val.doStatus = 1
+                }
+                if(val.variance >= 0){
+                  this.$set(arr[newindex],'color','red')
+                  val.variance = "+"+val.variance
+                }else{
+                  this.$set(arr[newindex],'color','green')
+                }
+              })
+            }
+          } else {
+            this.$message(res.msg);
           }
         })
-      }
+        .catch(err => {});
     },
     // 查询
     onQuery() {
@@ -460,7 +556,7 @@ export default {
       this.findSemifinishedMater(this.materialQueryData);
     },
         // 选泽门店回调
-    onCinemalSumit(val = []) {
+    setCinema(val = []) {
       if (val.length > 0) {
         this.queryData.cinemaName = val[0].name;
         this.queryData.cinemaUid = val[0].uid;
@@ -470,9 +566,36 @@ export default {
       }
       console.log(val);
     },
+    // 选泽门店回调
+    onCinemalSumit(val = [],type) {
+      console.log(val," 选泽门店回调",type);
+      if (val.length > 0) {
+        if(type=="default"){
+          if(val.length==1){
+            this.setCinema(val)
+          }
+        }else{
+          this.setCinema(val)
+        }
+      } else {
+        this.setCinema()
+      }
+    },
     cChangeReason(value){
         console.log("value---------------------------"+value)
     },
+        // 取消返回
+    // fanhuihandleCancel() {
+    //   this.$store.commit("tagNav/removeTagNav", {
+    //       name: this.$route.name,
+    //       path: this.$route.path,
+    //       title: this.$route.meta.title,
+    //       query: this.$route.query
+    //   })
+    //   this.$router.push({
+    //       path: "/retail/InventoryManagement/inventoryManagement/list",
+    //   });
+    // },
     pankuidialogVisible(){
       this.chayiData.changeHandle = this.deHadle 
       this.deHadle = ""     
@@ -487,63 +610,69 @@ export default {
       //   })
     }, 
     pankuiBtn(){
-      // this.thischuliIndex = index
-      this.chayidialogVisible = false
-      let valnew = this.thischuliIndex
-      console.log(this.chayiData.changeHandle)
-      if(this.chayiData.changeHandle == "1"){
-        this.queryData.checkBillMerEntityList.forEach((val,newindex,arr)=>{
-          if(valnew === newindex){
-            val.changeHandle = this.chayiData.changeHandle
-            val.checkBillUid = this.chayiData.checkBillUid
-            val.uid = this.chayiData.uid
-            val.variance = this.chayiData.variance
-            val.recheckStoreCount = null
-            val.recordStoreCount = this.chayiData.recordStoreCount
-            val.checkStoreCount = this.chayiData.checkStoreCount
-            val.changeReason = this.chayiData.changeReason
-            val.rechangeReason = this.chayiData.rechangeReason
-            val.changeTypeCode = this.chayiData.changeTypeCode
-            val.changeTypeName = this.chayiData.changeTypeName
-            val.resizeVariance = this.chayiData.variance
-            val.doStatus = 1
+      this.$refs["chayiruleForm"].validate(valid => {
+        if (valid) {
+          this.chayidialogVisible = false
+          let valnew = this.thischuliIndex
+          console.log(this.chayiData.changeHandle)
+          if(this.chayiData.changeHandle == "1"){
+            this.queryData.checkBillMerEntityList.forEach((val,newindex,arr)=>{
+              if(valnew === newindex){
+                val.changeHandle = this.chayiData.changeHandle
+                val.checkBillUid = this.chayiData.checkBillUid
+                val.uid = this.chayiData.uid
+                val.variance = this.chayiData.variance
+                val.recheckStoreCount = null
+                val.recordStoreCount = this.chayiData.recordStoreCount
+                val.checkStoreCount = this.chayiData.checkStoreCount
+                val.changeReason = this.chayiData.changeReason
+                val.rechangeReason = this.chayiData.rechangeReason
+                val.changeTypeCode = this.chayiData.changeTypeCode
+                val.changeTypeName = this.chayiData.changeTypeName
+                val.resizeVariance = this.chayiData.variance
+                val.doStatus = 1
+              }
+            })
+          }else if(this.chayiData.changeHandle == "2"){
+            this.queryData.checkBillMerEntityList.forEach((val,newindex,arr)=>{
+              if(valnew === newindex){
+                  val.changeHandle = this.chayiData.changeHandle
+                  val.checkBillUid = this.chayiData.checkBillUid
+                  val.uid = this.chayiData.uid
+                  val.variance = this.chayiData.variance
+                  val.recheckStoreCount = Math.abs(this.jtshuzhi)
+                  val.recordStoreCount = this.chayiData.recordStoreCount
+                  val.checkStoreCount = this.chayiData.checkStoreCount
+                  val.changeReason = this.chayiData.changeReason
+                  val.rechangeReason = this.chayiData.rechangeReason
+                  val.changeTypeCode = this.chayiData.changeTypeCode
+                  val.changeTypeName = this.chayiData.changeTypeName
+                  // val.resizeVariance = this.jtshuzhi - this.chayiData.recordStoreCount
+                  val.resizeVariance = Math.abs(this.newykval)
+                  val.doStatus = 2
+                }
+              })
           }
-        })
-      }else if(this.chayiData.changeHandle == "2"){
-        this.queryData.checkBillMerEntityList.forEach((val,newindex,arr)=>{
-          if(valnew === newindex){
-              val.changeHandle = this.chayiData.changeHandle
-              val.checkBillUid = this.chayiData.checkBillUid
-              val.uid = this.chayiData.uid
-              val.variance = this.chayiData.variance
-              val.recheckStoreCount = Math.abs(this.jtshuzhi)
-              val.recordStoreCount = this.chayiData.recordStoreCount
-              val.checkStoreCount = this.chayiData.checkStoreCount
-              val.changeReason = this.chayiData.changeReason
-              val.rechangeReason = this.chayiData.rechangeReason
-              val.changeTypeCode = this.chayiData.changeTypeCode
-              val.changeTypeName = this.chayiData.changeTypeName
-              // val.resizeVariance = this.jtshuzhi - this.chayiData.recordStoreCount
-              val.resizeVariance = Math.abs(this.newykval)
-              val.doStatus = 2
-            }
-          })
-      }
-      this.chayiData = {
-        changeHandle:1,
-        changeReason:"",
-        rechangeReason:"",
-        changeTypeCode:"",
-        changeTypeName:"",
-        checkBillUid:"",
-        saveStatus:"",
-        uid:"",
-        variance:"",
-        recheckStoreCount:"",
-        recordStoreCount:"",
-        checkStoreCount:"",
-        resizeVariance:""
-      }
+          this.chayiData = {
+            changeHandle:1,
+            changeReason:"",
+            rechangeReason:"",
+            changeTypeCode:"",
+            changeTypeName:"",
+            checkBillUid:"",
+            saveStatus:"",
+            uid:"",
+            variance:"",
+            recheckStoreCount:"",
+            recordStoreCount:"",
+            checkStoreCount:"",
+            resizeVariance:""
+          }
+        } else {
+          // this.$message("请输入带*必填项");
+          return false;
+        }
+      });  
      
     },
     // 获取分类列表
@@ -575,7 +704,8 @@ export default {
         changeReason:row.changeReason,
         rechangeReason:row.rechangeReason,
         changeTypeCode:row.changeTypeCode,
-        changeTypeName:row.changeTypeName
+        changeTypeName:row.changeTypeName,
+        merName:row.merName
       }
       this.chayiData = newchayiData
       if(this.chayiData.changeHandle == "1"){
@@ -609,7 +739,7 @@ export default {
         this.$message(newAvtive.a2.merName+":没有进行差异处理");
       }else{
         this.resCheckBillSubmitCheck(this.queryData,1)
-        this.handleCancel()
+        
       }
     },
     chuliCancel(){
@@ -635,10 +765,20 @@ export default {
       }
     },
     handleCancel() {
+      this.$store.commit("tagNav/removeTagNav", {
+          name: this.$route.name,
+          path: this.$route.path,
+          title: this.$route.meta.title,
+          query: this.$route.query
+      })
       // console.log(JSON.stringify(this.queryData))
+      let queryData = {
+        cinemaUid:this.queryData.cinemaUid,
+        cinemaName:this.queryData.cinemaName
+      }
       this.returnList({
         returnType:true,
-        cinema: JSON.stringify(this.queryData)
+        cinema: JSON.stringify(queryData)
       });
     },
     returnList(param) {
@@ -794,16 +934,16 @@ export default {
         this.queryData.checkBillMerEntityList.forEach((val,index,arr)=>{
             if(val.doStatus === 2){
               // 差异成本金额
-              let vala = parseInt(val.varianceCostPrice)
+              let vala = parseFloat(val.varianceCostPrice)
               // 调整后差异数
-              let valb = parseInt(val.resizeVariance)
+              let valb = parseFloat(val.resizeVariance)
               // 差异数
-              let valc = parseInt(val.variance)
+              let valc = parseFloat(val.variance)
               // 调整差异金额计算方法：差异成本金额+调整后差异*(差异成本金额/差异数)
               totalPrice =valb*(vala/valc)+totalPrice
               console.log(totalPrice)             
             }else{
-              totalPrice = totalPrice + parseInt(val.varianceCostPrice)
+              totalPrice = totalPrice + parseFloat(val.varianceCostPrice)
             }
         })
         this.queryData.totalPrice = totalPrice
@@ -946,23 +1086,23 @@ export default {
         })
         .catch(err => {});
     },
-    // 跳转修改页面请求
-    resCheckBillQueryCheckBill(row){
-      let val = {
-        uid:row.uid
-      }
-      this.$cimList.inventoryManagement
-        .checkBillQueryCheckBill(val)
-        .then(res => {
-          if (res.code === 200) {
-            this.queryData = res.data
-            this.queryData.checkBillMerEntityList = this.queryData.checkBillInfoVoList
-          } else {
-            this.$message(res.msg);
-          }
-        })
-        .catch(err => {});
-    },
+    // // 跳转修改页面请求
+    // resCheckBillQueryCheckBill(row){
+    //   let val = {
+    //     uid:row.uid
+    //   }
+    //   this.$cimList.inventoryManagement
+    //     .checkBillQueryCheckBill(val)
+    //     .then(res => {
+    //       if (res.code === 200) {
+    //         this.queryData = res.data
+    //         this.queryData.checkBillMerEntityList = this.queryData.checkBillInfoVoList
+    //       } else {
+    //         this.$message(res.msg);
+    //       }
+    //     })
+    //     .catch(err => {});
+    // },
     // 处理提交审核
     resCheckBillSubmitCheck(row,num){
       let val = {
@@ -978,6 +1118,7 @@ export default {
         .then(res => {
           if (res.code === 200) {
             if(num === 1){
+              this.handleCancel()
               this.$message("处理成功");
             }
           } else {
@@ -987,6 +1128,43 @@ export default {
         .catch(err => {});
 
     },
+    approvalStart(type) {
+      let result = "";
+      switch (this.queryData.approvalStatus) {
+          case 0:
+              result = "未审核";
+              break;
+          case 1:
+              result = "待审核";
+              break;
+          case 2:
+              if (type == 1) {
+                  result = "审核通过";
+              } else {
+                  result = "开始";
+              }
+              break;
+          case 3:
+              result = "审核不通过";
+              break;
+          case 4:
+              result = "无需审核";
+              break;
+      }
+      return result;
+    },
+    tableColor(row){
+      let result = "";
+      switch (row.color) {
+          case "red":
+              result = 'color:green';
+              break;
+          case "green":
+              result = 'color:red';
+              break;
+      }
+      return result;
+    }
   },
   computed: {
     pamkuiDataEvent(){
@@ -1021,6 +1199,27 @@ export default {
           return "处理";
           break;  
       }
+    },
+    approvalActive() {
+        let result = 0;
+        switch (this.queryData.approvalStatus) {
+            case 0:
+                result = 1;
+                break;
+            case 1:
+                result = 1;
+                break;
+            case 2:
+                result = this.queryData.reviewRecordList.length + 2
+                break;
+            case 3:
+                result = this.queryData.reviewRecordList.length + 2
+                break;
+            case 4:
+                result = 1;
+                break;
+        }
+        return result;
     }
   },
   components: {

@@ -30,8 +30,9 @@
                         'notInMonth':!item.dayInCurrentMonth , 
                         'currendDay':item.currendDay, 
                         'noEnableChoise': (!item.enableChoise),
-                        'selected' : item.dayInCurrentMonth && ((+value) === (+item.value))}" 
-                        @click="sureSelectedTheDate(item,index)"></span>
+                        'selected' : item.dayInCurrentMonth && currentMarker == new Date(+item.value).toDateString()}" 
+                        @click="sureSelectedTheDate(item,index)">
+                        </span>
                 </div>
             </template>
         </div>
@@ -42,7 +43,7 @@ import {getDaysListOfMonth} from '../../util/getDaysOfMonth'
 export default {
     props: {
         value: {
-            default: new Date(), 
+            default: '', 
             required: true 
         },
         activeIndex:{
@@ -60,7 +61,8 @@ export default {
             year:null ,
             month: null,
             daysList: [],
-            selectedIndex:this.activeIndex
+            currentMarker:null,
+            // selectedIndex:this.activeIndex
         }
     }, 
     created(){
@@ -68,18 +70,21 @@ export default {
     },
     methods: {
         initDate(){
+           
             if(!(this.value instanceof Array)){
                 // props 字符串类型
                 this.timeNow = new Date();
                 this.year = new Date(this.timeNow).getFullYear();
                 this.month = new Date(this.timeNow).getMonth() + 1;
+                this.currentMarker = new Date(new Date(this.value).getTime()).toDateString();
                 
             }else{
                 // 其他切换过来的,是数组类型的，恢复默认状态（当前时间）
                 this.timeNow = new Date();
                 this.year = new Date(this.timeNow).getFullYear();
                 this.month = new Date(this.timeNow).getMonth() + 1;
-                this.selectedIndex = -1;
+                // this.selectedIndex = -1;
+                this.currentMarker = null;
             }
             this.getDaysListByYearAndMonth(); 
         },
@@ -108,10 +113,6 @@ export default {
         addUpMonth(){    //月的增加
            let year = this.timeNow.getFullYear();
            let month = this.timeNow.getMonth() + 1;
-            // if(year == this.year && month >= this.month){
-            //     return 
-            // }
-            
             this.timeNow.addMonths(1);
             this.getDaysListByYearAndMonth();
         }  , 
@@ -119,7 +120,7 @@ export default {
             if(!item.enableChoise){
                 return false;
             }
-            this.selectedIndex = index;
+            // this.selectedIndex = index;
             this.$emit('valueChange' , new Date(item.value),index);
             if(!item.dayInCurrentMonth){
                 this.timeNow = new Date(item.value);

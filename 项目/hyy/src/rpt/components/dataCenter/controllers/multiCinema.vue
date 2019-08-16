@@ -2,7 +2,7 @@
   <div class="query-dialog-wrapper">
     <div class="input-button">
       <div @mouseenter="showIcon" @mouseleave="hideIcon">
-        <el-input v-model="cinemaValue" :disabled="true">
+        <el-input v-model="multiCinemaObj[`${queryData.queryColKey}`].cinemaValue" :disabled="true">
           <i
             v-if="isShowIcon"
             class="iconfont icon-neiye-danchuangquxiao"
@@ -16,7 +16,7 @@
     <my-dialog
       title="影院选择"
       :isShow="selectTreeValue"
-      :dialogWidth="700"
+      :dialogWidth="576"
       :dialogHeight="576"
       :dialogContentHeight="473"
       :marginTop="1"
@@ -29,18 +29,19 @@
         <div class="search-content">
           <el-form>
             <el-form-item label="影院名称">
-              <el-input v-model="cinemaName" style="width:184px"></el-input>
+              <el-input v-model="cinemaName" style="width:160px"></el-input>
             </el-form-item>
             <el-form-item label="影院编码">
-              <el-input v-model="cinemaCode" style="width:184px"></el-input>
+              <el-input v-model="cinemaCode" style="width:160px"></el-input>
             </el-form-item>
           </el-form>
           <el-button type="primary" @click="searchClick">查询</el-button>
         </div>
+        <div v-if="!Object.keys(resData).length" class="no-data">暂无数据</div>
         <div class="tree-content">
           <el-tree
             @node-click="nodeClick"
-            :data="newselectValue"
+            :data="this.multiCinemaObj[`${this.queryData.queryColKey}`].newselectValue"
             show-checkbox
             default-expand-all
             node-key="applicableobj"
@@ -48,7 +49,8 @@
             highlight-current
             :props="defaultProps"
             icon-class="iconfont icon-neiye-zhankaijiantou"
-            :default-checked-keys="selectedCinemaUidArr"
+            :default-checked-keys="multiCinemaObj[`${queryData.queryColKey}`].defaultCinemaArr"
+            v-loading="multiCinemaLoading"
           ></el-tree>
         </div>
       </div>
@@ -57,35 +59,32 @@
 </template>
 <script>
 import MyDialog from "../dataCommon/myDialog";
-import mixins from "src/frame_cpm/mixins/cacheMixin.js";
 export default {
-  mixins: [mixins.cacheMixin],
   props: {
-    resetStatus: Boolean
+    resetStatus: Boolean,
+    multiCinemaObj: Object,
+    queryData: Object,
+    multiCinemaLoading: Boolean
   },
   components: {
     MyDialog
   },
   data() {
     return {
-      cacheField: [
-        "cinemaValue",
-        "newselectValue"
-      ],
-      subComName: "multiCinema",
-      cinemaValue: "",
       cinemaName: "",
       cinemaCode: "",
       isShowIcon: false,
-      newselectValue: [],
-      selectedCinemaUidArr: [],
       selectTreeValue: false,
       filterText: "",
       defaultProps: {
         children: "subtree",
         label: "menuName"
       },
-      loading: false
+      loading: false,
+      resData: {},
+      cinemaArr: [],
+      isSearch: false,
+      selectedCinemaIdArray: []
     };
   },
   watch: {
@@ -94,20 +93,38 @@ export default {
     },
     resetStatus(newVal) {
       if (newVal) {
-        this.cinemaValue = "";
+        this.multiCinemaObj[`${this.queryData.queryColKey}`].cinemaValue = "";
         this.selectedCinemaUidArr = [];
+        this.$forceUpdate();
         this.$emit("selectMultiCinemaData", "");
       }
     }
   },
+  created() {
+    this.getData("", "");
+    if (!this.multiCinemaObj[`${this.queryData.queryColKey}`])
+      this.multiCinemaObj[`${this.queryData.queryColKey}`] = {
+        cinemaValue: "",
+        newselectValue: [],
+        defaultCinemaArr: []
+      };
+  },
   methods: {
     handleIconClick() {
-      this.cinemaValue = "";
+      this.multiCinemaObj[`${this.queryData.queryColKey}`].cinemaValue = "";
       this.selectedCinemaUidArr = [];
-      this.$emit("selectMultiCinemaData", this.cinemaValue);
+      this.$forceUpdate();
+      this.$emit(
+        "selectMultiCinemaData",
+        this.multiCinemaObj[`${this.queryData.queryColKey}`].cinemaValue,
+        this.queryData.queryName
+      );
     },
     showIcon() {
-      if (this.cinemaValue !== "") this.isShowIcon = true;
+      if (
+        this.multiCinemaObj[`${this.queryData.queryColKey}`].cinemaValue !== ""
+      )
+        this.isShowIcon = true;
     },
     hideIcon() {
       this.isShowIcon = false;
@@ -125,10 +142,18 @@ export default {
           checkedMenuId.push(element.applicableobj);
         }
       });
-      this.cinemaValue = checkedMenuName.join(",");
+      let cinemaValueArray = checkedMenuName.join("、");
+      let cinameIdArray = checkedMenuId.join(",");
+      this.selectedCinemaIdArray = checkedMenuId;
+      this.multiCinemaObj[
+        `${this.queryData.queryColKey}`
+      ].cinemaValue = cinemaValueArray.substring(0, cinemaValueArray.length);
       this.selectedCinemaUidArr = JSON.parse(JSON.stringify(checkedMenuId));
-      this.$emit("selectMultiCinemaData", checkedMenuId.join(","));
-      // this.selectTreeValue = false;
+      this.$emit(
+        "selectMultiCinemaData",
+        cinameIdArray.substring(0, cinameIdArray.length),
+        this.queryData.queryName
+      );
     },
     cancelTreeBtn() {
       this.selectTreeValue = false;
@@ -139,22 +164,69 @@ export default {
       return data.label.indexOf(value) !== -1;
     },
     openDialog() {
-      let self = this;
-      //只请求一次数据
-      if (self.newselectValue.length <= 0) this.getData("", "");
       this.selectTreeValue = true;
+      if (this.cinemaArr.length > 1) {
+        this.multiCinemaObj[
+          `${this.queryData.queryColKey}`
+        ].defaultCinemaArr = [];
+        this.multiCinemaObj[`${this.queryData.queryColKey}`].cinemaValue
+          .split("、")
+          .forEach(element1 => {
+            this.cinemaArr.forEach(element2 => {
+              if (element1 == element2.menuName)
+                this.multiCinemaObj[
+                  `${this.queryData.queryColKey}`
+                ].defaultCinemaArr.push(element2.applicableobj);
+            });
+          });
+      }
+      this.$nextTick(element => {
+        let treeLable = document.getElementsByClassName("el-tree-node__label");
+        for (let i = 0; i < treeLable.length; i++) {
+          if (treeLable[i].innerText === "")
+            treeLable[i].parentNode.style.display = "none";
+        }
+      });
+      this.$forceUpdate();
     },
     searchClick() {
+      this.$emit("setMultiCinemaLoading", true);
       this.getData(this.cinemaName, this.cinemaCode);
+      this.$emit("setMultiCinemaLoading", false);
+      this.isSearch = true;
     },
     getData(cinemaName, cinemaCode) {
       this.$rptList
         .getCinemaTree(cinemaName, cinemaCode)
         .then(res => {
+          this.resData = res;
           let cinemaTree = [];
+          this.cinemaArr = [];
           this.formData(res);
           cinemaTree.push(res);
-          this.newselectValue = cinemaTree;
+          this.getCinemaCount(cinemaTree);
+          if (this.cinemaArr.length == 1 && this.isSearch == false) {
+            this.multiCinemaObj[
+              `${this.queryData.queryColKey}`
+            ].defaultCinemaArr = [this.cinemaArr[0].applicableobj];
+            this.multiCinemaObj[
+              `${this.queryData.queryColKey}`
+            ].cinemaValue = this.cinemaArr[0].menuName;
+            this.$emit(
+              "selectMultiCinemaData",
+              String(this.cinemaArr[0].applicableobj),
+              this.queryData.queryName
+            );
+            this.isSearch = false;
+          }
+          this.multiCinemaObj.newselectValue = cinemaTree;
+          this.multiCinemaObj[
+            `${this.queryData.queryColKey}`
+          ].newselectValue = cinemaTree;
+          if (Object.keys(res).length == 0) {
+            this.$refs.tree.$el.style.display = "none";
+          }
+          this.$forceUpdate();
         })
         .catch(msg => {
           console.log(msg);
@@ -164,7 +236,15 @@ export default {
     handleClose() {
       this.selectTreeValue = false;
     },
-    //递归重组后台返回的菜单树
+    getCinemaCount(data) {
+      for (let i = 0; i < data.length; i++) {
+        if (data[i].subtree) {
+          this.getCinemaCount(data[i].subtree);
+        } else {
+          this.cinemaArr.push(data[i]);
+        }
+      }
+    },
     formData(obj) {
       if (obj.subtree) {
         if (obj.cinemas) {
@@ -176,10 +256,14 @@ export default {
             obj.subtree.push(data);
           });
         }
-        for (let i = 0; i < obj.subtree.length; i++) {
-          let item = obj.subtree[i];
-          if (item.subtree) {
-            this.formData(item);
+        if (obj.subtree.length == 0) {
+          obj.subtree = [{}];
+        } else {
+          for (let i = 0; i < obj.subtree.length; i++) {
+            let item = obj.subtree[i];
+            if (item.subtree) {
+              this.formData(item);
+            }
           }
         }
       }
@@ -217,7 +301,7 @@ export default {
       font-family: "MicrosoftYaHei";
       font-size: 12px;
       color: #666666;
-      background: #f5f5f5;
+      background: #ffffff;
       border: 1px solid #bcbcbc;
       border-radius: 4px;
       text-overflow: ellipsis;
@@ -254,20 +338,29 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 54px;
+  height: 56px;
 
   .el-form {
     display: flex;
     height: 54px;
 
+    .el-form-item {
+      margin-bottom: 0;
+    }
+
+    .el-form-item__label {
+      padding-right: 0;
+    }
+
     .el-form-item:nth-child(2) {
-      margin-left: 20px;
+      margin-left: 16px;
     }
 
     /deep/ .el-form-item__label {
       line-height: 54px;
       font-size: 12px;
       color: #666666;
+      padding-right: 4px;
     }
 
     /deep/ .el-form-item__content {
@@ -284,6 +377,12 @@ export default {
       font-family: "MicrosoftYaHei";
     }
   }
+}
+.no-data {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #bcbcbc;
+  text-align: center;
 }
 .tree-content {
   margin-top: 10px;
@@ -309,6 +408,12 @@ export default {
     }
     .icon-neiye-zhankaijiantou:before {
       font-size: 8px;
+    }
+    .el-tree__empty-block {
+      display: none;
+    }
+    .is-leaf {
+      visibility: hidden;
     }
   }
 }

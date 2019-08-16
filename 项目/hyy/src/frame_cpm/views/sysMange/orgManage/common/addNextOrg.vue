@@ -4,24 +4,22 @@
       <div class="search-wrap ">
         <span>上级组织：</span>
         <el-input
-          v-model="lastOrgData.text"
+          v-model.trim="lastOrgData.text"
           disabled
         ></el-input>
       </div>
       <div class="search-wrap plian" >
         <span>组织名称：</span>
-        <el-input v-model="name" clearable></el-input>
+        <el-input v-model.trim="name" clearable></el-input>
         <!--<div class="childen-search">-->
             <!--<el-input v-model="remark" placeholder="备注信息" clearable></el-input>-->
         <!--</div>-->
       </div>
     </div>
     <div class="confirm-cancel">
+        <el-button type="primary" @click="addNextOrgFun()">确 定</el-button>
 	    <el-button @click="cancel(false)">取 消</el-button>
-	    <el-button type="primary" @click="addNextOrgFun()">确 定</el-button>
     </div>
-
-
   </div>
 </template>
 <script>
@@ -108,7 +106,6 @@ export default {
 </script>
 <style lang='scss' scoped>
 .role-list-wrap-1 {
-  margin-top:-30px;
   .modal-title-wrap {
     padding: 15px 30px;
     border-bottom: 2px solid #ff9f37;
@@ -127,17 +124,18 @@ export default {
     }
   }
   .modal-search {
-    padding: 8px 0px;
-    height: 203px;
+    padding: 40px 0px 0 0;
+    height: 160px;
+    text-align: center;
     .search-wrap {
           height: 32px;
           .el-input {
-            width: 188px;
+            width: 200px;
           }
           .childen-search{
               display: inline-block;
               .el-input {
-                width:300px;
+                width:200px;
             }
           }
           span {
@@ -145,7 +143,7 @@ export default {
             font-size: 12px;
           }
           .el-textarea{
-              width: 376px;
+              width: 200px;
           }
           .el-textarea__inner{
               min-height: 66px;
@@ -155,7 +153,7 @@ export default {
         padding-left: 44px;
     }
     .plian{
-      padding-right:30px;
+      /*padding-right:30px;*/
       margin-top:12px;
     }
     .plian2{

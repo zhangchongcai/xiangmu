@@ -38,12 +38,23 @@ Axios.interceptors.request.use(
      response => {
        if(response.data.code == 401) {
            localStorage.removeItem('token');
-           location.href = '/login';
+           MessageBox.confirm(`<strong style="display: inline-block; width: 22px; height: 22px; border-radius: 50%; background: #f00; text-align: center; line-height: 22px; color: #fff; margin: 0 4px;">X</strong>用户登录超时或被强制退出`, '温馨提示', {
+            confirmButtonText: '确定',
+            dangerouslyUseHTMLString: true,
+            showCancelButton: false,
+            showClose: false
+          }).then(() => {
+            location.href = '/login';
+          })
+           
        }
-
        return response
      },
      err => {
+        //  console.log(err)
+        if(err ==  'Error: Network Error') {
+            err = " 服务器错误，请联系影院经理！"
+        }
         if (err && err.response) {
             switch (err.response.status) {
                 case 400:
@@ -83,7 +94,7 @@ Axios.interceptors.request.use(
                 default:
             }
         }
-        Message.error(`Error:${err}`);
+        Message.error(`错误信息: ${err}`);
         Promise.reject(err)
         return err
     }
@@ -93,20 +104,21 @@ function getUrl(urlarr){
 }
 const get = (urlarr,data={}) => { 
     let url = getUrl(urlarr)
-    return Axios.get(url,{params:data})
+    return Axios.get(url,{params:data}).then(res => res)
 } 
 const post = (urlarr,data={}) => {
     let url = getUrl(urlarr)
-    return Axios.post(url,data)
+    // console.log(url)
+    return  Axios.post(url,data).then(res => res)
     }
 const dele = (urlarr,data={}) => {
     let url = getUrl(urlarr)
-    return Axios.delete(url,{params: data})
+    return Axios.delete(url,{params: data}).then(res => res )
     }
 const formDataPost =  (urlarr,data={}) => {
     let url = urlarr[1] ? urlarr[1] + urlarr[0] : API + '/' + urlarr[0]
     data.contentType = 'application/x-www-form-urlencoded'
-    return Axios.post(url,data)
+    return Axios.post(url,data).then(res => res)
     }
 export default {
     get,

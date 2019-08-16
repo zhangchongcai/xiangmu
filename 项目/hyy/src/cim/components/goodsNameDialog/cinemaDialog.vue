@@ -61,7 +61,7 @@
             <el-button type="text" class="right" @click="handleEmptyMaterials">清 空</el-button>
           </div>
           <ul class="empty-content">
-            <li :key="item.merCode" v-for="(item) in selectedData" class="clearfix">
+            <li :key="key" v-for="(item,key) in selectedData" class="clearfix">
               <span class="left title">{{item.cinemaName || item.name}}</span>
               <i class="el-icon-close right" @click="deleteSelected(item,false)"></i>
             </li>
@@ -146,7 +146,7 @@ export default {
     init() {
       // this.queryData.cinemaName=this.cinemaUid.cinemaName
       this.queryData.cinameUid=this.cinemaUid.cinemaUid
-      console.log(this.dialogFeedbackData)
+      // console.log(this.dialogFeedbackData)
       this.queryData.page = 1;
       if (this.check) {
         this.cinemalTableData = this.dialogFeedbackData.slice(this.queryData.page - 1, this.queryData.pageSize);
@@ -168,7 +168,7 @@ export default {
     // 获取门店列表
     getMerCinemaList(param = {}, type) {
       this.tableLoding =true;
-      this.$cimList.inventoryManagement.checkBillStorageRack(param).then(resData => {
+      this.$cimList.findStorageRackList(param).then(resData => {
         if (resData.code == 200) {
           if (type == "open") {
             this.$nextTick(() => {
@@ -180,7 +180,7 @@ export default {
               }
             })
           }
-          this.cinemalTableData = resData.data.map(item => {
+          this.cinemalTableData = resData.data.list.map(item => {
             item.cinemaUid = item.uid;
             return item;
           })
@@ -218,12 +218,11 @@ export default {
     },
     //选中影院
     handleSelectionCinemal(rows) {
-      console.log("选中影院",rows);
+      // console.log("选中影院",rows);
       this.selectedData = rows;
     },
     //删除选择
     deleteSelected(row, flag) {
-      console.log(row)
       this.$refs.cinemalTable.toggleRowSelection(row, false);
     },
     // 清空选择
@@ -237,7 +236,7 @@ export default {
       } else {
         this.getMerCinemaList(this.queryData);
       }
-      console.log(`每页 ${val} 条`);
+      // console.log(`每页 ${val} 条`);
     },
     handleCurrentChange(val) {
       this.queryData.page = val;
@@ -248,7 +247,7 @@ export default {
         this.getMerCinemaList(this.queryData);
       }
 
-      console.log(`当前页: ${val}`);
+      // console.log(`当前页: ${val}`);
     }
   },
   mounted() {}

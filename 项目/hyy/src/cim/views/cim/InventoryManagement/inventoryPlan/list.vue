@@ -5,9 +5,8 @@
       <el-form
         :inline="true"
         :model="queryData"
-        label-position="right"
-        label-width="100px"
-        label-suffix=":"
+        label-position="left"
+        label-suffix="："
       >
         <el-form-item label="门店名称" class="select-input">
             <el-input
@@ -122,7 +121,7 @@ export default {
         }
         if(this.queryData.cinemaUid == "" || this.queryData.cinemaUid == null){
         }else{
-          this.goodsDataQueryGoodsList()
+          this.goodsDataQueryGoodsList(this.queryData)
         }
       })
       
@@ -132,7 +131,7 @@ export default {
       if(this.queryData.cinemaUid == "" || this.queryData.cinemaUid == null){
         this.$message("请选择门店");
       }else{
-        this.goodsDataQueryGoodsList()
+        this.goodsDataQueryGoodsList(this.queryData)
       }
       console.log(this.queryData);
     },
@@ -145,9 +144,24 @@ export default {
     //   });
     // },
     // 跳转库存转移
-    handleNewPurchaseNote(param) {
+    handleNewPurchaseNote(param = {}) {
+      let router = '';
+      switch (param.type) {
+        case "1":
+          // 新增
+          router = 'add';
+          break;
+        case "2":
+          // 编辑
+          router = 'edit';
+          break;
+        case "3":
+          // 查看
+          router = 'details';
+          break;
+      }
       this.$router.push({
-        path: "common",
+        path: router,
         query: param
       });
     },
@@ -193,14 +207,23 @@ export default {
     },
     // 查看操作
     seetable(row){
-      this.resCheckSolutionToPage(row,"3")
+      this.handleNewPurchaseNote({
+          type:"3",
+          data:JSON.stringify(row.uid),
+          cinemaName:JSON.stringify(row.cinemaName)
+        })
+      // this.resCheckSolutionToPage(row,"3")
     },
     // 修改操作
     eaittable(row){
-      this.resCheckSolutionToPage(row,"2")
+      this.handleNewPurchaseNote({
+          type:"2",
+          data:JSON.stringify(row.uid),
+          cinemaName:JSON.stringify(row.cinemaName)
+        })
     },
     // 选泽门店回调
-    onCinemalSumit(val = []) {
+    setCinema(val = []) {
       if (val.length > 0) {
         this.queryData.cinemaName = val[0].name;
         this.queryData.cinemaUid = val[0].uid;
@@ -210,6 +233,21 @@ export default {
       }
       console.log(val);
     },
+    // 选泽门店回调
+    onCinemalSumit(val = [],type) {
+      console.log(val," 选泽门店回调",type);
+      if (val.length > 0) {
+        if(type=="default"){
+          if(val.length==1){
+            this.setCinema(val)
+          }
+        }else{
+          this.setCinema(val)
+        }
+      } else {
+        this.setCinema()
+      }
+    },
     selectCinemalDialog() {
       this.$refs.myCinemalDialog.handleDialog(true);
     },
@@ -218,21 +256,21 @@ export default {
     },
     handleSizeChange(val) {
       this.queryData.pageSize = val;
-      this.goodsDataQueryGoodsList();
+      this.goodsDataQueryGoodsList(this.queryData);
       console.log(`每页 ${val} 条`);
     },
     handleCurrentChange(val) {
       this.queryData.page = val;
-      this.goodsDataQueryGoodsList();
+      this.goodsDataQueryGoodsList(this.queryData);
       console.log(`当前页: ${val}`);
     },
     // 盘点方案查询请求
-    goodsDataQueryGoodsList(){
-      let val = {
-        cinemaUid:this.queryData.cinemaUid,
-        page:"1",
-        pageSize:"10"
-      }
+    goodsDataQueryGoodsList(val){
+      // let val = {
+      //   cinemaUid:this.queryData.cinemaUid,
+      //   page:"1",
+      //   pageSize:"10"
+      // }
       this.$cimList.inventoryPlan
         .checkSolutionQuery(val)
         .then(res => {
@@ -253,7 +291,7 @@ export default {
         .checkSolutionDelete(val)
         .then(res => {
           if (res.code === 200) {
-            this.goodsDataQueryGoodsList()
+            this.goodsDataQueryGoodsList(this.queryData)
             this.$message("删除成功");
           } else {
             this.$message(res.msg);

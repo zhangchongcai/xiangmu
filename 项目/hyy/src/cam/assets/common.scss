@@ -33,7 +33,9 @@
         fill: currentColor;
         overflow: hidden;
     }
-
+    .page-num{
+        color:#333;
+    }
     .text-blue {
         color: #3b74ff;
     }
@@ -53,7 +55,7 @@
     display: inline-block;
     }
     .cursor {
-    cursor: pointer
+        cursor: pointer
     }
 
     .text-blue {
@@ -72,3 +74,4 @@
 @import "page2.scss";
 @import "./box-office-use.scss";
 @import "./category.scss";
+@import "./commodity.scss";

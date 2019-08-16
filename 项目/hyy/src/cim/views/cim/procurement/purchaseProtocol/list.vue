@@ -4,18 +4,17 @@
       <el-form
         :inline="true"
         :model="queryData"
-        label-position="right"
-        label-width="80px"
+        label-position="left"
         label-suffix="："
       >
         <el-form-item label="协议编码">
-          <el-input v-model="queryData.code" placeholder="请输内容"></el-input>
+          <el-input v-model="queryData.code" placeholder="请输入"></el-input>
         </el-form-item>
 
-        <el-form-item label="供应商名称" class="select-input" label-width="90px">
+        <el-form-item label="供应商名称">
           <el-input
             v-model="queryData.supName"
-            placeholder="请输内容"
+            placeholder="请输入"
           ></el-input>
         </el-form-item>
 
@@ -42,10 +41,9 @@
             :label="item.label"
             :formatter="item.formatter"
           ></el-table-column>
-          <el-table-column label="操作" style="width:180px;">
+          <el-table-column label="操作" width="160">
             <template slot-scope="{row}">
               <el-button type="text" size="small" @click.stop="handleOperateEvent('1', row)">查看</el-button>
-              <!--"审核状态", //,0：未审核，1：待审核，2：审核通过，3：审核不通过，4：无需审核'-->
               <el-button
                 type="text"
                 size="small"
@@ -65,7 +63,7 @@
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
             :current-page.sync="queryData.page"
-            :page-sizes="[10,20,30]"
+            :page-sizes="pageSizes"
             :page-size.sync="queryData.pageSize"
             layout="total, sizes, prev, pager, next, jumper"
             :total="total"
@@ -77,9 +75,10 @@
 </template>
 
 <script>
-import mixin from "cim/mixins/cim/paginationConfig.js";
-import mixins from "frame_cpm/mixins/cacheMixin";
-export default {
+  import mixin from "cim/mixins/cim/paginationConfig.js";
+  import mixins from "frame_cpm/mixins/cacheMixin";
+
+  export default {
   mixins: [mixin, mixins.cacheMixin],
   data() {
     return {
@@ -145,7 +144,6 @@ export default {
     },
     // 查询
     onQuery() {
-      console.log(this.queryData);
       this.getAgreementList(this.queryData);
     },
     // 查询
@@ -166,14 +164,28 @@ export default {
     },
     // 新建
     handleNewBuilt() {
-      console.log("新建");
       this.jumpPage({
         type: "1"
       });
     },
     jumpPage(param = {}) {
+      let router = '';
+      switch (param.type) {
+        case "1":
+          // 新增
+          router = 'add';
+          break;
+        case "2":
+          // 编辑
+          router = 'edit';
+          break;
+        case "3":
+          // 查看
+          router = 'details';
+          break;
+      }
       this.$router.push({
-        path: "/retail/procurement/purchaseProtocol/common",
+        path: "/retail/procurement/purchaseProtocol/"+router,
         query: param
       });
     },
@@ -184,14 +196,14 @@ export default {
           // 查看
           this.jumpPage({
             type: "3",
-            data: JSON.stringify(row)
+            data: JSON.stringify({uid: row.uid})
           });
           break;
         case "2":
           //编辑
           this.jumpPage({
             type: "2",
-            data: JSON.stringify(row)
+            data: JSON.stringify({uid: row.uid})
           });
           break;
         case "3":
@@ -220,7 +232,6 @@ export default {
     },
     // 删除操作
     handleeDlete(param) {
-      console.log(param);
       this.$cimList.procurement
         .agreementDelete(param)
         .then(resData => {
@@ -266,12 +277,10 @@ export default {
     handleSizeChange(val) {
       this.queryData.pageSize = val;
       this.getAgreementList(this.queryData);
-      console.log(`每页 ${val} 条`);
     },
     handleCurrentChange(val) {
       this.queryData.page = val;
       this.getAgreementList(this.queryData);
-      console.log(`当前页: ${val}`);
     },
   },
   components: {

@@ -40,34 +40,39 @@
         <el-form-item label="场次占比：" prop="timeRatioUpper">
           <el-row>
             <span style="position:relative;">
-              <el-input-number style="width:100px;" @change="validTimeNumber" ref="timeRatioLowerInput" v-model="dataForm.timeRatioLower" :precision="2" :min="0" :max="100" :disabled="!enabledEdit" :controls="false" clearable placeholder="">
+              <el-input-number style="width:160px;" @change="validTimeNumber" ref="timeRatioLowerInput" v-model="dataForm.timeRatioLower" :precision="2" :min="0" :max="100" :disabled="!enabledEdit" :controls="false" clearable placeholder="">
               </el-input-number>
               <span style="position:absolute;right:8px;top:2px;line-height:1;color:#b0b0b0;" slot="suffix">%</span>
             </span>
-            <span>--</span>
+            <span class="m-h-5">至</span>
             <span style="position:relative;">
-              <el-input-number style="width:100px;" @change="validTimeNumber" v-model="dataForm.timeRatioUpper" :precision="2" :min="0" :max="100" :disabled="!enabledEdit" :controls="false" clearable placeholder="">
+              <el-input-number style="width:160px;" @change="validTimeNumber" v-model="dataForm.timeRatioUpper" :precision="2" :min="0" :max="100" :disabled="!enabledEdit" :controls="false" clearable placeholder="">
               </el-input-number>
               <span style="position:absolute;right:8px;top:2px;line-height:1;color:#b0b0b0;" slot="suffix">%</span>
-              <div class="ratio-number-tip">
+              <!-- <div class="ratio-number-tip">
                 <div>
                   占比数或场次数，至少填写一种，占比和场次同时填写，则同时判断
                 </div>
-              </div>
+              </div> -->
             </span>
           </el-row>
         </el-form-item>
         <el-form-item label="场次数：" prop="timeNumUpper">
           <el-row>
             <span>
-              <el-input-number style="width:100px;" @change="validTimeRatioUpper" ref="timeNumLowerInput" v-model="dataForm.timeNumLower" :precision="0" :min="0" :max="10000" :disabled="!enabledEdit" :controls="false" clearable placeholder="">
+              <el-input-number style="width:160px;" @change="validTimeRatioUpper" ref="timeNumLowerInput" v-model="dataForm.timeNumLower" :precision="0" :min="0" :max="10000" :disabled="!enabledEdit" :controls="false" clearable placeholder="">
               </el-input-number>
             </span>
-            <span>--</span>
+            <span class="m-h-5">至</span>
             <span>
-              <el-input-number style="width:100px;" @change="validTimeRatioUpper" v-model="dataForm.timeNumUpper" :precision="0" :min="0" :max="10000" :disabled="!enabledEdit" :controls="false" clearable placeholder="">
+              <el-input-number style="width:160px;" @change="validTimeRatioUpper" v-model="dataForm.timeNumUpper" :precision="0" :min="0" :max="10000" :disabled="!enabledEdit" :controls="false" clearable placeholder="">
               </el-input-number>
             </span>
+            <div class="ratio-number-tip">
+              <div>
+                占比数或场次数，至少填写一种，占比和场次同时填写，则同时判断
+              </div>
+            </div>
           </el-row>
         </el-form-item>
         <el-form-item label="指导类型：" prop="guideType">
@@ -79,8 +84,8 @@
       </el-form>
     </div>
     <div v-if="enabledEdit" class="btn-wrapper">
-      <el-button @click="submitForm" :loading="saveLoading" type="primary" :disabled="!enabledEdit || saveLoading">确定</el-button>
-      <el-button @click="$router.go(-1);">取消</el-button>
+      <el-button class="w-80" @click="submitForm" :loading="saveLoading" type="primary" :disabled="!enabledEdit || saveLoading">确定</el-button>
+      <el-button class="w-80" @click="$router.go(-1);">取消</el-button>
     </div>
     <muti-cinema title="选择影院" v-if="cinemaDialogVisible" @close="cinemaDialogVisible=false" :innerData="dataForm.cinemaList" :dialogTableVisible.sync="cinemaDialogVisible" ref="movieSelectDialog" @callBack="handleCinemaDialogCallBack"></muti-cinema>
     <frame-singlefilm v-if="singleFilmVisible" @close="singleFilmVisible=false" :framedialogVisible="singleFilmVisible" :whereUse="whereUse" :type="filmtype" :innerData="innerFilmDataSingle" @callBackFilSingle="handleSingleFileCallBack" ref='frameSingleFilm'>
@@ -435,6 +440,10 @@ export default {
     .el-radio__label {
       font-size: 12px;
     }
+    .el-form-item {
+      margin-right: 32px;
+      margin-bottom: 16px;
+    }
   }
   .crumbs {
     margin-left: 10px;
@@ -444,10 +453,10 @@ export default {
     padding-top: 10px;
   }
   .ratio-number-tip {
-    position: absolute;
-    left: 130px;
-    top: 20px;
-    width: 250px;
+    // position: absolute;
+    // left: 130px;
+    // top: 20px;
+    // width: 250px;
     line-height: 1.8;
     color: #606266;
   }
@@ -460,7 +469,9 @@ export default {
   }
   /deep/ .el-date-editor .el-range-separator {
     line-height: 24px;
+    padding: 0;
   }
+
   /deep/ .el-form-item.is-success .el-input__inner,
   .el-form-item.is-success .el-input__inner:focus,
   .el-form-item.is-success .el-textarea__inner,

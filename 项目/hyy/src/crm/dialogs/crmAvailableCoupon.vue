@@ -1,38 +1,57 @@
 <template>
   <div>
-    <dialogWarp :dialogVisible="dialogVisible" name="选择可用券" @crmDialogOutputFlag="handleCrmDialogFlag">
-      <el-form :inline="true" :model="formData" ref="formData" class="form-data-wrap">
-        <el-form-item label="可用券名称：" prop="couponName">
-          <el-input v-model="formData.couponName" placeholder="可用券名称" clearable maxlength="30"></el-input>
-        </el-form-item>
-        <el-form-item class="btn-wrap">
-          <el-button type="primary" @click="handleSearch" class="_el-btn-custom">搜索</el-button>
-          <el-button @click="resetForm('formData')" class="_el-btn-custom">重置</el-button>
-        </el-form-item>
-      </el-form>
-      <div class="_crm-card-type-dialog-wrap">
-        <div class="_m-member-table-custom">
-          <el-table ref="multipleTable" :empty-text="tipMessage" :data="tableData" stripe style="width: 100%"
-            @select="handleSelect" @select-all="handleSelect" :row-key="getRowKeys">
-            <el-table-column type="selection" width="55" :reserve-selection="true">
-            </el-table-column>
-            <el-table-column prop="applyCode" :formatter="emptyShow" label="票券申请单号" min-width="120"
-              show-overflow-tooltip></el-table-column>
-            <el-table-column prop="couponName" :formatter="emptyShow" label="票券名称" min-width="120"
-              show-overflow-tooltip></el-table-column>
-            <el-table-column prop="stateRemark" :formatter="emptyShow" label="票券申请单状态" min-width="120"
-              show-overflow-tooltip></el-table-column>
-          </el-table>
+    <dialogWarp :dialogVisible="dialogVisible" :name="customTitle" @crmDialogOutputFlag="handleCrmDialogFlag">
+      <div class="__crm-available-coupon-wrap">
+        <el-form :inline="true" :model="formData" ref="formData" class="__crm-available-coupon-search">
+          <el-form-item label="可用券名称：" prop="couponName">
+            <el-input v-model="formData.couponName" placeholder="可用券名称" clearable maxlength="30"></el-input>
+          </el-form-item>
+          <el-form-item class="btn-wrap">
+            <el-button type="primary" @click="handleSearch" class="_el-btn-custom">搜索</el-button>
+            <!-- <el-button @click="resetForm('formData')" class="_el-btn-custom">重置</el-button> -->
+          </el-form-item>
+        </el-form>
+        <div class="__crm-available-coupon-dialog-content-wrap">
+          <div class="__crm-available-coupon-dialog-content-left">
+            <div class="__crm-available-coupon-dialog-table _m-member-table-custom">
+              <el-table ref="multipleTable" :empty-text="tipMessage" :data="tableData" stripe style="width: 100%"
+                @select="handleSelect" @select-all="handleSelect" :row-key="getRowKeys">
+                <el-table-column type="selection" width="55" :reserve-selection="true">
+                </el-table-column>
+                <el-table-column prop="applyCode" :formatter="emptyShow" label="票券申请单号" min-width="110"
+                  show-overflow-tooltip></el-table-column>
+                <el-table-column prop="couponName" :formatter="emptyShow" label="票券名称" min-width="110"
+                  show-overflow-tooltip></el-table-column>
+                <el-table-column prop="stateRemark" :formatter="emptyShow" label="票券申请单状态" min-width="110"
+                  show-overflow-tooltip></el-table-column>
+              </el-table>
+              <!-- 分页 start -->
+              <div class="page-wrap __crm-available-coupon-paginatioin">
+                <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange"
+                  :current-page="formData.current-0" :page-size="formData.size-0"
+                  layout="total, prev, pager, next, jumper" :page-sizes="[20 , 50 , 100]" :total="total-0">
+                </el-pagination>
+              </div>
+              <!-- 分页 end -->
+            </div>
+          </div>
+          <div class="__crm-available-coupon-dialog-content-right">
+            <div class="__content-right-wrap">
+              <div class="__content-right-title">
+                已选可用券
+              </div>
+              <div class="__clear-btn" @click="handleEmpty">清空</div>
+            </div>
+            <ul class="__selected-equity-wrap">
+              <li class="__selected-equity-item-inner" v-for="(item, index) of multipleSelectionItem" :key="index">
+                <div class="__selected-equity-name-desc">{{item.couponName}}</div>
+                <i class="el-icon-close __dialog-icon-delete" @click="dialogDeleteEquity(index)"></i>
+              </li>
+            </ul>
+          </div>
         </div>
-        <!-- 分页 start -->
-        <div class="page-wrap">
-          <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange"
-            :current-page="formData.current-0" :page-size="formData.size-0"
-            layout="total, sizes, prev, pager, next, jumper" :page-sizes="[20 , 50 , 100]" :total="total-0">
-          </el-pagination>
-        </div>
-        <!-- 分页 end -->
       </div>
+
     </dialogWarp>
   </div>
 </template>
@@ -84,6 +103,11 @@ export default {
       // 调用弹窗的识别参数
       type: String,
       default: "mainPageUnique"
+    },
+    customTitle: {
+      // 自定义弹窗title
+      type: String,
+      default: "选择可用券"
     }
   },
   created() {},
@@ -104,6 +128,17 @@ export default {
     immediate: true
   },
   methods: {
+    // dialog内删除已选权益
+    dialogDeleteEquity(index) {
+      this.multipleSelectionItem.splice(index, 1);
+      this.$refs.multipleTable.clearSelection();
+      this.rowMultipleChecked(this.multipleSelectionItem);
+    },
+    // 清空dialog内已选权益
+    handleEmpty() {
+      this.multipleSelectionItem = [];
+      this.$refs.multipleTable.clearSelection();
+    },
     // 点击搜索按钮
     handleSearch() {
       this.formData.current = 1;
@@ -215,11 +250,18 @@ export default {
       }
     },
     handleCrmDialogFlag(flag) {
-      this.$emit("update:dialogVisible", false);
       if (flag == 1) {
-        this.callBackData = new Array(...this.multipleSelectionItem);
+        if (new Array(...this.multipleSelectionItem).length == 0) {
+          this.$message.warning("请至少选择一项可用券");
+          return false;
+        } else {
+          this.callBackData = new Array(...this.multipleSelectionItem);
+          this.$emit("update:dialogVisible", false);
+        }
       } else if (flag == 0) {
+        this.$emit("update:dialogVisible", false);
         this.multipleSelectionItem = new Array(...this.reviewData);
+        this.callBackData = new Array(...this.multipleSelectionItem);
       }
       var selectedData = {
         btnType: flag,
@@ -232,6 +274,4 @@ export default {
 };
 </script>
 <style lang="scss">
-._crm-card-type-dialog-wrap {
-}
 </style>
