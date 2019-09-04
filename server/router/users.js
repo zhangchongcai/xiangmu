@@ -26,15 +26,6 @@ Router.post('/mohu',(req,res)=>{
 })
 
 
-
-
-
-
-
-
-
-
-
 /**
  * @api {post} /user/testUser 用户名验证是否唯一
  * @apiName Login
@@ -166,7 +157,9 @@ Router.get('/verifytoken',(req,res,next) => {
 //获取邮箱验证码
 Router.post('/getcode',(req,res)=>{
     var userName = req.body.userName;
-    if(!userName && userName==""){return res.send(util.sendData(-1,"邮箱出错！",null));}
+    if(!userName && userName==""){
+        return res.send(util.sendData(-1,"邮箱出错！",null))
+    };
     var num = parseInt(Math.random(1,0)*100000);
     mail.sendmail(userName,num)
     .then((resovle)=>{
