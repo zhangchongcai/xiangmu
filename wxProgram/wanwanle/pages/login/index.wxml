@@ -1,0 +1,6 @@
+<!--pages/login/index.wxml-->
+<view class="page">
+  <view class="page__hd">
+    <button class="weui-btn" type="primary">页面主操作</button>
+  </view>
+</view>
