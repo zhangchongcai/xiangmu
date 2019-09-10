@@ -18,6 +18,14 @@ const memberRouters = [
         component: () => import('views/member/queryDetail'),
     },
     {
+        path: 'writeCard',
+        meta: {
+            title: '写卡'
+        },
+        name: 'writeCard',
+        component: () => import('views/member/writeCard'),
+    },
+    {
         path: 'memberApplyCard',
         meta: {
             title: '会员开卡'
@@ -122,12 +130,20 @@ const memberRouters = [
         component: () => import('views/member/checkPagers/TransactionRecords/recordDetail')
     },
     {
+        path: 'integral',
+        meta: {
+            title: '积分记录'
+        },
+        name: 'integral',
+        component: () => import('views/member/checkPagers/integration')
+    },
+    {
         path: 'bindTicket',
         meta: {
             title: '绑定票券'
         },
         name: 'bindTicket',
-        component: () => import('views/member/checkPagers/bindTicket/index'),
+        component: () => import('views/member/checkPagers/bindTicket'),
     },
     {
         path: 'changeRecord',
@@ -135,7 +151,7 @@ const memberRouters = [
             title: '变更记录'
         },
         name: 'bindTicket',
-        component: () => import('views/member/checkPagers/changeRecord/index'),
+        component: () => import('views/member/checkPagers/changeRecord'),
     },
     {
         path: 'applyCinema',
@@ -143,7 +159,7 @@ const memberRouters = [
             title: '适用影院'
         },
         name: 'applyCinema',
-        component: () => import('views/member/checkPagers/applyCinema/index'),
+        component: () => import('views/member/checkPagers/applyCinema'),
     }
 ]
 

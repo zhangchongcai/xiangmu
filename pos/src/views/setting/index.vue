@@ -43,6 +43,8 @@ export default {
 .contentLayer{
   padding: 2vh 2vw 0;
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 </style>
 

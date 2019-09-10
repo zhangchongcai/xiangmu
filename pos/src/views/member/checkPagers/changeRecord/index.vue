@@ -78,7 +78,7 @@ export default {
                 paramsObj = {
                     memberId:sessionStorage['memberId'],
                     current:vo,
-                    size:8,
+                    size:10,
                     startTime:this.startTime+" 00:00:00",
                     endTime:this.endTime+" 23:59:59",
                     tenantId:this.tenantId
@@ -87,7 +87,7 @@ export default {
                 paramsObj = {
                     current:vo,
                     memberId:sessionStorage['memberId'],
-                    size:8,
+                    size:10,
                     tenantId:this.tenantId
                 };
             }

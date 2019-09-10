@@ -32,6 +32,7 @@ FormatterData.type1Data = (data) => {
 			giving_price:data.givingPrice,
 			cinema_price:data.cinemaPrice,
 			payPrice:data.payPrice,
+			billCode:data.billCode,
 		}
 }
 //1是销售交易凭证数据格式；
@@ -83,12 +84,12 @@ FormatterData.trade_print = function(type,voucherInfo) {
 	// //尾部
 	yPos = print_voucher.print_end_info(type, voucherInfo, printInfo, yPos, 11, 0, 0);
 
-	console.log(yPos);
+	// console.log(yPos);
 	
 	if(yPos>printInfo.height) {
 		printInfo.height = yPos
 	}
-	console.log(printInfo)
+	// console.log(printInfo)
 	return printInfo
 }
 
@@ -276,6 +277,8 @@ print_voucher.print_content_info = function(type, voucherInfo, printInfo, yPos, 
 print_voucher.print_end_info = function(type, voucherInfo, printInfo, yPos, fontSize, fontBlack, showModle){
 	printInfo.ticket_element.push({elementValue:('交易流水号：'), x:print_voucher.ROW_MARGIN_LEFT, y:(yPos += (print_voucher.ROW_HEIGHT_SMALL - print_voucher.LINE_HEIGHT_GAP)), font_size:fontSize, font_black:fontBlack, show_modle:showModle});
 	printInfo.ticket_element.push({elementValue:(voucherInfo.tradeNo), x:(print_voucher.ROW_MARGIN_LEFT + 10), y:(yPos += print_voucher.ROW_HEIGHT_SMALL), font_size:fontSize, font_black:fontBlack, show_modle:showModle});
+	printInfo.ticket_element.push({elementValue:('交易订单号：'), x:print_voucher.ROW_MARGIN_LEFT, y:(yPos += (print_voucher.ROW_HEIGHT_SMALL - print_voucher.LINE_HEIGHT_GAP)+5), font_size:fontSize, font_black:fontBlack, show_modle:showModle});
+	printInfo.ticket_element.push({elementValue:(voucherInfo.billCode), x:(print_voucher.ROW_MARGIN_LEFT + 10), y:(yPos += print_voucher.ROW_HEIGHT_SMALL), font_size:fontSize, font_black:fontBlack, show_modle:showModle});
 	printInfo.ticket_element.push({elementValue:('交易时间：' + voucherInfo.tradeTime), x:print_voucher.ROW_MARGIN_LEFT, y:(yPos += print_voucher.ROW_HEIGHT_SMALL), font_size:fontSize, font_black:fontBlack, show_modle:showModle});
 	printInfo.ticket_element.push({elementValue:('终端：' + voucherInfo.terminalCode), x:print_voucher.ROW_MARGIN_LEFT, y:(yPos += print_voucher.ROW_HEIGHT_SMALL), font_size:fontSize, font_black:fontBlack, show_modle:showModle});	
 	printInfo.ticket_element.push({elementValue:('收银员：' + voucherInfo.cashier), x:print_voucher.ROW_MARGIN_LEFT, y:(yPos += print_voucher.ROW_HEIGHT_SMALL), font_size:fontSize, font_black:fontBlack, show_modle:showModle});

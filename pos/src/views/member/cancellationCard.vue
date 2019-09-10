@@ -80,7 +80,7 @@ export default {
         barCode:''
       },
       rules: {
-        passwd: [{ validator:passwdReg,trigger:'change'}],
+        passwd: [{required: true, validator:passwdReg,trigger:['change','blur']}],
         validationCode: [
           { required: true, message: "请输入验证码", trigger: "change" }
         ],

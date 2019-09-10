@@ -54,7 +54,7 @@ import {mapMutations,mapGetters} from 'vuex'
 <style scoped lang='scss'>
 
     .main{
-        z-index:100;
+        z-index:999;
         position:fixed;
         left: 0;
         top: 0;

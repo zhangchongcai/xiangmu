@@ -41,7 +41,7 @@
         </div>
         <div class="item-inner" v-if="memberCardInfo.createTime"><label class="lable-name">开卡日期：</label>{{memberCardInfo.createTime | filterDate}}</div>
         <div class="item-inner" v-if="isSingleQuery && memberCardInfo.cinemaName"><label class="lable-name">适用影院：</label>
-          <span v-if="!!$attrs.checkMovie" @click="toBindCinema" class='checkCinema' style="">查看</span>
+          <span v-if="!!$attrs.checkMovie" @click="toBindCinema" class='checkCinema'>查看</span>
           <el-tooltip effect="dark" :content="memberCardInfo.cinemaName" placement="top-start" v-else>
             <span class="nameWrap" style="display:inline-block;">{{memberCardInfo.cinemaName | emptyShow}}</span>
           </el-tooltip>
@@ -210,7 +210,7 @@ export default {
 </script>
 <style lang="scss">
 ._member-info {
-    margin-bottom:2vh;
+    margin-bottom:1vh;
   .member-info-content {
     display: flex;
     // justify-content: space-between;

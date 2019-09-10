@@ -6,7 +6,8 @@
         <el-input
           placeholder="输入登录密码解锁"
           v-model="password"
-          type="password">
+          type="password"
+          @keyup.native.enter="onPersonnelAuthorization">
           <i slot="prefix" class="iconfont iconsuoji"></i>
         </el-input>
       </div>
@@ -67,6 +68,7 @@ export default {
   height: 100%;
   box-sizing: border-box;
   padding-top: 20vh;
+  flex: 1;
   .content{
     text-align: center;
   }

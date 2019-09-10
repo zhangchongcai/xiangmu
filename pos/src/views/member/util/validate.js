@@ -28,7 +28,7 @@ export const customPasswordReg = (rule,value,callback) => {
       midEmpty = /\s/g;//中间空格
       var value = value.toString();
       if(!numberType.test(value)){
-        callback(new Error('密码格式不正确，请重新输入'))
+        callback(new Error('密码格式不正确，请输入6位数字密码'))
       }
       if(rule.passwordkType == 1){
         callback();
@@ -42,7 +42,7 @@ export const customPasswordReg = (rule,value,callback) => {
 }
 //手机号正则
 export const validateMobile = (rule,value,callback)=>{
-  var validate = /^1([38][0-9]|4[579]|5[0-3,5-9]|6[6]|7[0135678]|9[89])\d{8}$/;
+  var validate = /^1[3456789]\d{9}$/;
     if (!validate.test(value.toString().replace(/\s/g, ""))) {
       callback(new Error("请输入正确手机号"));
     }else {
@@ -51,7 +51,7 @@ export const validateMobile = (rule,value,callback)=>{
 }
 
 //邮箱正则  
-export const validateHandle = (rule,value,callback)=>{
+export const validateEmail = (rule,value,callback)=>{
   var validate = /^[A-Za-z\d]+([-_.][A-Za-z\d]+)*@([A-Za-z\d]+[-.])+[A-Za-z\d]{2,4}$/;
   if (!validate.test(value.toString().replace(/\s/g, ""))) {
     callback(new Error("请输入正确邮箱地址"));

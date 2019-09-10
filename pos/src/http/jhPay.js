@@ -51,24 +51,33 @@ export default class jhPay{
     this.payCode = this._payCode(payCode)
     this.bankBillCode = this._bankBillCode(bankBillCode)
     this.ERPBillCode = this._ERPBillCode(ERPBillCode)
-    this.ws.send(this._sendData())
-  }
-  _onopen(res){
+    let text = '';
+    switch(this.transactionType){
+      case '00' : text = '支付中...'; break;
+      case '01' : text = '撤销中...'; break;
+      case '02' : text = '退款中...'; break;
+    }
     this.loading = Loading.service({
       lock: true,
-      text: '支付中...',
+      text: text,
       spinner: 'el-icon-loading',
       background: 'rgba(0, 0, 0, 0.7)'
     })
+    this.ws.send(this._sendData())
+  }
+  _onopen(res){
     if(this.setOut) clearTimeout(this.setOut)
     this.open && this.open(res)
   }
   _onmessage(res){
     console.log(res)
+    let data = this._outputFields(res.data);
     this.loading.close()
-    this.message && this.message(this._outputFields(res.data))
+    if(data.returnCode == 'Y5') return vAlert('刷卡设备连接异常！请检查设备！')
+    this.message && this.message(data)
   }
   _onclose(res){
+    this.loading.close()
     this.close && this.close(res)
   }
   _onerror(res){
@@ -144,7 +153,7 @@ export default class jhPay{
       let date = new Date();
       let YYYY = date.getFullYear();
       let MM = date.getMonth()+1 >9 ? date.getMonth()+1 : '0'+(date.getMonth()+1)
-      let DD = date.getDate()+1 >9 ? date.getDate()+1  : '0'+(date.getDate()) 
+      let DD = date.getDate() >9 ? date.getDate()  : '0'+(date.getDate()) 
       return `${YYYY}${MM}${DD}`
   }
   _transactionCode(code){ //原交易参考号 用于退货 12位 不足12位空格填充 循序7

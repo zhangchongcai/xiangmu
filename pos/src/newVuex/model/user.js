@@ -37,6 +37,18 @@ export default {
             localStorage.setItem('userAccount',data.userAccount)
             localStorage.setItem('workTimeUid',data.workTimeUid)
             localStorage.setItem('preAmount',data.preAmount)
+            //会员交易相关公共参数
+            sessionStorage['payParams'] = JSON.stringify({
+                channelName:'柜台',
+                cinemaName:data.cinemaName,
+                operatorNo:data.userUid,
+                posNo:data.terminalId,
+                channelId:'0',
+                channelNo:'0',
+                cinemaId:data.cinemaId,
+                cinemaCode:data.cinemaCode,
+                operator:data.userName
+              })
         }
     }
 }

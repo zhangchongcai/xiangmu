@@ -114,6 +114,7 @@
     <div class="footButtomLayer">
       <el-button size="medium" @click="$router.go(-1)">取消</el-button>
       <el-button size="medium" type="primary" @click="beforeRefor"  :loading="loading">退款</el-button>
+      <!-- <el-button size="medium" type="primary" @click="jhPayJudge"  :loading="loading">退款</el-button> -->
     </div>
     <!-- <el-dialog title="操作提示" :visible.sync="visible" width="50%">
       <div class="dialogContent">
@@ -143,7 +144,7 @@
         <span>场次已经放映结束，退票需要广电审核，是否继续退票？</span>
       </div>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="refor">确 定</el-button>
+        <el-button type="primary" @click="jhPayJudge">确 定</el-button>
         <el-button @click="visible = false">取 消</el-button>
       </div>
     </el-dialog>
@@ -155,7 +156,11 @@ import 'assets/css/table.scss'
 import vSelect from 'components/select/index'
 import labelInput from 'components/labelInput/index'
 import dateInput from 'components/dateInput/index'
-import { refundFindSaleBillForRefund,csmReason,refundRefundSaleBill } from 'http/apis'
+import jhPay from 'http/jhPay';
+import printing from 'http/printing'
+import app from 'http/app'
+import { mapGetters } from 'vuex'
+import { refundFindSaleBillForRefund,csmReason,refundRefundSaleBill,getJhPayParam } from 'http/apis'
 export default {
   components:{
     vSelect,
@@ -193,6 +198,10 @@ export default {
     this.getSelect();
   },
   computed:{
+    ...mapGetters([
+      'cinemaUid',
+      'configData',
+    ]),
     cash(){
       let num = 0;
       this.multipleSelection.map((item) => {
@@ -248,11 +257,11 @@ export default {
             }
           }
         }
-        this.refor()
+        this.jhPayJudge()
       },
       async refor(){
-        this.visible = false;
-        if(!this.multipleSelection.length) return this.$message.warning('请选择退货商品!');
+        // this.visible = false;
+        // if(!this.multipleSelection.length) return this.$message.warning('请选择退货商品!');
         // if(!this.value) return this.$message.warning('请选择退货原因!');
         // if(!this.phone) return this.$message.warning('请输入登记手机号码!');
         this.loading = true
@@ -263,7 +272,7 @@ export default {
           refundPhone : this.phone,
           refundMoneyType : this.returnTypesVal,
         })
-        console.log(data);
+        // console.log(data);
         this.loading = false
         if(data.code != 200 ){
           return this.$message.error(data.msg);
@@ -271,7 +280,55 @@ export default {
 
         this.$message.success(this.returnType ? data.msg : '退票申请已受理，请等待广电审核！');
         this.returnType = true
+        this.printVoucherTicket(data.data)
         this.getDate()
+      },
+      async jhPayJudge(){
+        this.visible = false;
+        if(!this.multipleSelection.length) return this.$message.warning('请选择退货商品!');
+        let tableDataStr = JSON.stringify(this.multipleSelection);
+        if(!(tableDataStr.indexOf('聚合支付') > -1)||this.returnTypesVal == 2) return this.refor()
+        const data = await getJhPayParam({
+            cinameUid : this.data.cinemaUid,
+            saleBillCode:this.data.billCode,
+        })
+        if(!data.data) return this.refor()
+          const applicationType = data.data.silverOrderNumber ? '02' : '00'
+          this.ws = new jhPay({
+            open:(res) => {
+                this.ws.send({
+                  applicationType:applicationType, //消费类型  循序1
+                  transactionType:'02',//交易类型标志 循序4
+                  payAmount:data.data.payAmount+'',//JH支付金额转换 循序5
+                  voucherNO:data.data.oldVoucherNO,
+                  bankBillCode:data.data.silverOrderNumber,
+                  transactionCode:data.data.oldTradeRef,
+                  transactionDate:data.data.tradeDate,
+                })
+            },
+            message:(res) => {
+              if(res.returnCode != "00") return this.$message.error(res.misrepresentation)
+              this.refor()
+            },
+            error:(res) => {
+            }
+          })
+      },
+      printVoucherTicket(data){ //打印退货凭证，
+        const printingData = new printing()
+        app.printTicket('bill_print',printingData.returnGoodsVoucher(data),this.configData,(res)=>{
+          if(data.ticketVouchers && data.ticketVouchers.length){
+            this.couponVoucherTicket(data.ticketVouchers,0) //打印票券
+          }
+          console.log(res)
+        })
+      },
+      couponVoucherTicket(arr,i){
+        if(arr.length == i) return
+        let printingData = new printing()
+        app.printTicket('bill_print',printingData.couponVoucher(arr[i]),this.configData,(res)=>{
+            this.couponVoucherTicket(arr,++i)
+          })
       },
       async getDate(){
         if(!this.key) return this.$message.warning('请扫描或输入影票编号/订单编号/取货码/票券编号！')
@@ -343,7 +400,7 @@ export default {
                   let subItem = this.multipleSelection[j];
                   if(subItem.uid == item.uid) flag = false;
                 }
-                if(flag) this.multipleSelection.push(item);
+                if(flag && !(item.getStatus == 30 || this.data.netSaleFlag)) this.multipleSelection.push(item);
               }
             }else{
               this.multipleSelection.map((subItem,index) => {
@@ -353,6 +410,7 @@ export default {
           }
         }
       },
+      
       empty(){
         this.key = '';
         this.data = {};

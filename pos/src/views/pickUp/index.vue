@@ -11,7 +11,7 @@
                 <div>{{labels[type]}}：</div>
             </div>
             <div class="ps">(含：网络、电话、手机APP等渠道购买的电影票或卖品)</div>
-            <number-key-board ref="keyBoard" class="keyboard"  @keynumber="onkey"></number-key-board>
+            <number-key-board v-model="val" ref="keyBoard" class="keyboard"  @keynumber="onkey"></number-key-board>
             <div class="submitBtn" @click="router">取货</div>  
         </div>
         <div class="foot">

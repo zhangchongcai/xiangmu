@@ -13,8 +13,8 @@
                         v-if="menuList"
                 ></footer-bar>
                 <footer-tip></footer-tip>
-                <div  v-clickoutside="SHOW_MORE_NAV" v-if="showMoreNav" class="more-nav">
-                  <div class="more-nav-item" v-for="(item,id) in otherList" :key="id" @click="toThePath(item.resUrl)">
+                <div  v-clickoutside="showfn" v-if="showMoreNav" class="more-nav">
+                  <div class="more-nav-item" v-for="(item,id) in otherList" :key="id" @click="toThePath(item)">
                     <i :class="['default-style','iconfont',item.icon]" v-if="!!item.icon"></i>&nbsp;
                      {{item.menuName}}
                   </div>
@@ -27,10 +27,11 @@
 </template>
 
 <script>
-import { getMenuTree } from 'http/apis'
+import { getMenuTree,storeHouseCheck } from 'http/apis'
 import FooterBar from './FooterBar'
 import FooterTip from './FooterTip'
 import VipNumber from 'components/paytab/vipNumber'
+import { openCashBox } from 'src/views/member/util/utils'
 import {mapGetters, mapMutations,mapState} from 'vuex' 
 import {SHOW_MORE_NAV,EMPOWER_SET_SHOW,EMPOWER_SET_USER,EMPOWER_SET_PASSWORD} from 'types'
 const clickoutside = {
@@ -77,7 +78,10 @@ const clickoutside = {
             
            ...mapGetters([
                'showBar',
-               'showMoreNav'
+               'showMoreNav',
+               'configData',
+               'cinemaUid',
+               'terminalId',
            ]),
            ...mapState({
             show : state => state.empower.show,
@@ -95,28 +99,44 @@ const clickoutside = {
               EMPOWER_SET_PASSWORD,
               EMPOWER_SET_USER,
           ]),
-          toThePath(path) {
-              switch(path){
+          showfn(){
+             this.SHOW_MORE_NAV() 
+          },
+          async toThePath(item) {
+              switch(item.menuCode){
                   case 'openBox':
                   this[EMPOWER_SET_USER]('');
                   this[EMPOWER_SET_PASSWORD]('');
                   this[EMPOWER_SET_SHOW](true);
                   break;
-                  case '/page/settings/lockedPage':
+                  case 'csm_pos_lock_sys':
                     this.$confirm('确定锁机？', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
                     type: 'warning'
                     }).then(() => {
-                        this.$router.push(path);
+                        this.$router.push(item.resUrl);
                     }).catch(() => {
                             
                     });
                     break;
+                  case  'csm_pos_open_money_box':
+                      openCashBox.call(this,this.configData)
+                      break;
+                  case 'csm_pos_sale_goods_manager' :
+                      const storeHouseCheckData = await storeHouseCheck({
+                            cinemaUid: this.cinemaUid,
+                            terminalCode : this.terminalId
+                        })
+                        if(storeHouseCheckData.code != 200) return this.$message.error(storeHouseCheckData.msg)
+                        if(storeHouseCheckData.data == 2) return this.$alert('库存盘点中，卖品销售暂停使用！')
+                        this.$router.push(item.resUrl);
+                        break;
                   default:
-                    this.$router.push(path);
+                    this.$router.push(item.resUrl);
+                    break;
               }
-              this.SHOW_MORE_NAV();
+              this.SHOW_MORE_NAV()
           },
         },
         components: {

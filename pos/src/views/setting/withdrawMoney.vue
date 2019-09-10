@@ -24,7 +24,7 @@
         </el-form>
       </div>
       <div class="contentRight">
-        <number-key-board ref="keyBoard" class="keyboard"   :showPointer="true" @keynumber="onkey"></number-key-board>
+        <number-key-board ref="keyBoard" class="keyboard"  v-model="formLabelAlign.amount" :showPointer="true" @keynumber="onkey"></number-key-board>
       </div>
     </div>
     <div class="footButtomLayer">
@@ -79,7 +79,7 @@ export default {
   },
   mounted(){
     this.$vm.$on(VM_AUTHORIZATION_CALLBACK,(data)=>{
-      console.log(data)
+      // console.log(data)
       if(data.code !=200) return
       this.adminAuthorization = true;
       this.adminAuthorizationData = data.data;
@@ -99,16 +99,16 @@ export default {
     test(){
       let data = new printing()
       let bb = data.couponVoucher();
-      console.log(bb )
+      // console.log(bb )
       app.printTicket('bill_print',bb,this.config,()=>{
-        console.log(123)
+        // console.log(123)
       })
     },
     ...mapMutations({
       EMPOWER_SET_SHOW
     }),
     onkey(item){
-      console.log(item)
+      // console.log(item)
       this.formLabelAlign.amount = item;
     },
     async refor(){
@@ -127,7 +127,7 @@ export default {
         recodeUid : this.adminAuthorizationData.recodeUid,
       })
       this.reforLoading = false
-      console.log(data);
+      // console.log(data);
       if(data.code !=200) return this.$message.error(data.msg);
       this.$message.success(data.msg)
       this.reset()
@@ -154,7 +154,7 @@ export default {
       //   passWord: this.password,
       //   userName: localStorage.getItem('userAccount')
       // })
-      console.log(data);
+      // console.log(data);
       if(data.code != 200) return this.$message.error(data.msg);
       this.$message.success(data.msg)
       this.personnelAuthorization = true;
@@ -171,6 +171,7 @@ export default {
   height: 100%;
   box-sizing: border-box;
   padding-top: 20vh;
+  flex: 1;
   .content{
     display: flex;
     .contentLeft{

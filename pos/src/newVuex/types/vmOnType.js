@@ -7,3 +7,5 @@ export const VM_ON_GOODS_SEACH = 'VM_GOODS_SEACH' //卖品搜索
 export const VM_ON_LOGIN_UESINFO = 'VM_ON_LOGIN_UESINFO' //登录领用信息
 export const VM_ON_SORT_GET_PAY_LIST = 'VM_ON_SORT_GET_PAY_LIST' //排序成功获取重新获取支付方式
 export const VM_CART_NUMBER_CHANGE = 'VM_CART_NUMBER_CHANGE' //购物车选择数量事件
+export const VM_CLOCE_COUPON = 'VM_CLOCE_COUPON' //清空同组票券
+export const VM_GET_GOODS_LIST = 'VM_GET_GOODS_LIST' //重新获取列表

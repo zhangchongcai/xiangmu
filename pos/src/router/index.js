@@ -35,6 +35,11 @@ let routes = [{   //一级路由  home  或者  page
 				path: 'login',
 				component: () => import('views/csmpos/login'),
 				name:'login',
+			},
+			{
+				path:'vicescreen',
+				component: () => import('views/vicescreen/index'),
+				name:'vicescreen',
 			}
 		]
 	},

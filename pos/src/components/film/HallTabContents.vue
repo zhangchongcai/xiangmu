@@ -52,7 +52,7 @@ export default {
             SET_CURRENT_TICKET_MINPRICE
         ]),
         setFilmId(id, code, allowSingle, minPrice) {
-
+            if(this.currentFilmId == id) return
             if(this.seatSelection.length) {
                this.$alert('请取消当前场次的影票及座位后再切换场次', {
                  confirmButtonText: '确定'

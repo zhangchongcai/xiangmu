@@ -30,7 +30,7 @@
             <el-form-item label="手续费" prop="cost" class="row-line-center">
               <el-input v-model="ruleForm.cost" class="psd-inp"></el-input> <em style="font-size:1.04vw;">元</em>
             </el-form-item>
-            <el-form-item label="支付方式" prop="payWayCode" v-if="ruleForm.cost!=0">
+            <el-form-item label="支付方式" prop="payWayCode" v-if="ruleForm.cost!=0" class="row-line-center">
               <el-radio-group v-model="ruleForm.payWayCode">
                 <el-radio :label="item.label" v-for="(item,index) in payWayCode" :key="index">{{item.value}}</el-radio>
               </el-radio-group>

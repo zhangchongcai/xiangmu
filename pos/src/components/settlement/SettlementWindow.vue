@@ -1,9 +1,11 @@
 <template>
-    <div v-if="payDialog" class="outter-wrapper" v-loading="loading"
-    element-loading-text="支付结算中..."
+    <div class="outter-wrapper"
+    v-if="payDialog"  
+    v-loading="loading"
+    :element-loading-text="loadingContents"
     element-loading-spinner="el-icon-loading"
-    element-loading-background="rgba(0, 0, 0, 0.8)">
-    <el-button v-show="loading && (payMethod.currentPayMethodId == 'WXPAY' || payMethod.currentPayMethodId == 'ALIPAY')" style="position: absolute; left: 47%; top: 60%; tansform: translate(-50% 50%); z-index: 5000" type="info" @click="cancelAliOrWiPay">取消支付</el-button>
+    element-loading-background="rgba(255, 255, 255, 0.65)">
+    <el-button class="cancel-btn" v-show="cancelBtn && (payMethod.currentPayMethodId == 'WXPAY' || payMethod.currentPayMethodId == 'ALIPAY')" type="info" @click="cancelAliOrWiPay">取消支付</el-button>
         <div class="settlement-container">
             <div class="settlement-header">
               支付
@@ -17,9 +19,10 @@
                     <GoodsDetil :hiddenAction=false :cartData="cartData" :goodTitleshow="false"></GoodsDetil>
                   </div>
                </div>
+
                <div class="settle-right">
                    <div class="header-name">可参与优惠活动</div>
-                   <div class="discount-activity" element-loading-text="活动匹配中......"  v-loading="activityLoading">
+                   <div class="discount-activity">
                       <div v-show="activityList.length" :class="['active-item', item.enable == 0 ? 'actived-item' : '', item.enable >= 0  ? '' : 'no-sel']" v-for="(item, index) in computedActivityList" :key="'active' + index" @mouseleave="closeDetail" @click="checkActivityPrice(item)">
                          <span class="item-name">{{item.ruleGroupName}}</span>
                          <span class="item-extend-btn">
@@ -31,27 +34,26 @@
                       </div>
 
                       <div v-show="activityList.length" class="arrow-btn pre-btn" @click="prePage">
-                          <i class="iconfont iconshangjiantouanniu"></i>
+                          <i :class="['iconfont', activityList.length <= 6 ? 'no-iconfont' : '',  'iconshangjiantouanniu']"></i>
                       </div>
                       <div v-show="activityList.length" class="arrow-btn next-btn" @click="nextPage">
-                          <i class="iconfont iconxiajiantouanniu"></i>
+                          <i :class="['iconfont', activityList.length <= 6 ? 'no-iconfont' : '',  'iconxiajiantouanniu']"></i>
                       </div>
 
                       <div class="active-default" v-show='!activityList.length'>
                         {{activityTip}}
                       </div>
                    </div>
+
                    <div class="header-name">
                        <span class="header-name-span">支付方式
                            <span class="current-paymethod">已选：{{payMethod.currentPayMethod}}</span>
                        </span>
-                       
                        <el-button class="change-paymethods-button" @click="showMorePayMethods">更换支付方式</el-button>
                    </div>
-                   <div class="pay-container">
 
-                       <components ref="payComp" :is="componentsName" @openCouponCheckoutBox="openCouponCheckoutBox" @closePay="closePayDialog = true"  @payIt="goPaying" @inputMemberPassword="inputMemberPassword"></components>
-                       
+                   <div class="pay-container">
+                       <components ref="payComp" :is="componentsName" @openCouponCheckoutBox="openCouponCheckoutBox" @closePay="closePayDialog = true"  @payIt="goPaying" @inputMemberPassword="inputMemberPassword"></components> 
                    </div>
 
                    <div v-if="payData.payedAmount != 0" class="pay-result">
@@ -66,52 +68,19 @@
                                 <span class="payed-name">{{item.payTypeName}}</span>
                                 <span class="payed-detail" style="color: #ff7900;">
                                     {{item.payTypeName}}
-                                    {{(item.payAmount - item.returnAmount) + '元'}}
+                                    {{(item.voucherAmount) + '元'}}
                                 </span>
-                                <i  v-show="!(item.payTypeCode == '0X10' || item.payTypeCode == '0X09')" class="iconfont iconshanchu" style="color: #3B74FF; padding: 0 8px; cursor: pointer; float: right" @click="refundIt(item)"></i>
+                                <i  v-show="!(item.payTypeCode == '0X10' || item.payTypeCode == '0X09' || item.payTypeCode == 'GPFB')" class="iconfont iconshanchu" style="color: #3B74FF; padding: 0 8px; cursor: pointer; float: right" @click="refundIt(item)"></i>
                             </span>
                         </div>
-                        <div class="payed-list-right">
-
-                        </div>
+                        <!-- <div class="payed-list-right">
+                        </div> -->
                     </div>
+
                </div>
             </div>
         </div>
-        <!-- 取消支付前确认 -->
-        <el-dialog
-        title="提示"
-        :visible.sync="closePayDialog"
-        width="28%"
-        :append-to-body="true"
-        :close-on-click-modal="false"
-        center>
-            <span style="font-size: 1.04vw">
-                <!-- {{payedList.length ? "请撤销当前支付" : "返回主页面将清空购物车，是否返回？"}} -->
-                {{payedList.length ? "返回主页面后将自动撤销所有支付并清空购物车，是否继续？" : "返回主页面将清空购物车，是否继续？"}}
-            </span>
-            <span slot="footer" class="dialog-footer">
-                <el-button @click="closePayDialog = false">关 闭</el-button>
-                <!-- <el-button v-show="!payedList.length" type="primary" @click="closePay">确 定</el-button> -->
-                <el-button type="primary" @click="closePay">确 定</el-button>
-            </span>
-        </el-dialog>
-        <!-- 结算失败弹框 -->
-        <el-dialog
-        title="提示"
-        :visible.sync="settleDown"
-        width="28%"
-        :append-to-body="true"
-        :close-on-click-modal="false"
-        :show-close="false"
-        center>
-            <span style="font-size: 1.04vw">
-                {{"结算失败，请返回主页面，系统将自动撤销所有支付并清空购物车"}}
-            </span>
-            <span slot="footer" class="dialog-footer">
-                <el-button type="primary" @click="closePay">确 定</el-button>
-            </span>
-        </el-dialog>
+
         <!-- 更多支付方式 -->
         <more-pay usedInBox="paypop"></more-pay>
         <!-- 查询会员优惠券 -->
@@ -122,14 +91,15 @@
         <g-coupon-results @passGrouponData="openconsumegcBox"></g-coupon-results>
         <!-- 团购券查询添加 -->
         <consumegc :datas="passData"></consumegc>
+
         <!-- 会员支付密码 -->
         <el-dialog
-        title="请输入会员支付密码"
         :visible.sync="memberPassWordBox"
         width="28%"
         :append-to-body="true"
         :close-on-click-modal="false"
-        center>
+        >
+            <span slot="title" style="font-size: 1.22vw">请输入会员支付密码</span>
             <div style="width: 23.6vw; margin: 0 auto;">
                 <el-input
                 ref="memberPwdInputer"
@@ -142,17 +112,18 @@
             </div>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="memberPassWordBox = false">取 消</el-button>
-                <el-button type="primary" @keyup.enter="confirmPasswords" @click="confirmPasswords">确 定</el-button>
+                <el-button type="primary" @keyup.native.enter="confirmPasswords" @click="confirmPasswords">确 定</el-button>
             </span>
         </el-dialog>
+
         <!-- 代金券密码输入 -->
         <el-dialog
-        title="请输入代金券密码"
         :visible.sync="couponBox"
         width="28%"
         :append-to-body="true"
         :close-on-click-modal="false"
-        center>
+        >
+            <span slot="title" style="font-size: 1.22vw">请输入代金券密码</span>
             <div style="width: 23.6vw; margin: 0 auto;">
                 <el-input
                 ref="couponPwdInputer"
@@ -168,14 +139,16 @@
                 <el-button type="primary"  @click="confirmCouponPasswords">确 定</el-button>
             </span>
         </el-dialog> 
+
         <!-- 票券查询 -->
         <el-dialog
-        title="使用票券"
         :visible.sync="couponCheckoutBox"
         width="28%"
         :append-to-body="true"
         :close-on-click-modal="false"
-        >
+        :before-close="CouponClose"
+        >   
+            <span slot="title" style="font-size: 1.22vw">使用票券</span>
             <div style="width: 23.6vw; margin: 0 auto;">
                 <el-input
                 ref="addCouponsInputer"
@@ -188,6 +161,40 @@
                 <el-button class="coupon-common-style coupon-add" type="primary" @click="directeCheckout">添加</el-button>
             </span>
         </el-dialog>
+
+        <!-- 取消支付前确认 -->
+        <el-dialog
+        :visible.sync="closePayDialog"
+        width="28%"
+        :append-to-body="true"
+        :close-on-click-modal="false"
+        >   
+            <span slot="title" style="font-size: 1.22vw">提示</span>
+            <span style="font-size: 1.04vw">
+                {{payedList.length ? "返回主页面后将自动撤销所有支付并清空购物车，是否继续？" : "返回主页面将清空购物车，是否继续？"}}
+            </span>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="closePayDialog = false">取 消</el-button>
+                <el-button type="primary" @click="closePay">确 定</el-button>
+            </span>
+        </el-dialog>
+
+        <!-- 结算失败弹框 -->
+        <el-dialog
+        :visible.sync="settleDown"
+        width="28%"
+        :append-to-body="true"
+        :close-on-click-modal="false"
+        :show-close="false"
+        >
+            <span slot="title" style="font-size: 1.22vw">提示</span>
+            <span style="font-size: 1.04vw">
+                结算失败，请返回主页面，系统将自动撤销所有支付并清空购物车
+            </span>
+            <span slot="footer" class="dialog-footer">
+                <el-button type="primary" @click="closePay">确 定</el-button>
+            </span>
+        </el-dialog>
     </div>
 </template>
 
@@ -196,41 +203,45 @@ import md5 from 'js-md5'
 import commonutil from 'util'
 import {openCashBox} from "views/member/util/utils";
 import {mapGetters, mapMutations, mapActions} from 'vuex'
-import {PAY_DIALOG_TRIGER, MORE_PAY_TRIGER, PAY_METHOD_TRIGER, GET_KIND_PRICE, SET_RETURN_PAY, CART_SET_GOODS_DATA, SET_PAY_RESULT,GET_CART_BILLCODE, CLEAR_SELECTION, GET_CART_DATA, CHECK_CURRENT_SEAT_STATUS, SET_PAYED_LIST, SET_ACTIVITY_LIST, GET_ACTIVITY_DATA, SET_ACTIVITY_ID_TEMP, CART_FIND_CART_DATA, SELECTE_ACTIVITY_ID, CHECK_OUT_COUPON, CANCEL_ACTIVITY_DATA, SAVE_AVAILABEL_COUPON, CLEAR_ALL_SELECTED_COUPON, CLEAR_ALL_CART, RENDER_SELECTION_AFTER_RELEASE, CHECKOUT_CONSUMEGCOUPON_RESULT, CLEAR_ALL_GROUPONS, SET_VIP_INFO,SET_HAS_CONSUME_ACTIVITY, SET_CHECK_MANY} from 'types'
+import {PAY_DIALOG_TRIGER, MORE_PAY_TRIGER, PAY_METHOD_TRIGER, GET_KIND_PRICE, SET_RETURN_PAY, CART_SET_GOODS_DATA, SET_PAY_RESULT,GET_CART_BILLCODE, CLEAR_SELECTION, GET_CART_DATA, CHECK_CURRENT_SEAT_STATUS, SET_PAYED_LIST, SET_ACTIVITY_LIST, GET_ACTIVITY_DATA, SET_ACTIVITY_ID_TEMP, CART_FIND_CART_DATA, SELECTE_ACTIVITY_ID, CHECK_OUT_COUPON, CANCEL_ACTIVITY_DATA, SAVE_AVAILABEL_COUPON, CLEAR_ALL_SELECTED_COUPON, CLEAR_ALL_CART, RENDER_SELECTION_AFTER_RELEASE, CHECKOUT_CONSUMEGCOUPON_RESULT, CLEAR_ALL_GROUPONS, SET_VIP_INFO,SET_HAS_CONSUME_ACTIVITY, SET_CHECK_MANY, CLEAR_SEL_ACTIVITY,CART_IS_PAY_ING,SET_WITH_COUPON} from 'types'
+import { VM_CLOCE_COUPON } from 'types/vmOnType'
 import {payIt, findCart, saveSaleBill, settleIt, clearAllTicket, syncFlow,movieTicketSuccess, findTimeSeatStatus, refundIt, clearAllCart, checkoutActivety, payVip,  proveCoupon, refundVip, couponPay, consumeCoupon, consumeActivity, cancelAllActivityCoupons, releaseSeat, proveCouponPwd, proveIsNeedPwd, queryAliWeiPayResult, grouponPay,getJhPayParam, checkoutVip, proveSecCoupon} from 'src/http/apis.js'
-// import CouponComp from 'components/settlement/CouponComp'
-import WeComp from 'components/settlement/WeComp'
-import AliComp from 'components/settlement/AliComp'
-import CardComp from 'components/settlement/CardComp'
-import VipComp from 'components/settlement/VipComp'
-import CashComp from 'components/settlement/CashComp'
+
+//各类型支付方式的组件导入
+import payWXPAYComp from 'components/settlement/payWXPAYComp'
+import payALIPAYComp from 'components/settlement/payALIPAYComp'
+import payXUNPComp from 'components/settlement/payXUNPComp'
+import pay0X03Comp from 'components/settlement/pay0X03Comp'
+import payXRMBComp from 'components/settlement/payXRMBComp'
+import payJHPAYComp from 'components/settlement/payJHPAYComp'
+import thirdpartyComp from  'components/settlement/thirdpartyComp'
 import ScoreComp from 'components/settlement/ScoreComp'
 import HoldComp from 'components/settlement/HoldComp'
-import UnionPay from 'components/settlement/UnionPay'
+import payUNIONPAYComp from 'components/settlement/payUNIONPAYComp'
 import MorePay from 'components/dialog/MorePay'
 import CheckCoupon from 'components/settlement/CheckCoupon'
 import GoodsDetil from 'components/cart/DetailGood'
 import CouponResults from 'components/settlement/CouponResults'
 import GCouponResults from 'components/groupcoupons'
 import CouponList from 'components/settlement/CouponList'
-import jhComp from 'components/settlement/jhComp'
 import Consumegc from 'components/groupcoupons/consumgc'
 import util from 'src/http/app.js'
 import voucherData from 'src/http/voucherData'
+import printing from 'src/http/printing'
 import jhPay from 'http/jhPay';
 export default {
     data() {
         return {
-          loading: false,
+          loading: false, //遮罩
+          loadingContents: "请求中...", //遮罩文字内容
+          cancelBtn: false,
           currentPayIndex: 0,
           componentsTypeName: 'coupon',
-          activityId: '',
           memberPassWord: '',
           couponNum: '',
           memberPassWordBox: false,
           couponCheckoutBox: false,
           currentPage: 1,
-          activityLoading: false,
           couponBox: false,
           couponPassWord: '',
           tempCouponData: null,
@@ -238,15 +249,17 @@ export default {
           passData: {},
           ws:null,
           closePayDialog: false,
-          settleDown: false
+          settleDown: false,
+          nowApplyCode:'',
+          key:0
         }
     },
-
     watch: {
+      //自动获取焦点
       memberPassWordBox() {
           setTimeout(() => {
               this.$refs.memberPwdInputer.focus()
-          }, 1000)
+          }, 300)
       },
 
       couponBox() {
@@ -258,7 +271,7 @@ export default {
       couponCheckoutBox() {
           setTimeout(() => {
              this.$refs.addCouponsInputer.focus()
-          }, 800)
+          }, 300)
       }
     },
 
@@ -300,69 +313,52 @@ export default {
            'jhPayBanks',
            'cardPayBanks',
            'hasConsumeActivity',
-           'checkMany'
+           'checkMany',
+           'cashCouponsLen',
+           'getUserConfig'
        ]),
 
-       computedActivityList() {
+       computedActivityList() { //活动分页处理
           if(this.activityList.length)
           return this.activityList.slice((this.currentPage-1) * 6, (this.currentPage) * 6)
-      },
+       },
 
-      totalSize() {
-        //  console.log(this.activityList)
+      totalSize() {  //活动总页数
          if(this.activityList.length)
-        //  console.log(Math.ceil(this.activityList.length / 6))
          return Math.ceil(this.activityList.length / 6)
 
       },
 
-       payMethods() {
-          let realArr = []
-          this.allPayWays.forEach((item, index, arr) => {
-              if(this.payMethod.currentPayMethodId == item.payTypeCode) {
-                  if(index >= 4) {
-                      realArr = arr.slice(0, 3)
-                      realArr.push(arr[index])
-                  }else {
-                      realArr = arr.slice(0, 4)
-                  }
-              }
-          })
-          return realArr;
-       },
-
         // XRMB 现金
         // 0X03 会员卡
         // XUNP 银行卡
-        // 0X09 票券
         // 0X08 留座
         // INCRM 积分
-        // WLDS 网络代售
         // 0X10 影院补贴
         // UNIONPAY 银联
+        // ALIPAY 支付宝
+        // WXPAY 微信
+        // JHPAY 聚合支付
 
        componentsName() {
-           switch(this.payMethod.currentPayMethodId) {
+           let currentPayMethodType = this.payMethod.currentPayMethodId
+           switch(currentPayMethodType) {
                case 'WXPAY':
-               return 'WeComp';
                case 'ALIPAY':
-               return 'AliComp';
                case 'XUNP':
-               return 'CardComp';
                case 'UNIONPAY':
-               return 'UnionPay'
                case '0X03':
-               return 'VipComp';
                case 'XRMB':
-               return 'CashComp';
-               case 'INCRM':
-               return 'ScoreComp';
-               case '0X08':
-               return 'HoldComp';
+            //    case 'INCRM':
+            //    case '0X08':
                case 'JHPAY':
-               return 'jhComp'
+               return `pay${currentPayMethodType}Comp`
+               default :
+               return 'thirdpartyComp'
            }
        }
+       
+       
     },
 
     methods: {
@@ -391,7 +387,10 @@ export default {
            CLEAR_ALL_GROUPONS,
            SET_VIP_INFO,
            SET_HAS_CONSUME_ACTIVITY,
-           SET_CHECK_MANY
+           SET_CHECK_MANY,
+           CLEAR_SEL_ACTIVITY,
+           CART_IS_PAY_ING,
+           SET_WITH_COUPON
         ]),
         ...mapActions([
             GET_ACTIVITY_DATA,
@@ -399,9 +398,31 @@ export default {
             CANCEL_ACTIVITY_DATA
         ]),
 
+        CouponClose(done){
+            if(!this.nowApplyCode) return done()
+            this.$confirm('关闭会清空该套券, 是否继续?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+                }).then(() => {
+                    for(let i = 0; i < this.availableCouponList.length; i++){
+                        let item = this.availableCouponList[i];
+                        if(item.applyCode == this.nowApplyCode && item.key == this.key){
+                            this.$vm.$emit(VM_CLOCE_COUPON,item)
+                            this.nowApplyCode = '';
+                            done()
+                            break;
+                        }
+                        
+                    }
+                }).catch(() => {
+                       
+                });
+        },
+
         //取消微信支付宝支付
         cancelAliOrWiPay() {
-           this.loading = false
+           this.cancelBtn = false
         },
 
         //打开团购券消费接口
@@ -411,8 +432,8 @@ export default {
         },
 
         //取消支付
-        cancelAll() {
-           clearAllCart({
+        async cancelAll() {
+           await clearAllCart({
                billCode: this.billCode
            }).then(res => {
                if(res.code == 200) {
@@ -426,42 +447,52 @@ export default {
                   this.SET_PAY_RESULT()
                   this.SAVE_AVAILABEL_COUPON([])
                   this.CART_SET_GOODS_DATA([])
-                  this.GET_CART_BILLCODE(res.data.newBillCode)
+                  this.GET_CART_BILLCODE('')
                   this.SET_HAS_CONSUME_ACTIVITY(false)
-                //   this.CART_FIND_CART_DATA()
+                  this.CLEAR_ALL_SELECTED_COUPON()
+                  this.currentPage = 1
                   this.settleDown = false
                   this.loading = false
                   this.PAY_DIALOG_TRIGER()
-               }else {
-                   this.wrongTip(res)
                }
            })
         },
+
         //活动上一页
         prePage() {
-        //    console.log("上一页")
            if(this.currentPage > 1) {
                this.currentPage = this.currentPage - 1
            }
         },
+
         //活动下一页
         nextPage() {
-        //    console.log("下一页", this.totalSize, this.currentPage)
            if(this.currentPage < this.totalSize) {
                this.currentPage = this.currentPage + 1
            }
         },
+
         openCouponCheckoutBox() {
-        //   console.log("checkout")
           this.couponCheckoutBox = true
+          this.couponNum = ''
         },
+
         //优惠券的验证 添加按钮触发
         directeCheckout() {
-        //   console.log(this.availableCouponList)
+          if(!this.couponNum) {
+              return this.wrongTip({msg: "票券不能为空"})
+          }
           if(!(this.availableCouponList.some(item => {
               return item.ticketCode == this.couponNum
           }))) {
-            proveIsNeedPwd({
+            let status = true;
+            this.availableCouponList.map((item)=>{
+                if(item.applyCode == this.nowApplyCode){
+                    status = false
+                }
+            })  
+            if(status){
+                proveIsNeedPwd({
                     billCode: this.billCode,
                     couponCode: this.couponNum,
                     cardNum: this.vipInfo.cardNo || "",
@@ -472,24 +503,34 @@ export default {
                     channelCode: this.channelCode,
                     terminalCode: this.terminalId,
                     chooseKeys: this.selActivityList
-            }).then(res => {
-                if(res.code == 200) {
-                    if(res.data) {
-                        this.couponBox = true
+                }).then(res => {
+                    if(res.code == 200) {
+                        if(res.data) {
+                            this.couponBox = true
+                        }else {
+                            this.proveTickets()
+                        }
                     }else {
-                        this.proveTickets()
+                        this.wrongTip(res)
                     }
-                }else {
-                    this.wrongTip(res)
-                }
-                this.couponCheckoutBox = false
-            })
+                    this.couponCheckoutBox = false
+                })
+            }else{
+                this.proveTickets()
+            }
           }else {
-             this.$message({
-                        showClose: true,
-                        message: "已添加此票券",
-                        type: 'error'
-                    });
+            //-------qiudongyue添加，如果有更好方法请重写start---------
+            this.$message({
+                showClose: true,
+                message: "已添加此票券",
+                type: 'error',
+                duration: 500,
+                onClose: () => {
+                    this.couponCheckoutBox = true
+                    this.couponNum=""
+                }
+            });
+            //-------qiudongyue添加，如果有更好方法请重写end---------
           }
           
           this.couponCheckoutBox = false
@@ -512,25 +553,31 @@ export default {
         async checkActivityPrice(item) {
            if(this.hasConsumeActivity) return this.$message({
                         showClose: true,
-                        message: "活动已核销，不可变更活动",
+                        message: "已有支付生成，不可变更活动",
                         type: 'warning'
                     });
            if(item.enable == 1) {
-              this.activityLoading = true
+              this.loading = true
+              this.loadingContents = '请求中...'
               this.SELECTE_ACTIVITY_ID(item.id)
               let couponData = await checkoutActivety({billCode: this.billCode, payTypeCode: this.payMethod.currentPayMethodId, couponKey: item.id, chooseKeys: this.selActivityList})
                 if(couponData.code == 200) {
                     this.SET_ACTIVITY_LIST(couponData.data.marketingResultList)
                     this.GET_KIND_PRICE(couponData.data)
                     this.CART_FIND_CART_DATA()
-                    this.activityLoading = false
+                    this.loading = false
                 }else {
-                    this.activityLoading = false
+                    this.loading = false
+                    this.CANCEL_ACTIVITY_DATA(item.id)
                     this.wrongTip(couponData)
                 }
            }else if(item.enable == 0){
+              this.loading = true
+              this.loadingContents = '请求中...'
               this.CANCEL_ACTIVITY_DATA(item.id)
-            //   this.activityLoading = false
+              setTimeout(() => {
+                  this.loading = false
+              }, 300)
            }
         },
         //错误提示
@@ -541,7 +588,6 @@ export default {
                         message: res.msg,
                         type: 'error'
                     });
-            return
         },
         confirmPasswords() {
            if(!this.memberPassWord) {
@@ -554,14 +600,18 @@ export default {
            }
         },
         inputMemberPassword() {
-            let that = this
-            if(that.payData.notPayAmount == 0) {
-                that.goPaying()
+            if(this.payData.notPayAmount == 0 || this.memberPassWord) {
+                this.goPaying()
             }else {
-                that.memberPassWordBox = true
-                util.secKeyBoard("open", that.$store.getters.configData, function(res) {
-                        that.memberPassWord = res[0] == -1 || res == '浏览器不支持此功能' ? null : res[0]
-                    })
+                this.memberPassWordBox = true
+                commonutil.secKeyBoard(this.configData).then((res)=>{
+                    this.memberPassWord = res;
+                    this.memberPassWordBox = false;
+                    this.confirmPasswords();
+                }).catch(err=>{
+                    // debugger
+                    // this.memberPassWordBox = false;
+                })
             }
         },
 
@@ -597,22 +647,36 @@ export default {
                         channelCode: this.channelCode,
                         terminalCode: this.terminalId,
                         chooseKeys: this.selActivityList,
-                        cardNum: this.vipInfo.cardNo || ""
+                        cardNum: this.vipInfo.cardNo || "",
+                        applyCode : this.nowApplyCode,
                 }
-           if(this.checkMany) {
+           if(this.nowApplyCode) {
                proveSecCoupon(paras).then(res => {
                     if(res.code == 200) {
-                        res.data.ticketResultList[0].pwd = this.couponPassWord
-                        this.SAVE_AVAILABEL_COUPON(res.data.ticketResultList)
-                        this.SET_ACTIVITY_LIST(res.data.marketingResultList)
-                        this.GET_KIND_PRICE(res.data)
-                        this.CART_SET_GOODS_DATA(res.data.merGoodsList)
-                        this.GET_CART_DATA(res.data)
-                        this.SET_PAYED_LIST(res.data.payedList)
+                        let item = '';
+                        for(let i = 0; i < this.availableCouponList.length; i++){
+                            if(this.availableCouponList[i].applyCode == this.nowApplyCode && this.availableCouponList[i].key == this.key){
+
+                                item = {
+                                        ...this.availableCouponList[i],
+                                        ticketCode :this.couponNum
+                                        }
+                                break;
+                            }
+                        }
+                        let newArr = [...this.availableCouponList,item]
+                        this.SAVE_AVAILABEL_COUPON(newArr)
                         this.couponPassWord = ''
                         this.couponNum = ''
                         this.couponBox = false
-                        if(res.data.ticketResultList[0].couponAmount >= 2) {
+                        let index = 0;
+                        for(let i = 0; i < this.availableCouponList.length; i++){
+                            if(this.availableCouponList[i].applyCode == this.nowApplyCode && this.availableCouponList[i].key == this.key){
+                                index++
+                            }
+                        }
+                        if(index < item.couponAmount) {
+                            
                             this.SET_CHECK_MANY(true)
                             this.couponCheckoutBox = true
                             this.$message({
@@ -622,16 +686,42 @@ export default {
                             });
                         }else {
                             this.SET_CHECK_MANY(false)
+                            this.nowApplyCode = '';
                         }
                     }else {
                         this.wrongTip(res)
+                        this.couponCheckoutBox = true
+                        this.couponNum = ''
+                        
                     }
                 })
            }else {
                proveCoupon(paras).then(res => {
                 if(res.code == 200) {
+                    // let currentTickets = res.data.ticketResultList.filter(item => {
+                    //     return item.ticketCode == paras.couponCode
+                    // })
+                    // if(currentTickets[0].ticketType == 1 && this.cashCouponsLen > Number(this.getUserConfig.max_sale_voucher_num) - 1) return this.$message({
+                    //             showClose: true,
+                    //             message: "代金券使用数量已达上限",
+                    //             type: 'warning'
+                    //         });
+                    let item = res.data instanceof Array ? res.data[0] : res.data
+                    this.key++
+                    res.data.ticketResultList[0].key = this.key
                     res.data.ticketResultList[0].pwd = this.couponPassWord
-                    this.SAVE_AVAILABEL_COUPON(res.data.ticketResultList)
+                    let fliterCodeArr = [];
+                    let ticketResultList = [];
+                     [...this.availableCouponList,...res.data.ticketResultList].map((item)=>{
+                        if(!fliterCodeArr.includes(item.ticketCode)){
+                            fliterCodeArr.push(item.ticketCode)
+                            ticketResultList.push(item)
+                        }
+                    })
+                    
+                    
+
+                    this.SAVE_AVAILABEL_COUPON(ticketResultList)
                     this.SET_ACTIVITY_LIST(res.data.marketingResultList)
                     this.GET_KIND_PRICE(res.data)
                     this.CART_SET_GOODS_DATA(res.data.merGoodsList)
@@ -640,8 +730,10 @@ export default {
                     this.couponPassWord = ''
                     this.couponNum = ''
                     this.couponBox = false
+                    this.nowApplyCode = res.data.ticketResultList[0].applyCode
                     if(res.data.ticketResultList[0].couponAmount >= 2) {
-                        this.SET_CHECK_MANY(true)
+                        // this.SET_CHECK_MANY(true)
+                        // this.nowApplyCode = res.data.ticketResultList[0].applyCode
                         this.couponCheckoutBox = true
                         this.$message({
                             showClose: true,
@@ -650,8 +742,11 @@ export default {
                         });
                     }else {
                         this.SET_CHECK_MANY(false)
+                        this.nowApplyCode = '';
                     }
                 }else {
+                    this.CART_FIND_CART_DATA()
+                    this.couponCheckoutBox = true;
                     this.wrongTip(res)
                 }
             })
@@ -669,29 +764,99 @@ export default {
        //待支付为0时 直接调用结算接口
        async directSettle() {
            this.loading = true
+           this.loadingContents = "结算中..."
+            
            if(this.selActivityList.length) {
+            let cinemaPayAmount = '';
+            for(let i = 0; i < this.cartData.marketingResultList.length; i++){
+                if(this.cartData.marketingResultList[i].enable === 0){
+                    cinemaPayAmount = this.cartData.marketingResultList[i].cinemaTicketPay
+                    break
+                }
+            }
              let consumeActivityData = await consumeActivity({
                 tenantId: this.tenantId,
                 memberId: this.vipInfo.memberId || null,
                 billCode: this.billCode,
                 payTypeCode: this.payMethod.currentPayMethodId,
-                chooseKeys: this.selActivityList
+                chooseKeys: this.selActivityList,
+                cinemaPayAmount
             })
 
             if(consumeActivityData.code != 200) {
-                this.wrongTip(consumeActivityData)
-                return
+                return this.wrongTip(consumeActivityData)
             }else {
                 this.SET_HAS_CONSUME_ACTIVITY(true)
+                this.CLEAR_SEL_ACTIVITY()
             }
           }
 
           let saveData = await saveSaleBill({billCode: this.billCode})
 
           if(saveData.code != 200) {
-            return
+            return this.wrongTip(saveData)
           }
 
+        //   if(!this.hasConsumeActivity){
+        //       this[SET_WITH_COUPON](0)
+        //       if(this.availableCouponList.length) {
+        //             let appliesArr = this.availableCouponList.map(item => {
+        //                 let obj = {
+        //                     applyCode: item.applyCode,
+        //                     ruleId: item.ruleId,
+        //                     exchangeType: item.exchangeType,
+        //                     couponCodes: [{
+        //                         couponCode: item.ticketCode,
+        //                         pwd: item.pwd,
+        //                         creditAmount: item.recoveryAmount
+        //                     }]
+        //                 }
+
+        //                 return obj
+        //             })
+        //             //  console.log(appliesArr)
+        //             let consumeCouponData =  await consumeCoupon({
+        //                 tenantId: this.tenantId,
+        //                 channelCode: this.channelCode,
+        //                 outTradeNo: this.billCode,
+        //                 businessCode: this.cinemaCode,
+        //                 applies: appliesArr
+        //             })
+        //             if(consumeCouponData.code !=200){
+        //                 this[SET_WITH_COUPON](1)
+        //                 return this.wrongTip(consumeCouponData)
+        //             }
+        //         }
+        //     }
+        this[SET_WITH_COUPON](0)
+            if(this.availableCouponList.length) {
+                    let appliesArr = this.availableCouponList.map(item => {
+                        let obj = {
+                            applyCode: item.applyCode,
+                            ruleId: item.ruleId,
+                            exchangeType: item.exchangeType,
+                            couponCodes: [{
+                                couponCode: item.ticketCode,
+                                pwd: item.pwd,
+                                creditAmount: item.recoveryAmount
+                            }]
+                        }
+
+                        return obj
+                    })
+                    //  console.log(appliesArr)
+                    let consumeCouponData =  await consumeCoupon({
+                        tenantId: this.tenantId,
+                        channelCode: this.channelCode,
+                        outTradeNo: this.billCode,
+                        businessCode: this.cinemaCode,
+                        applies: appliesArr
+                    })
+                    if(consumeCouponData.code !=200){
+                        this[SET_WITH_COUPON](1)
+                        return this.wrongTip(consumeCouponData)
+                    }
+                }
           let directSettlementData = await settleIt({
                     original_price: this.payData.originalAmount,
                     plan_id: this.currentFilmId,
@@ -708,44 +873,16 @@ export default {
                     message: "购买成功！谢谢",
                     type: 'success'
                 });
-
-                //   //如果有票券的话先进行票券的核销, 进行其他的支付
-                if(this.availableCouponList.length) {
-                    let appliesArr = this.availableCouponList.map(item => {
-                        let obj = {
-                            applyCode: item.applyCode,
-                            ruleId: item.ruleId,
-                            exchangeType: item.exchangeType,
-                            couponCodes: [{
-                                couponCode: item.ticketCode,
-                                pwd: item.pwd,
-                                creditAmount: item.payAmount
-                            }]
-                        }
-
-                        return obj
-                    })
-                    //  console.log(appliesArr)
-                    let consumeCouponData =  await consumeCoupon({
-                        tenantId: this.tenantId,
-                        channelCode: this.channelCode,
-                        outTradeNo: this.billCode,
-                        businessCode: this.cinemaCode,
-                        applies: appliesArr
-                    })
-
-                    // if(consumeCouponData.code != 200) {
-                    //     this.wrongTip(consumeCouponData)
-                    //     return
-                    // }
-                }
+                this[CART_IS_PAY_ING](false)
 
                     this.GET_CART_BILLCODE('')
                     this.CART_SET_GOODS_DATA([])
                     this.SET_PAYED_LIST([])
                     this.CLEAR_SELECTION()
                     this.CLEAR_ALL_GROUPONS()
+                    this.CLEAR_ALL_CART();
                     this.SET_HAS_CONSUME_ACTIVITY(false)
+                    this.CLEAR_ALL_SELECTED_COUPON()
                     this.currentPage = 1
 
                 findTimeSeatStatus({
@@ -756,14 +893,14 @@ export default {
                            this.CHECK_CURRENT_SEAT_STATUS(res.data)
                         }
                     })
+
                 this.PAY_DIALOG_TRIGER()
-                this.CLEAR_ALL_SELECTED_COUPON()
                 this.loading = false
                 let cti = directSettlementData.data.cinemaTicketInfo
                 let index =  0 
                 let successPrintArr=[]
                 if(this.payMethod.currentPayMethodId == 'XRMB') openCashBox.call(this,this.configData)
-                if(cti.length){ //判断是否有购买影票
+                if(cti && cti.length){ //判断是否有购买影票
                     this.printTicket(cti , index , successPrintArr,()=>{
                         this.printVoucherTicket(directSettlementData.data.transactionVoucher)
                     })
@@ -772,40 +909,79 @@ export default {
                 }
           }else {
                  this.settleDown = true
-            //   this.wrongTip(settlementData)
           }
        },
 
         async payIt() {  //确定支付，由子组件触发事件
 
-           this.loading = true
+           this.loading = true //打开遮罩
+           this.loadingContents = "支付中..."
+           let ticketLen = this.cartData.goodsList.length
+           let goodsLen = this.cartDatalist.length
+           let payType = ticketLen && goodsLen ? 2 : ticketLen ? 0 : goodsLen ? 1 : ''; //判断支付产品类型
 
-          //如果有选中的活动先进行活动的核销，然后进行优惠券的核销
           if(this.selActivityList.length) {
+              let cinemaPayAmount = ''
+              for(let i = 0; i < this.cartData.marketingResultList.length; i++){
+                if(this.cartData.marketingResultList[i].enable === 0){
+                    cinemaPayAmount = this.cartData.marketingResultList[i].cinemaTicketPay
+                    break
+                }
+                }
              let consumeActivityData = await consumeActivity({
                 tenantId: this.tenantId,
                 memberId: this.vipInfo.memberId || null,
                 billCode: this.billCode,
                 payTypeCode: this.payMethod.currentPayMethodId,
-                chooseKeys: this.selActivityList
+                chooseKeys: this.selActivityList,
+                cinemaPayAmount
             })
 
             if(consumeActivityData.code != 200) {
-                this.wrongTip(consumeActivityData)
-                return
+                return this.wrongTip(consumeActivityData)
             }else {
                 this.SET_HAS_CONSUME_ACTIVITY(true)
+                this.CLEAR_SEL_ACTIVITY()
             }
           }
 
-          let ticketLen = this.cartData.goodsList.length
-          let goodsLen = this.cartDatalist.length
-        //   console.log(ticketLen, goodsLen)
-          let payType = ticketLen && goodsLen ? 2 : ticketLen ? 0 : goodsLen ? 1 : '';
-        //   console.log(payType)
-          let saveData = await saveSaleBill({billCode: this.billCode}), couponPayData, payData, findCartData, settlementData;  //定义查询结果变量 减少深度嵌套导致的深度查询
+        //   if(!this.hasConsumeActivity){
+        //       this[SET_WITH_COUPON](0)
+        //       if(this.availableCouponList.length) {
+        //             let appliesArr = this.availableCouponList.map(item => {
+        //                 let obj = {
+        //                     applyCode: item.applyCode,
+        //                     ruleId: item.ruleId,
+        //                     exchangeType: item.exchangeType,
+        //                     couponCodes: [{
+        //                         couponCode: item.ticketCode,
+        //                         pwd: item.pwd,
+        //                         creditAmount: item.recoveryAmount
+        //                     }]
+        //                 }
+
+        //                 return obj
+        //             })
+        //             //  console.log(appliesArr)
+        //             let consumeCouponData =  await consumeCoupon({
+        //                 tenantId: this.tenantId,
+        //                 channelCode: this.channelCode,
+        //                 outTradeNo: this.billCode,
+        //                 businessCode: this.cinemaCode,
+        //                 applies: appliesArr
+        //             })
+        //             if(consumeCouponData.code !=200){
+        //                 this[SET_WITH_COUPON](1)
+        //                 return this.wrongTip(consumeCouponData)
+        //             }
+        //         }
+        //     }
+         
+           
+            
+          let saveData = await saveSaleBill({billCode: this.billCode}), couponPayData, payData;  //定义查询结果变量 减少深度嵌套导致的深度查询
+
           if(saveData.code == 200) {
-            //   console.log(this.payNum.realPayNum)
               let requestData = {
                     cinemaUid: this.cinemaUid,
                     saleBillCode: this.billCode,
@@ -829,23 +1005,23 @@ export default {
                     delFlag:this.jhPayBanks.delFlag || this.cardPayBanks.delFlag,
                     bankCardCode:this.jhPayBanks.bankCardCode || this.cardPayBanks.bankCardCode,
                     returnCode:this.jhPayBanks.returnCode || this.cardPayBanks.returnCode,
-              }
-                payData = await payIt(requestData)
-                this.memberPassWord = ''
+                    defFg:this.payMethod.defFg ? true : false,
+              } 
+
+                payData = await payIt(requestData)   
 
           }else {
-              this.wrongTip(saveData)
+              return this.wrongTip(saveData)
           }
-
+          if(payData.code == 200) this.SET_HAS_CONSUME_ACTIVITY(true)
           if(payData.code == 200 && payData.data.status == 1) {
             this.memberPassWordBox = false
             this.SET_RETURN_PAY(payData.data.returnAmount)
             this.SET_PAY_RESULT()
-
-            findCartData = await findCart({billCode: this.billCode})
             if(this.payMethod.currentPayMethodId == '0X03') {
                this.checkMemberInfo()
             }
+            this.isSettle()
           }else {
             if((this.payMethod.currentPayMethodId == 'WXPAY' || this.payMethod.currentPayMethodId == 'ALIPAY') && payData.code == 200 && payData.data.status == 0) {
                 // console.log("微信支付中...")
@@ -854,17 +1030,51 @@ export default {
                 this.memberPassWordBox = false
                 this.queryAliWeiPayResults(payData.data.uid)
             }else {
-                this.wrongTip(payData)
+                this.memberPassWord = ''
+                return this.wrongTip(payData)
             }
             
           }
+        },
+
+        //查询购物车待支付金额是否发起结算
+        async isSettle() {
+          let findCartData = await findCart({billCode: this.billCode}), settlementData;
+
           if(findCartData && findCartData.code == 200) {
               this.GET_KIND_PRICE(findCartData.data)
               this.SET_PAYED_LIST(findCartData.data.payedList)
               if(findCartData.data.notPayAmount <= 0) {
-                //  this.CLEAR_SELECTION()
-                 this.GET_CART_DATA({goodsList: []})
-                 this.activityId = ''
+                 this.loadingContents = '结算中...'
+                    this[SET_WITH_COUPON](0)
+                    if(this.availableCouponList.length) {
+                            let appliesArr = this.availableCouponList.map(item => {
+                                let obj = {
+                                    applyCode: item.applyCode,
+                                    ruleId: item.ruleId,
+                                    exchangeType: item.exchangeType,
+                                    couponCodes: [{
+                                        couponCode: item.ticketCode,
+                                        pwd: item.pwd,
+                                        creditAmount: item.recoveryAmount
+                                    }]
+                                }
+
+                                return obj
+                            })
+                            //  console.log(appliesArr)
+                            let consumeCouponData =  await consumeCoupon({
+                                tenantId: this.tenantId,
+                                channelCode: this.channelCode,
+                                outTradeNo: this.billCode,
+                                businessCode: this.cinemaCode,
+                                applies: appliesArr
+                            })
+                            if(consumeCouponData.code !=200){
+                                this[SET_WITH_COUPON](1)
+                                return this.wrongTip(consumeCouponData)
+                            }
+                        }
                  settlementData = await settleIt({
                     original_price: this.payData.originalAmount,
                     plan_id: this.currentFilmId,
@@ -875,16 +1085,18 @@ export default {
                  })
               }else {
                     this.loading = false
+                    this.cancelBtn = false
+                    this[CART_IS_PAY_ING](true)
                     this.$refs.payComp.clearOldCash();
                     this.$message({
                                 showClose: true,
                                 message: "请完成剩余支付",
                                 type: 'warning'
                             });
+                    return
                 }
           }else {
-            //   this.wrongTip(findCartData)
-            return
+            return this.wrongTip(findCartData)
           }
           if(settlementData.status == 200) {
                 this.$message({
@@ -892,45 +1104,19 @@ export default {
                     message: "购买成功！谢谢",
                     type: 'success'
                 });
-
-                //   //如果有票券的话先进行票券的核销, 进行其他的支付
-                if(this.availableCouponList.length) {
-                    let appliesArr = this.availableCouponList.map(item => {
-                        let obj = {
-                            applyCode: item.applyCode,
-                            ruleId: item.ruleId,
-                            exchangeType: item.exchangeType,
-                            couponCodes: [{
-                                couponCode: item.ticketCode,
-                                pwd: item.pwd,
-                                creditAmount: item.payAmount
-                            }]
-                        }
-
-                        return obj
-                    })
-                    //  console.log(appliesArr)
-                    let consumeCouponData =  await consumeCoupon({
-                        tenantId: this.tenantId,
-                        channelCode: this.channelCode,
-                        outTradeNo: this.billCode,
-                        businessCode: this.cinemaCode,
-                        applies: appliesArr
-                    })
-
-                    // if(consumeCouponData.code != 200) {
-                    //     this.wrongTip(consumeCouponData)
-                    //     return
-                    // }
-                }
-
+                this[CART_IS_PAY_ING](false)
+                this[SET_WITH_COUPON](1)
+                
+                    this.GET_CART_DATA({goodsList: []})
                     this.GET_CART_BILLCODE('')
                     this.CART_SET_GOODS_DATA([])
                     this.SET_PAYED_LIST([])
                     this.CLEAR_SELECTION()
                     this.CLEAR_ALL_GROUPONS()
                     this.SET_HAS_CONSUME_ACTIVITY(false)
+                    this.CLEAR_ALL_SELECTED_COUPON()
                     this.currentPage = 1
+                    this.memberPassWord = ''
 
                 findTimeSeatStatus({
                         cinemaCode: this.cinemaCode,
@@ -940,14 +1126,15 @@ export default {
                            this.CHECK_CURRENT_SEAT_STATUS(res.data)
                         }
                     })
+
                 this.PAY_DIALOG_TRIGER()
-                this.CLEAR_ALL_SELECTED_COUPON()
                 this.loading = false
+                this.cancelBtn = false
                 let cti = settlementData.data.cinemaTicketInfo
                 let index =  0 
                 let successPrintArr=[]
                 if(this.payMethod.currentPayMethodId == 'XRMB') openCashBox.call(this,this.configData)
-                if(cti.length){ //判断是否有购买影票
+                if(cti && cti.length){ //判断是否有购买影票
                     this.printTicket(cti , index , successPrintArr,()=>{
                         this.printVoucherTicket(settlementData.data.transactionVoucher)
                     })
@@ -956,7 +1143,6 @@ export default {
                 }
           }else {
                  this.settleDown = true
-            //   this.wrongTip(settlementData)
           }
         },
         
@@ -1010,6 +1196,7 @@ export default {
             if(!data) return
             let printData  =  voucherData.trade_print(type,voucherData.type1Data(data))
             util.printTicket('bill_print',printData,this.configData,(res)=>{
+                
                 if(this.configData.sale_goods_print_type != 1){ //此处判断是否打印取货凭证
                     if(type ==2 ) return //防止死循环，打印取货凭证 传多一个type为2
                     this.printVoucherTicket(data,2)
@@ -1021,6 +1208,7 @@ export default {
         async checkMemberInfo() {
             let vipResultdata = await checkoutVip({memberNumber: this.vipInfo.cardNo, code: this.billCode})
             if(vipResultdata.code == 200) {
+                vipResultdata.data.memberCardVO.withCash = vipResultdata.data.withCash
                 this.SET_VIP_INFO(vipResultdata.data.memberCardVO)
             }else {
                 this.$message({
@@ -1032,19 +1220,19 @@ export default {
 
         //支付宝微信查询支付结果
         async queryAliWeiPayResults(uid) {
-        //   console.log("准备查询")
           if(!this.loading) {
               clearInterval(queryInterval);
               return
           } 
           this.loading = true
+          this.loadingContents = '支付中...'
+          this.cancelBtn = true
           let queryInterval = null
           let currentDate = new Date().getTime() - this.startWaitingTime
-        //   console.log(currentDate / 100)
           if(currentDate / 1000 > 90) {
               this.startWaitingTime = 0;
               clearInterval(queryInterval);
-              this.wrongTip({msg: "支付超时"})
+              return this.wrongTip({msg: "支付超时"})
           }
           let payResults = await queryAliWeiPayResult({
               saleBillPayUid: uid,
@@ -1055,30 +1243,32 @@ export default {
         //   console.log(payResults)
 
           if(payResults.code == 200 && payResults.data.status == 1) {
-              this.loading = false
+              this.cancelBtn = false
               clearInterval(queryInterval)
-              findCart({billCode: this.billCode}).then(res => {
-                                if(res.code == 200) {
-                                this.GET_KIND_PRICE(res.data)
-                                this.SET_PAYED_LIST(res.data.payedList)
-                                this.$refs.payComp.clearOldCash();
-                                }else {
-                                    this.wrongTip(res)
-                                }
-                            })
+              this.isSettle()
+                
           }else if(payResults.code == 200 && payResults.data.status == 0) {
               clearInterval(queryInterval)
               queryInterval = setTimeout(() => {
                   this.queryAliWeiPayResults(uid)
-              }, 800)
+              }, 1500)
           }else {
               this.loading = false
+              this.cancelBtn = false
               clearInterval(queryInterval)
-              this.wrongTip({msg: "取消支付"})
+              return this.wrongTip({msg: "支付失败，请重新支付"})
           }
         },
 
-        async closePay() {
+        async closePay(isRefresh) {
+            let jhPayState = false;
+            for(let i = 0; i < this.payedList.length; i++){
+                if(this.payedList[i].payTypeCode == 'JHPAY'){
+                    jhPayState = true;
+                    break
+                }
+            }
+            if(!jhPayState) return this.releaseSeat()
             const data = await getJhPayParam({
                 cinameUid : this.cinemaUid,
                 saleBillCode:this.billCode,
@@ -1111,8 +1301,9 @@ export default {
             // console.log(data)
             
         },
-        releaseSeat(){
-            releaseSeat({
+        async releaseSeat(){
+            await this.cancelAll()
+            await releaseSeat({
                     channelCode: this.channelCode,
                     cinemaCode: this.cinemaCode,
                     saleBillCode: this.billCode,
@@ -1122,6 +1313,7 @@ export default {
                         this.GET_CART_DATA({goodsList: []})
                         this.CLEAR_SELECTION()
                         this.GET_CART_DATA({goodsList:[]})
+                        
                         this.RENDER_SELECTION_AFTER_RELEASE(res.data)
                         }else {
                             this.$message({
@@ -1131,7 +1323,7 @@ export default {
                                 });
                         }
                 })
-           this.cancelAll()
+           this[SET_WITH_COUPON](1)
         },
         showMorePayMethods() {
             this.MORE_PAY_TRIGER()
@@ -1139,12 +1331,6 @@ export default {
 
         selecDialogItem(val) {
            this.currentPayIndex = val
-        },
-
-        selPay(item, index) {
-            this.currentPayIndex = index
-            this.PAY_METHOD_TRIGER(item)
-            this.GET_ACTIVITY_DATA()
         },
 
         //撤销退款
@@ -1182,22 +1368,23 @@ export default {
     },
 
     components: {
-        WeComp,
-        AliComp,
-        CardComp,
-        VipComp,
-        CashComp,
+        payWXPAYComp,
+        payALIPAYComp,
+        payXUNPComp,
+        pay0X03Comp,
+        payXRMBComp,
+        payJHPAYComp,
+        payUNIONPAYComp,
         ScoreComp,
         HoldComp,
         MorePay,
         CheckCoupon,
         GoodsDetil,
         CouponResults,
-        UnionPay,
         CouponList,
-        jhComp,
         GCouponResults,
-        Consumegc
+        Consumegc,
+        thirdpartyComp
     }
 }
 </script>
@@ -1212,6 +1399,14 @@ export default {
      left: 0;
      z-index: 800;
      transition: all 0.3s ease-in-out;
+
+     .cancel-btn {
+        position: absolute; 
+        left: 47%; 
+        top: 60%; 
+        transform: translate(-50% 50%); 
+        z-index: 5000;
+     }
 
  }
   .settlement-container {
@@ -1416,6 +1611,11 @@ export default {
 
                       .iconfont {
                           color: $themeColor;
+                          font-size: 2.6vw;
+                      }
+
+                      .no-iconfont {
+                          color: #bcbcbc;
                           font-size: 2.6vw;
                       }
                   }

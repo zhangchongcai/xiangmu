@@ -59,11 +59,11 @@ export default {
       },
       rules: {
         passwd:[
-          { required: true, message: "请输入密码", trigger: "change" },
+          { required: true, message: "请输入密码", trigger: "blur" },
           { validator: customPasswordReg, trigger: "change",passwordkType:1}
         ],
         validateCode: [
-          { required: true, message: "请输入验证码", trigger: "change" }
+          { required: true, message: "请输入验证码", trigger: ["change",'blur'] }
         ]
       }
     };

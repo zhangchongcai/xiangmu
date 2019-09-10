@@ -409,7 +409,7 @@ util.readCard = function (configData,callBack){
  * @param configData object //终端配置
  * @callback function //回调函数
  */
-util.writeCard=function(configData,callBack) {
+util.writeCard=function(configData,callBack,cardNo) {
 	if (typeof(app) == 'undefined'){
 		callBack("浏览器不支持此功能");
 		return;
@@ -431,7 +431,7 @@ util.writeCard=function(configData,callBack) {
 	let callbackName = getCallbackName()//回掉函数名
 	let pwd="383333333030";//密码
 	let initPwd="FFFFFFFFFFFF";//初始密码
-	let cardNum="Zy4vZtBgzc1rjjb";//卡号
+	let cardNum= cardNo || "Zy4vZtBgzc1rjjb";//卡号
 	let sNewPassword = '';
 	let sNewCardType = '';
 	let sNewSecNo = '123456';
@@ -457,6 +457,11 @@ util.resetCardPwd=function(configData,callBack){
 	if (typeof(app) == 'undefined'){
 		callBack("浏览器不支持此功能");
 		return;
+	}else{
+		if(!app.sendMessage){
+			callBack("浏览器不支持此功能");
+			return;
+		}
 	}
 	if (!configData){
 		callBack("终端数据为空");

@@ -16,7 +16,7 @@
         </div>
 
         <div class="film-tab-header">
-           <span :class="['default-tab', item.is_sel ? 'active' : '']" v-for="(item, index) in tabNav" :key="'film' + index" @click="selOrderType(index)">
+           <span :class="['default-tab', item.is_sel ? 'active' : '']" v-for="(item, index) in tabNav.slice(0, 3)" :key="'film' + index" @click="selOrderType(index)">
                {{item.name}}
            </span>
         </div>
@@ -47,9 +47,9 @@
             <i v-show="currentTab == 'timer' && getFilmTimeData.length > 8" :class="['iconfont', 'scroll-arrow-down-right', 'iconxiangxiazhankaixiaojiantou', 'scroll-arrow-down-right-timer']" @click="timerOrderDown"></i>
 
           <!-- 综合排序   -->
-          <swiper :options="swiperOptionAllOrder" v-show="currentTab == 'all'" ref="allFilm" class="all-order">
+          <swiper :options="swiperOptionAllOrder" v-show="currentTab == 'all' && tabNav[0].is_sel == true" ref="allFilm" class="all-order">
             <swiper-slide class="swiper-all-order-slide" v-for="(item, index) in getFilmData" :key="'film' + index">
-                <all-film-order :filmInfo="item" @selectionHallId="selectionHallId(arguments[0], index)" @toFilmTab="toFilmTab(item.movieUid)"></all-film-order>
+                <all-film-order :filmInfo="item" @selectionHallId="selectionHallId(arguments[0], index)" @toFilmTab="toFilmTab(item.movieUid + item.language)"></all-film-order>
             </swiper-slide>
           </swiper>
 
@@ -158,7 +158,7 @@ export default {
 
             tabNav:[  //排期tab
                 {
-                  is_sel: false,
+                  is_sel: true,
                   name: "按影片",
                   en_name: 'film'
                 },
@@ -171,6 +171,11 @@ export default {
                     is_sel: false,
                     name: "按影厅",
                     en_name: 'hall'
+                },
+                {
+                    is_sel: true,
+                    name: "全部",
+                    en_name: 'all'
                 }
             ],
 
@@ -533,11 +538,10 @@ export default {
       toFilmTab(id) {
          this.SET_MOVIE_ID(id)
          this.SET_FILM_CONTENTS()
-         this.tabNav.forEach((item, index, arr) => {
-             if(item.en_name == 'film') {
-                arr[index].is_sel = true
-             }
+         this.tabNav.forEach(item=> {
+             item.is_sel = false
          })
+         this.tabNav[0].is_sel = true
       },
 
       allOrderUp() {
@@ -586,6 +590,8 @@ export default {
         this.tabNav.forEach(item => {
               item.is_sel = false
           })
+        this.tabNav[0].is_sel = true
+        this.tabNav[3].is_sel = true
       },
       selOrderType(index) {
           this.tabNav.forEach(item => {

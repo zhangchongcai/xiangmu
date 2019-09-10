@@ -61,7 +61,7 @@ export default {
     }
   },
   mounted(){
-    console.log(this);
+    // console.log(this);
    
   },
   updated(){
@@ -74,7 +74,7 @@ export default {
   },
   methods:{
     keydown(e){
-      console.log(e)
+      // console.log(e)
     },
     onKey(key){
       switch(key){

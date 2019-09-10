@@ -15,10 +15,10 @@
       <el-button @click="search" v-if="!isApply" class="common-btn">{{$attrs.validateText ? '校验': '查询'}}</el-button>
       <div class="iskeyBoard" v-if="!!$attrs.iskeyBoard">
         <el-button @click="startKeyBorad" class="common-btn">启动密码输入</el-button>
-        <label style="color:#666;font-size:1.04vw"><em style="color:red">*</em>输入后请按回车键或直接刷卡</label>
+        <label style="color:#666;font-size:1.04vw"><em style="color:red;font-size:1.04vw">*</em>输入后请按回车键或直接刷卡</label>
       </div>
     </div>
-    <p style="padding-left:10.2vw;padding-top: .3vw;color:#2A2A2A;font-size:.8vw" v-if="!$attrs.iskeyBoard"><em style="color:#F33430">*</em>录入完成请按回车键</p>
+    <p v-if="!$attrs.iskeyBoard" class="enterTip">录入完成请按回车键</p>
   </div>
 </template>
 <script>
@@ -146,13 +146,23 @@ export default {
     display: flex;
     align-items: center;
     .lable {
-      min-width: 10.2vw;
+      width:9vw;
       font-size: $font-size12;
     }
     .el-input {
       width: 34.2vw;
       margin-right: 0.9vw;
     }
+  }
+  .enterTip{
+      padding:0.3vw 0 0 9vw;
+      color:#2A2A2A;
+      font-size:.8vw;
+      &::before{
+        content: '*';
+        font-size:.8vw;
+        color: #F56C6C;
+      }
   }
 }
 .iskeyBoard{

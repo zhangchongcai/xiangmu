@@ -12,7 +12,7 @@
          <span class="tab-box">
              <span v-for="(item, index) in tabNav" :key="'nav' + index" :class="['tab-btn', currentNav == item.id ? 'sel-nav' : '']" @click="changeTab(item.id)">{{item.name}}</span>
          </span>
-         <el-checkbox class="check-font" :checked="salable == 'salabletrue'"  v-model="salableBoolean" @change="changeCheckBox">只显示可售场次</el-checkbox>
+         <el-checkbox class="check-font"  v-model="salableBoolean">只显示可售场次</el-checkbox>
          <i class="iconfont iconshuaxin" @click="refreshCurrentOrder"></i>
        </div>
 
@@ -32,7 +32,7 @@
                     </div>
 
                     <div class="item-right">
-                        <div ref="scorllUnit" v-for="(plan, index) in item.arr_plan_list" :key="'plan' + index" :class="['item-right-item', currentFilmId == plan.id ? 'selected' : '']" @click="setId(plan.id, plan.plan_code, plan.allow_single_sold, plan.salable)">
+                        <div ref="scorllUnit" v-for="(plan, index) in item.arr_plan_list" :key="'plan' + index" :class="['item-right-item', salableBoolean && !plan.salable ? 'disappeared' : '', currentFilmId == plan.id ? 'selected' : '']" @click="setId(plan.id, plan.plan_code, plan.allow_single_sold, plan.salable)">
                             <div v-show="!plan.salable" class="unsalable-style"></div>
                             <span class="play-time">{{plan.show_time.substring(10, 16)}}</span>
                             <span class="play-hall">{{plan.hall_name}}</span>
@@ -58,7 +58,7 @@
                     </div>
 
                     <div class="item-right">
-                    <div ref="scorllUnit" v-for="(plan, index) in item.arr_plan_list" :key="'plan' + index" :class="['item-right-item-time', currentFilmId == plan.id ? 'selected' : '']" @click="setId(plan.id, plan.plan_code, plan.allow_single_sold, plan.salable)">
+                    <div ref="scorllUnit" v-for="(plan, index) in item.arr_plan_list" :key="'plan' + index" :class="['item-right-item-time', salableBoolean && !plan.salable ? 'disappeared' : '', currentFilmId == plan.id ? 'selected' : '']" @click="setId(plan.id, plan.plan_code, plan.allow_single_sold, plan.salable)">
                         <div v-show="!plan.salable" class="unsalable-style"></div>
                         <span class="play-name">{{plan.name}}</span>
                         <span class="play-time">{{plan.show_time.substring(10, 16)}}</span>
@@ -89,7 +89,7 @@
                     </div>
 
                     <div class="item-right">
-                    <div ref="scorllUnit" v-for="(plan, index) in item.arr_plan_list" :key="'plan' + index" :class="['item-right-item-time',  currentFilmId == plan.id ? 'selected' : '']" @click="setId(plan.id, plan.plan_code, plan.allow_single_sold, plan.salable)">
+                    <div ref="scorllUnit" v-for="(plan, index) in item.arr_plan_list" :key="'plan' + index" :class="['item-right-item-time', salableBoolean && !plan.salable ? 'disappeared' : '',  currentFilmId == plan.id ? 'selected' : '']" @click="setId(plan.id, plan.plan_code, plan.allow_single_sold, plan.salable)">
                         <div v-show="!plan.salable" class="unsalable-style"></div>
                         <span class="play-name">{{plan.name}}</span>
                         <span class="play-time">{{plan.show_time.substring(10, 16)}}</span>
@@ -115,8 +115,8 @@
        <!-- 底部翻页 -->
        <div class="full-footer">
          <div class="pager">
-             <i :style="{color: noScroll ? '#BCBCBC' : '#3B74FF'}" class="iconfont iconshangjiantouanniu" @click="turnUp"></i>
-             <i :style="{color: noScroll ? '#BCBCBC' : '#3B74FF'}" class="iconfont iconxiajiantouanniu" @click="turnDown"></i>
+             <i :style="{color: noDownScroll ? '#BCBCBC' : '#3B74FF'}" class="iconfont iconshangjiantouanniu" @click="turnUp"></i>
+             <i :style="{color: noUpScroll ? '#BCBCBC' : '#3B74FF'}" class="iconfont iconxiajiantouanniu" @click="turnDown"></i>
          </div>
 
          <div class="close">
@@ -133,9 +133,10 @@ import { SHOW_FULL_ORDER, SET_FILM_CURRENT_SEL_ID, SHOW_DATE_PICKER, SET_CURRENT
 export default {
     data() {
         return {
-            noScroll: false,
+            noUpScroll: false,
+            noDownScroll: false,
             salableBoolean: false,
-            salable: '',
+            scrollTopData: 0,
             tabNav: [
                 {
                     name: '按影片',
@@ -166,14 +167,12 @@ export default {
        ]),
     },
 
-    // watch: {
-    //    salable(val) {
-    //       this.FILTER_FILMS(val)
-    //    }
-    // },
-
-    mounted() {
-       this.$refs.scrollContainer.scrollTop == 0 ? this.noScroll = true : this.noScroll = false
+    mounted(){
+        this.$refs.scrollContainer.addEventListener('scroll',this.scrollChange)
+        this.scrollChange()
+    },
+    beforeDestroy(){
+        this.$refs.scrollContainer.removeEventListener('scroll',this.scrollChange)
     },
 
     methods: {
@@ -188,20 +187,15 @@ export default {
         //    FILTER_FILMS
         ]),
 
-        //显示可售状态或者全部状态
-        // filterFilm(arr, val) {
-        //   arr.forEach((item) => {
-        //       item.arr_plan_list.filter((film) => {
-        //           if(val == 'salabletrue') {
-        //               return film.salable == 1
-        //           }else if(val == 'history'){
-        //               return film.salable == 0
-        //           }else {
-        //              return film.salable == 1 || film.salable == 0
-        //           }
-        //       })
-        //   })
-        // },
+       scrollChange(){
+            const offsetHeight =  this.$refs.scrollContainer.offsetHeight
+            const scrollHeight = this.$refs.scrollContainer.scrollHeight
+            const scrollTop = this.$refs.scrollContainer.scrollTop
+            if(scrollHeight > offsetHeight) this.noDownScroll = false;
+            if(scrollTop > 0) this.noUpScroll = false
+            if(scrollTop == 0) this.noUpScroll = true
+            if((scrollTop+offsetHeight) == scrollHeight) this.noDownScroll = true;
+        },
 
         //刷新
         refreshCurrentOrder() {
@@ -217,6 +211,7 @@ export default {
         },
 
         setId(id, code, allowSingle, salable) {
+            if(this.currentFilmId == id) return
             if(salable) {
                 let codeAndSingle = {
                     code,
@@ -265,19 +260,13 @@ export default {
         },
 
         turnUp() {
+          if(!this.noDownScroll)
           this.handerScroll('up', 'scrollContainer', 'scorllUnit', 15)
         },
 
         turnDown() {
+          if(!this.noUpScroll)
           this.handerScroll('down', 'scrollContainer', 'scorllUnit', 15)
-        },
-
-        changeCheckBox(val) {
-          if(val) {
-              this.salable = 'salabletrue'
-          }else {
-              this.salable = ''
-          }
         },
         
         //打开日历
@@ -287,6 +276,8 @@ export default {
 
         changeTab(id) {
             this.currentNav = id;
+            this.noUpScroll = true
+            this.noDownScroll = true
         }
     },
 }
@@ -470,6 +461,10 @@ export default {
                             width: 2.2vw;
                         }
 
+                       &.disappeared {
+                           display: none;
+                       }
+
                        &.selected {
                            box-shadow: 0 0 1px 1px inset $btn-background-color-theme;
                        }
@@ -527,6 +522,10 @@ export default {
                            bottom: 0;
                            background: rgba(0, 0, 0, 0.288);
                            z-index: 10;
+                       }
+
+                       &.disappeared {
+                           display: none;
                        }
 
                        &.selected {

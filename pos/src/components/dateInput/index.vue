@@ -46,7 +46,7 @@ export default {
       var d=dd.getDate();
       var d2 = new Date(y+'/'+m+'/'+d);
       var iday = parseInt(d2-d1)/1000/60/60/24;
-      console.log(iday)
+      // console.log(iday)
       let deyStr = ''
       switch(iday){
         case 0 : deyStr = '今天'; break;

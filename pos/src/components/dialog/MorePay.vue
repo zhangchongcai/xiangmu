@@ -1,7 +1,7 @@
 <template>
     <div class="more-pay-ticket-warp">
         <el-dialog
-            title="更多支付"
+            title="更多支付方式"
             :visible.sync="showStatus"
             :modal-append-to-body='false'
             :append-to-body="false"
@@ -68,7 +68,9 @@ export default {
           'payMethod',
           'getUserConfig',
           'payedList',
-          'paySort'
+          'paySort',
+          'vipInfo',
+          'isPayIng'
       ]),
 
       withoutCouponPayList() {
@@ -115,16 +117,21 @@ export default {
                 this.MORE_PAY_TRIGER()
                 return
             }
+            if(this.isPayIng && this.payMethod.currentPayMethodId == '0X03' && !this.vipInfo.withCash){
+                this.$message({
+                message: '该卡不支持混合支付方式!',
+                type: 'warning'
+                });
+                this.MORE_PAY_TRIGER()
+                return
+            }
+
             if((this.seatSelection.length || this.cartDatalist.length) && item.payTypeCode != '0X03') {
                   this.PAY_METHOD_TRIGER(item)
                   if(!this.payDialog) this.PAY_DIALOG_TRIGER();
                   this.GET_ACTIVITY_DATA()
            }else if((this.seatSelection.length || this.cartDatalist.length) && item.payTypeCode == '0X03') {
-            //    this.PAY_METHOD_TRIGER(item)
                this.SET_VIP_CHECKOUT_BOX(true)
-            //    if(this.payDialog) {
-            //        this.PAY_DIALOG_TRIGER()
-            //    }
            }else {
                this.$message({
                 message: '请您选择座位或者卖品',

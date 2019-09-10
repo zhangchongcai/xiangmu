@@ -27,6 +27,7 @@
         <div class="item-inner" v-if="isSingleQuery && memberInfo.creditNum"><label class="lable-name">身份证号：</label>{{memberInfo.creditNum |
           emptyShow}}</div>
         <div class="item-inner" v-if="memberInfo.channelId"><label class="lable-name">注册渠道：</label>{{memberInfo.channelId | emptyShow}}</div>
+        <div class="item-inner" v-if="memberInfo.scoreBalance"><label class="lable-name">积分余额：</label>{{memberInfo.scoreBalance | emptyShow}}</div>
       </div>
     </div>
     <div class="member_tag" v-if="memberInfo.labelVOS.length">
@@ -95,7 +96,7 @@ export default {
 </script>
 <style lang="scss">
 ._member-info {
-    margin-bottom:2vh;
+    margin-bottom:1vh;
   .member-info-content {
     .content-item {
       display: flex;

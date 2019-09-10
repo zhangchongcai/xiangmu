@@ -1,5 +1,5 @@
 <template>
-    <div class="more-pay-ticket-warp">
+    <div v-loading="loading" class="more-pay-ticket-warp">
         <el-dialog
             id="el-dialog-width"
             :title="popTitle"
@@ -15,8 +15,9 @@
             <div v-if="couponList.length" class="coupons-container">
               <div class="coupon-num">可选择会员票券(共{{availableNum}}张)</div>
               <div class="coupons">
-                  <div class="coupon-item" v-for="(item, index) in couponList" :key="'coupon' + index" @click="toProveCoupon(item)">
+                  <div class="coupon-item" v-for="(item, index) in computedCouponList" :key="'coupon' + index" @click="proveTickets(item)">
                     <div :class="['coupon-inner-container', item.status == -1 ? 'no-sel' : '']">
+                        <i v-show="item.selected" class="iconfont iconchangcixuanzhongzhuangtai1"></i>
                         <span>{{item.couponName}}</span>
                         <span>{{"有效期至" + item.expireTime}}</span>
                     </div>
@@ -39,13 +40,16 @@
 </template>
 <script>
 import {proveCoupon} from 'src/http/apis.js'
-import {mapGetters, mapMutations} from 'vuex'
+import {mapGetters, mapMutations, mapActions} from 'vuex'
 import commonutil from 'util'
-import {SET_ACTIVITY_LIST, GET_KIND_PRICE, CHECK_OUT_COUPON_RESULT, SAVE_AVAILABEL_COUPON, CART_SET_GOODS_DATA, GET_CART_DATA, SET_PAYED_LIST} from 'types'
+import {SET_ACTIVITY_LIST, GET_KIND_PRICE, CHECK_OUT_COUPON_RESULT, SAVE_AVAILABEL_COUPON, CART_SET_GOODS_DATA, GET_CART_DATA, SET_PAYED_LIST, SET_CHECK_MANY, CART_FIND_CART_DATA} from 'types'
 export default {
     data() {
         return {
             popTitle: "会员绑定票券",
+            loading: false,
+            nowApplyCode:'',
+            key: 100,
             loading: false
         }
     },
@@ -60,7 +64,11 @@ export default {
           'terminalId',
           'couponList',
           'selActivityList',
-          'payMethod'
+          'payMethod',
+          'availableCouponList',
+          'tenantId',
+          'getUserConfig',
+          'cashCouponsLen'
 
       ]),
 
@@ -68,10 +76,18 @@ export default {
         let availabeleArr = this.couponList.filter(item => {
             return item.status != "-1"
         })
-
-        // console.log(availabeleArr)
-
         return availabeleArr.length;
+      },
+
+      computedCouponList() {
+        this.couponList.forEach((coupon, index) => {
+                this.availableCouponList.forEach(item => {
+                    if(coupon.couponNo == item.ticketCode) {
+                        this.couponList[index].selected = 1
+                    }
+                })
+            })
+        return this.couponList
       },
 
       CheckCoupon: {
@@ -93,44 +109,159 @@ export default {
             GET_CART_DATA,
             GET_KIND_PRICE,
             SET_ACTIVITY_LIST,
-            SET_PAYED_LIST
+            SET_PAYED_LIST,
+            SET_CHECK_MANY
         ]),
 
-        toProveCoupon(item) {
-          if(item.status != -1) {
-              this.loading = true
-            //   this.CHECK_OUT_COUPON_RESULT()
-              proveCoupon({
-                    billCode: this.billCode,
-                    couponCode: item.couponNo,
-                    cardNum: this.vipInfo.cardNo || "",
-                    tenantId: item.tenantId,
-                    payTypeCode: this.payMethod.currentPayMethodId,
-                    timestamp: commonutil.formatTime(new Date(), 'yyyy-MM-dd hh:mm:ss.S'),
-                    businessCode: this.cinemaCode,
-                    channelCode: this.channelCode,
-                    terminalCode: this.terminalId,
-                    chooseKeys: this.selActivityList
-            }).then(res => {
-                if(res.code == 200) {
-                    this.loading = false
-                    this.SAVE_AVAILABEL_COUPON(res.data.ticketResultList)
-                    this.SET_ACTIVITY_LIST(res.data.marketingResultList)
-                    this.GET_KIND_PRICE(res.data)
-                    this.CART_SET_GOODS_DATA(res.data.merGoodsList)
-                    this.GET_CART_DATA(res.data)
-                    this.SET_PAYED_LIST(res.data.payedList)
-                    this.CHECK_OUT_COUPON_RESULT()
-                }else {
-                    this.loading = false
-                    this.$message({
-                            showClose: true,
-                            message: res.msg,
-                            type: 'warning'
-                        });
-                }
-            })
+        ...mapActions([
+           CART_FIND_CART_DATA
+        ]),
+
+        proveTickets(item) {
+           if(this.availableCouponList.some(coupon => {
+              return coupon.ticketCode == item.couponNo
+          })) {
+              return this.$message({
+                        showClose: true,
+                        message: "已添加此票券",
+                        type: 'error'
+                    });
           }
+           if(item.status != -1) {
+              this.loading = true
+              let paras = {
+                            billCode: this.billCode,
+                            couponCode: item.couponNo,
+                            payTypeCode: this.payMethod.currentPayMethodId,
+                            tenantId: this.tenantId,
+                            timestamp: commonutil.formatTime(new Date(), 'yyyy-MM-dd hh:mm:ss.S'),
+                            businessCode: this.cinemaCode,
+                            channelCode: this.channelCode,
+                            terminalCode: this.terminalId,
+                            chooseKeys: this.selActivityList,
+                            cardNum: this.vipInfo.cardNo || "",
+                            applyCode : this.nowApplyCode,
+                    }
+            if(this.nowApplyCode) {
+                proveSecCoupon(paras).then(res => {
+                        if(res.code == 200) {
+                            let item = '';
+                            for(let i = 0; i < this.availableCouponList.length; i++){
+                                if(this.availableCouponList[i].applyCode == this.nowApplyCode && this.availableCouponList[i].key == this.key){
+
+                                    item = {
+                                            ...this.availableCouponList[i],
+                                            ticketCode :this.couponNum
+                                            }
+                                    break;
+                                }
+                            }
+
+                            // res.data.ticketResultList[0].pwd = this.couponPassWord
+                            let newArr = [...this.availableCouponList,item]
+                            this.SAVE_AVAILABEL_COUPON(newArr)
+                            // this.SET_ACTIVITY_LIST(res.data.marketingResultList)
+                            // this.GET_KIND_PRICE(res.data)
+                            // this.CART_SET_GOODS_DATA(res.data.merGoodsList)
+                            // this.GET_CART_DATA(res.data)
+                            // this.SET_PAYED_LIST(res.data.payedList)
+                            // this.couponPassWord = ''
+                            // this.couponNum = ''
+                            // this.couponBox = false
+                            let index = 0;
+                            for(let i = 0; i < this.availableCouponList.length; i++){
+                                if(this.availableCouponList[i].applyCode == this.nowApplyCode && this.availableCouponList[i].key == this.key){
+                                    index++
+                                }
+                            }
+                            if(index < item.couponAmount) {
+                                
+                                this.SET_CHECK_MANY(true)
+                                // this.couponCheckoutBox = true
+                                this.$message({
+                                    showClose: true,
+                                    message: "请再输入一张券",
+                                    type: 'warning'
+                                });
+                            }else {
+                                this.SET_CHECK_MANY(false)
+                                this.nowApplyCode = '';
+                            }
+                            this.loading = false
+                        }else {
+                            this.wrongTip(res)
+                            
+                        }
+                    })
+            }else {
+                proveCoupon(paras).then(res => {
+                    if(res.code == 200) {
+                        //  let currentTickets = res.data.ticketResultList.filter(item => {
+                        //     return item.ticketCode == paras.couponCode
+                        // })
+                        // if(currentTickets[0].ticketType == 1 && this.cashCouponsLen > Number(this.getUserConfig.max_sale_voucher_num) - 1) return this.$message({
+                        //             showClose: true,
+                        //             message: "代金券使用数量已达上限",
+                        //             type: 'warning'
+                        //         });
+                        let item = res.data instanceof Array ? res.data[0] : res.data
+                        this.key++
+                        res.data.ticketResultList[0].key = this.key
+                        res.data.ticketResultList[0].pwd = this.couponPassWord
+                        let fliterCodeArr = [];
+                        let ticketResultList = [];
+                        [...this.availableCouponList,...res.data.ticketResultList].map((item)=>{
+                            if(!fliterCodeArr.includes(item.ticketCode)){
+                                fliterCodeArr.push(item.ticketCode)
+                                ticketResultList.push(item)
+                            }
+                        })
+                        
+                        
+
+                        this.SAVE_AVAILABEL_COUPON(ticketResultList)
+                        this.SET_ACTIVITY_LIST(res.data.marketingResultList)
+                        this.GET_KIND_PRICE(res.data)
+                        this.CART_SET_GOODS_DATA(res.data.merGoodsList)
+                        this.GET_CART_DATA(res.data)
+                        this.SET_PAYED_LIST(res.data.payedList)
+                        // this.couponPassWord = ''
+                        // this.couponNum = ''
+                        // this.couponBox = false
+                        this.nowApplyCode = res.data.ticketResultList[0].applyCode
+                        if(res.data.ticketResultList[0].couponAmount >= 2) {
+                            // this.SET_CHECK_MANY(true)
+                            // this.nowApplyCode = res.data.ticketResultList[0].applyCode
+                            // this.couponCheckoutBox = true
+                            this.$message({
+                                showClose: true,
+                                message: "请再输入一张券",
+                                type: 'warning'
+                            });
+                        }else {
+                            this.SET_CHECK_MANY(false)
+                            this.nowApplyCode = '';
+                        }
+                        this.loading = false
+                    }else {
+                        this.CART_FIND_CART_DATA()
+                        this.wrongTip(res)
+                    }
+
+                })
+            }
+           }
+           
+       },
+
+       wrongTip(res) {
+            this.loading = false
+            this.$message({
+                        showClose: true,
+                        message: res.msg,
+                        type: 'error'
+                    });
+            return
         }
     },
     
@@ -183,11 +314,17 @@ export default {
                             display: flex;
                             align-items: center;
                             justify-content: space-between;
+                            position: relative;
                         }
                         .no-sel {
                             border: 1px solid #BCBCBC;
                             color: $font-color6;
                             cursor: not-allowed;
+                        }
+                        .iconchangcixuanzhongzhuangtai1 {
+                            position: absolute;
+                            right: 0;
+                            top: 0;
                         }
 
                     }

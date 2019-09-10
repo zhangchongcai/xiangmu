@@ -76,7 +76,7 @@ export default {
         const data = await posticketGetTicket({
           getCode:val
         })
-        console.log(data)
+        // console.log(data)
         if(data.code != 200){
           this.$message.error(data.msg);
           return
@@ -157,7 +157,7 @@ export default {
       },
       printTicket(dataArr,length,callback){
         app.printTicket('film_print',dataArr[length-1],this.configData,(res)=>{
-            console.log(res)
+            // console.log(res)
             this.ticketUids.push(dataArr[length-1].ticket_element[0].movieTicketUid)
             if(res[0] !== 0){
               this.flag = false;

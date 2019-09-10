@@ -4,15 +4,16 @@
             <div class="nav-warp">
                 <div class="carousel-container"  ref="navScroll" >
                     <ul class="carousel" ref="carousel">
-                        <li v-for="(item,ind) in data" :key="ind" :class='["carousel-item",ind==oneMenu? "oneMenue_activ" : ""]' @click="handlerOnemenu(ind,item)">
+                        <li v-for="(item,ind) in data" :key="ind" :class='["carousel-item",ind==oneMenu? "oneMenue_activ" : ""]' 
+                        @click="handlerOnemenu(ind,item)">
                             {{item.name}}
                             <span class="el-icon-arrow-down el-icon--right" v-show="ind==oneMenu && data[oneMenu].children.length"></span>   
                         </li>
                     </ul>
                 </div>
                 <div class="control-btn">
-                    <el-button plain class="el-icon-arrow-left"  size="medium" :disabled="scroll && scroll.x==0" @click="navChange(true)"></el-button>
-                    <el-button plain class="el-icon-arrow-right" size="medium" :disabled="scroll && scroll.x == scroll.maxScrollX"  @click="navChange(false)"></el-button>
+                    <el-button plain class="el-icon-arrow-left"  size="medium" :disabled="up" @click="navChange(false)"></el-button>
+                    <el-button plain class="el-icon-arrow-right" size="medium" :disabled="down"  @click="navChange(true)"></el-button>
                 </div>
             </div>
             <div class="two-nav" v-if="towMenuShow && data[oneMenu].children.length" >
@@ -38,8 +39,8 @@
                         </ul>
                     </div>
                     <div class="btn">
-                        <el-button plain class="el-icon-arrow-left nav-button"   :disabled="twoScroll && twoScroll.x == 0" @click="handleCarouselSed(true)"></el-button>
-                        <el-button plain class="el-icon-arrow-right nav-button"  :disabled="twoScroll && twoScroll.x == twoScroll.maxScrollX"  @click="handleCarouselSed(false)"></el-button>
+                        <el-button plain class="el-icon-arrow-left nav-button"   :disabled="towup" @click="towNavChange(false)"></el-button>
+                        <el-button plain class="el-icon-arrow-right nav-button"  :disabled="towdown"  @click="towNavChange(true)"></el-button>
                     </div>
                 </div>
             </div>
@@ -80,8 +81,9 @@
                             <div v-else  :style="{width:'100%',height:'100%'}"></div>
                         </div>
                         <div :class='["introduce",item.soleUid === isSelectGoods?"isSelectGoods":""]' :style="!isFont?'border-top:none':''">
-                            <p class>{{item.aliasName ?item.aliasName:[1,3,5].includes(item.merType) ? item.skuSellEntity.name:
-                                item.merType==2 ? item.name+'/'+ item.skuSellEntity.name : item.name}}</p>
+                            <p class>{{goodsName(item)}}</p>
+                                <!-- {{item.aliasName ?item.aliasName:[1,3,5].includes(item.merType) ? item.skuSellEntity.name:
+                                item.merType==2 ? item.name+'/'+ item.skuSellEntity.name : item.name}} -->
                             <p class>¥{{[1,2,3,5].includes(item.merType)?item.skuSellEntity.price:item.price}}</p>
                         </div>
                     </li>
@@ -129,7 +131,7 @@ import SettlementWindow from 'components/settlement/SettlementWindow'
 import BScroll from 'better-scroll'
 import {mapGetters,mapMutations,mapState,mapActions} from 'vuex'
 import {SHOW_MORE_TICKETS,GET_CART_BILLCODE,CART_SET_GOODS_DATA,GET_KIND_PRICE,GET_CART_DATA,GET_CART_BILLCODEUID,CART_SEARCH_GOODS_TEXT,ACTION_CART_ADD_CART,ACTION_CART_INIT_CART,CART_FIND_CART_DATA} from 'types'
-import { VM_ON_GOODS_SEACH } from 'types/vmOnType.js'
+import { VM_ON_GOODS_SEACH,VM_GET_GOODS_LIST } from 'types/vmOnType.js'
 import { productExhibitionClassIfy, productExhibitionHomeDefault,addCart,initCart,findCart,productExhibitionGetProductByCode} from 'http/apis'
 const clickoutside = {
     // 初始化指令
@@ -203,9 +205,15 @@ export default {
             totalNum:0,
             loading:false,
             searchGoodsText:'',
+            up:true,
+            down:true,
+            towup:true,
+            towdown:true,
         };
     },
-    
+    filters:{
+        
+    },
     computed: {
         
         ...mapGetters([
@@ -229,22 +237,30 @@ export default {
     async mounted() {
         this.getNavData()
         this.getListData()
-        this.scroll = new BScroll(this.$refs.navScroll,{
-            scrollY:false,
-            scrollX:true,
-            click:true,
-        })
+        
         this.$vm.$on(VM_ON_GOODS_SEACH,(data)=>{
             this.searchGoodsText = data;
             if(!data) return
             this.currentPage = 1;
             this.getListDataByCode()
         })
+        this.$vm.$on(VM_GET_GOODS_LIST,()=>{
+            this.getListData()
+        })
+        this.$refs.navScroll.addEventListener('scroll',this.navScroll)
+        if(this.$refs.twoNavScroll){
+            this.$refs.twoNavScroll.addEventListener('scroll',this.towNavScroll)
+        }
+        
     },
     beforeDestroy(){
-        this.$vm.$off(VM_ON_GOODS_SEACH)
+        this.$vm.$off([VM_ON_GOODS_SEACH,VM_GET_GOODS_LIST])
+        this.$refs.navScroll.removeEventListener('scroll',this.navScroll)
+        if(this.$refs.twoNavScroll){
+            this.$refs.twoNavScroll.removeEventListener('scroll',this.towNavScroll)
+        }
     },
-    methods: {
+    methods: { 
         ...mapMutations({
             GET_CART_BILLCODE,
             CART_SET_GOODS_DATA,
@@ -258,12 +274,105 @@ export default {
             ACTION_CART_INIT_CART,
             CART_FIND_CART_DATA
         ]),
-        navChange(type){
-            if(type){
-                this.scroll.scrollBy(window.innerWidth*(11.7/100),0,300)
-            }else{
-                this.scroll.scrollBy(-(window.innerWidth*(11.7/100)),0,300)
+        goodsName(item){
+            let goodsName = ""
+            if([1,2].includes(item.merType)){
+                if(item.name == item.skuSellEntity.name) return goodsName = item.name
+                if(item.skuSellEntity.name){
+                    return goodsName = item.name +'-'+ item.skuSellEntity.name
+                }else{
+                    return goodsName = item.name +' '+ item.skuSellEntity.name
+                }
             }
+            if([3,4].includes(item.merType)){
+                return goodsName = item.name 
+            }
+            return goodsName = item.skuSellEntity.name
+            // if(item.skuSellEntity && (item.skuSellEntity.name && item.aliasName)){
+            //     if(item.merType == 2){
+            //         return goodsName = item.skuSellEntity.name == item.aliasName ? item.aliasName : item.aliasName+item.skuSellEntity.name
+            //     }
+            //     let skuNameArr = item.skuSellEntity.name.split('-');
+            //     if(skuNameArr[1]){
+            //         return goodsName = item.aliasName + "-" + skuNameArr[1]
+            //     }else{
+            //         return goodsName = item.aliasName
+            //     }
+            // }
+            // if(item.merType == 2){
+            //     return goodsName = (item.aliasName ? item.aliasName : item.name) + ' ' + item.skuSellEntity.name
+            // }
+            // if(!item.skuSellEntity){
+            //     return goodsName = item.aliasName ? item.aliasName : item.name
+            // }
+            //  return goodsName = item.skuSellEntity.name ? item.skuSellEntity.name : item.name
+        },
+        navChange(type){
+            let carousel = this.$refs.navScroll
+            let scrollWidth = this.$refs.navScroll.scrollWidth
+            let boxWidth = this.$refs.navScroll.offsetWidth
+            let currentScrollLeft= this.$refs.navScroll.scrollLeft
+            let OldscroolLeft = this.$refs.navScroll.scrollLeft
+            let swiperHeight = window.innerWidth*(11.7/100);
+            if(scrollWidth>boxWidth){
+                let Timer = setInterval( _ => {
+                    let speed = type? Math.floor(swiperHeight / 6) : Math.floor(-swiperHeight / 6);
+                    carousel.scrollLeft += speed 
+                    currentScrollLeft += speed;
+                    if(type){
+                        if(currentScrollLeft >= OldscroolLeft*1+swiperHeight){
+                            clearInterval(Timer)
+                        }
+                    }else {
+                        if(currentScrollLeft <= OldscroolLeft-swiperHeight){
+                            clearInterval(Timer)
+                        }
+                    }
+                },20)
+            }
+        },
+        navScroll(){
+            const offsetWidth=  this.$refs.navScroll.offsetWidth
+            const scrollWidth = document.querySelector('.carousel').scrollWidth
+            const scrollLeft = this.$refs.navScroll.scrollLeft
+            if(scrollWidth > offsetWidth) this.down = false;
+            if(scrollLeft > 0) this.up = false
+            if(scrollLeft == 0) this.up = true
+            if((scrollLeft+offsetWidth) == scrollWidth) this.down = true;
+        },
+        towNavChange(type){
+            let carousel = this.$refs.twoNavScroll
+            let scrollWidth = this.$refs.twoNavScroll.scrollWidth
+            let boxWidth = this.$refs.twoNavScroll.offsetWidth
+            let currentScrollLeft= this.$refs.twoNavScroll.scrollLeft
+            let OldscroolLeft = this.$refs.twoNavScroll.scrollLeft
+            let swiperHeight = window.innerWidth*(13.3/100);
+            if(scrollWidth>boxWidth){
+                let Timer = setInterval( _ => {
+                    let speed = type? Math.floor(swiperHeight / 6) : Math.floor(-swiperHeight / 6);
+                    carousel.scrollLeft += speed 
+                    currentScrollLeft += speed;
+                    if(type){
+                        if(currentScrollLeft >= OldscroolLeft*1+swiperHeight){
+                            clearInterval(Timer)
+                        }
+                    }else {
+                        if(currentScrollLeft <= OldscroolLeft-swiperHeight){
+                            clearInterval(Timer)
+                        }
+                    }
+                },20)
+            }
+        },
+        towNavScroll(){
+            debugger
+            const offsetWidth=  this.$refs.twoNavScroll.offsetWidth
+            const scrollWidth = this.$refs.carouselSed.scrollWidth
+            const scrollLeft = this.$refs.twoNavScroll.scrollLeft
+            if(scrollWidth > offsetWidth) this.towdown = false;
+            if(scrollLeft > 0) this.towup = false
+            if(scrollLeft == 0) this.towup = true
+            if((scrollLeft+offsetWidth) == scrollWidth) this.towdown = true;
         },
         async initCart(){
             const data = await initCart({
@@ -275,7 +384,7 @@ export default {
             }
         },
         async addCart(event,item){
-            if(!item.saleStatus) return;
+            if(!item.saleStatus) return event == 'bycode' && this.$alert('暂无库存！');
             if(!this.billCode){
                 // await this.initCart()
                 await this[ACTION_CART_INIT_CART]()
@@ -335,12 +444,15 @@ export default {
             this.oneMenu = ind;
             this.towMenuShow = true;
             this.$nextTick(()=>{
+                // if(this.data[this.oneMenu].children.length){
+                //     this.twoScroll = new BScroll(this.$refs.twoNavScroll,{
+                //         scrollY:false,
+                //         scrollX:true,
+                //         click:true,
+                //     })
+                // }
                 if(this.data[this.oneMenu].children.length){
-                    this.twoScroll = new BScroll(this.$refs.twoNavScroll,{
-                        scrollY:false,
-                        scrollX:true,
-                        click:true,
-                    })
+                    this.towNavScroll()
                 }
             })
             this.navUid = obj.uid
@@ -430,13 +542,31 @@ export default {
                 newObj.size = newObj.list.length
                 this.changeData(newObj,showData)
             }
+            //------------qiudongyue(start)-----------
+            //根据seq排序
+            showData.sort(this.compare("seq"))
+            //------------qiudongyue(end)-----------
             showData.unshift({
                 name:'常用商品',
                 uid:'',
                 children:[],
             })
+
             this.data = showData;
+            this.$nextTick(() => {
+               this.navScroll()
+            })
         },
+        //------------qiudongyue(start)-----------
+        //根据seq排序
+        compare(property) {
+            return function (a, b) {
+                var value1 = a[property];
+                var value2 = b[property];
+                return value1 - value2;
+            }
+        },
+        //------------qiudongyue(end)-----------
         async getListData(){
             const data = await productExhibitionHomeDefault({
                 cinemaUid:this.cinemaUid,
@@ -462,7 +592,7 @@ export default {
             if(!data.data || !data.data.data.length) return this.$message.warning('暂无商品！')
             if(data.data.data.length == 1){
                 this.searchGoodsText = '';
-                this.addCart(null,data.data.data[0])
+                this.addCart('bycode',data.data.data[0])
                 return
             }
             
@@ -862,6 +992,7 @@ export default {
                 .pagation{
                     display: flex;
                     justify-content:space-between;
+                    align-items: center;
                     width: 30%;
                     margin: 0 auto;
                     .pagebtn{

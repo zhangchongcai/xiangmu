@@ -8,13 +8,14 @@
           <!-- 缩小 -->
           <!-- <i v-show="isExtends" class="iconfont icontuichuquanping extend-btn" @click="narrowSeats"></i> -->
         </div>
+        
         <div class="screen" :style="{width: (extendNum * 48) + 'vw'}">
           银幕
         </div>
 
         <!-- 座位渲染开始begin -->
-        <div class="seats" :style="{width: (extendNum * 54) + 'vw', height: (isExtends ? 65 : 50.5) + 'vh'}" id="box" @mousedown="drawRect">
-          <div v-show="seat_data.length" class="row-default-left" :style="{height: !isExtends ? '50.5vh' : '65vh'}">
+        <div class="seats" :style="{width: (extendNum * 62) + 'vw', height: (isExtends ? 65 : 50.5) + 'vh'}" id="box" @mousedown="drawRect">
+          <div v-show="allSeat.length" class="row-default-left" :style="{height: !isExtends ? '50.5vh' : '65vh'}">
             <div  class="row-default" :style="{marginTop: ((maxHeight + 6) / scaleNum * extendNum)  + 'px'}">
               <span :class="['row-num-style', lightRow == index + 1 ? 'highlight-row' : '']" :style="{top: item *  extendNum * scaleNum  + 'vw', transform: `translateX(-50%) ${scaleString}`}" v-for="(item, index) in rowYs" :key="'row' + index">
                 {{index + 1}}
@@ -22,9 +23,9 @@
             </div>
           </div>
           
-          <div id="realRect" v-if="seat_data.length" class="seats-center">
+          <div id="realRect" v-if="allSeat.length" class="seats-center">
              <div :style="{width: (isExtends ? extendNum * hallWidth : hallWidth) + 'vw', height: (!isExtends ? 50.5 : 65) + 'vh', top: maxHeight + 'px', left: maxWidth + 'px'}" class="seats-container"> 
-               <div :style="{backgroundColor: item.color, width: (2.7 * extendNum) + 'vw', height: (2.7 * extendNum) + 'vw', top: item.y * extendNum * scaleNum + 'vw', left: item.x * extendNum * scaleNum + 'vw', justifyContent: item.imageType == 2 || item.imageType == 4 ? 'flex-end' : item.imageType == 3 || item.imageType == 6 ? 'flex-start' : item.imageType == 5 ? '' : 'center', transform:  scaleString}" class="seat-default" v-for="(item, index) in seat_data" :key="'seat' + index" @click.stop="selSingleSeat(item)" @mouseover="highLigth(item)">
+               <div :style="{backgroundColor: item.color, width: (2.7 * extendNum) + 'vw', height: (2.7 * extendNum) + 'vw', top: item.y * extendNum * scaleNum + 'vw', left: item.x * extendNum * scaleNum + 'vw', justifyContent: item.imageType == 2 || item.imageType == 4 ? 'flex-end' : item.imageType == 3 || item.imageType == 6 ? 'flex-start' : item.imageType == 5 ? '' : 'center', transform:  scaleString}" class="seat-default" v-for="(item, index) in allSeat" :key="'seat' + index" @click.stop="selSingleSeat(item)" @mouseover="highLigth(item)">
                   <div v-show="item.netSaleFlag == 1" :style="{transform: scaleString}" class="net-seal-style"></div>
                   <i :class="['iconfont', 'iconputongzuoyi', 'seat-default-style', item.seatIcon, item.status == 3 ? 'seat-default-style-active' : '', item.colorStyle]" :style="{fontSize: isExtends ? '2.5vw' : '2.2vw'}"></i>
                   <span v-show="item.status != 0" :class="['seat-num-default', item.status != 1 ? 'active-seat-num' : '']" :style="{fontSize: isExtends ? '1.26vw' : '1.04vw', transform: `translate(-50%, -50%)`, scaleString}">{{item.status != 0 ? item.colAlias : ''}}</span>
@@ -38,7 +39,7 @@
             <span class="no-seat-font">{{loadingSeat}}</span>
           </div>
 
-          <div v-show="seat_data.length" class="row-default-right" :style="{height: !isExtends ? '50.5vh' : '65vh'}">
+          <div v-show="allSeat.length" class="row-default-right" :style="{height: !isExtends ? '50.5vh' : '65vh'}">
             <div class="row-default" :style="{height: rows * extendNum + 'px', marginTop: ((maxHeight + 6) / scaleNum * extendNum) + 'px'}">
                 <span :class="['row-num-style', lightRow == index + 1 ? 'highlight-row' : '']" :style="{top: item *  extendNum * scaleNum + 'vw',  transform: `translateX(-50%) ${scaleString}`}" v-for="(item, index) in rowYs" :key="'row' + index">
                   {{index + 1}}
@@ -50,22 +51,26 @@
         <!-- 坐座渲染结束end -->
 
          <!-- 底部座位说明begin  -->
-        <div v-if="seat_data.length" :class="['footer-default', isExtends ? '' : 'footer']">
+        <div v-if="allSeat.length" :class="['footer-default', isExtends ? '' : 'footer']">
          <div class="seat-intro">
            <span class="intor-margin">
              <i :class="['iconfont', 'intor-img', 'iconputongzuoyi', isExtends ? 'intor-img-large' : '']"></i>
              <span :class="['intor-font', isExtends ? 'intor-font-large' : '']">普通座椅</span>
            </span>
            <span class="intor-margin">
-             <i :class="['iconfont', 'intor-img', 'iconanmozuoyi', isExtends ? 'intor-img-large' : '']"></i>
+             <i :class="['iconfont', 'intor-img', 'iconanmozuoyi1', isExtends ? 'intor-img-large' : '']"></i>
              <span :class="['intor-font', isExtends ? 'intor-font-large' : '']">按摩座椅</span>
            </span>
            <span class="intor-margin">
              <i :class="['iconfont', 'intor-img', 'iconcanjizuoyi', isExtends ? 'intor-img-large' : '']"></i>
              <span :class="['intor-font', isExtends ? 'intor-font-large' : '']">残疾人座椅</span>
            </span>
+           <span class="intor-margin">
+             <i :class="['iconfont', 'intor-img', 'iconertongzuowei', isExtends ? 'intor-img-large' : '']"></i>
+             <span :class="['intor-font', isExtends ? 'intor-font-large' : '']">儿童座椅</span>
+           </span>
            <span class="intor-margin" v-for="(item, index) in regionArr" :key="index">
-             <span :class="['intor-img', isExtends ? 'intor-img-large' : '']" :style="{display: 'inline-block', width: '3.0vw', height: '2.0vh', backgroundColor: item.color + '4D'}"></span>
+             <span :class="['intor-img', isExtends ? 'intor-img-large' : '']" :style="{display: 'inline-block', width: '3.0vw', height: '2.0vh', backgroundColor: item.color}"></span>
              <span :class="['intor-font', isExtends ? 'intor-font-large' : '']">{{item.regionName}}</span>
            </span>
          </div>
@@ -95,10 +100,10 @@
              <i class="circle-style" style="background: #888888"></i>
              <span :class="['intor-font', isExtends ? 'intor-font-large' : '']">不可售({{ticketsStatus.cantNotSell}})</span>
            </span>
-           <span class="intor-margin-small">
+           <!-- <span class="intor-margin-small">
              <i class="circle-style circle-style-font">未</i>
              <span :class="['intor-font', isExtends ? 'intor-font-large' : '']">未取票({{ticketsStatus.noTaken}})</span>
-           </span>
+           </span> -->
            <span class="intor-margin-small">
              <i class="iconhuaizuo1 iconfont" style="font-size: 12px"></i>
              <span :class="['intor-font', isExtends ? 'intor-font-large' : '']">坏座({{ticketsStatus.isBroken}})</span>
@@ -120,7 +125,7 @@
           <div ref="smallbox" id="smallbox" style="width:23vw; height: 19.9vh; position: relative; overflow: scroll; transition: all 0.2s; display: flex; justify-content: center;" @click="movingCapture">
             <div ref="captureParent" class="small-seats-map" :style="{height: (16 * rowYs.length) + 'px', width: (16 * colXs.length) + 'px'}">
               <div v-show="showCapture" ref="capture" class="pointer-circle"></div>
-              <div :style="{width: '16px', height: '16px', top: (16 * item.y / 2.7) + 'px', left: (16 * item.x / 2.7) + 'px'}" class="seat-default" v-for="(item, index) in seat_data" :key="'seat' + index">
+              <div :style="{width: '16px', height: '16px', top: (16 * item.y / 2.7) + 'px', left: (16 * item.x / 2.7) + 'px'}" class="seat-default" v-for="(item, index) in allSeat" :key="'seat' + index">
                 <i :class="['iconfont', 'iconputongzuoyi', 'seat-default-style', item.status == 3 ? 'seat-default-style-active' : '', item.colorStyle]" style="font-size: 14px;"></i>
                 <span :class="['seat-num-default-small', item.status != 1 ? 'active-seat-num' : '']" style="font-size: 12px">{{item.colAlias}}</span>
               </div>
@@ -176,7 +181,7 @@
 <script>
   import {queryAllSeat, queryCurrentPlanSeat, initCart, lockSeat, addCart, findCart, delTicket, releaseSeat, findTimeSeatStatus, queryCurrentPlanRegion, getTicketPrice} from 'src/http/apis.js'  //获取全部座位，用来座位布局
   import {mapGetters, mapMutations} from 'vuex'
-  import {SEAT_SELECTION, DEL_SEAT, EXTEND_SEAT, SHOW_BOTTOM_BAR, SET_CURRENT_TICKET_ID, SAVE_CURRENT_PLAN_SEAT, GET_CART_BILLCODE, GET_CART_TICKETS, GET_KIND_PRICE, GET_CART_BILLCODEUID, GET_CART_CINEMAUID, RENDER_SELECTION, RENDER_SELECTION_AFTER_RELEASE,GET_CART_DATA, CHECK_CURRENT_SEAT_STATUS, WITH_OUT_DATA, CLEAR_SELECTION, COVER_TICKET_PRICE} from 'types'
+  import {SEAT_SELECTION, DEL_SEAT, EXTEND_SEAT, SHOW_BOTTOM_BAR, SET_CURRENT_TICKET_ID, SAVE_CURRENT_PLAN_SEAT, GET_CART_BILLCODE, GET_CART_TICKETS, GET_KIND_PRICE, GET_CART_BILLCODEUID, GET_CART_CINEMAUID, RENDER_SELECTION, RENDER_SELECTION_AFTER_RELEASE,GET_CART_DATA, CHECK_CURRENT_SEAT_STATUS, WITH_OUT_DATA, CLEAR_SELECTION, COVER_TICKET_PRICE, CLEAR_ALL_SEAT} from 'types'
 
   export default {
     props: {
@@ -266,8 +271,9 @@
 
     watch: {
          currentPlanCode() {
-           this.seat_data = []
+          //  this.WITH_OUT_DATA()
            this.regionArr = []
+           this.CLEAR_ALL_SEAT()
            this.getCurrentSeat({cinemaCode: this.cinemaCode, planCode: this.currentPlanCode}, this.getAllSeatsType);
          }
       },
@@ -299,7 +305,8 @@
         CHECK_CURRENT_SEAT_STATUS,
         WITH_OUT_DATA,
         CLEAR_SELECTION,
-        COVER_TICKET_PRICE
+        COVER_TICKET_PRICE,
+        CLEAR_ALL_SEAT
       ]),
       //高亮显示排数
       highLigth(item) {
@@ -365,11 +372,11 @@
               this.loadingSeat = "暂无座位"
               return
             }
-              this.seat_data = this.allSeat
+              // this.seat_data = this.allSeat
               
-              this.basicUnit = parseInt(this.seat_data[0].width) //原始座位大小，一个单位
+              this.basicUnit = parseInt(this.allSeat[0].width) //原始座位大小，一个单位
 
-              let rowArr = this.seat_data.map((item) => {
+              let rowArr = this.allSeat.map((item) => {
                 let obj = {
                   row: item.row,
                   y: item.y
@@ -377,7 +384,7 @@
                 return obj
               })
 
-              let colArr = this.seat_data.map((item) => {
+              let colArr = this.allSeat.map((item) => {
                 let obj = {
                   col: item.col,
                   x: item.x
@@ -415,7 +422,7 @@
 
               // console.log(this.scaleNum)
 
-              this.hallWidth = this.cols * parseFloat(this.scaleNum) + 2.8
+              this.hallWidth = this.cols * parseFloat(this.scaleNum) + 3.0
               this.hallHeight = this.rows * parseFloat(this.scaleNum) + 2.8
       },
 
@@ -553,8 +560,8 @@
                 })
 
                 if(Math.abs(cx) > 0 && Math.abs(cy) > 0) {
-                   for(let i = 0; i < that.seat_data.length; i++) {
-                        let item = that.seat_data[i]
+                   for(let i = 0; i < that.allSeat.length; i++) {
+                        let item = that.allSeat[i]
                         let y = (item.y) * that.extendNum * that.viewWidth / 100 + 5
                         let x = (item.x)  * that.extendNum * that.viewWidth / 100 + 5
                         if((x<calcx2 && y<calcy2) && (calcx1<=x && calcy1<=y) && item.status == 1) {
@@ -564,7 +571,7 @@
 
                     // console.log(that.rectArr)
 
-                    if((that.rectArr.length + that.seatSelection.length) >= that.getUserConfig.max_sale_seat_num) {
+                    if((that.rectArr.length + that.seatSelection.length) > that.getUserConfig.max_sale_seat_num) {
                         document.onmousemove = null;
                         return that.$message({
                                                       showClose: true,
@@ -608,12 +615,12 @@
       //单选
       selSingleSeat(item) {  //修改为先添加然后渲染座位状态
         // console.log(item)
-        
-        if(item.status == 1 || item.status == 3) {
+        if(item.status == 1 || item.status == 100) {
           this.loading = true
           // let currentstatus = !item.is_sel
           let currentItems = []
           if(!this.allowSingleSold) {
+            //此处原来是 allSeat  allSeat会突然清空 现在使用当前渲染的seat_data来遍历
             this.allSeat.forEach(seat => {
               if(item.groupCode == seat.groupCode) {
                 currentItems.push(seat)
@@ -622,10 +629,9 @@
           }else {
             currentItems.push(item)
           }
-          
           // console.log(currentItems)
           if(item.status == 1) {
-            if(this.seatSelection.length >= this.getUserConfig.max_sale_seat_num) {
+            if(this.seatSelection.length + currentItems.length > this.getUserConfig.max_sale_seat_num) {
               this.loading = false
               return this.$message({
                                             showClose: true,
@@ -654,7 +660,7 @@
                             });
               }
             })
-          }else if(item.status == 3){
+          }else if(item.status == 100){
             this.delSeat(currentItems)
           }
         }
@@ -693,8 +699,6 @@
             items.forEach((item, index) => {
                         item.lockSeatKey = res.data.timeSeatList[index].lockSeatKey
                       })
-            // let timeSeatStatusList = res.data.timeSeatList
-            // console.log(timeSeatStatusList)
             this.doAddCart(items)
           }else {
             this.$message({
@@ -743,10 +747,11 @@
           if(res.code == 200) {
             findTimeSeatStatus({cinemaCode: this.cinemaCode, planCode: this.currentPlanCode}).then(res => {
                         if(res.code == 200) {
+                           this.SEAT_SELECTION(items)
                            this.CHECK_CURRENT_SEAT_STATUS(res.data)
                         }
                     })
-            this.SEAT_SELECTION(items)
+            // this.SEAT_SELECTION(items)
             this.loading = false
             findCart({billCode: this.billCode}).then(res => {
                               if(res.code == 200) {
@@ -773,11 +778,12 @@
                         if(res.code == 200) {
                             findTimeSeatStatus({cinemaCode: this.cinemaCode, planCode: this.currentPlanCode}).then(res => {
                                 if(res.code == 200) {
+                                this.CLEAR_SELECTION()
                                 this.CHECK_CURRENT_SEAT_STATUS(res.data)
                                 }
                             })
                             this.GET_CART_DATA({goodsList: []})
-                            this.CLEAR_SELECTION()
+                            // this.CLEAR_SELECTION()
                             // this.GET_CART_BILLCODE('')
                             // this.GET_CART_BILLCODEUID('')
                             this.GET_CART_DATA({goodsList:[]})
@@ -821,16 +827,12 @@
 
          items.forEach(item => {
            item.type_price = currentTicketType
-          //  item.addPrice = currentObj.addFee
            item.ticketTypeName = currentObj.name
            item.ticketTypeUid = currentObj.id
-          //  item.ticketPrice = currentObj.price
-          //  item.originalTicketPrice = currentObj.price
          })
 
          this.isBillCode(items)
          
-        //  this.SEAT_SELECTION(items)
          this.doPages()
       },
       //单个座位删除
@@ -934,7 +936,7 @@
                 this.scaleString = `scale(1, 1)`
               }
 
-        this.hallWidth = this.cols * parseFloat(this.scaleNum) + 2.8;
+        this.hallWidth = this.cols * parseFloat(this.scaleNum) + 3.0;
         this.hallHeight = this.rows * parseFloat(this.scaleNum) + 2.8;
       },
       //选择电影票
@@ -1067,6 +1069,7 @@
   }
   .row-default-left, .row-default-right {
     width: 1.6vw;
+    min-width: 1.6vw;
     @include seat_rows_bgcolor();
     border-radius: 0.8vw;
     overflow: hidden;
@@ -1378,13 +1381,12 @@
   color: #333;
 }
 .iconduorenzuoyizhong {
-  transform: scaleX(1.4);
+  transform: scaleX(1.25);
 }
-.iconqinglvzuoyizuo,
-.iconqinglvzuoyiyou,
+
 .iconduorenzuoyizuo,
 .iconduorenzuoyiyou {
-  transform: scaleX(1.1);
+  transform: scaleX(1.25);
 }
 .footer-default {
   position: relative;
@@ -1406,6 +1408,9 @@
 }
 .sold-seat {
   color: #FF6D6D !important;
+}
+.local-selected-style {
+  color: #67c23a !important;
 }
 .small-seats-map {
   position: relative;

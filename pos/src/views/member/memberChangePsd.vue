@@ -69,12 +69,11 @@ export default {
         { prop: "cardNo", show: true }
       ],
       rules: {
-        passwd: [{ validator:passwdReg,trigger:'change'}],
+        passwd: [{ required: true, validator:passwdReg,trigger:["change","blur" ]}],
         newPasswd: [
-          { required: true, message: "请输入新密码", trigger: "change" },
-          { min:6,max:6, validator: customPasswordReg, trigger: "change",passwordkType:1}
+          { required: true, min:6,max:6, validator: customPasswordReg, trigger: ["change","blur" ],passwordkType:1}
         ],
-        confirmPsd: [{ required: true, validator: checkPass, trigger: "change" }]
+        confirmPsd: [{ required: true, validator: checkPass, trigger: ["change","blur" ] }]
       }
     };
   },
@@ -141,7 +140,7 @@ export default {
     'member.cardNo'(newVal){
       if(newVal){
         this.$store.dispatch('cardPolicy',{cardNo:newVal,tenantId: this.tenantId}).then(res=>{
-          if(res.data)this.rules.newPasswd[1].passwordkType = res.data.weakPassword;
+          if(res.data)this.rules.newPasswd[0].passwordkType = res.data.weakPassword;
         })
       }
     }

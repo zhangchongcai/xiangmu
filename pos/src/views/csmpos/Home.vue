@@ -1,5 +1,5 @@
 <template>
-    <div v-loading="leftLoading" element-loading-text="排期刷新中......" element-loading-spinner="el-icon-loading" class="home">
+    <div v-loading="leftLoading" element-loading-text="排期刷新中......" element-loading-spinner="el-icon-loading"  element-loading-background="rgba(255, 255, 255, 0.65)" class="home">
         <div :style="{paddingBottom: bottomPadding}" v-show="!isExtends" class="home-left">
             <film-tab  @preDate="preDate" @nextDate="nextDate" @refreshCurrentOrder="refreshCurrentOrder" @getAllFilmDatas="getAllFilmDatas"></film-tab>
             <tickets ref="ticketsbox" :ticketArr="allTickets" class="tickets" @openMoreTicket="openMoreTicket"></tickets>
@@ -18,8 +18,9 @@
             v-for="(item, index) in hotGoods" 
             :key="'pro' + index"
             @click="addCart(item)">
-                {{item.aliasName ?item.aliasName:[1,3,5].includes(item.merType)?item.skuSellEntity.name: 
-                item.merType==2 ? item.name+'/'+ item.skuSellEntity.name : item.name}} 
+                <!-- {{item.aliasName ?item.aliasName:[1,3,5].includes(item.merType)?item.skuSellEntity.name: 
+                item.merType==2 ? item.name+'/'+ item.skuSellEntity.name : item.name}}  -->
+                {{goodsName(item)}}
                 ￥{{[1,2,3,5].includes(item.merType)?item.skuSellEntity.price:item.price}}
             </span>
         </div>
@@ -65,8 +66,9 @@ import KeyNumberBoard from 'src/components/dialog/CartNumberKeyBoard'
 import FullScreenOrder from 'components/fullScreenOrder'
 import MorePay from 'components/dialog/MorePay'
 import {mapGetters, mapMutations,mapActions} from 'vuex'
-import { SHOW_BOTTOM_BAR, EXTEND_SEAT, SHOW_DATE_PICKER, SET_CURRENT_PLANCODE, CLEAR_FILM_TITLE, SAVE_FILM_DATA, SAVE_ALL_PAY, MORE_TICKETS_TRIGER, SAVE_TIME_DATA, SAVE_HALL_DATA, GET_CART_DATA, SAVE_ALL_FILM_DATA, SAVE_ALL_TIME_DATA, SAVE_ALL_HALL_DATA ,GET_CART_BILLCODE, SET_CURRENT_DATE, SAVE_CINEMA_INFO, CHECK_CURRENT_SEAT_STATUS, WITH_OUT_DATA,ACTION_CART_INIT_CART,ACTION_CART_ADD_CART,CART_FIND_CART_DATA} from 'types'
-import { queryFilmDate, queryAllFilm, payType, findCart, findTimeSeatStatus,productExhibitionRecommend} from 'src/http/apis.js'
+import { SHOW_BOTTOM_BAR, EXTEND_SEAT, SHOW_DATE_PICKER, SET_CURRENT_PLANCODE, CLEAR_FILM_TITLE, SAVE_FILM_DATA, SAVE_ALL_PAY, MORE_TICKETS_TRIGER, SAVE_TIME_DATA, SAVE_HALL_DATA, GET_CART_DATA, SAVE_ALL_FILM_DATA, SAVE_ALL_TIME_DATA, SAVE_ALL_HALL_DATA ,GET_CART_BILLCODE, SET_CURRENT_DATE, SAVE_CINEMA_INFO, CHECK_CURRENT_SEAT_STATUS, WITH_OUT_DATA,ACTION_CART_INIT_CART,ACTION_CART_ADD_CART,CART_FIND_CART_DATA,GLOBAL_SET_FIRST_LOGON} from 'types'
+import { VM_ON_LOGIN_UESINFO } from 'types/vmOnType'
+import { queryFilmDate, queryAllFilm, payType, findCart, findTimeSeatStatus,productExhibitionRecommend,storeHouseCheck} from 'src/http/apis.js'
 import Cart from 'components/cart/layout'
 
     export default {
@@ -81,7 +83,9 @@ import Cart from 'components/cart/layout'
               hotGoods:[],
               isSelect:'',
               goodLoading:false,
-              filmDataLenght: 0
+              filmDataLenght: 0,
+              querySellTimer: null,
+              newListMuen:[],
           }
         },
         
@@ -102,7 +106,11 @@ import Cart from 'components/cart/layout'
                'terminalId',
                'billCode',
                'getFilmTimeData',
-               'payDialog'
+               'payDialog',
+               'firstLogon',
+               'cinemaCode',
+               'getUserConfig',
+               'cartData'
             ])
         },
 
@@ -114,13 +122,33 @@ import Cart from 'components/cart/layout'
               this.getFilmData({date: val, sequence: 2}, this.SAVE_TIME_DATA);
               this.getFilmData({date: val, sequence: 3}, this.SAVE_HALL_DATA);
           },
-
+          payDialog(val){
+              if(!val){
+                  this.refreshCurrentOrder()
+              }
+          },
           filmDataLenght(val) {
               if(val != this.getFilmTimeData.length) {
+                  if(!this.payDialog) this.refreshCurrentOrder()
                   if(this.payDialog) {
-                      this.$refs.settlement.closePay()
+                      if((Object.keys(this.cartData.movieTemplate)).length) {
+                          let planCode = this.cartData.movieTemplate.planCode
+                          if(!(this.newListMuen.some(item => {
+                              return item.plan_code == planCode
+                          }))) {
+                            this.$confirm('当前排期停售或过期，请退出支付页面，重新选择', '排期刷新提示', {
+                                confirmButtonText: '确定',
+                                showCancelButton: false,
+                                showClose: false,
+                                closeOnClickModal: false,
+                                type: 'warning'
+                                }).then(() => {
+                                    this.$refs.settlement.closePay()
+                                    this.refreshCurrentOrder()
+                                })
+                          }
+                      }
                   }
-                  this.refreshCurrentOrder()
               }
           },
 
@@ -129,7 +157,14 @@ import Cart from 'components/cart/layout'
             if(token) {
               this.getHotGoods()
               this.getAllPayType()
-            }  
+            }
+            if(this.$route.name == 'toHome'){
+                if(this.firstLogon){
+                this.$eventHub.$emit(VM_ON_LOGIN_UESINFO,this.firstLogon)
+                this[GLOBAL_SET_FIRST_LOGON](false)
+            } 
+            }
+             
           }
         },
 
@@ -153,14 +188,48 @@ import Cart from 'components/cart/layout'
                 CHECK_CURRENT_SEAT_STATUS,
                 SET_CURRENT_PLANCODE,
                 WITH_OUT_DATA, //没有数据时清空之前的所有数据
-                CLEAR_FILM_TITLE //切换日期时清空电影标题
+                CLEAR_FILM_TITLE, //切换日期时清空电影标题
+                GLOBAL_SET_FIRST_LOGON
             ]),
             ...mapActions([
                 ACTION_CART_INIT_CART,
                 ACTION_CART_ADD_CART,
                 CART_FIND_CART_DATA
             ]),
-
+            goodsName(item){
+                let goodsName = ""
+                if([1,2].includes(item.merType)){
+                    if(item.name == item.skuSellEntity.name) return goodsName = item.name
+                    if(item.skuSellEntity.name){
+                        return goodsName = item.name +'-'+ item.skuSellEntity.name
+                    }else{
+                        return goodsName = item.name +' '+ item.skuSellEntity.name
+                    }
+                }
+                if([3,4].includes(item.merType)){
+                    return goodsName = item.name 
+                }
+                return goodsName = item.skuSellEntity.name
+                // let goodsName = '';
+                // if(item.skuSellEntity && (item.skuSellEntity.name && item.aliasName)){
+                //     if(item.merType == 2){
+                //         return goodsName = item.skuSellEntity.name == item.aliasName ? item.aliasName : item.aliasName+item.skuSellEntity.name
+                //     }
+                //     let skuNameArr = item.skuSellEntity.name.split('-');
+                //     if(skuNameArr[1]){
+                //         return goodsName = item.aliasName + "-" + skuNameArr[1]
+                //     }else{
+                //         return goodsName = item.aliasName
+                //     }
+                // }
+                // if(item.merType == 2){
+                //     return goodsName = (item.aliasName ? item.aliasName : item.name) + ' ' + item.skuSellEntity.name
+                // }
+                // if(!item.skuSellEntity){
+                //     return goodsName = item.aliasName ? item.aliasName : item.name
+                // }
+                // return goodsName = item.skuSellEntity.name ? item.skuSellEntity.name : item.name
+            },
             preDate() {
               this.$refs.dateComp.preDate()
             },
@@ -211,20 +280,30 @@ import Cart from 'components/cart/layout'
                 
             },
             websocketonmessage(e){
-                // console.log('receiveMessage', e)
+                console.log('receiveMessage', e)
                 // console.log(this.$route)
                 // if(this.$route.name != 'toHome') return
                 if(e.data != '连接成功' && e.data != 'holdOn') {
                     let data = (JSON.parse(e.data))
-                    if((data.planCode != this.currentPlanCode) && !data.planCode) return
-                    findTimeSeatStatus({
-                        cinemaCode: data.cinemaCode,
-                        planCode: data.planCode
-                    }).then(res => {
-                        if(res.code == 200) {
-                           this.CHECK_CURRENT_SEAT_STATUS(res.data)
-                        }
-                    })
+                    if(data.type == 0) {
+                       if((data.planCode != this.currentPlanCode) && !data.planCode) return
+                        findTimeSeatStatus({
+                            cinemaCode: data.cinemaCode,
+                            planCode: data.planCode
+                        }).then(res => {
+                            if(res.code == 200) {
+                            this.CHECK_CURRENT_SEAT_STATUS(res.data)
+                            }
+                        })
+                    }else if(data.type == 1){
+                      queryFilmDate({date: this.currentDateStr, sequence: 2}).then(res => {
+                            if(res.code == 200 && res.data.length) {
+                                this.filmDataLenght = res.data.length
+                                this.newListMuen = res.data
+                            }
+                        })
+                    }
+                    
                 }
                 this.heartReset()
             },  
@@ -265,6 +344,26 @@ import Cart from 'components/cart/layout'
                 this.MORE_TICKETS_TRIGER()
             },
 
+            //开场后售票时间的查询
+            querySellTime() {
+              this.querySellTimer = setInterval(() => {
+                  if(this.getFilmTimeData.length) {
+                    let currentTime = (new Date()).getTime()
+                    let firstTime =(new Date(this.getFilmTimeData[0].show_time)).getTime()
+                    let dt = currentTime - firstTime
+                    if(dt >= this.getUserConfig.refuse_sale_ticket_time * 60 * 1000) {
+                        queryFilmDate({date: this.currentDateStr, sequence: 2}).then(res => {
+                                if(res.code == 200 && res.data.length) {
+                                    this.filmDataLenght = res.data.length
+                                }
+                            })
+                    }
+                }else {
+                //  console.log("排期查询中...")
+                }
+              }, 1000)
+            },
+
             //刷新按钮事件
             refreshCurrentOrder() {
                 this.$refs.seatComp.loading = false;
@@ -276,9 +375,9 @@ import Cart from 'components/cart/layout'
                 this.getFilmData({date: this.currentDateStr, sequence: 3}, this.SAVE_HALL_DATA);
 
                 // 获取全部排期
-                // this.getAllFilmData({date: this.currentDateStr, sequence: 1}, this.SAVE_ALL_FILM_DATA);
-                // this.getAllFilmData({date: this.currentDateStr, sequence: 2}, this.SAVE_ALL_TIME_DATA);
-                // this.getAllFilmData({date: this.currentDateStr, sequence: 3}, this.SAVE_ALL_HALL_DATA);
+                this.getAllFilmData({date: this.currentDateStr, sequence: 1}, this.SAVE_ALL_FILM_DATA);
+                this.getAllFilmData({date: this.currentDateStr, sequence: 2}, this.SAVE_ALL_TIME_DATA);
+                this.getAllFilmData({date: this.currentDateStr, sequence: 3}, this.SAVE_ALL_HALL_DATA);
             },
 
             //关闭日期组件
@@ -313,12 +412,8 @@ import Cart from 'components/cart/layout'
                             code: null,
                             allowSingleSold: false
                         })
-                        // this.$message({
-                        //     showClose: true,
-                        //     message: res.data && res.data.length == 0 ? '暂无可售电影排期数据' : res.msg,
-                        //     type: 'error'
-                        // });
                     }
+                    
                 })
             },
             
@@ -348,7 +443,12 @@ import Cart from 'components/cart/layout'
             },
 
             async getHotGoods(){
-                // console.log("调用热门商品")
+                const storeHouseCheckData = await storeHouseCheck({
+                    cinemaUid: this.cinemaUid,
+                    terminalCode : this.terminalId
+                })
+                if(storeHouseCheckData.code != 200) return this.$message.error(storeHouseCheckData.msg)
+                if(storeHouseCheckData.data == 2) return
                 const data = await productExhibitionRecommend({
                     cinemaUid :  this.cinemaUid,
                     terminalId :  this.terminalId,
@@ -400,18 +500,13 @@ import Cart from 'components/cart/layout'
         },
 
         mounted() {
-        console.log(this.$route)
-        this.interValQuery = setInterval(() => {
-           queryFilmDate({date: this.currentDateStr, sequence: 2}).then(res => {
-                if(res.code == 200 && res.data.length) {
-                    this.filmDataLenght = res.data.length
-                }
-            })
-        },30000)
+        this.querySellTime()
 
-        let that = this
         this.SAVE_CINEMA_INFO()
-        
+        if(this.firstLogon){
+            this.$eventHub.$emit(VM_ON_LOGIN_UESINFO,this.firstLogon)
+            this[GLOBAL_SET_FIRST_LOGON](false)
+        } 
            
         // 获取可售排期
            this.getFilmData({date: this.currentDateStr, sequence: 1}, this.SAVE_FILM_DATA);
@@ -423,10 +518,13 @@ import Cart from 'components/cart/layout'
            this.getHotGoods()
 
            this.getAllPayType()
+            
+           
         },
 
         destroyed() {
             this.killWebSocket()
+            this.querySellTimer = null
         },
         
         components: {

@@ -198,7 +198,7 @@ export default {
     padding: 0 2vw 0vh 2vw;
   }
   .demo-ruleForm {
-    margin-top:2vh;
+    margin-top:1vh;
     width: 60vw;
   }
   

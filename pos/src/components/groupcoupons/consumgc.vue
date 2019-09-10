@@ -6,6 +6,7 @@
             :visible.sync="CheckCoupon"
             :modal-append-to-body='false'
             :append-to-body="false"
+            @close="closeFn"
             style="font-size: 1.04vw"
             center>
             <div style="margin-bottom: 30px">
@@ -28,6 +29,7 @@
             </div>
             <div style="display: flex; justify-content: center;">
                 <!-- <el-button class="coupon-relut-btn" @click="clearAll">删除全部</el-button> -->
+                <el-button class="coupon-relut-btn" @click.native="confimGroups">取消</el-button>
                 <el-button class="coupon-relut-btn" type="primary" @click.native="confimGroups">确定</el-button>
             </div>
         </el-dialog>
@@ -37,7 +39,7 @@
 <script>
 import {consumeGroupon, delGroupon, changeActivityStatus} from 'src/http/apis.js'
 import {mapGetters, mapMutations, mapActions} from 'vuex'
-import {CHECKOUT_CONSUMEGCOUPON_RESULT, SAVE_CONSUME_GROUPON, DEL_GROUPON_TICKET, CLEAR_ALL_GROUPONS, GET_ACTIVITY_DATA, CART_FIND_CART_DATA} from 'types'
+import {CHECKOUT_CONSUMEGCOUPON_RESULT, SAVE_CONSUME_GROUPON, DEL_GROUPON_TICKET, CLEAR_ALL_GROUPONS, CART_FIND_CART_DATA} from 'types'
 export default {
     props: {
         datas: {
@@ -46,7 +48,7 @@ export default {
     },
     data() {
         return {
-            popTitle: "团购券消费规则",
+            popTitle: "添加团购券",
             input: ''
         }
     },
@@ -93,7 +95,6 @@ export default {
         ]),
 
         ...mapActions([
-            GET_ACTIVITY_DATA,
             CART_FIND_CART_DATA
         ]),
 
@@ -118,7 +119,8 @@ export default {
               ticketCode: this.input
             }).then(res => {
                if(res.code == 200) {
-                   this.SAVE_CONSUME_GROUPON(res.data.grouponTicketResults)
+                    this.SAVE_CONSUME_GROUPON(res.data.grouponTicketResults)
+                    this.CART_FIND_CART_DATA()
                }else {
                    this.$message({
                         showClose: true,
@@ -148,23 +150,24 @@ export default {
         },
 
         confimGroups() {
-            // this.GET_ACTIVITY_DATA()
-            // this.CART_FIND_CART_DATA()
             this.CHECKOUT_CONSUMEGCOUPON_RESULT()
-            changeActivityStatus({
-                billCode: this.billCode,
-                chooseKeys: this.selActivityList
-            }).then(res => {
-                if(res.code == 200) {
-                    this.CART_FIND_CART_DATA()
-                }else {
-                  this.$message({
-                        showClose: true,
-                        message: res.msg,
-                        type: 'error'
-                    });  
-                }
-            })
+            // changeActivityStatus({
+            //     billCode: this.billCode,
+            //     chooseKeys: this.selActivityList
+            // }).then(res => {
+            //     if(res.code == 200) {
+            //         this.CART_FIND_CART_DATA()
+            //     }else {
+            //       this.$message({
+            //             showClose: true,
+            //             message: res.msg,
+            //             type: 'error'
+            //         });  
+            //     }
+            // })
+        },
+        closeFn(){
+            this.CART_FIND_CART_DATA()
         }
     },
     

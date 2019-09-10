@@ -1,3 +1,4 @@
+import commonutil from 'util'
 import * as TYPES from '../types'
 import {checkActivety, cancelActivity, getGroupCoupon} from 'src/http/apis.js'
 
@@ -44,7 +45,7 @@ export default {
        otherFlag: false,//菜单用的
        otherList: [],//菜单用的
        payedList: [], //支付后列表 用于退款
-       selActivityList: [],
+       selActivityList: [], //已选的活动
        activityList: [], //支付时查询的活动
        activitytempId: '',
        vipInputStatus: false,  //vip打开关闭按钮
@@ -73,7 +74,10 @@ export default {
        },
        paySort:false, //支付方式排序
        hasConsumeActivity: false, //活动是否核销
-       checkMany: false //是否启用多张优惠券的check
+       checkMany: false, //是否启用多张优惠券的check
+       firstLogon:false, //是否刚登陆
+       isWithCoupon: false, //会员卡是否可以与票券一起使用
+       cashCouponsLen: 0, //代金券使用数量上限
     },
 
 
@@ -92,6 +96,11 @@ export default {
             state.channelName = localStorage.getItem('channelName')
             state.userUid = localStorage.getItem('userUid')
             state.preAmount = JSON.parse(localStorage.getItem('preAmount')) ? localStorage.getItem('preAmount') : '无'
+        },
+
+        //根据会员信息设置是否可以使用票券
+        [TYPES.SET_WITH_COUPON] : (state, withCoupon) => {
+            state.isWithCoupon = Number(withCoupon) ? false : true
         },
 
         //是否打开团购券对话框
@@ -116,8 +125,6 @@ export default {
         
         //删除一个团购券
         [TYPES.DEL_GROUPON_TICKET] : (state, ticketCode) => {
-            // console.log(coupon)
-            // console.log(state.availableCouponList)
             state.consumeGroupCoupons.forEach((item, index) => {
                 if(ticketCode == item.ticketCode) {
                     state.consumeGroupCoupons.splice(index, 1)
@@ -133,10 +140,18 @@ export default {
 
 
         //验证后可用的优惠券存入数组
-        [TYPES.SAVE_AVAILABEL_COUPON] : (state, coupon) => {
+        [TYPES.SAVE_AVAILABEL_COUPON] : (state, coupons) => {
             // console.log(coupon)
-           if(coupon instanceof Array) {
-             state.availableCouponList = coupon
+           if(coupons instanceof Array) {
+             state.availableCouponList = coupons
+           }
+           if(state.availableCouponList.length) {
+            let cashCouponstate = state.availableCouponList.filter(item => {
+                return item.ticketType == 1
+            })
+
+            state.cashCouponsLen = cashCouponstate.length
+            // console.log(state.cashCouponsLen)
            }
         },
 
@@ -154,6 +169,7 @@ export default {
         //结算后清空当前选中的优惠券
         [TYPES.CLEAR_ALL_SELECTED_COUPON] : (state) => {
             state.availableCouponList = []
+            state.cashCouponsLen = 0
         },
         
         //查找所有优惠券信息有数据则存进数组
@@ -203,6 +219,8 @@ export default {
            }else {
             state.activityTip = '暂无优惠活动，敬请期待！'
            }
+
+        //    console.log(state.selActivityList, state.activityList)
         },
 
         //选择优惠活动
@@ -212,6 +230,11 @@ export default {
            }else {
             state.selActivityList.splice( state.selActivityList.indexOf(id), 1 );
            }
+        },
+
+        //清空当前选中的活动
+        [TYPES.CLEAR_SEL_ACTIVITY] : (state) => {
+            state.selActivityList = []
         },
 
         //临时活动ID
@@ -228,6 +251,7 @@ export default {
         [TYPES.SAVE_CHANGE_CASH] : (state, obj) => {
            state.payNum.realPayNum = obj.cash
            state.payNum.realChange = obj.change
+        //    console.log(state.payNum)
         },
         //扫码是直接赋值到这里
         [TYPES.SAVE_CHANGE_CODE] : (state, code) => {
@@ -266,9 +290,13 @@ export default {
                 authCode: '',
                 realChange: 0
               }
+            if(!state.payDialog) {
+                state.isWithCoupon = false
+            }
         },
         //设置当前支付方式
         [TYPES.PAY_METHOD_TRIGER] : (state, item) => {
+            state.payMethod = item;
             state.payMethod.currentPayMethod = item.payTypeName
             state.payMethod.currentPayMethodId = item.payTypeCode
         },
@@ -279,7 +307,7 @@ export default {
             state.payData.payAmount = data.payAmount
             state.payData.payedAmount = data.payedAmount
             state.payData.notPayAmount = data.notPayAmount
-            state.payData.couponAmount = data.couponAmount
+            state.payData.couponAmount = data.couponAmount < 0 ? 0 : data.couponAmount
             state.payData.voucherAmount = data.voucherAmount
         },
         
@@ -290,8 +318,11 @@ export default {
 
         //根据findCart返回结果存在数据中
         [TYPES.SET_PAYED_LIST] : (state, list) => {
-            state.payedList = []
-            state.payedList = list
+            if(commonutil.isType('Array')(list)) {
+                state.payedList = list
+            }else {
+                state.payedList = []
+            }
         },
 
         //支付结果显示或者隐藏
@@ -325,6 +356,9 @@ export default {
         },
         [TYPES.SET_HAS_CONSUME_ACTIVITY] : (state, booleanStatus) => {
             state.hasConsumeActivity = booleanStatus
+        },
+        [TYPES.GLOBAL_SET_FIRST_LOGON] : ( state,data ) => {
+            state.firstLogon = data
         }
        
     },
@@ -386,6 +420,14 @@ export default {
     },
 
     getters: {
+        //代金券使用上限
+        cashCouponsLen(state) {
+            return state.cashCouponsLen
+        },
+        //是否可以使用票券
+        isWithCoupon(state) {
+          return state.isWithCoupon
+        },
         //开启checkMany
         checkMany(state) {
           return state.checkMany
@@ -578,6 +620,9 @@ export default {
         // 支付方式排序
         paySort(state) {
             return state.paySort
+        },
+        firstLogon(state) {
+            return state.firstLogon
         }
     }
 }

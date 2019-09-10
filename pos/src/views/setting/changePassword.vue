@@ -16,7 +16,7 @@
         </el-form>
       </div>
       <div class="contentRight">
-        <number-key-board ref="keyBoard" class="keyboard"  @keynumber="onkey"></number-key-board>
+        <number-key-board v-model="formLabelAlign[modelKey]" class="keyboard"  @keynumber="onkey"></number-key-board>
       </div>
     </div>
     
@@ -44,7 +44,7 @@ export default {
           newPassword: '',
           againNewPassword: '',
         },
-        valStr:'',
+        modelKey:'oldPassword',
         testVal:'',
     }
   },
@@ -59,8 +59,7 @@ export default {
       this.formLabelAlign[this.valStr] = item
     },
     changKey(key){
-      this.valStr = key;
-      this.$refs.keyBoard.keyValue = this.formLabelAlign[this.valStr];
+      this.modelKey = key;
     },
     show(){
       this.$refs.pwd.show()
@@ -78,9 +77,9 @@ export default {
         newPassword
       })
       if(data.code !=200) return  this.$message.error(data.msg);
-      console.log(data);
+      // console.log(data);
       const outData = await userLogout()
-      console.log(outData);
+      // console.log(outData);
       if(outData.code !=200) return this.$message.error(outData.msg);
       this.$message.success(data.msg);
       localStorage.removeItem('token')

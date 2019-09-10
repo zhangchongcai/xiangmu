@@ -22,53 +22,55 @@
       ref="ruleForm"
       class="demo-ruleForm"
       style="width: 98vw;">
-      <div class="require-cardNo">
-        <el-form-item prop="cardNo"></el-form-item>
-      </div>
       <div v-show="isshow" style="position:relative">
         <div class="member-info-title">会员充值</div>
-        <div class="select-warp-padding" v-if="activeShow">
-          <moreSelectOne
-            @selectData="selectData"
-            ref="moreSelectOne"
-            :dataListAll="dataListAll"
-            model="coupon"
-          />
-        </div>
-
         <div class="price-warp">
-          <div class="price-warp-title">不参与活动，其他充值金额：</div>
-          <el-row style="margin-top:1.3vh" class="row-line-center">
-            <el-col :span="6">
+          <div class="price-warp-title">充值金额：</div>
+          <el-row style="margin-top:1vh" class="row-line-center">
+            <el-col :span="9">
               <div class="price-warp-input">
-                <el-form-item :prop="basicAmountProp">
-                  <el-input :disabled="isinput" v-model="ruleForm.basicAmount" @input="input(ruleForm.basicAmount)"></el-input> 元
+                <el-form-item prop="basicAmount">
+                  <el-input v-model="ruleForm.basicAmount" @input="input(ruleForm.basicAmount)"></el-input> 元
+                  <el-button 
+                  class="common-btn" 
+                  style="margin-left:1vw"
+                  @click="getActive" 
+                  :loading="isGetActiveList"
+                  :disabled="isGetActiveBtn">获取活动</el-button>
                 </el-form-item>
               </div>
             </el-col>
             <el-col :span="12">
               <el-radio-group v-model="ruleForm.basicAmount" class="price-btn-group">
                 <div style="margin-left: 10px;" class="raido-border-none" v-show="chargeMin && chargeMin < 100">
-                  <el-radio-button :disabled="isinput" :label="!!chargeMin ? chargeMin : 50"></el-radio-button>
+                  <el-radio-button :label="!!chargeMin ? chargeMin : 50"></el-radio-button>
                 </div>
                 <div
                   style="margin-left: 10px;"
                   class="raido-border-none"
                   v-if="!!chargeMax && (chargeMax >= 100)"
                 >
-                  <el-radio-button :disabled="isinput" label="100"></el-radio-button>
+                  <el-radio-button label="100"></el-radio-button>
                 </div>
                 <div
                   style="margin-left: 10px;"
                   class="raido-border-none"
                   v-if="!!chargeMax && (chargeMax >= 200)"
                 >
-                  <el-radio-button :disabled="isinput" label="200"></el-radio-button>
+                  <el-radio-button label="200"></el-radio-button>
                 </div>
                 <div class="myfont">（单次充值限额:{{chargeMin | firstChargeMin}}元—{{chargeMax | firstChargeMax}}元）</div>
               </el-radio-group>
             </el-col>
           </el-row>
+        </div>
+        <div class="select-warp-padding" v-if="activeShow">
+          <div class="price-warp-title">可参与活动：</div>
+          <moreSelectOne
+            @selectData="selectData"
+            ref="moreSelectOne"
+            :dataListAll="dataListAll"
+            model="coupon"/>
         </div>
         <div class="pay">
           <el-form-item label="支付方式：" prop="payWayCode">
@@ -76,24 +78,6 @@
               <el-radio :label="item.label" v-for="(item,index) in payWayCode" :key="index">{{item.value}}</el-radio>
             </el-radio-group>
           </el-form-item>
-        </div>
-        <div class="pay-type">
-          <el-row>
-            <el-col :span="10" v-if="false">
-              <div class="zhifupingzheng">
-                <el-form-item label="条码：" prop="barCode">
-                  <el-radio-group>
-                    <el-input
-                      class="input"
-                      v-model="ruleForm.barCode"
-                      placeholder="请使用条码抢扫描顾客手机上的条码"
-                      style="width:20vw"
-                    ></el-input>
-                  </el-radio-group>
-                </el-form-item>
-              </div>
-            </el-col>
-          </el-row>
         </div>
       </div>
     </el-form>
@@ -124,7 +108,6 @@ export default {
   mixins:[payMixins],
   data() {
     return {
-      isinput: false, //充值金额可否输入
       cardReadingTitle: "会员卡/手机号：",
       isApply: false,
       dataType: "phone",
@@ -134,10 +117,12 @@ export default {
       chargeMax: "", //充值对大金额
       chargeMin: "", //充值对小金额
       dataListAll: [], //获取优惠信息列表
-      activeShow: true, //优惠活动组件显隐
-      basicAmountProp: "basicAmount",
+      activeShow: false, //优惠活动组件显隐
       cardstate:['normal'],
       levelId:'',//等级id
+      isGetActiveList:false,
+      isReset:false,//重置金额取消选中活动
+      isGetActiveBtn:true,
       ruleForm: {
         basicAmount: "", //充值金额
         payWayName: "", //支付方式
@@ -157,7 +142,8 @@ export default {
       },
       rules: {
         basicAmount: [
-          { required: true, validator: num10_999float2, trigger: "change" }
+          { required: true, message: "充值金额必填", trigger: "change" },
+          { validator: num10_999float2, trigger: "change" }
         ],
         payWayCode: [
           { required: true, message: "支付方式必填", trigger: "change" }
@@ -186,7 +172,13 @@ export default {
         default :
           this.ruleForm.payWayName = '现金';
       }
-    }
+    },
+    'ruleForm.basicAmount':function(value){
+          this.activeShow = false;
+          this.isReset = true;
+          this.isGetActiveBtn = !(this.chargeMin <= value &&  value <= this.chargeMax);
+          this.resetActive()
+      }
   },
   filters:{
     firstChargeMin(min){
@@ -198,17 +190,6 @@ export default {
   },
   mounted() {
     if (this.$route.query.phoneOrCard) {
-      sessionStorage['payParams'] = JSON.stringify({
-          channelName:'柜台',
-          cinemaName:localStorage['cinemaName'],
-          operatorNo:localStorage['userUid'],
-          posNo:localStorage['terminalId'],
-          channelId:localStorage['channelId'],
-          channelNo:localStorage['channelNo'],
-          cinemaId:localStorage['cinemaId'],
-          cinemaCode:localStorage['cinemaCode'],
-          operator:localStorage['userName']
-        })
       let query = Object.assign({},{type:'card'},this.$route.query);
       this.member.numberType = query.type;
       this.member.cardNo = query.phoneOrCard;
@@ -222,19 +203,41 @@ export default {
         this.ruleForm.basicAmount = (amount.match(/^\d*(\.?\d{0,2})/g)[0]) || ''
       })
     },
-    getActivityList(cardNo,cardTypeCode) {
-      MemberAjax.getActivityList({cardNo:cardNo, tenantId: this.tenantId, action: "MEMBER_ADD_AMOUNT" ,channelNo:localStorage['channelNo'],cinemaId:localStorage['cinemaId'],cinemaCode:localStorage['cinemaCode'],cardProductId:this.ruleForm.cardProductId,cardTypeCode:cardTypeCode,levelId:this.levelId}).then(
+    //获取营销列表
+    getActivityList() {
+      this.isGetActiveList = true;
+      let params = {
+          cardNo:this.member.cardNo,
+          tenantId: this.tenantId,
+          action: "MEMBER_ADD_AMOUNT",
+          channelNo:localStorage['channelNo'],
+          cinemaId:localStorage['cinemaId'],
+          cinemaCode:localStorage['cinemaCode'],
+          cardProductId:this.ruleForm.cardProductId,
+          cardTypeCode:this.member.cardTypeCode,
+          levelId:this.levelId,
+          chargeAmount:this.ruleForm.basicAmount,
+          birthday:this.memberCardInfo.birthday && this.memberCardInfo.birthday.split(' ')[0] || '',
+          totalChargeAmount:this.memberCardInfo.totalChargeAmount || '',
+          createTime:this.memberCardInfo.createTime && this.memberCardInfo.createTime.split(' ')[0] || '',
+          totalConsumeAmount:this.memberCardInfo.totalConsumeAmount || ''
+      }
+      MemberAjax.getActivityList(params).then(
         res => {
           var activeList = res.data || [];
           this.dataListAll = activeList;
-          this.activeShow = false;
-          this.isinput = false;
-          this.$nextTick(()=>{this.activeShow = true;})
+          this.activeShow = true;
+          this.isGetActiveList = false;
         }
-      );
+      ).catch(err => {
+        this.isGetActiveList = false;
+      });
     },
     // 选中持有卡
     selectedCard(data) {
+      if(data.cardNo !== this.member.cardNo){
+        this.activeShow = false;
+      }
       console.log("所选择的持有卡", data);
       this.ruleForm.cardNo = data.cardNo;
       this.ruleForm.cardProductId = data.cardProductId;
@@ -244,16 +247,15 @@ export default {
       sessionStorage["chargeMax"] = data.chargeMax;
       this.member.cardNo = data.cardNo;
       this.member.cardState = data.status;
-      this.getActivityList(data.cardNo,data.cardTypeCode);  
+      this.member.cardTypeCode = data.cardTypeCode;
+      this.memberCardInfo = data; 
     },
     // 点击查询按钮或敲回车
-    back() {
-      back(this)
-    },
+    back() { back(this) },
     handleSubmit() {
        var data =Object.assign({},this.ruleForm,{
           tenantId : this.tenantId,
-          basicAmount: !!this.ruleForm.activityAmount ? this.ruleForm.activityAmount : this.ruleForm.basicAmount,
+          basicAmount: this.ruleForm.basicAmount,
           outFlowNo:GenNonDuplicateID(6)
       },JSON.parse(sessionStorage['payParams']));
       return {
@@ -291,30 +293,31 @@ export default {
     //活动选择数据暴露
     selectData(data) {
       if (data) {
-        this.isinput = true;
-        this.ruleForm.basicAmount = '';
-        this.basicAmountProp = '';
-        this.ruleForm = Object.assign({},this.ruleForm,data,{
-          activityAmount:data.amount
-        })
+        this.ruleForm = Object.assign({},this.ruleForm,data)
       } else {
-        this.basicAmountProp= 'basicAmount';
-        this.isinput = false;
-        this.ruleForm.activityId=""; //营销活动ID
-        this.ruleForm.activityName=""; //营销活动ID
-        this.ruleForm.couponAmount="";//票券数量
-        this.ruleForm.couponApplyCode="";//票券编码
-        this.ruleForm.couponApplyCodeLabel="";//票券名称
-        this.ruleForm.presentMoney="";//赠送金额
-        this.ruleForm.presentPoint="";//赠送积分数
-        this.ruleForm.basicAmount = "";
-        this.ruleForm.activityAmount = ""
+        this.resetActive()
       }
+    },
+    //重置活动选择
+    resetActive(){
+        delete this.ruleForm.activityId; //营销活动ID
+        delete this.ruleForm.activityName; //营销活动ID
+        delete this.ruleForm.couponAmount;//票券数量
+        delete this.ruleForm.couponApplyCode;//票券编码
+        delete this.ruleForm.couponApplyCodeLabel;//票券名称
+        delete this.ruleForm.presentMoney;//赠送金额
+        delete this.ruleForm.presentPoint;//赠送积分数
+        delete this.ruleForm.amount;
+    },
+    getActive(){
+       if(!this.ruleForm.basicAmount){this.$message.warning('请先输入充值金额！');return;}
+       this.getActivityList();  
     },
     queryData(query) {
       this.$refs['ruleForm'].resetFields();
       this.dataType = query.type;
       this.member.pageLoading = true;
+      this.activeShow = false;
       if (query.type == "phone") {
         // TODO 请求会员详情
         let params = { mobileNum: query.phoneOrCard, tenantId: this.tenantId , verifyCode:false,validateCode:''};
@@ -367,7 +370,6 @@ export default {
                 this.$message.warning('该储值卡政策不可充值');
                 return false;
               }
-              // this.isshow = true;
             } else {
               this.isshow = false;
               this.memberCardInfo = '';
@@ -382,10 +384,10 @@ export default {
               this.ruleForm.cardNo = info.cardNo;
               this.ruleForm.mobileNum = info.phoneNumber;
               this.ruleForm.cardProductId = info.cardProductId;
+              this.member.cardTypeCode = info.cardTypeCode
               sessionStorage["chargeMin"] = info.chargeMin;
               sessionStorage["chargeMax"] = info.chargeMax;
               this.levelId = info.levelId;
-              this.getActivityList(query.phoneOrCard,info.cardTypeCode);
             }
           })
           .catch(err => {
@@ -411,7 +413,7 @@ export default {
   min-height: 93vh;
   position: relative;
   .pay {
-    margin-top:1vw;
+    margin-top:1vh;
     .el-form-item__error {
       top: 26%;
       left: auto;
@@ -429,26 +431,18 @@ export default {
       }
     }
   }
-  .pay-type {
-    padding-left: 2vw;
-    .zhifupingzheng {
-      .input {
-        width: 17.6vw;
-        height: 4.2vh;
-        input {
-          // width: 17.6vw;
-          height: 4.2vh;
-        }
-      }
-    }
-  }
   .member-recharge-content {
     padding: 0 2vw 0vh 2vw;
   }
   .select-warp-padding {
     padding-left: 2vw;
-    // padding-top: 1vw;
+    margin-top: 2.5vh;
   }
+  .price-warp-title {
+      font-size: $font-size12;
+      color: #333;
+      letter-spacing: 0;
+    }
   .myfont {
     font-size: $font-size12;
     line-height: 4.2vh;
@@ -466,11 +460,6 @@ export default {
         outline: none !important;
       }
     }
-    .price-warp-title {
-      font-size: $font-size12;
-      color: #333;
-      letter-spacing: 0;
-    }
     .price-warp-input {
       .el-form-item__content {
         margin-left: 0 !important;
@@ -487,7 +476,7 @@ export default {
       }
     }
   }
-  /deep/ .el-form-item{
+  .el-form-item{
     margin-bottom:0
   }
 }

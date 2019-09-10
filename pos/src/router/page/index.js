@@ -156,6 +156,11 @@ const pagesRoutes = [
       name: 'printcheck',
     },
     {
+      path:'voucherList', //重打印凭证
+      component: () => import('views/csmpos/reprint/voucherList'),
+      name: 'voucherList'
+    },
+    {
       path: 'prePareMeals', //备餐
       name: 'prePareMeals',
       component: () => import('views/csmpos/preparemeals/preparemeals'),

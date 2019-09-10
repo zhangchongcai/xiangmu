@@ -9,6 +9,7 @@
         :inline="true"
         :model="searchDataObj"
         class="row-line-center"
+        @submit.native.prevent
       >
         <el-form-item
           v-for="(item,index) in searchData"
@@ -60,9 +61,9 @@
           :key="index"
           :label="item.label"
           :width="item.width"
-        >
+          show-overflow-tooltip>
           <template slot-scope="scope">
-            <em :title="scope.row[item.prop] | formateData(scope.row,item)">{{scope.row[item.prop] | formateData(scope.row,item)}}</em>
+          {{scope.row[item.prop] | formateData(scope.row,item)}}
           </template>
         </el-table-column>
         <slot name="append"></slot>
@@ -71,7 +72,7 @@
         v-if="$attrs.totalData > 0"
         background
         layout="prev, pager, next"
-        :page-size="8"
+        :page-size="10"
         :total="Number($attrs.totalData)"
         @current-change='handleCurrentChange'
         :current-page.sync="$attrs.pageNo"
@@ -184,7 +185,7 @@ export default {
 .contentWrap {
   .Search {
     padding-left: 3vw;
-    margin-top: 3vh;
+    margin-top: 2vh;
     .el-form-item{
       margin-bottom:0;
     }
@@ -207,20 +208,23 @@ export default {
     width: 95vw;
     margin: auto;
     min-height: 68vh;
-    margin-top: 3vh;
-  }
-  .el-table .cell {
-    box-sizing: border-box;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    word-break: break-all;
-    white-space: nowrap;
-    line-height: 23px;
-  }
-  /deep/ .cell {
-    font-size: $font-size12;
-    em {
-      font-size: inherit;
+    margin-top: 2vh;
+    td,th{
+        padding:0;
+    }
+    .cell{
+        height:6vh;
+        line-height:6vh;
+        text-align: left!important;
+        font-size:$font-size12;
+        box-sizing: border-box;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        word-break: break-all;
+        white-space: nowrap;
+        em {
+          font-size: inherit;
+        }
     }
   }
   .el-form-item__label {

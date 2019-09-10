@@ -27,7 +27,7 @@
 <script>
 import {mapGetters, mapMutations} from 'vuex'
 import {CHANGE_TICKETS_TRIGER, GET_CART_DATA} from 'types'
-import {changeTicketCategory,findCart} from 'src/http/apis.js'
+import {changeTicketCategory,findCart,getTicketPrice} from 'src/http/apis.js'
 export default {
     props:{
         list:{
@@ -67,8 +67,15 @@ export default {
             GET_CART_DATA
         ]),
 
-        hanlderItem(item) {
+        async hanlderItem(item) {
+
             let ticket = this.currentTicketItem
+            const priceData = await getTicketPrice({
+                planCode:ticket.timeSeat.planCode,
+                seatCode:[ticket.timeSeat.seatCode],
+                ticketUid:item.id
+            })
+            console.log(priceData)
              let data = {
                 "billCode":this.billCode,
                 "goodsType":ticket.goodsType,
@@ -76,9 +83,9 @@ export default {
                     "seatCode":ticket.timeSeat.seatCode,
                     "ticketTypeName":item.name,
                     "ticketTypeUid":item.id,
-                    "ticketPrice": item.price,
-                    "originalTicketPrice": item.price,
-                    "addPrice": item.addFee
+                    "ticketPrice": priceData.data[0].basePrice,
+                    "originalTicketPrice": priceData.data[0].basePrice,
+                    "addPrice": priceData.data[0].addFee
                 }
             }
             // console.log('换票数据',data)

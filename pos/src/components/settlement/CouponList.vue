@@ -4,7 +4,7 @@
           <div class="left">
               <span v-for="(item, index) in pageCouponlist" :key="index" class="coupon-item">
                 <span>{{item.ticketName}}：{{item.ticketCode}}</span>
-                <i class="iconfont iconshanchu" @click="delCoupon(item)"></i>
+                <i v-show="!hasConsumeActivity && item.ticketType != '1'" class="iconfont iconshanchu" @click="delCoupon(item)"></i>
               </span>
           </div>
 
@@ -26,7 +26,9 @@
 <script>
 import {cancelTicket} from 'http/apis'
 import {mapGetters, mapMutations, mapActions} from 'vuex'
-import {DEL_SELECTED_COUPON, CART_FIND_CART_DATA, SET_ACTIVITY_LIST} from 'types'
+import { VM_CLOCE_COUPON } from 'types/vmOnType'
+
+import {DEL_SELECTED_COUPON, CART_FIND_CART_DATA, SET_ACTIVITY_LIST,SAVE_AVAILABEL_COUPON} from 'types'
 export default {
     props: {
         addedNum: {
@@ -44,14 +46,22 @@ export default {
             currentPage: 1,
         }
     },
-
+    mounted(){
+        this.$vm.$on(VM_CLOCE_COUPON,(item)=>{
+            this.delCoupon(item)
+        })
+    },
+    beforeDestroy(){
+        this.$vm.$off(VM_CLOCE_COUPON)
+    },
     computed: {
      ...mapGetters([
         'availableCouponList',
         'billCode',
         'payMethod',
         'selActivityList',
-        'payedList'
+        'payedList',
+        'hasConsumeActivity'
      ]),
       pageCouponlist() {
           if(this.availableCouponList.length)
@@ -62,7 +72,8 @@ export default {
     methods: {
         ...mapMutations([
            DEL_SELECTED_COUPON,
-           SET_ACTIVITY_LIST
+           SET_ACTIVITY_LIST,
+           SAVE_AVAILABEL_COUPON
         ]),
         ...mapActions([
             CART_FIND_CART_DATA
@@ -73,17 +84,21 @@ export default {
         },
         //删除优惠券 billCode   ticketCode  chooseKeys  payTypeCode
         delCoupon(item) {
-            // console.log(item)
+            let delItemArr = this.availableCouponList.filter(data => item.applyCode == data. applyCode && item.key == data.key)
+
             cancelTicket({
               billCode: this.billCode,
-              ticketCode: item.ticketCode,
+              ticketCodesSet: delItemArr.map( item => item.ticketCode),
               chooseKeys: this.selActivityList,
               payTypeCode: this.payMethod.currentPayMethodId
             }).then(res => {
                 if(res.code == 200) {
+                    let newArr = this.availableCouponList.filter(data=> !(item.applyCode == data. applyCode && item.key == data.key))
                     this.DEL_SELECTED_COUPON(item)
                     this.SET_ACTIVITY_LIST(res.data.marketingResultList)
+                    this.SAVE_AVAILABEL_COUPON(newArr)
                     this.CART_FIND_CART_DATA()
+
                 }else {
                     this.$message({
                         showClose: true,

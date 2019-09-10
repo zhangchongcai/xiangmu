@@ -28,6 +28,13 @@ export default {
           show:true
         },
         {
+          iconPath: "../../../static/memberImage/xieka.png",
+          name: "写卡",
+          routePath: "/member/writeCard",
+          disabled: false,
+          show:true
+        },
+        {
           iconPath: "../../../static/memberImage/xiugaiziliao.png",
           name: "修改资料",
           routePath: "/member/ModifyData",
@@ -134,21 +141,6 @@ export default {
         return item.show;
       })
     }
-  },
-   mounted(){
-    //  if(!localStorage['tenantId']){
-      sessionStorage['payParams'] = JSON.stringify({
-        channelName:'柜台',
-        cinemaName:localStorage['cinemaName'],
-        operatorNo:localStorage['userUid'],
-        posNo:localStorage['terminalId'],
-        channelId:localStorage['channelId'],
-        channelNo:localStorage['channelNo'],
-        cinemaId:localStorage['cinemaId'],
-        cinemaCode:localStorage['cinemaCode'],
-        operator:localStorage['userName']
-      })
-    // }
   },
   methods: {
     handleGoDetail(routePath) {

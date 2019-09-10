@@ -22,7 +22,7 @@
               
               <div class="contents">
                   <span class="btns" @click="readCard">读卡</span>
-                  <span class="btns" @click="openPassWord">启动密码输入</span>
+                  <span class="btns" @click="openPassWord">确定</span>
               </div>
             </div>
 
@@ -41,7 +41,7 @@
     </div>
 </template>
 <script>
-import app from 'src/http/app'
+import commonutil from 'util'
 import {getCouponsData, checkoutVip} from 'src/http/apis.js'
 import {mapGetters, mapMutations} from 'vuex'
 import {CHECK_OUT_COUPON, CHECK_OUT_COUPON_RESULT, SAVE_COUPON_LIST} from 'types'
@@ -61,7 +61,9 @@ export default {
           'checkCouponBox',
           'billCode',
           'billCode',
-          'channelCode'
+          'channelCode',
+          'configData',
+          'vipInfo'
       ]),
 
       CheckCoupon: {
@@ -83,6 +85,9 @@ export default {
       popTitle() {
           setTimeout(() => {
               this.$refs.passwordInput.focus();
+              if(Object.keys(this.vipInfo).length) {
+                    this.checkNum = this.vipInfo.cardNo
+                }
           }, 1000)
       }
     },
@@ -95,12 +100,11 @@ export default {
         ]),
 
         readCard(){
-          app.readCard(this.configData,(data)=>{
-              if(typeof data == 'string') this.$message.error(data)
-              this.checkNum = data[0];
-            // console.log(data)
-          })
-      },
+            commonutil.readCard(this.configData).then(res =>{
+                    // console.log(res)
+                    this.checkNum = res.replace(/\,| \，/g,'')
+                })
+        },
 
         wrongTip(res) {
             this.loading = false
@@ -170,8 +174,9 @@ export default {
 
         openPassWord() {
             if(this.checkNum) {
-                this.popTitle = "启动密码输入"
-                this.checkNum = ""
+                // this.popTitle = "启动密码输入"
+                this.openCouponListBox()
+                // this.checkNum = ""
             }else {
                 this.$message.error('账号不能为空！！！');
             }

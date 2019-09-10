@@ -86,12 +86,12 @@ export default {
                             }
                     })
                 }else {
-                        this.$message({
-                                        showClose: true,
-                                        message: res.msg,
-                                        type: 'error',
-                                        customClass: 'global-tip-style'
-                                    });
+                        // this.$message({
+                        //                 showClose: true,
+                        //                 message: res.msg,
+                        //                 type: 'error',
+                        //                 customClass: 'global-tip-style'
+                        //             });
                     }
                 })
             

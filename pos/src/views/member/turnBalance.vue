@@ -80,8 +80,14 @@
         </div>
 
         <!-- dialog -->
-        <el-dialog title="请输入密码" :visible.sync="dialogFormVisible" width='40%'>
-            <el-input v-model="password" type="password"></el-input>
+        <el-dialog title="请输入密码" :visible.sync="dialogFormVisible" width='40%' :close-on-click-modal='false'>
+            <div class="row-line-center">
+                <el-input v-model="password" type="password" ref="tagInput"></el-input>
+                <el-button
+                style="margin-left:.5vw"
+                class="common-btn" 
+                @click="_secKeyBoard">启动密码输入</el-button>
+            </div>
             <div slot="footer">
             <el-button @click="dialogFormVisible = false" class="common-btn">取 消</el-button>
             <el-button type="primary" @click="getInfo" class="common-btn">确 定</el-button>
@@ -151,24 +157,26 @@ export default {
     methods:{
         queryData(data) {
             this.cardInfo = data;
-            if(JSON.parse(localStorage['globalAppState']) && data.type === 'card'){
-                this.member.show = true;
-                secKeyBoard(this.config.configData).then((e)=>{
-                    this.password = e;
-                    this.member.show = false;
-                    if(/^[0-9]+$/.test(e.toString().replace(/\s/g, ""))){
-                        this.getInfo()
-                    }
-                }).catch(err=>{
-                    this.member.show = false;
-                })
-            }else{
-                this.open(data);
-            }
+            this.open(data);
         },
-        open(data) {
+        //启动密码输入
+        _secKeyBoard(){
+            this.$refs.tagInput.focus();
+            if(JSON.parse(localStorage['globalAppState']))
+            this.member.show = true;
+            secKeyBoard(this.config.configData).then((e)=>{
+                this.password = e;
+                this.member.show = false;
+                this.getInfo()
+            }).catch(err=>{
+                this.member.show = false;
+            })
+        },
+        async open(data) {
             this.password = '';
             this.dialogFormVisible = true;
+            await this.$nextTick();
+            this.$refs.tagInput.focus();
         },
         getInfo(){
             this.firstCardShow = false;
@@ -237,8 +245,8 @@ export default {
             this.secondCardInfo = '';
             this.confirmCardShow = false;
             let carNum = this.secondCardNum.trim()
-            if(!/\d{14}/.test(carNum)){
-                this.$message.warning('请输入正确会员卡号/手机号')
+            if(/^1[3|4|5|6|7|8|9][0-9]\d{8}$/.test(carNum)){
+                this.$message.warning('请输入正确会员卡号')
                 return;
             }
             var data = { cardNo: carNum, tenantId: this.tenantId ,verifyPassword: false}
@@ -312,6 +320,9 @@ export default {
   .iskeyBoard{
     display:inline-block;
     margin-left:1vw;
+}
+.row-line-center{
+    justify-content:center
 }
 </style>
 

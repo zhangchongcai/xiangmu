@@ -1,5 +1,5 @@
 <template>
-    <div :class="['film-order-container', currentMovieId == filmInfo.movieUid ? 'active' : '']" @click="changeMovieId(filmInfo.movieUid)">
+    <div :class="['film-order-container', currentMovieId == (filmInfo.movieUid + filmInfo.language) ? 'active' : '']" @click="changeMovieId(filmInfo.movieUid + filmInfo.language)">
       <div class="film-name">
         <el-tooltip effect="dark" :content="filmInfo.name" placement="bottom">
             <span :class="['film-name-style', isSelected ? 'name-selected' : '']">{{filmInfo.name}}</span>

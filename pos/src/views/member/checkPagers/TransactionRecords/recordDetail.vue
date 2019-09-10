@@ -9,7 +9,7 @@
                 <p>会员卡号：{{tradingInfo.cardNo}}</p>
                 <p>交易时间：{{tradingInfo.transactionTime}}</p>
                 <p>交易终端：{{tradingInfo.posNo}}</p>
-                <p>交易金额：{{tradingInfo.basicAmount || 0}}</p>
+                <p>交易金额：{{tradingInfo.amount || 0}}</p>
                 <p>交易方式：{{getPayMethodName(tradingInfo.payMethodCode)}}</p>
                 <p>交易影院：{{tradingInfo.cinemaName}}</p>
                 <p>交易渠道：{{tradingInfo.channelName}}</p>

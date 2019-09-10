@@ -67,6 +67,7 @@ export const payVip = (data) => Axios.post(['csm/pay'], data).then(res => res.da
 export const refundVip = (data) => Axios.post(['csm/refund'], data).then(res => res.data)
 //会员卡查询
 export const checkoutVip = (data) => Axios.post(['csm/getMemberData'], data).then(res => res.data)
+// export const checkoutVip = (data) => Axios.post(['csm/getMemberData', 'http://192.168.159.1:4702/'], data).then(res => res.data)
 //获取活动
 export const checkActivety = (data) => Axios.post(['saleBill/getPromotions'], data).then(res => res.data)
 //确认活动
@@ -96,8 +97,8 @@ export const proveCouponPwd = (data) => Axios.post(['saleBill/coupon/checkPwd'],
 //取消票券
 export const cancelTicket = (data) => Axios.post(['saleBill/coupon/cancelTicket'], data).then(res => res.data)
 //核销优惠券
-// export const consumeCoupon = (data) => Axios.post(['saleBill/coupon/consumeCoupon'], data).then(res => res.data)
-export const consumeCoupon = (data) => Axios.post(['/saleBillGoods/orderflow'], data).then(res => res.data)
+export const consumeCoupon = (data) => Axios.post(['saleBill/coupon/consumeCoupon'], data).then(res => res.data)
+// export const consumeCoupon = (data) => Axios.post(['/saleBillGoods/orderflow'], data).then(res => res.data)
 //核销活动
 export const consumeActivity = (data) => Axios.post(['saleBill/addExeTime'], data).then(res => res.data)
 //取消支付时触发优惠活动还原
@@ -177,4 +178,9 @@ export const getUseInfo = data => Axios.get(['/workTime/selectIssueItems'],data)
 export const getJhPayParam = data => Axios.post(['csm/getJhPayParam'],data).then( res => res.data )
 // 支付方式排序
 export const faPayTypeCinemaSeqencing = data  => Axios.post(['faPayTypeCinema/seqencing',managementBackgroundApi],data).then( res => res.data )
-
+//获取重打印票卷列表
+export const saleBillSearchReprintList = data => Axios.post(['sharepos/saleBillSearch/reprintList'],data).then( res => res.data )
+//获取重打印票卷数据
+export const saleBillSearchReprintDetail = data => Axios.get(['sharepos/saleBillSearch/reprintDetail'],data).then( res => res.data )
+//判断是否在盘点清算卖品
+export const storeHouseCheck  = data => Axios.get(['productExhibition/storeHouseCheck'],data).then( res => res.data )

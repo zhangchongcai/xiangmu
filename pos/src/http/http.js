@@ -24,7 +24,6 @@ Axios.interceptors.request.use(
             // console.log(confirm.data)
             break;
         }
-        
         return confirm
     },
     error => {
@@ -36,7 +35,9 @@ Axios.interceptors.request.use(
  Axios.interceptors.response.use( 
      //响应后配置
      response => {
+        
        if(response.data.code == 401) {
+           response.data.msg = '用户登录超时或被强制退出！'
            localStorage.removeItem('token');
            MessageBox.confirm(`<strong style="display: inline-block; width: 22px; height: 22px; border-radius: 50%; background: #f00; text-align: center; line-height: 22px; color: #fff; margin: 0 4px;">X</strong>用户登录超时或被强制退出`, '温馨提示', {
             confirmButtonText: '确定',
@@ -51,7 +52,8 @@ Axios.interceptors.request.use(
        return response
      },
      err => {
-        //  console.log(err)
+        // console.log(err)
+        if(!localStorage.getItem('token')) return err
         if(err ==  'Error: Network Error') {
             err = " 服务器错误，请联系影院经理！"
         }

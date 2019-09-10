@@ -171,7 +171,7 @@ export default {
           switch(data[i].menuCode){
             case  'csm_pos_extract_fund_authorize' :
             case  'csm_pos_extract_fund_regulation' :
-            case  'csm_pos_open_money_box': //开钱箱
+            // case  'csm_pos_open_money_box': //开钱箱
             case  'csm_pos_handsel' : //赠送
             case  'csm_pos_reportloss' : //报损
             case  'csm_pos_reprint_voucher': //重打印凭证
@@ -233,7 +233,7 @@ export default {
       this.getAllPayType()
     })
     this.$eventHub.$on(VM_ON_LOGIN_UESINFO, (val) => {
-      console.log(313131)
+      // console.log(313131)
         if(val != null){
             this.requestUseInfo(val)
         }

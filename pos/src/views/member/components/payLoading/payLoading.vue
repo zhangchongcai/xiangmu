@@ -4,7 +4,7 @@
         <div class="pay-show">
             <i class="iconfont icondengdaisaomiaokehuzhifupingzheng" v-show="isIconPic"></i>
             <img src="./wait_pay.png" v-show="!isIconPic" class="pay_wait">
-            <p style="padding-bottom:3vh;">{{statusText}}</p>
+            <p style="padding-bottom:3vh;font-size:1.26vw">{{statusText}}</p>
             <el-button 
                 type="primary" 
                 class="common-btn"
@@ -129,18 +129,9 @@ export default {
     color:#3B74FF
 }
 .pay_wait{
-    width:95px;
-    height:98px;
+    width:10vw;
+    height:10vw;
     margin:7.5vh 0 3vh;
-}
-.fade-enter, .fade-leave-to {
-    opacity: 0
-}
-.fade-leave, .fade-enter-to {
-    opacity: 1
-}
-.fade-enter-active, .fade-leave-active {
-    transition: all .5s
 }
 </style>
 

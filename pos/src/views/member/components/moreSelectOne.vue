@@ -14,7 +14,7 @@
             <i data-v-6018a2e2="" class="selectIcon iconfont iconyuanxingxialajiantou"></i>
           </label>
           <el-popover placement="bottom" trigger="click" :visible-arrow="false" >
-            {{!!$attrs.openCard ? '开卡' : '充值'+ item.amount+'元，'}}赠送<br/>
+            {{!!$attrs.openCard ? '开卡' : '充值'+ (item.amount ? item.amount+'元，' :'，')}}赠送<br/>
             {{!!item.presentPoint?item.presentPoint+'积分':''}}
             {{!!item.presentMoney?item.presentMoney+'元':''}}
             {{!!item.couponAmount?item.couponAmount+'张优惠券':''}}
@@ -36,7 +36,7 @@
               <i class="selectIcon iconfont iconyuanxingxialajiantou"></i>
             </label>
             <el-popover placement="bottom" trigger="click" :visible-arrow="false" :content="item.activityName">
-              {{!!$attrs.openCard ? '开卡' : '充值'+ item.amount+'元，'}}赠送<br/>
+              {{!!$attrs.openCard ? '开卡' : '充值'+ (item.amount ? item.amount+'元，' :'，')}}赠送<br/>
               {{!!item.presentPoint?item.presentPoint+'积分':''}}
               {{!!item.presentMoney?item.presentMoney+'元':''}}
               {{!!item.couponAmount?item.couponAmount+'张优惠券':''}}
@@ -135,7 +135,7 @@ export default {
       this.$set(this.dataListOther[this.warpIndex], "memberwarp_active", false);
     },
     showDialog() {
-      console.log(1)
+      // console.log(1)
       this.dialogTableVisible = true;
     },
     clearDataActive(arr, str) {
@@ -147,7 +147,7 @@ export default {
     },
     //3-4选一
     clickSelectOne(newindex) {
-      console.log(this.index, newindex);
+      // console.log(this.index, newindex);
       if (this.index === newindex) {
         this.index = "";
         this.$set(this.dataList[newindex], "member_active", false);

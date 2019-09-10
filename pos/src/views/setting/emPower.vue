@@ -31,7 +31,7 @@ export default {
   },
   methods:{
     onkey(item){
-      console.log(item)
+      // console.log(item)
     },
     dialogOpen(){
         this.dialogType='icontishigantanhao';

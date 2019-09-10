@@ -166,7 +166,7 @@ export default {
             height: 100%;
             border: 1px solid $bg-searchPaydetalTabColor;
             box-sizing: border-box;
-            padding: 1.6vh;
+            padding: 1.2vh;
             display: flex;
             flex-direction: column;
             align-items: flex-start;
@@ -194,6 +194,10 @@ export default {
                 .play-place, .play-sell {
                     font-size: $font-size12;
                     color: $font-color6;
+                    width: 100%;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
                 }
 
                 .font-selected {

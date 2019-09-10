@@ -10,7 +10,7 @@
             center>
             <div class="cart-numberboard">
                 <el-input v-model="number" placeholder="请输入数量" />
-                <KeyBoadr @keynumber="keynumber" ref="keyboard"></KeyBoadr>
+                <KeyBoadr v-model="number" @keynumber="keynumber" ref="keyboard"></KeyBoadr>
             </div>
             <div slot="footer" class="dialog-footer">
                 <el-button @click="showStatus = false">取消</el-button>
@@ -43,8 +43,6 @@ export default {
                 return this.showCartKeyBoard
             },
             set(vel) {
-                this.$refs.keyboard.keyValue = ""
-                this.number=""
                 this.SHOW_CART_KEYBOARD()
             }
         },
@@ -54,10 +52,10 @@ export default {
         
     },
     watch:{
-        showStatus(){
+        showStatus(newValue){
+            if(!newValue) return
             if(this.cartDatalist.length){
                 this.number =  this.cartDatalist[this.cartGoodlistIndex].saleNum
-                this.$refs.keyboard.keyValue = this.number 
             }
         }
     },
@@ -74,7 +72,6 @@ export default {
             this.SHOW_CART_KEYBOARD(this.cartGoodlistIndex);
             this.$vm.$emit('VM_CART_NUMBER_CHANGE',this.number)
             // this.SET_CART_NUMBER(this.number)
-            this.$refs.keyboard.keyValue = ""
             this.number=""
         },
 

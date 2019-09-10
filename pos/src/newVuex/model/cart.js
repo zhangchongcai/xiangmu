@@ -20,6 +20,7 @@ const specialGoodMap = (mapItem,parentMerUid,type) => {//组合 合成品，套�
     subObj.merSpec = mapItem.merSpec;
     subObj.merUid = mapItem.merUid;
     subObj.needCount = mapItem.merCount;
+    subObj.aliasName = mapItem.aliasName
     // subObj.skuName = mapItem.skuSellEntity ? mapItem.skuSellEntity.name : '';
     subObj.skuName  = mapItem.skuName;
     if(subObj.merType == 5){
@@ -52,7 +53,7 @@ export default {
          replacegoodsInfo:{},
          goodnumber:0 ,//点击确定改变的数量值
          searchGoodsText:'',//卖品查询值
- 
+         isPayIng:false,
     },
 
     mutations : {
@@ -96,6 +97,9 @@ export default {
         [TYPES.CLEAR_ALL_CART] : (state) => {
             state.cartData.goodsList = []
             state.goodsData.list = []
+        },
+        [TYPES.CART_IS_PAY_ING] : (state,data) => {
+            state.isPayIng = data
         }
     },
 
@@ -132,6 +136,9 @@ export default {
         //卖品数组
         cartDatalist(state) {
             return state.goodsData.list
+        },
+        isPayIng(state) {
+            return state.isPayIng
         }
     },
     actions:{
@@ -178,6 +185,7 @@ export default {
             obj.saleMer.merCode = item.code;
             obj.saleMer.merUid = item.merUid;
             obj.saleMer.merSpec = item.merSpec;
+            obj.saleMer.aliasName = item.aliasName;
             obj.saleMer.merType = item.merType;
             obj.saleMer.merName = item.name;
             obj.saleMer.unitUid = item.unitUid;

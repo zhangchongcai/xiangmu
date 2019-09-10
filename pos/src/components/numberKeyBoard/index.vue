@@ -1,17 +1,24 @@
 <template>
     <div class="keyBoardLayer">
         <div  href="jacascript::void(0)" v-for="(item,index) in keyBoardArr" :key="index" class="keyItem" @click="onKey(item)">{{item.text}}</div>
+        <!-- <input type="text" :value="value" @input="$emit('input',value)"> -->
     </div>
 </template>
 <script>
 export default {
+    // model:{
+    // prop:'value',
+    // event:'input',
+    // },
     props: {
         showPointer: {
             type: Boolean,
             default: false
+        },
+        value:{
+            type:[Number,String]
         }
     },
-
     data(){
         return{
             tempkeyBoardArr:[
@@ -31,7 +38,6 @@ export default {
             keyValue:'',
         }
     },
-
     computed: {
        keyBoardArr() {
            if(this.showPointer) {
@@ -43,6 +49,9 @@ export default {
 
     mounted() {
       let that = this;
+      if(this.value){
+          this.keyValue = this.value;
+      }
     //   window.addEventListener("keyup", function(event) {
     //       if(event.keyCode == '8') {
     //           that.keyValue = that.keyValue.substring(0,that.keyValue.length-1);
@@ -62,7 +71,8 @@ export default {
 
     methods:{
         onKey(item){ //键盘点击事件：通过事件keynumber传递值
-        this.keyValue = this.keyValue + '';
+        this.keyValue = this.value +''
+        // this.value = this.value + '';
             switch(item.type){
                 case 'del':
                 if(this.keyValue == '') return;
@@ -76,16 +86,19 @@ export default {
                 if(item.text == '.'){
                     if(this.keyValue.length == 0){
                         this.keyValue = '0'+item.text
+                        this.$emit('input',this.keyValue)
                         return this.$emit('keynumber',this.keyValue)
                     }
                     if(this.keyValue.indexOf('.')>-1){
+                        this.$emit('input',this.keyValue)
                         return this.$emit('keynumber',this.keyValue)
                     }
                 }
                 this.keyValue += item.text;
                 break;
             }
-             this.$emit('keynumber',this.keyValue)
+            this.$emit('input',this.keyValue)
+            //  this.$emit('keynumber',this.value)
         }
     }
 }

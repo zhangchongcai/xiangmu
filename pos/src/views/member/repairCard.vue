@@ -107,11 +107,11 @@ export default {
         barCode:''
       },
       rules: {
-        passwd: [{ validator:passwdReg,trigger:'change'}],
-        newCardNo: [{ required: true, message: "请输入新会员卡", trigger: "blur" }],
+        passwd: [{ required: true, validator:passwdReg,trigger:["blur","change"]}],
+        newCardNo: [{ required: true, message: "请输入新会员卡", trigger: ["blur","change"] }],
         newPasswd: [
-          { required: true, message: "请输入新密码", trigger: "change" },
-          { validator: customPasswordReg, trigger: "change",passwordkType:1}
+          { required: true, message: "请输入新密码", trigger: ["blur"] },
+          { validator: customPasswordReg, trigger: ["blur","change"],passwordkType:1}
           ],
         cost: [{  message: "请输入手续费金额", trigger: "change" }],
         payWayCode:[{required: true, message: "请选择支付方式", trigger: "change"}]

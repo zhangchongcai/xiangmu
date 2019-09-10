@@ -1,9 +1,9 @@
 <template>
     <div class="coupon-container">
         <div class="btns">
-            <el-button class="common-btn" @click="openCouponCheckoutBox">使用票券</el-button>
-            <el-button class="common-btn" @click="CHECK_OUT_COUPON">会员票券查询</el-button>
-            <el-button class="common-btn" @click="checkoutGroupCoupon">使用团购券</el-button>
+            <el-button :disabled="isWithCoupon || hasConsumeActivity" class="common-btn" :class="isWithCoupon || hasConsumeActivity?'disabled':''" @click="openCouponCheckoutBox">使用票券</el-button>
+            <el-button :disabled="isWithCoupon || hasConsumeActivity" class="common-btn" :class="isWithCoupon || hasConsumeActivity?'disabled':''" @click="checkoutVipCoupon">会员票券查询</el-button>
+            <el-button :disabled="isWithCoupon || hasConsumeActivity" class="common-btn" :class="isWithCoupon || hasConsumeActivity?'disabled':''" @click="checkoutGroupCoupon">使用团购券</el-button>
         </div>
         <div class="sel-coupon-container" :style="{height: !isExtend ? '4.2vh' : 'auto'}">
           <div class="sel-coupon-container-header">
@@ -17,7 +17,7 @@
           </div>
           <div class="coupon-list-container">
              <!-- 选中可用的票券后弹出的票券列表 -->
-            <coupon-list v-if="isExtend" @openCouponCheckoutBox="openCouponCheckoutBox"></coupon-list> 
+            <coupon-list v-show="isExtend" @openCouponCheckoutBox="openCouponCheckoutBox"></coupon-list> 
           </div>
         </div>
     </div>
@@ -36,7 +36,7 @@ export default {
     },
     computed: {
         ...mapGetters(
-            ['availableCouponList']
+            ['availableCouponList', 'isWithCoupon', 'hasConsumeActivity']
         ) 
     },
     methods: {
@@ -44,15 +44,28 @@ export default {
           CHECK_OUT_COUPON,
           CHECK_OUT_GCOUPON_RESULT
         ]),
+
         ...mapActions([
           GET_GC_DATA
         ]),
+
         openCouponCheckoutBox() {
-           this.$emit("openCouponCheckoutBox")
+           if(!this.isWithCoupon) {
+             this.$emit("openCouponCheckoutBox")
+           }
         },
+
+        checkoutVipCoupon() {
+          if(!this.isWithCoupon) {
+              this.CHECK_OUT_COUPON()
+          }
+        },
+
         checkoutGroupCoupon() {
-            this.GET_GC_DATA()
-            this.CHECK_OUT_GCOUPON_RESULT()
+            if(!this.isWithCoupon) {
+                this.GET_GC_DATA()
+                this.CHECK_OUT_GCOUPON_RESULT()
+            }
         }
     },
     components: {
@@ -78,6 +91,12 @@ export default {
             font-size: $font-size12;
             border-color: #3b74ff;
             border-radius: 2px;
+        }
+        .disabled {
+            background: #f5f5f5;
+            border: none;
+            color: #666666;
+            border: 1px solid #bcbcbc;
         }
     }
     .sel-coupon-container {

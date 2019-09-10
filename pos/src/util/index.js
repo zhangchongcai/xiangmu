@@ -1,3 +1,4 @@
+import App from 'http/app';
 // formatTime(new Date(), "yyyy-MM-dd hh:mm:ss.S") ==> 2006-07-02 08:09:04.423   
 // formatTime(new Date(), "yyyy-M-d h:m:s.S")      ==> 2006-7-2 8:9:4.18  
 const formatTime = (dateObj, fmt) => { 
@@ -45,13 +46,50 @@ const NumberTransform = (num) => {
     //如果需要保留小数点后两位，则用下面公式
     str = str.replace(/\.\d\d\d$/,'')
     
-    if(Number(str) >= 1000 || Number(str) < 0) {
+    if(Number(str) < 0) {
         str = ''
     }
     return str;
 }
 
+// 读卡
+const readCard =  (config) => {
+    return new Promise((reslove, reject) => {
+      App.readCard(config, (e) => {
+        let ev = e.toString()
+        if (ev.indexOf('-1') >= 0 || ev === '浏览器不支持此功能') {
+          Vue.prototype.error(ev.replace('-1,', ''));
+          reject(ev)
+        } else {
+          reslove(ev)
+        }
+      })
+    })
+  }
+
+//密码输入
+const secKeyBoard = (config) => {
+  return new Promise((reslove, reject) => {
+    App.secKeyBoard('open', config, (e) => {
+      let ev = e.toString()
+      if (ev.indexOf('-1') >= 0 || ev === '浏览器不支持此功能' || ev === '密码键盘开启中') {
+        Vue.prototype.error(ev.replace('-1,', ''));
+        reject(e)
+        console.warn(e)
+      } else {
+        reslove(ev)
+      }
+    })
+  })
+}
+
+//验证一个值的类型
+const isType = type => obj => Object.prototype.toString.call(obj).match(/\[object ([a-zA-Z]*)\]/)[1] === type;
+
 export default {
     formatTime,
-    NumberTransform
+    NumberTransform,
+    readCard,
+    secKeyBoard,
+    isType
 }

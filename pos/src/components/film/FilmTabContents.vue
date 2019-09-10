@@ -30,7 +30,7 @@ export default {
     computed: {
         ...mapGetters([
             'currentFilmId',
-            'seatSelection'
+            'seatSelection',
         ])
     },
 
@@ -42,6 +42,7 @@ export default {
             SET_CURRENT_TICKET_MINPRICE
         ]),
         setFilmId(id, code, allowSingle, minPrice) {
+            if(this.currentFilmId == id) return
             if(this.seatSelection.length) {
                this.$alert('请取消当前场次的影票及座位后再切换场次', {
                  confirmButtonText: '确定'
@@ -72,7 +73,7 @@ export default {
             height: 100%;
             box-sizing: border-box;
             border: 1px solid $bg-searchPaydetalTabColor;
-            padding: 1.6vh;
+            padding: 1.2vh;
             display: flex;
             flex-direction: column;
             align-items: flex-start;
@@ -90,7 +91,6 @@ export default {
                     position: absolute;
                     right: 0;
                     top:0;
-                    // font-size: $font-size12;
                     width: 2.2vw;
                 }
 
@@ -102,6 +102,10 @@ export default {
                 .play-place, .play-sell {
                     font-size: $font-size12;
                     color: $font-color6;
+                    width: 100%;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
                 }
 
                 .font-selected {

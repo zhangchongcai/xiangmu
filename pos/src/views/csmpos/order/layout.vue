@@ -9,7 +9,7 @@
                 <div class="warp_title">
                     <span >订单详情</span>
                 </div>
-                <div class="goods">
+                <div class="goods" ref="cart">
                     <Goods  :goodTitleshow="false" 
                     :goodsList='goodsList'
                     :cartData='cartData'
@@ -18,8 +18,8 @@
                 </div>
                 <div class="goods-btn">
                     <div class="paginaButtoms">
-                        <span class="previous el-icon-arrow-down "></span>
-                        <span class="next el-icon-arrow-up" ></span>
+                    <el-button plain size="mini" :disabled="up" class="el-icon-arrow-up up-down-btn"     @click="handerScroll(false)"></el-button>
+                    <el-button plain size="mini" :disabled="down" class="el-icon-arrow-down up-down-btn"     @click="handerScroll(true)"></el-button>
                     </div>
                 </div>
             </div>
@@ -117,7 +117,9 @@ export default {
                 {content:"三人家庭爆米花"},
                 {content:"三人家庭爆米花"},
                 {content:"三人家庭爆米花"},
-            ]
+            ],
+            down:true,
+            up:true
         }
     },
     computed: {
@@ -130,6 +132,13 @@ export default {
             'changingTicket',
             'cartDatalist'  //卖品数组
         ])
+    },
+    mounted(){
+        this.$refs.cart.addEventListener('scroll',this.scrollChange)
+        this.scrollChange()
+    },
+    beforeDestroy(){
+        this.$refs.cart.removeEventListener('scroll',this.scrollChange)
     },
     methods: {
         ...mapMutations([
@@ -229,6 +238,39 @@ export default {
                     duration:1000
                 })
             }
+        },
+        //滚动条滚动
+        handerScroll(down) {
+            let scrollHeight = this.$refs.cart.scrollHeight
+            let boxHeight = this.$refs.cart.offsetHeight
+            let currentScrolltop = this.$refs.cart.scrollTop
+            let OldscroolHeight = this.$refs.cart.scrollTop
+            let swiperHeight = 100
+            if(scrollHeight>boxHeight){
+                let Timer = setInterval( _ => {
+                    let speed = down? Math.floor(swiperHeight / 6) : Math.floor(-swiperHeight / 6);
+                    this.$refs.cart.scrollTop += speed 
+                    currentScrolltop += speed;
+                    if(down){
+                        if(currentScrolltop >= OldscroolHeight*1+swiperHeight){
+                            clearInterval(Timer)
+                        }
+                    }else {
+                        if(currentScrolltop <= OldscroolHeight-swiperHeight){
+                            clearInterval(Timer)
+                        }
+                    }
+                },20)
+            }
+        },
+        scrollChange(){
+            const offsetHeight =  this.$refs.cart.offsetHeight
+            const scrollHeight = this.$refs.cart.scrollHeight
+            const scrollTop = this.$refs.cart.scrollTop
+            if(scrollHeight > offsetHeight) this.down = false;
+            if(scrollTop > 0) this.up = false
+            if(scrollTop == 0) this.up = true
+            if((scrollTop+offsetHeight) == scrollHeight) this.down = true;
         },
         handerModify(yse) {
             if(yse){

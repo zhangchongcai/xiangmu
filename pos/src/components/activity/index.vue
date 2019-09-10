@@ -53,7 +53,7 @@ export default {
 
   methods:{
     test(){
-      console.log(1234)
+      // console.log(1234)
     },
     chnage($event){
        const isChecked = event.target.checked

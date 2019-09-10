@@ -3,6 +3,8 @@ export default class printing {
     this.initData();
   }
   initData(){
+    this.size10 = 10;
+    this.height10 = 15
     this.size12 = 12;
     this.height12 = 17;
     this.size13 = 13;
@@ -25,46 +27,8 @@ export default class printing {
       '终端:' : '003',
       '收银员:' : '张三'
     }
-    this.returnGoodsVoucherData = {
-      cinemaTickets : {
-        name : '影片名称898 (巨幕/粤语) /南湖2号厅/2019-07-18 18:45:00',
-        names:[],
-        tickets:[
-          {
-            seat: '1排1号', num : 1, price:'50.00'
-          },
-          {
-            seat: '1排1号', num : 1, price:'50.00'
-          },
-          {
-            seat: '增值服务费[1排，2号]', num : 1, price:'1.00'
-          },
-          {
-            seat: '增值服务费[1排，2号]', num : 1, price:'1.00'
-          },
-        ]
-      },
-      goods : [
-        {
-          name: '麦片',num:3,price:'10.00'
-        },
-        {
-          name: '麦片麦片麦片麦片麦片',num:3,price:'10.00'
-        },
-      ],
-      prices:{
-        '退款合计:' : '132.00',
-        '退款明细:' :{
-          '现金：' : '132.00',
-          '支付宝：' : '59.00',
-        }
-      },
-      foot:{
-        '退货时间:' : '2019-07-18 17:13:31',
-        '交易类型:':'退款',
-        '操作人:' :'黄景辉'
-      }
-    }
+    this.returnGoodsVoucherData = {}
+    this.pickUpGoodsVoucherData = {},
     this.voucherTicketTitle = {
       welcome : '欢迎光临',
       cinemaName:  localStorage.getItem('cinemaName'),
@@ -92,48 +56,172 @@ export default class printing {
       },
       barCode : 12345678
     }
-
+    this.transactionData = {}
 
   }
   payVoucher(){ //支付凭证
+    this._initPrintInfo()
     this.voucherTicketTitle.voucherTypeStr = '支付凭证';
     this._voucherTicket();
+    this.printInfo.height =  this.height > 300 ? this.height : 300
     return this.printInfo;
   }
   refundVoucher(){ //退款凭证
+    this._initPrintInfo()
     this.voucherTicketTitle.voucherTypeStr = '退款凭证';
     this._voucherTicket();
+    this.printInfo.height =  this.height > 300 ? this.height : 300
     return this.printInfo;
   }
-  returnGoodsVoucher(){//退货凭证
+  returnGoodsVoucher(data){//退货凭证
+    this._initPrintInfo()
     this.voucherTicketTitle.voucherTypeStr = '退货凭证';
+    this._initReturnGoodsVoucherData(data)
     this._returnGoodsVoucherTicket()
+    this.printInfo.height =  this.height > 300 ? this.height : 300
     return this.printInfo;
   }
   takeMoneyVoucher(){//抽钞凭证
+    this._initPrintInfo()
     this.voucherTicketTitle.voucherTypeStr = '抽钞凭证'
     delete this.voucherTicketTitle.welcome
     this._takeMoneyVoucherTicket()
+    this.printInfo.height =  this.height > 300 ? this.height : 300
     return this.printInfo;
 
   }
-  couponVoucher(){ //票券退货凭证
+  couponVoucher(data){ //票券退货凭证
+    this._initPrintInfo()
     this.voucherTicketTitle.voucherTypeStr = '票券退货凭证'
     delete this.voucherTicketTitle.welcome
+    this._initCouponVoucherData(data)
     this._couponVoucherTicket()
+    this.printInfo.height =  this.height > 300 ? this.height : 300
     return this.printInfo;
   }
+  pickUpGoodsVoucher(data){ //取货凭证
+    this._initPrintInfo()
+    this.voucherTicketTitle.voucherTypeStr = '取货凭证'
+    delete this.voucherTicketTitle.welcome
+    delete this.voucherTicketTitle.cinemaName
+    this._initPickUpGoodsVoucherData(data)
+    this._pickUpGoodsVoucherTicket()
+    this.printInfo.height =  this.height > 300 ? this.height : 300
+    return this.printInfo;
+
+  }
+  transactionVoucher(){
+    
+  }
+  _initPrintInfo(){
+    this.height = 0;
+    this.voucherTicketTitle = {
+      welcome : '欢迎光临',
+      cinemaName:  localStorage.getItem('cinemaName'),
+      voucherTypeStr : '',
+    }
+    this.printInfo = {
+      width:200,
+      height:300,
+      ticket_element:[]
+    };
+  }
   _centerx(str,size){//居中的x
-    return (this.printInfo.width - str.length*(this.printInfo.width/size)) / 2
+    return (this.printInfo.width - (str.length*(this.printInfo.width/size))) / 2
   }
   _rightx(str,size){//居右的x
     return (this.printInfo.width - (str.length*(this.printInfo.width/size))/2)
   }
+  _initReturnGoodsVoucherData(data){
+    let movies = data.movies ? data.movies[0] : {movieItems:[]};
+    this.returnGoodsVoucherData = {
+      cinemaTickets : {
+        name : movies.movieSchName,
+        names:[],
+        tickets:movies.movieItems.map(item => {
+          return {
+            seat: item.movieName, num : 1, price:Number(item.salePrice).toFixed(2)
+          }
+        })
+      },
+      goods : data.mers ? data.mers.map(item => {
+        return{
+              name: item.goodsName,num:item.saleNum,price:Number(item.salePrice).toFixed(2)
+              }
+          }) : [],
+      prices:{
+        '退款合计:' : Number(data.totalAmount).toFixed(2),
+        '退款明细:' : data.payRefundItems.map(item => {
+          return {
+            str:item.payTypeName+'：',
+            pay:item.payTypeInfo,
+          }
+        })
+      },
+      foot:{
+        '退货时间:' : data.refundTime,
+        '交易类型:':data.saleTypeName,
+        '操作人:' :data.cashier
+      }
+    }
+
+  }
+  _initPickUpGoodsVoucherData(data){
+    let goodsEntityList = data.goodsEntityList.filter((item)=>{
+        if([1,2,3,12,13].includes(item.goodsType)){
+          return item
+        }
+    })
+    this.pickUpGoodsVoucherData = {
+      goodsEntityList,
+      saleMerItemMap:data.saleMerItemMap,
+      getCode:data.getCode,
+      foot:{
+        '影院：': data.cinemaName,
+        '交易流水号：' : data.transactionCode,
+        '交易时间：' : data.transactionDate,
+        '终端：':data.terminalCode,
+        '收银员：':data.cashier
+      }
+    }
+  }
+  _initTransactionData(data){
+    this.transactionData = {
+      goodsEntityList:data.goodsEntityList,
+      saleMerItemMap:data.saleMerItemMap,
+      barCode:data.billCode,
+      payedMap:data.payedMap,
+      
+      foot:{
+        '影院：': data.cinemaName,
+        '交易流水号：' : data.transactionCode,
+        '交易订单号':data.billCode,
+        '交易时间：' : data.transactionDate,
+        '终端：':data.terminalCode,
+        '收银员：':data.cashier
+      }
+    }
+  }
+  _initCouponVoucherData(data){
+    this.couponVoucherData = {
+      body : {
+        '票券名称:' : data.ticketName,
+        '票券类型:' : data.ticketType,
+        '原票券编号:' : data.originalTicketCode,
+        '新票券编号:' : data.newTicketCode,
+        '打印日期:' : data.printDate,
+        '终端编号:' : data.terminalCode,
+        '退货单号:' : data.refundNum,
+      },
+      barCode : data.newTicketCode
+    }
+  }
+  
   _returnGoodsVoucherTicket(){//退货的第一张小票
     const { cinemaTickets,goods,prices,foot } = this.returnGoodsVoucherData;
     this._title(this.voucherTicketTitle) //标题部分
     this._hrLine()//hr线
-    this._br(cinemaTickets.name,9,cinemaTickets.names)//影票命换行转数组
+    if(cinemaTickets.name) this._br(cinemaTickets.name,9,cinemaTickets.names)//影票命换行转数组
     for (let text of cinemaTickets.names){//遍历影票名字
       this.printInfo.ticket_element.push(this._item(text,0,this.height,this.size12))
       this.height += this.height12;
@@ -150,8 +238,8 @@ export default class printing {
         this._keyValueInfo(k,v+'元')
       }else{
         this._keyValueInfo(k,'')
-        for (let [sk,sv] of Object.entries(v)){
-          this._keyValueInfo(sk,sv+'元',this.size12)
+        for (let item of v){
+          this._keyValueInfo(item.str,item.pay,this.size12)
         }
       }
     }
@@ -192,28 +280,59 @@ export default class printing {
       this._keyValueInfo(text,' _________',0,15)
     }
   }
-  _br(str,size,arr){ //换行
-    let maxStrNum = parseInt(this.printInfo.width / size);
+  _pickUpGoodsVoucherTicket(){//取货凭证
+    this._title(this.voucherTicketTitle)
+    this._hrLine()
+    this._barCode(this.pickUpGoodsVoucherData.getCode)
+    this._hrLine()
+    for(let i = 0 ; i < this.pickUpGoodsVoucherData.goodsEntityList.length; i++){
+      let item = this.pickUpGoodsVoucherData.goodsEntityList[i]
+      this._twoColumn(`${i+1}.${item.goodsName}`,`x ${item.saleNum}`,5,170)
+      if(item.goodsType == 3){
+        let subItemStr = this.pickUpGoodsVoucherData.saleMerItemMap[item.uid].map((subItem) => {
+          return `${subItem.merName}x${subItem.needCount}`
+        }).join(' ')
+        let nameArr = [];
+        this._br(subItemStr,this.size10,nameArr)
+        for (let text of nameArr){//遍历影票名字
+          this.printInfo.ticket_element.push(this._item(text,15,this.height,this.size10))
+          this.height += this.height10;
+        }
+      }
+    }
+    this._hrLine()
+    for (let [k,v] of Object.entries(this.pickUpGoodsVoucherData.foot)){ //尾部区
+      this._keyValueInfo(k,v,5)
+    }
+
+  }
+  _br(str,size,arr,width = this.printInfo.width){ //换行
+    let maxStrNum = parseInt(width / size);
     if(str.length < maxStrNum){
       arr.push(str)
     }else{
       arr.push(str.substr(0,maxStrNum))
-      this._br(str.substring(maxStrNum),size,arr)
+      this._br(str.substring(maxStrNum),size,arr,width)
     }
   }
   _barCode(code,size = 12){
     const { printInfo, _item } = this; 
-    debugger
     printInfo.ticket_element.push(_item(code,(this.printInfo.width - 190)/2,this.height,size,0,2))
     this.height += 33;
-    printInfo.ticket_element.push(_item(code,this._centerx(code+'',this.size12)*2,this.height,size,0,0))
+    printInfo.ticket_element.push(_item(code,this._centerx(code+'',24)*1.4,this.height,size,0,0))
     this.height += this.height12;
   }
-  _twoColumn(leftText,rightText,x=0){ //两栏一行
+  _twoColumn(leftText,rightText,x=0,width){ //两栏一行
     const { printInfo,_item,size12 } = this; 
-    printInfo.ticket_element.push(_item(leftText,x,height,size12))
-    printInfo.ticket_element.push(_item(rightText,this._rightx(rightText,size12)+10,height,size12))
+    let nameArr = [];
+    this._br(leftText,size12,nameArr,width)
+    printInfo.ticket_element.push(_item(nameArr[0],x,this.height,size12))
+    printInfo.ticket_element.push(_item(rightText,this._rightx(rightText,size12)+10,this.height,size12))
         this.height += this.height12;
+    for(let i = 1 ; i < nameArr.length ; i++){
+      printInfo.ticket_element.push(_item(nameArr[i],x,this.height,size12))
+      this.height += this.height12;
+    }
   }
   _hrLine(){
     const { _item } = this; 

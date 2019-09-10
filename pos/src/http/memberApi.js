@@ -28,6 +28,12 @@ const memeberApi = {
     checkMsg: { url: baseUrl+ '/checkMsg' , method:'get'},// 校验验证码
     getPayResult: { url: baseUrl+ '/queryOrder' , method:'get'},// 轮询查询支付结果
     payAndAct: { url: baseUrl+ '/payAndAct' , method:'get'},// 支付并注销、补卡或激活
+    list: { url: baseUrl+ '/type/list' , method:'get'},// 卡类型查询
+    writeCard: { url: baseUrl+ '/writeCard'},// 写卡
+    checkWriteStatus: { url: baseUrl+ '/checkWriteStatus',method:'get'},// 判断写卡状态
+    getCardPoolList: { url: baseUrl+ '/getCardPoolList',method:'get'},// 根据卡政策或卡号查询卡池
+    getProductListByType: { url: baseUrl+ '/getProductListByType',method:'get'},// 根据卡政策或卡号查询卡池
+    getPageList: { url: baseUrl+ '/accountFlow/getPageList'},// 积分交易列表
 }
 
 const httpType = {};

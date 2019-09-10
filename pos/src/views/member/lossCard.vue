@@ -51,7 +51,7 @@ export default {
       },
       cardStatus:['normal','loss'],
       rules: {
-        passwd: [{ validator:passwdReg,trigger:'change'}]
+        passwd: [{ required: true, validator:passwdReg,trigger:['change',"blur"]}]
       }
     };
   },
@@ -91,7 +91,7 @@ export default {
         tenantId: this.tenantId,
         cardNo: this.member.cardNo,
         operator: this.operator,
-        lossType:this.member.cardState === 'normal' ? 0 : 1
+        lossType:this.member.cardState === 'normal' ? '0' : '1'
       },JSON.parse(sessionStorage['payParams']));
       data.passwd = this.$md5(data.passwd);
       return {

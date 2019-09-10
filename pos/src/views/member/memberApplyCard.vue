@@ -21,36 +21,36 @@
         <div class="member-info-title">会员资料</div>
         <div class="member-info-content">
           <el-row>
-            <el-col :span="11" v-if="requireShow('user_name')">
-              <el-form-item label="姓名：" prop="name" class="row-line-center">
+            <el-col :span="11">
+              <el-form-item label="姓名：" :prop="requireShow('user_name') ? 'name' : ''" class="row-line-center">
                 <el-input v-model="ruleForm.name"></el-input>
               </el-form-item>
             </el-col>
-            <el-col :span="11" v-if="requireShow('sex')">
-              <el-form-item label="性别：" prop="sex" class="row-line-center">
+            <el-col :span="11">
+              <el-form-item label="性别：" :prop="requireShow('sex') ? 'sex' : ''" class="row-line-center">
                 <el-radio-group v-model="ruleForm.sex">
                   <el-radio label="male">男</el-radio>
                   <el-radio label="female">女</el-radio>
                 </el-radio-group>
               </el-form-item>
             </el-col>
-            <el-col :span="11" v-if="requireShow('phone_number')">
-              <el-form-item label="手机号码：" prop="mobileNum" class="row-line-center">
+            <el-col :span="11">
+              <el-form-item label="手机号码：" :prop="requireShow('phone_number') ? 'mobileNum':''" class="row-line-center">
                 <el-input v-model="ruleForm.mobileNum"></el-input>
               </el-form-item>
             </el-col>
-            <el-col :span="11" v-if="requireShow('email')">
-              <el-form-item label="电子邮箱：" prop="email" class="row-line-center"> 
+            <el-col :span="11">
+              <el-form-item label="电子邮箱：" :prop="requireShow('email') ? 'email':''" class="row-line-center"> 
                 <el-input v-model="ruleForm.email"></el-input>
               </el-form-item>
             </el-col>
-            <el-col :span="11" v-if="requireShow('id_card')">
-              <el-form-item label="身份证号：" prop="creditNum" class="row-line-center">
+            <el-col :span="11">
+              <el-form-item label="身份证号：" :prop="requireShow('id_card') ? 'id_card':''" class="row-line-center">
                 <el-input v-model="ruleForm.creditNum"></el-input>
               </el-form-item>
             </el-col>
-            <el-col :span="11" v-if="requireShow('birthday')">
-              <el-form-item label="生日：" prop="birthday" class="row-line-center">
+            <el-col :span="11">
+              <el-form-item label="生日：" :prop="requireShow('birthday') ? 'birthday':''" class="row-line-center">
                 <el-date-picker v-model="ruleForm.birthday" format="yyyy-MM-dd" type="date" placeholder="选择日期时间" :picker-options="pickerOptions">
                 </el-date-picker>
               </el-form-item>
@@ -58,7 +58,7 @@
             <el-col :span="11">
               <div class="grid-content bg-purple row-line-center" style="position:relative">
                 <el-form-item label="消费密码：" prop="consumePassword" class="row-line-center">
-                  <el-input type="password" v-model="ruleForm.consumePassword"></el-input>
+                  <el-input type="password" v-model="ruleForm.consumePassword" ref="tagInput"></el-input>
                 </el-form-item>
                   <div class="password">
                     <button @click="startKeyBorad" class="start-btn">启动密码输入</button>
@@ -372,10 +372,10 @@ export default {
             sessionStorage['chargeMin'] = _res.firstChargeMin;
             sessionStorage['chargeMax'] = _res.chargeMax;
             //礼品卡
-            console.log(_res.cardTypeCode)
             if(_res.cardTypeCode === 'gift_card'){
               this.chargeBlock = false;
             } else {
+              this.chargeBlock = true;
               this.getActivityList(_res.cardTypeCode);
             } 
           }
@@ -385,6 +385,7 @@ export default {
       });
     },
     startKeyBorad(){
+      this.$refs.tagInput.focus();
       if(JSON.parse(localStorage['globalAppState'])){
         this.member.show = true;
       }

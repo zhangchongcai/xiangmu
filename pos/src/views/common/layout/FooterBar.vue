@@ -10,7 +10,7 @@
                 :label="item.menuName"
                 v-for="(item,id) in menuList"
                 :key="id"
-                @click="$router.push(item.resUrl)"
+                @click="pathTo(item)"
             >
                 <i :class="['default-style','iconfont',item.icon]" v-if="!!item.icon"></i>
                 <a href="javascript:void(0);" class="default-style item-name">{{item.menuName}}</a>
@@ -84,7 +84,7 @@
 <script>
 import {mapMutations,mapGetters} from 'vuex'
 import {SHOW_MORE_NAV} from 'types'
-import { userLogout } from 'http/apis'
+import { userLogout,storeHouseCheck } from 'http/apis'
 import util from "../../../http/app";
 export default {
     props: ['otherFlag','menuList','otherList'],
@@ -96,7 +96,9 @@ export default {
     computed:{
         ...mapGetters([
             'userName',
-            'cartData'
+            'cartData',
+            'cinemaUid',
+            'terminalId',
         ]),
 
         currentPathName() {
@@ -119,7 +121,35 @@ export default {
         toHome() {
             this.$router.push({name: 'toHome'})
         },
-
+        async pathTo(item){
+            switch(item.menuCode){
+                  case 'csm_pos_lock_sys':
+                    this.$confirm('确定锁机？', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                    }).then(() => {
+                        this.$router.push(item.resUrl);
+                    }).catch(() => {
+                            
+                    });
+                    break;
+                  case  'csm_pos_open_money_box':
+                      openCashBox.call(this,this.configData)
+                      break;
+                  case 'csm_pos_sale_goods_manager' :
+                      const storeHouseCheckData = await storeHouseCheck({
+                            cinemaUid: this.cinemaUid,
+                            terminalCode : this.terminalId
+                        })
+                        if(storeHouseCheckData.code != 200) return this.$message.error(storeHouseCheckData.msg)
+                        if(storeHouseCheckData.data == 2) return this.$alert('库存盘点中，卖品销售暂停使用！')
+                        this.$router.push(item.resUrl);
+                        break;
+                  default:
+                    this.$router.push(item.resUrl);
+              }
+        },
         openOthersNav() {
             this.SHOW_MORE_NAV()
         },

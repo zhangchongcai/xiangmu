@@ -96,7 +96,7 @@ export default {
             if(this.startTime && this.endTime){
                 paramsObj = {
                     current:vo,
-                    size:8,
+                    size:10,
                     startTime:this.startTime+' 00:00:00',
                     endTime:this.endTime+' 23:59:59',
                     tenantId:this.tenantId
@@ -104,7 +104,7 @@ export default {
             }else{
                 paramsObj = {
                     current:vo,
-                    size:8,
+                    size:10,
                     tenantId:this.tenantId
                 };
             }

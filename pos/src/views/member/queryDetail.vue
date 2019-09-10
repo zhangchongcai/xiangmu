@@ -65,6 +65,10 @@ export default {
           routePath: "/member/bindTicket"
         },
         {
+          name: "积分记录",
+          routePath: "/member/integral"
+        },
+        {
           name: "交易记录",
           routePath: "/member/records"
         },

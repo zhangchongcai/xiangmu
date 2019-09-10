@@ -55,7 +55,7 @@
 import util from 'src/http/app.js'
 import {loginPos,getMenuTree, payType} from 'src/http/apis.js'
 import {mapMutations,mapGetters} from 'vuex'
-import {SAVE_CINEMA_INFO, SAVE_USER_INFO,GLOBAL_SET_NAV_DATAS, SAVE_ALL_PAY} from 'types'
+import {SAVE_CINEMA_INFO, SAVE_USER_INFO,GLOBAL_SET_NAV_DATAS, SAVE_ALL_PAY,GLOBAL_SET_FIRST_LOGON} from 'types'
 import { VM_LOGIN_SET_MENU,VM_ON_LOGIN_UESINFO } from 'types/vmOnType'
 import KeyBoard from 'components/keyboard'
 export default {
@@ -99,7 +99,8 @@ export default {
             SAVE_CINEMA_INFO,
             SAVE_USER_INFO,
             GLOBAL_SET_NAV_DATAS,
-            SAVE_ALL_PAY
+            SAVE_ALL_PAY,
+            GLOBAL_SET_FIRST_LOGON
         ]),
 
         showKeyBoard(key){
@@ -178,7 +179,8 @@ export default {
         },
         loginSaveUserInfo(res){
             this.loading.close()
-            this.$eventHub.$emit(VM_ON_LOGIN_UESINFO,res.data.workTimeUid)
+            // this.$eventHub.$emit(VM_ON_LOGIN_UESINFO,res.data.workTimeUid)
+            this[GLOBAL_SET_FIRST_LOGON](res.data.workTimeUid)
             this.$vm.$emit(VM_LOGIN_SET_MENU)
             this.SAVE_USER_INFO(res.data)
             this.SAVE_CINEMA_INFO(res.data)

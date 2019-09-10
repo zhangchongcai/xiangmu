@@ -97,6 +97,34 @@ export function readCard(config) {
     })
   })
 }
+// 重置卡
+export function resetCardPwd(config) {
+  return new Promise((reslove, reject) => {
+    App.resetCardPwd(config, (e) => {
+      let ev = e.toString()
+      if (ev.indexOf('-1') >= 0 || ev === '浏览器不支持此功能') {
+        Vue.prototype.error(ev.replace('-1,', ''));
+        reject(ev)
+      } else {
+        reslove(ev)
+      }
+    })
+  })
+}
+// 写卡
+export function writeCard(config,cardNo) {
+  return new Promise((reslove, reject) => {
+    App.writeCard(config, (e) => {
+      let ev = e.toString()
+      if (ev.indexOf('-1') >= 0 || ev === '浏览器不支持此功能') {
+        Vue.prototype.error(ev.replace('-1,', ''));
+        reject(ev)
+      } else {
+        reslove(ev)
+      }
+    },cardNo)
+  })
+}
 
 //密码输入
 /*
@@ -254,7 +282,7 @@ export function printTicket(config, printData) {
         "show_modle": 0
       },
       {
-        "elementValue": "交易流水号：",
+        "elementValue": "会员交易流水号：",
         "x": 5,
         "y": 126,
         "font_size": 11,

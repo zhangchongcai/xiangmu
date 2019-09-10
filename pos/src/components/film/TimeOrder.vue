@@ -38,7 +38,8 @@ export default {
     computed: {
         ...mapGetters([
             'currentFilmId',
-            'seatSelection'
+            'seatSelection',
+            // 'currentPlanCode'
         ])
     },
 
@@ -50,6 +51,7 @@ export default {
             SET_CURRENT_TICKET_MINPRICE
         ]),
         setFilmId(id, code, allowSingle, minPrice) {
+            if(this.currentFilmId == id) return
             if(this.seatSelection.length) {
                this.$alert('请取消当前场次的影票及座位后再切换场次', {
                  confirmButtonText: '确定'
@@ -60,7 +62,11 @@ export default {
                     allowSingleSold: parseInt(allowSingle) ? true : false
                 }
                 this.SET_FILM_CURRENT_SEL_ID(id)
+                // if(code == this.currentPlanCode){
+                //     return
+                // }
                 this.SET_CURRENT_PLANCODE(codeAndSingle)
+                
                 this.SET_CURRENT_FILM_TITLE()
                 this.SET_CURRENT_TICKET_MINPRICE(minPrice)
             }

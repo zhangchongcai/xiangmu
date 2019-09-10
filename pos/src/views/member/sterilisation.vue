@@ -45,7 +45,7 @@
             </el-form-item>
           </div>
           <div
-            style="position:relative;margin-top:22px"
+            style="position:relative;margin-top:22px;margin-bottom:1vh"
             v-if="orderList">
             <div class="member-info-title">订单列表</div>
           </div>  
@@ -56,39 +56,12 @@
               :header-cell-style="tableHeaderColor"
               style="width:96%;margin:auto">
                 <el-table-column
-                  label="订单编号">
+                  v-for="(item,index) in tableColumn"
+                  :key="index"
+                  :label="item.label"
+                  show-overflow-tooltip>
                   <template slot-scope="scope">
-                      {{scope.row.payFlowNo | filterData}}
-                  </template>
-                </el-table-column>
-                <el-table-column
-                  label="交易时间">
-                  <template slot-scope="scope">
-                      {{scope.row.transactionTime | filterData}}
-                  </template>
-                </el-table-column>
-                <el-table-column
-                  label="交易编号">
-                  <template slot-scope="scope">
-                      {{scope.row.flowNo | filterData}}
-                  </template>
-                </el-table-column>
-                <el-table-column
-                  label="充值金额">
-                  <template slot-scope="scope">
-                      {{scope.row.basicAmount | filterData}}
-                  </template>
-                </el-table-column>
-                <el-table-column
-                  label="交易渠道">
-                  <template slot-scope="scope">
-                      {{scope.row.channelName | filterData}}
-                  </template>
-                </el-table-column>
-                <el-table-column
-                  label="交易方式">
-                  <template slot-scope="scope">
-                      {{scope.row.payMethodName | filterData}}
+                      {{scope.row[item.value] | filterData}}
                   </template>
                 </el-table-column>
                 <el-table-column
@@ -146,11 +119,20 @@ export default {
       },
       orderList:null,
       rules: {
-        password: [{ required: true, message: "请输入密码", trigger: "blur" }],
+        password: [{ required: true, message: "请输入密码", trigger: ["blur","change"] }],
         validateCode: [
-          { required: true, message: "请输入验证码", trigger: "change" }
+          { required: true, message: "请输入验证码", trigger: ["change","blur"] }
         ]
-      }
+      },
+      tableColumn:[
+        { label:'订单编号', value:'outOrderNo' },
+        { label:'交易时间', value:'transactionTime' },
+        { label:'会员交易流水', value:'flowNo' },
+        { label:'交易金额', value:'basicAmount' },
+        { label:'交易渠道', value:'channelName' },
+        { label:'交易方式', value:'payMethodName' },
+        // { label:'订单编号', value:'isCancel' },
+      ]
     };
   },
   computed: {
@@ -174,18 +156,18 @@ export default {
     },
     isShow(data) {
       if(routerJump.call(this)){
-        this.isshow = data;
         this.$refs['ruleForm'].resetFields();
         this.orderList = null;
         this.total = 0;
         this.ruleForm.password = '';
         this.ruleForm.validateCode = '';
-        if(statusDeter.call(this,data,'normal',`该卡状态为${cardStatusCN(this.member.cardState)},不能冲销操作`)){
-          if(this.member.cardTypeCode && this.member.cardTypeCode !== 'stored_card'){
-            this.$message.warning(`${cardStatusCN(this.member.cardTypeCode)}不能冲销`);
-            this.member.memberCardInfo = '';
-          }
+        if(this.member.cardTypeCode && this.member.cardTypeCode !== 'stored_card'){
+          this.$message.warning(`${cardStatusCN(this.member.cardTypeCode)}不能冲销`);
+          this.member.memberCardInfo = '';
+          return;
         }
+        this.isshow = statusDeter.call(this,data,'normal',`该卡状态为${cardStatusCN(this.member.cardState)},不能冲销操作`);
+        if(this.isshow)this.$refs['ruleForm'].resetFields();
       }
     },
     getOrderList(pageNo){
@@ -291,7 +273,10 @@ export default {
 /deep/ .el-icon-search{
   font-size:$font-size12;
 }
-/deep/ .el-table th, /deep/  .el-table td{
+/deep/ .el-table th{
+  padding:1vh 0;
+} 
+/deep/ .el-table td{
   padding:.5vh 0;
 }
 /deep/ .el-table .cell {

@@ -24,7 +24,7 @@ export default {
     position:fixed;
     top:0;
     left:0;
-    z-index:999;
+    z-index:2019;
     width:100%;
     height:100%;
     background-color:rgba(0, 0, 0, .5);
@@ -54,13 +54,5 @@ export default {
         }
     }
 }
-.fade-enter, .fade-leave-to {
-    opacity: 0
-}
-.fade-leave, .fade-enter-to {
-    opacity: 1
-}
-.fade-enter-active, .fade-leave-active {
-    transition: all .5s
-}
+
 </style>

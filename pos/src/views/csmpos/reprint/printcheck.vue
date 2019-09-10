@@ -1,50 +1,121 @@
 <template>
     <div class="print-check">
         <main class="main">
-            <div class="pageTitle">重打印影票</div>
+            <div class="pageTitle">重打印凭证</div>
             <div class="row-item">
                 <p class="title">基本信息</p>
                 <ul>
-                    <li><span class="name">订单编号：</span>90013215465215646546532</li>
-                    <li><span class="name">终端编号：</span>10056</li>
-                    <li><span class="name">收银员：</span>系统管理员</li>
+                    <li><span class="name">订单编号：</span>{{data.billCode}}</li>
+                    <li><span class="name">终端编号：</span>{{data.terminalCode}}</li>
+                    <li><span class="name">收银员：</span>{{data.cashier}}</li>
                 </ul>
                 <ul>
-                    <li><span class="name">交易类型：</span>消费</li>
-                    <li><span class="name">交易时间：</span>2018-10-23 16：33：44</li>
-                    <li><span class="name">总金额：</span>120元</li>
+                    <li><span class="name">交易类型：</span>{{billType[data.billType]}}</li>
+                    <li><span class="name">交易时间：</span>{{data.transactionDate}}</li>
+                    <li><span class="name">总金额：</span>{{data.totalAmount}}元</li>
                 </ul>
             </div>
             <div class="row-item">
                 <p class="title">商品信息</p>
-                <ul>
-                    <li><span class="name">订单编号：</span>幕后玩家（普通/国语） |  2018-10-23 星期二  |  3号  激光厅  18:00 4排9号,4排8号(共2张)</li>
-                </ul>
+                <div class="tableLayer" >
+                <el-table
+                ref="multipleTable"
+                :data="list"
+                tooltip-effect="dark"
+                style="width: 100%"
+                header-cell-class-name="posTableHead"
+                :row-class-name="rowClassName"
+                >
+                <el-table-column prop="goodsName" label="商品名称" ></el-table-column>
+                <el-table-column prop="salePrice" label="单价（元）" ></el-table-column>
+                <el-table-column prop="saleNum" label="数量" ></el-table-column>
+                </el-table>
+            </div>
             </div>
             <div class="row-item">
                 <p class="title">支付信息</p>
-                <ul>
-                    <li><span class="name">银行卡号：</span>20.00元</li>
-                    <li><span class="name">重打印部分：</span><span style="color:orange;">该交易没有可重打印的凭证数据</span> </li>
-
-                </ul>
+                <div class="itemDiv" v-for="(item,index) in priceArr" :key="index"><span class="name">{{item.key}}：</span>{{item.value}}元</div>
             </div>
         </main>
         <footer class="footer">
             <el-button type="primary" plain @click="back">取消</el-button>
-            <el-button type="primary"  >重打印</el-button>
+            <el-button type="primary"  @click="print" >重打印</el-button>
         </footer>
     </div>
 </template>
 <script>
+import voucherData from 'src/http/voucherData'
+import  app  from 'src/http/app'
+import {saleBillSearchReprintDetail} from 'http/apis'
+import {mapState} from 'vuex';
 export default {
     data() {
-        return{}
+        return{
+            data:{},
+            list:[],
+            billType: {
+                1: "消费",
+                2: "会员服务",
+                3: "赠送",
+                4: "报损",
+                5: "留座",
+                6: "影票补登",
+                21: "会员开卡",
+                22: "会员充值",
+                23: "会员补卡",
+                24: "会员注销",
+                25: "升级换卡",
+                26: "充值冲销",
+                27: "会员激活",
+                28: "余额结转"
+            },
+            priceArr:[],
+        }
+    },
+    computed:{
+        ...mapState({
+        configData : state => state.config.configData
+        })
     },
     methods: {
         back() {
             this.$router.go(-1)
+        },
+        rowClassName({row, rowIndex}){
+        let className = rowIndex%2 ? 'posRowOdd' : 'posRowEven';
+        return className;
+
+        },
+        print(){
+            this.printVoucherTicket(this.data)
+        },
+        printVoucherTicket(data,type=1){ //打印凭证，
+            if(!data) return
+            let printData  =  voucherData.trade_print(type,voucherData.type1Data(data))
+            return console.log(printData)
+            util.printTicket('bill_print',printData,this.configData,(res)=>{
+                
+                if(this.configData.sale_goods_print_type != 1){ //此处判断是否打印取货凭证
+                    if(type ==2 ) return //防止死循环，打印取货凭证 传多一个type为2
+                    this.printVoucherTicket(data,2)
+                }
+            })
+        },
+    },
+    async mounted(){
+        let billUid = this.$route.query.billUid;
+        const data = await saleBillSearchReprintDetail({
+            billUid
+        })
+        this.data = data.data;
+        this.list = data.data.goodsEntityList
+        for (let [key, value] of Object.entries(data.data.payedMap)) {
+            this.priceArr.push({
+                key,
+                value
+            })
         }
+        console.log(data)
     }
 }
 </script>
@@ -64,11 +135,15 @@ export default {
     }
     .row-item{
         padding-left: 2%;
+        padding-right: 2%;
         .title{
             font-size: $font-size14;
             color: #333333;
             font-weight: 550;
             padding: 1vh;
+        }
+        .itemDiv{
+            padding:0.5vh 1vh 0.5vh 1vh;
         }
         ul{
             display: flex;
@@ -88,6 +163,15 @@ export default {
         height: 7.2vh;
         padding-right: 2%;
     }
+    .tableLayer{
+  border:1px solid #D9E4FF;
+  .tableBtn{
+    border:1px solid;
+    padding: 2px 5px;
+    @include font-and-border-color()
+
+  }
+}
 }
 </style>
 

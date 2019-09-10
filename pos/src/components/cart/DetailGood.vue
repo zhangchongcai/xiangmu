@@ -36,7 +36,9 @@
                                 <template v-else>
                                    <span class="money" >{{item.timeSeat.ticketPrice}}元</span>
                                    <span class="originalPrice">{{item.timeSeat.originalTicketPrice}}元</span>
-                                   <span class="tip" :class="'tip'+item.couponType">{{item.couponTicketSpec || '优惠券'}}</span>  
+                                    <el-tooltip class="item" effect="dark" :content="item.couponTicketSpec || '优惠券'" placement="top">
+                                    <span class="tip" :class="'tip'+item.couponType">{{item.couponTicketSpec || '优惠券'}}</span>
+                                    </el-tooltip>   
                                 </template>
                                 <!-- <el-tooltip class="item" effect="dark" content="套餐A节假日超级特惠" placement="top-start" v-if="introductionWidth">
                                     <span class="active-tag" :style="{'max-width':introductionWidth+'vw','cursor':'default'}">套餐A节假日超级特惠</span>
@@ -138,9 +140,14 @@
                                 <span v-else>{{Number(item.salePrice*item.saleNum).toFixed(2)}}元</span>
                                 <template v-if="item.couponType">
                                     <span class="originalPrice">{{Number(item.originalPrice*item.saleNum).toFixed(2)}}元</span>
-                                    <span class="tip" :class="'tip'+item.couponType">
+                                    <el-tooltip class="item" effect="dark" :content="item.couponMerSpec || '优惠券'" placement="top">
+                                        <span class="tip" :class="'tip'+item.couponType">
                                         {{item.couponMerSpec || '优惠券'}}
                                     </span>
+                                    </el-tooltip>
+                                    
+                                    
+                                    
                                 </template>
                             </span>
                             
@@ -176,7 +183,7 @@
                        <div   class="inSon" v-for="n in item.saleNum" :key="n" style="background:#EFF3FF">
                             <span>{{item.saleMer.merName}}</span>
                             <span>{{Number(item.salePrice).toFixed(2)}}元</span>
-                            <span @click="delSubItem(item)" class="iconfont color-blue iconshanchu"></span>
+                            <span v-if="hiddenAction" @click="delSubItem(item)" class="iconfont color-blue iconshanchu"></span>
                         </div>
                     </template>
                 </li>
@@ -211,7 +218,7 @@
 </template>
 <script>
 import {mapMutations , mapGetters,mapState} from 'vuex'
-import { VM_CART_MODEFY_PRICE_START,VM_CART_MODEFY_PRICE_REFER,VM_CART_NUMBER_CHANGE } from 'types/vmOnType'
+import { VM_CART_MODEFY_PRICE_START,VM_CART_MODEFY_PRICE_REFER,VM_CART_NUMBER_CHANGE,VM_GET_GOODS_LIST } from 'types/vmOnType'
 import {CHANGE_TICKETS_TRIGER, SHOW_REPLACE_GOODS , SHOW_CART_KEYBOARD , GET_CART_DATA , GET_KIND_PRICE , DEL_SEAT , RENDER_SELECTION_AFTER_RELEASE,CART_SET_GOODS_DATA,CART_SET_REPLAC_GOODS,GET_CART_BILLCODEUID,CART_REPLAC_GOODS_INFO,CART_REPLACE_GOOD_DATAS} from 'types'
 import {clearAllTicket,delTicket,findCart,releaseSeat,addCart,replaceGood,addFixMer} from 'src/http/apis.js'
 import numberInput from 'components/numberInput' ;
@@ -534,8 +541,12 @@ export default {
         async numberChange(item){
             item.billCode = this.billCode
             const data = await addFixMer(item)
-            if(data.code !=200)  this.$alert(data.msg)
+            if(data.code !=200)  {
+                this.$alert(data.msg)
+            }
             this.getgoodsList()
+            this.$vm.$emit(VM_GET_GOODS_LIST)
+            
         },
         async getgoodsList(){
             const cartData = await  findCart({
@@ -570,6 +581,7 @@ export default {
                 return this.$message.error(data.msg)
             }
             await this.getgoodsList()
+            this.$vm.$emit(VM_GET_GOODS_LIST)
             this.delState = false
         },
         delSubItem(item){
@@ -713,9 +725,17 @@ export default {
                     text-overflow: ellipsis;
                     white-space: nowrap;
                     color: #FF7900 ;
+                    display: flex;
+                    align-items: center;
+                    span{
+                        margin-right: 0.4vw;
+                    }
                     .money{
-                        display: inline-block;
+                        display: flex;
                         vertical-align: middle;
+                        flex: 1;
+                        overflow: hidden;
+                        align-items: center;
                     }
                     .originalPrice {
                         display: inline-block;
@@ -728,6 +748,12 @@ export default {
                         vertical-align: middle;
                         padding: 0px 5px;
                         border-radius: 16px;
+                        display: inline-block;
+                        height: 1.5vw;
+                        line-height: 1.5vw;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        max-width: 40%;
                     }
                     .tip2{
                         color:#3B74FF;

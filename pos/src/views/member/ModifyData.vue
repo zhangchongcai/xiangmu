@@ -16,52 +16,44 @@
       <div class="member-info-title">会员资料</div>
       <el-form
         :model="modifyData"
+        @submit.native.prevent
         ref="ruleForm"
         :rules="rules"
         class="from-style">
         <!-- 手机号 -->
         <el-form-item
           class="from-item-syle"
-          label="手机号:"
+          label="手机号"
           prop="phoneNumber">
           <el-input v-model="modifyData['phoneNumber']" class="item-inp"></el-input>
         </el-form-item>
-        <!-- 姓名 -->
-        <el-form-item
-          class="from-item-syle"
-          label="姓名:"
-          v-if="modifyData['userName'] != null" 
-          prop="userName">
-          <el-input
-            v-model="modifyData['userName'] " 
-            class="item-inp"></el-input>
-        </el-form-item>
-        <!-- 性别 -->
-        <el-form-item
-          class="from-item-syle"
-          label="性别:"
-          v-if="modifyData['gender'] != null"
-          prop="gender">
-          <el-radio-group 
-            v-model="modifyData['gender']">
-            <el-radio label="male">男</el-radio>
-            <el-radio label="female">女</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <!-- 生日 -->
-        <el-form-item
-          class="from-item-syle"
-          label="生日:"
-          v-if="modifyData['birthday'] != null" 
-          prop="birthday">
-          <el-date-picker
-            v-model="modifyData['birthday']" 
-            type="date" 
-            placeholder="选择日期" 
-            value-format='yyyy-MM-dd'
-            style="width: 20vw;" 
-            :clearable='false'></el-date-picker>
-        </el-form-item>
+        <!-- 其他 -->
+        <!-- <template > -->
+          <el-form-item
+            v-for="(item,index) in ruleFormData"
+            :key="index"
+            class="from-item-syle"
+            :label="item.label"
+            :prop="item.required ? item.prop :''">
+              <el-input
+                v-model="modifyData[item.prop]"
+                v-if="item.type === 'text'" 
+                class="item-inp"></el-input>
+              <el-radio-group
+                  v-else-if="item.type === 'select'" 
+                  v-model="modifyData[item.prop]">
+                  <el-radio v-for="v in item.option" :label="v.label" :key="v.label">{{v.value}}</el-radio>
+              </el-radio-group>
+              <el-date-picker
+                v-else-if="item.type === 'date'" 
+                v-model="modifyData[item.prop]" 
+                type="date" 
+                placeholder="选择日期" 
+                value-format='yyyy-MM-dd'
+                style="width: 20vw;" 
+                :clearable='false'></el-date-picker>
+          </el-form-item>
+        <!-- </template>        -->
       </el-form>
     </div>
     <div class="foot-buttom-layer" v-if="!member.isshow">
@@ -81,15 +73,15 @@
       :close-on-click-modal='false'>
       <div class="row-line-center">
         <el-input 
-          v-model="modifyData.password" 
+          v-model="modifyData.password"
+          ref="tagInput" 
           :type="inpType"
           style="width:60%"></el-input>
         <el-button
           style="margin-left:.5vw"
           class="common-btn" 
-          @click="getVilidate" 
+          @click="cardInfo.type == 'phone' ? getVilidate() : _secKeyBoard()" 
           :disabled="disable"
-          v-if="member.numberType === 'phone'"
           v-text="validataText"></el-button>
       </div>
       <div slot="footer" class="dialog-footer">
@@ -119,46 +111,45 @@ export default {
         cardName: "",
         cardType: ""
       },
-      modifyData: {
-        password:'',
-        userName:'',
-        gender:'',
-        birthday:'',
-        creditNum:'',
-        email:''
-      },
+      getUserData:{},
       oldPhoneNum:'',
       dialogFormVisible:false,
       inpType:'password',
       cardInfo:null,
-      // ruleForm: [
-        // { label: "身份证号", prop: "creditNum" },
-        // { label: "邮箱", prop: "email" }
-      // ],
+      ruleFormData: [
+        { prop: "userName", label: "姓名",type:'text',required:true}, 
+        { prop: "gender", label: "性别", type: "select" ,option:[{label:'male',value:'男'},{label:'female',value:'女'}],required:true }, 
+        { prop: "birthday", label: "生日", type: "date" ,required:true}, 
+        { prop: "email",label:'邮箱',type:'text',required:false},
+        { prop: "creditNum",label:'身份证',type:'text',required:false},
+      ],
       rules: {
         phoneNumber: [
-          { required: true, message: "请输入电话号码", trigger: "change" },
-          { validator: validateMobile,trigger:"change"}
+          { required: true, message: "请输入电话号码", trigger: "blur" },
+          { validator: validateMobile,trigger:["change","blur"]}
         ],
-        userName: [{ required: true, message: "请输入姓名", trigger: "change" },
-         { validator: validateName,trigger:"change"}],
-        gender: [{ required: true, message: "请选择性别", trigger: "change" }],
+        userName: [
+          { required: true, message: "请输入姓名", trigger: "blur" },
+          { validator: validateName,trigger:"blur"}
+        ],
+        gender: [
+          { required: true, message: "请选择性别", trigger: "change" }
+        ],
         birthday: [
           { required: true, message: "请填写生日", trigger: "change" },
         ],
-        // creditNum: [
-        //   { required: true, message: "请输入身份证号", trigger: "change" },
-        //   { validator:creditNum,trigger:"change"}
-        // ],
-        // email: [
-        //   { required: true, message: "请输入邮箱", trigger: "change" },
-        //   { type: 'email',message:'请输入正确邮箱格式',trigger: ["blur",'change']}
-        // ]
+        email: [
+          { validator : validateEmail , trigger: "change" },
+        ],
+        creditNum: [
+          { validator : creditNum , trigger: "change" },
+        ]
       }
     }
   },
   mounted() {
     this.member.isshow = false;
+    this.modifyData = {...toFormModel(this.ruleFormData),password:''};
     if (!!this.$route.query.type) {
       this.queryData(this.$route.query);
     }
@@ -171,17 +162,24 @@ export default {
           return;
       }
       await this.$nextTick();
-      this.modifyData = Object.assign({},this.modifyData,newVal)
-      this.modifyData.gender = !!newVal["sex"] ? (newVal["sex"]+'').toLowerCase() : !!newVal["gender"] ? newVal["gender"] === '男' ? 'male' : 'female' : newVal["gender"] || null;
-      this.modifyData.phoneNumber = newVal["mobileNum"] || newVal["phoneNumber"] || null;
-      this.modifyData.userName = newVal["userName"] || newVal["name"] || null;
-      this.modifyData.birthday = newVal["birthday"] || null;
+      this.modifyData = Object.assign({},newVal);
+      this.modifyData.gender = !!newVal["sex"] ? (newVal["sex"]+'').toLowerCase() : !!newVal["gender"] ? newVal["gender"] === '男' ? 'male' : 'female' : newVal["gender"];
+      this.modifyData.phoneNumber = newVal["mobileNum"] || newVal["phoneNumber"];
+      this.modifyData.userName = newVal["userName"] || newVal["name"];
       this.oldPhoneNum = JSON.parse(JSON.stringify(this.modifyData.phoneNumber))
     }
   },
   computed: {
     ...mapState(["user", "member","config"]),
-    ...mapGetters(['tenantId','operator'])
+    ...mapGetters(['tenantId','operator']),
+    modifyData:{
+      get:function(){
+        return this.getUserData;
+      },
+      set:function(value){
+        this.getUserData = value;
+      }
+    }
   },
   methods: {
     back() {
@@ -189,31 +187,35 @@ export default {
     },
     queryData(data) {
         this.cardInfo = data;
-      if(JSON.parse(localStorage['globalAppState']) && data.type === 'card'){
-        this.member.show = true;
-        secKeyBoard(this.config.configData).then((e)=>{
-          this.modifyData.password = e;
-          this.member.show = false;
-          if(/^[0-9]+$/.test(e.toString().replace(/\s/g, ""))){
-            this.validatorInp()
-          }
-        }).catch(err=>{
-         this.member.show = false;
-        })
-      }else{
-        this.open(data);
-      }
+        this.open(data);   
     },
-    open(data) {
+    //启动密码输入
+    _secKeyBoard(){
+      this.$refs.tagInput.focus();
+      if(JSON.parse(localStorage['globalAppState']))
+      this.member.show = true;
+      secKeyBoard(this.config.configData).then((e)=>{
+        this.modifyData.password = e;
+        this.member.show = false;
+        this.validatorInp()
+      }).catch(err=>{
+        this.member.show = false;
+      })
+    },
+    async open(data) {
       this.modifyData.password = '';
       if(data.type === 'phone'){
          this.title = '输入验证码';
          this.inpType = '';
+         this.validataText = '获取验证码';
       }else{
         this.title = '输入密码';
         this.inpType = 'password';
+        this.validataText = '启动密码输入';
       }
       this.dialogFormVisible = true;
+      await this.$nextTick()
+      this.$refs.tagInput.focus()
     },
     validatorInp(){
         if(!this.modifyData.password){
@@ -249,6 +251,7 @@ export default {
       let fullData = this.modifyData;
       let data =Object.assign({},{
         mobileNum: this.oldPhoneNum,
+        cardNum:fullData.cardNo || '',
         name: fullData.userName,
         sex: fullData.gender,
         birthday: fullData.birthday,
@@ -294,6 +297,8 @@ export default {
 .item-inp {
   width: 20vw;
 }
-
+.row-line-center{
+  justify-content: center;
+}
 </style>
 

@@ -62,7 +62,7 @@ const setGlobalTopNavs = function(to, next) {
     }
     next();
 }
-Vue.prototype.$wsUrl = process.env.NODE_ENV == 'production' ? `wss://api${location.host}/websocket/server/` : 'wss://apitestpos.oristarcloud.com/websocket/server/'
+Vue.prototype.$wsUrl = process.env.NODE_ENV == 'production' ? `wss://api${location.host}/websocket/server/` : 'wss://apitestpos.oristarcloud.com/websocket/server'
 
 Vue.use(require('vue-wechat-title'));
 

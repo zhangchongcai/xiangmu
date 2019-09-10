@@ -161,16 +161,15 @@ export default {
 </script>
 <style lang="scss">
 ._member-card-list {
-    margin-top:2vh;
   .member-card-list-title {
     font-size: $font-size14;
     color: #333;
     font-weight: bold;
   }
   .member-card-list-content {
-    position: relative;
+    // position: relative;
     .swiper-container {
-      position: static;
+      position: relative;
       margin: 0;
       width: 96vw;
       .swiper-slide {
@@ -184,181 +183,39 @@ export default {
         display: none;
       }
       .swiper-button-prev {
+        position:absolute;
         background: rgba(67,106,200,0.30);
         width: 2vw;
         height: 8vw;
         line-height: 8vw;
         text-align: center;
-        // top: 36%;
-        top: 4.5vw;
+        top: 4.2vh;
         left: 0;
         border-top-right-radius: 3px;
         border-bottom-right-radius: 3px;
         .iconzuojiantouda {
           color: #fff;
-          // font-size: $font-size22;
         }
       }
       .swiper-button-next {
+        position:absolute;
         background: rgba(67,106,200,0.30);
         width: 2vw;
         height: 8vw;
         line-height: 8vw;
         text-align: center;
-        top: 4.5vw;
+        top: 4.2vh;
         right: 0;
         border-top-left-radius: 3px;
         border-bottom-left-radius: 3px;
         .iconyoujiantouda {
           color: #fff;
-          // font-size: $font-size22;
         }
       }
     }
     display: flex;
     flex-wrap: wrap;
-    padding: 15px 0 0;
-    .member-card-wrap {
-      text-align: center;
-      // 储值卡
-      .stored_card {
-        background-image: linear-gradient(-180deg, #ffcd6c 3%, #ffbc39 97%);
-      }
-      // 权益卡
-      .equity_card {
-        background-image: linear-gradient(-180deg, #8cc6d6 3%, #b2e6f4 97%);
-      }
-      // 联名卡
-      .cobranded_card {
-        background-image: linear-gradient(-180deg, #5f89ef 3%, #91b5fc 97%);
-      }
-      .member-card-item {
-        // width: 280px;
-        // height: 100px;
-        width: 27.3vw;
-        height: 10vw;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        margin: 0 1vw 1vw 0;
-        // background: #fedf32;
-        border-radius: 0.65vh;
-        .item-up {
-          display: flex;
-          justify-content: space-between;
-          padding: 10px 10px 0;
-          // box-sizing: border-box;
-          // 储值卡
-          .stored_card_type {
-            text-shadow: 0 1px 2px #ffb119;
-          }
-          // 权益卡
-          .equity_card_type {
-            text-shadow: 0 1px 2px #8dc7d7;
-          }
-          // 联名卡
-          .cobranded_card_type {
-            text-shadow: 0 1px 2px #8dc7d7;
-          }
-          .card-type {
-            // height: 60px;
-            // line-height: 60px;
-            font-size: 30px;
-            height: 6.1vw;
-            line-height: 6.1vw;
-            // font-size: 2.93vw;
-            font-weight: bold;
-            color: #ffffff;
-            letter-spacing: 0;
-          }
-          .card-info {
-            // 储值卡
-            .stored_card_name {
-              color: #ffa900;
-            }
-            // 权益卡
-            .equity_card_name {
-              color: #8ec8d8;
-            }
-            // 联名卡
-            .cobranded_card_name {
-              color: #5f89ef;
-            }
-            .card-name {
-              width: fit-content;
-              // max-width: 140px;
-              max-width: 13.7vw;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              white-space: nowrap;
-              background: #fff;
-              border-radius: 9px;
-              // font-size: 12px;
-              font-size: $font-size12;
-              float: right;
-              padding: 1px 6px;
-              // margin-bottom: 5px;
-              margin-bottom: 0.51vw;
-            }
-            .card-num {
-              // font-size: 12px;
-              font-size: $font-size12;
-              color: #ffffff;
-              letter-spacing: 0;
-              text-align: right;
-              // margin-bottom: 5px;
-              margin-bottom: 0.51vw;
-            }
-            .merchant-name {
-              // font-size: 12px;
-              font-size: $font-size12;
-              color: #ffffff;
-              letter-spacing: 0;
-              float: right;
-              width: fit-content;
-              max-width: 13.7vw;
-              overflow: hidden;
-              white-space: nowrap;
-              text-overflow: ellipsis;
-            }
-          }
-        }
-        .item-bottom {
-          display: flex;
-          justify-content: space-between;
-          padding: 0px 10px;
-          // box-sizing: border-box;
-          .card-status {
-            // font-size: 12px;
-            font-size: $font-size12;
-            color: #ffffff;
-          }
-          .card-desc {
-            // font-size: 12px;
-            font-size: $font-size12;
-            color: #ffffff;
-          }
-        }
-      }
-      // 储值卡
-      .stored_card::after {
-        background: #fcb429;
-      }
-      // 权益卡
-      .equity_card::after {
-        background: #81c5d8;
-      }
-      // 联名卡
-      .cobranded_card::after {
-        background: #5f89ef;
-      }
-      .member-card-item::after {
-        content: "";
-        position: relative;
-        height: 1px;
-        top: -3vw;
-      }
-    }
+    padding: 1vh 0 0;
   }
   .no-info {
     text-align: center;

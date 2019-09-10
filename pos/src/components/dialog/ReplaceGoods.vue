@@ -10,7 +10,7 @@
             <ul v-if="replacegoods.length" class="dialog-goods">
                 <li class="item-warp" v-for="(item,ind) in replacegoods" :key="ind" @click="handerItem(item,ind)">
                     <div   :class="['row-item',status==ind?'active':'']">
-                        {{item.skuName ? item.skuName : item.merName}}
+                       {{goodsName(item)}}
                     </div>
                     <div class="label" v-if="status==ind">
                         <span class="iconfont iconsanjiaoxing-up"></span>
@@ -25,7 +25,7 @@
                 @click="handerSubItem(subItem,subInd)"
                 :class="replacegoods[status].index === subInd ? 'active' : ''">
                 <div >
-                    <span>{{subItem.skuName}}</span>
+                    <span>{{goodsName(subItem)}}</span>
                     <span class="price" v-if="subItem.addPrice">{{subItem.addFlag == 1 ? '减':'加'}}{{subItem.addPrice}}元</span>
                 </div>
                     
@@ -86,7 +86,7 @@ export default {
             CART_FIND_CART_DATA,
         }),
         handerItem(item,ind) {
-               console.log(ind)
+            //    console.log(ind)
                this.status = ind;
                this.subItemIndex = '';
         },
@@ -96,6 +96,40 @@ export default {
             item.subIndex = index
             replacegoods[status].index = index
             this[CART_SET_REPLAC_GOODS](replacegoods)
+        },
+        goodsName(item){
+            let goodsName = ""
+            if([1,2].includes(item.merType)){
+                if(item.merName == item.skuSellEntity.name) return goodsName = item.merName
+                if(item.skuSellEntity.name){
+                        return goodsName = item.merName +'-'+ item.skuSellEntity.name
+                    }else{
+                        return goodsName = item.merName +' '+ item.skuSellEntity.name
+                    }
+            }
+            if([3,4].includes(item.merType)){
+                return goodsName = item.merName 
+            }
+            return goodsName = item.skuSellEntity.name
+            // let goodsName = '';
+            // if(item.skuSellEntity && (item.skuSellEntity.name && item.aliasName)){
+            //     if(item.merType == 2){
+            //         return goodsName = item.skuSellEntity.name == item.aliasName ? item.aliasName : item.aliasName+item.skuSellEntity.name
+            //     }
+            //     let skuNameArr = item.skuSellEntity.name.split('-');
+            //     if(skuNameArr[1]){
+            //         return goodsName = item.aliasName + "-" + skuNameArr[1]
+            //     }else{
+            //         return goodsName = item.aliasName
+            //     }
+            // }
+            // if(item.merType == 2){
+            //     return goodsName = (item.aliasName ? item.aliasName : item.merName) + ' ' + item.skuSellEntity.name
+            // }
+            // if(!item.skuSellEntity){
+            //     return goodsName = item.aliasName ? item.aliasName : item.merName
+            // }
+            //  return goodsName = item.skuSellEntity.name ? item.skuSellEntity.name : item.merName
         },
         close(){
             this.status = 0;
@@ -183,6 +217,9 @@ export default {
             background: #E5EAFF;
             padding-bottom: 2.6vh;
             padding-top: 2.6vh;
+            .row-item{
+                margin-top: 0.8vw;
+            }
         }
         .item-warp{
             display:inline-flex;
@@ -214,16 +251,36 @@ export default {
         .row-item{
             display: inline-block;
             width: 13.7vw;
-            height: 5.2vh;
+            height: 6vh;
             text-align: center;
-            line-height: 5.2vh;
+            line-height: 6vh;
             background: #FFFFFF;
             border: 1px solid #A7B8E4;
             border-radius: 2px;
             margin-right: .8vw;
             font-size: $font-size12;
+            vertical-align: middle;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            & > div {
+                height: 6vh;
+                line-height:6vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+            & > div > span{
+                display: block;
+                line-height: initial;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                font-size: $font-size12
+            }
             .price{
                 color:#FF7900;
+                font-size: $font-size12
             }
         }
         .noSel {
@@ -232,6 +289,7 @@ export default {
         .active{
             background: #3B74FF;
             color: #F5F5F5;
+            
         }
     }
 </style>

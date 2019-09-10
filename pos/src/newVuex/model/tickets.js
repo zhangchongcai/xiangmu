@@ -43,23 +43,6 @@ export default {
         currentTicketMinPrice: 0
     },
     mutations: {
-        //过滤全部和可售影片
-        // [TYPES.FILTER_FILMS] : (state, val) => {
-        //     console.log(state.allfilmData)
-        //     state.allfilmData = state.allfilmData.map((item) => {
-        //           return item.arr_plan_list.filter((film) => {
-        //             if(val == 'salabletrue') {
-        //                 return film.salable == 1
-        //             }else if(val == 'history'){
-        //                 return film.salable == 0
-        //             }else {
-        //                return film.salable == 1 || film.salable == 0
-        //             }
-        //         })
-        //     })
-
-        //     console.log(state.allfilmData)
-        // },
 
         //wbSocket返回
         [TYPES.CHECK_CURRENT_SEAT_STATUS] : (state, obj) => {
@@ -72,6 +55,16 @@ export default {
                    }
                })
            })
+
+           if(state.seatSelection.length) {
+            state.seatSelection.forEach(item => {
+                    state.allSeat.forEach(seat => {
+                        if(item.seatCode == seat.seatCode) {
+                            seat.status = 100
+                        }
+                    })
+                })
+           }
 
 
 
@@ -93,6 +86,9 @@ export default {
                 case 1:
                 item.colorStyle = 'seat-default-style';
                 break;
+                case 100:
+                item.colorStyle = 'local-selected-style';
+                break;
               }
             })
             state.ticketsStatus.totalSeat =  state.allSeat.length
@@ -111,6 +107,7 @@ export default {
             state.allfilmData = filmArr
         },
         [TYPES.SAVE_ALL_TIME_DATA] : (state, filmArr) => {
+            // console.log(filmArr)
             state.allTimeData = filmArr
         },
         [TYPES.SAVE_ALL_HALL_DATA] : (state, filmArr) => {
@@ -159,7 +156,7 @@ export default {
             state.allowSingleSold = filmArr[0].arr_plan_list[0].allow_single_sold
             state.allTickets = filmArr[0].arr_plan_list[0].arr_basic_ticket_type
             state.currentTicketId = state.allTickets[0].id
-            state.currentMovieId = filmArr[0].movieUid
+            state.currentMovieId = filmArr[0].movieUid + filmArr[0].language
             state.currentTicketMinPrice = filmArr[0].arr_plan_list[0].min_price
 
             let currentFilm = {}
@@ -212,7 +209,7 @@ export default {
         },
         [TYPES.SET_FILM_CONTENTS] : (state) => {
             let arr = state.filmData.filter(item => {
-                return item.movieUid == state.currentMovieId
+                return (item.movieUid + item.language) == state.currentMovieId
             })
 
             state.filmOrderContentsArr = arr[0].arr_plan_list
@@ -276,7 +273,11 @@ export default {
                 })
             })
         },
+        [TYPES.CLEAR_ALL_SEAT] : (state) => {
+            state.allSeat = []
+        },
         [TYPES.SAVE_CURRENT_PLAN_SEAT] : (state, seatsArr) => {
+            state.allSeat = []
             state.allSeat = seatsArr.map((item) => {
                 let obj = {
                   cinemaCode: item.cinemaCode,
@@ -299,7 +300,7 @@ export default {
                   imageType: item.imageType,
                   seatLevel: item.seatLevel,
                   seat_name: `${item.seatRow}排${item.seatCol}座`,
-                  color: item.color + '4D',
+                  color: item.seatLevel == 0 ? 'rgba(255,255,255,0)' : item.color,
                   ticketTypeUid: item.ticketTypeUid,
                   ticketPrice: item.basePrice,
                   addPrice: 0,
@@ -331,6 +332,9 @@ export default {
                     case 1:
                     item.colorStyle = 'seat-default-style';
                     break;
+                    case 100:
+                    item.colorStyle = 'local-selected-style';
+                    break;
                   }
     
                 switch(item.imageType) {
@@ -338,10 +342,10 @@ export default {
                     item.seatIcon = 'iconputongzuoyi';
                     break;
                     case 2:
-                    item.seatIcon = 'iconqinglvzuoyizuo1';
+                    item.seatIcon = 'iconqinglvzuoyizuo';
                     break;
                     case 3:
-                    item.seatIcon = 'iconqinglvzuoyiyou1';
+                    item.seatIcon = 'iconqinglvzuoyiyou';
                     break;
                     case 4:
                     item.seatIcon = 'iconduorenzuoyizuo';
@@ -356,10 +360,10 @@ export default {
                     item.seatIcon = 'iconcanjizuoyi';
                     break;
                     case 8:
-                    item.seatIcon = 'iconputongzuoyi';
+                    item.seatIcon = 'iconertongzuowei';
                     break;
                     case 9:
-                    item.seatIcon = 'iconanmozuoyi';
+                    item.seatIcon = 'iconanmozuoyi1';
                   }  
                 })
         },
@@ -447,6 +451,7 @@ export default {
             state.allTimeData = []
             state.allHallData = []
             state.allTickets = []
+            state.currentPlanCode = ''
             state.ticketsStatus = {
                 totalSeat: 0,
                 isSell: 0,

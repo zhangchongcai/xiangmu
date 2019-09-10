@@ -42,18 +42,6 @@ export default {
             return Config.columnData
         }
     },
-    watch:{
-        'member.getOrderList':{
-            handler:function(val,oldVal){
-                if(val){
-                    this.sumCinemaList = this.formatDataList(val);
-                    this.totalData = val.length;
-                    this.dataList = this.spliceArr(1)
-                }
-            },
-            immediate:true
-        }
-    },
     methods:{
         getOrderList(vo){
             this.member.loading = true;
@@ -65,7 +53,11 @@ export default {
                 url: memeberApi.getFitCinema["url"],
                 params: paramsObj,
             }
-            this.$store.dispatch('getOrderList',params)
+            this.$store.dispatch('getOrderList',params).then(res=>{
+                this.sumCinemaList = this.formatDataList(res.data);
+                this.totalData = res.data.length;
+                this.dataList = this.spliceArr(1)
+            })
         },
         currentPage(vo){
             this.dataList = this.spliceArr(vo)
@@ -75,7 +67,7 @@ export default {
         },
         formatDataList(arr){
             let emptyArr = [];
-            arr.forEach((item,index)=>{
+            arr && arr.forEach((item,index)=>{
                 emptyArr.push({
                     'cinemaName':item
                 })
