@@ -1,0 +1,1956 @@
+<template>
+  <div class="content single-goods">
+    <el-form :inline="true" ref="ruleForm" :model="queryData" label-position="left" label-width="85px" label-suffix="：" :rules="changeRules">
+      <el-collapse v-model="activeNames" class="bac-input-style">
+        <!-- 基础信息 start-->
+        <el-collapse-item title="基础信息" name="1">
+          <div>
+            <el-row>
+              <el-col :span="8">
+                <el-form-item label="商品类型">
+                  <span>单品</span>
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="商品编码">
+                  <span class="col666">{{queryData.proCode}}</span>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="8">
+                <el-form-item label="商品分类">
+                  <span>{{queryData.catName}}</span>
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="速记代码" prop="shorthandCode" :rules="[
+                    { required: true, message: '速记代码不能为空',trigger: 'change' },
+                    { pattern: /^[A-Za-z0-9]{6}$/, message: '速记代码只能是6位的纯数字或数字加字母' }
+                  ]">
+                  <el-input placeholder="输入6位的纯数字或数字加字母" class="basic-input" v-model="queryData.shorthandCode" v-if="routeQuery.type != 3"></el-input>
+                  <span v-if="routeQuery.type == 3">{{queryData.shorthandCode}}</span>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="8">
+                <el-form-item label="商品名称" prop="name" :rules="[
+                  { required: true, message: '商品名称不能为空',trigger: 'change' },
+                  { min:1,max:25, message: '商品名称最多输入26个字符',trigger: 'change'},
+                  { pattern: /^[a-zA-Z0-9_\u4e00-\u9fa5]+$/, message: '不要输入特殊字符',trigger: 'change'}
+                ]">
+                  <el-input placeholder class="basic-input" v-model="queryData.name" v-if="routeQuery.type != 3"></el-input>
+                  <span v-if="routeQuery.type == 3">{{queryData.name}}</span>
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="销售别名" prop="aliasName">
+                  <el-input placeholder class="basic-input" v-model="queryData.aliasName" v-if="routeQuery.type != 3"></el-input>
+                  <span v-if="routeQuery.type == 3">{{queryData.aliasName}}</span>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="8">
+                <el-form-item label="商品规格" prop="spec">
+                  <el-input placeholder="例子:350ML" class="basic-input" v-model="queryData.spec" v-if="routeQuery.type != 3"></el-input>
+                  <span v-if="routeQuery.type == 3">{{queryData.spec}}</span>
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="品牌" class="select-input">
+                  <span v-if="routeQuery.type==3">{{queryData.brandName}}</span>
+                  <div v-else>
+                    <el-input v-model="selectedBranchName" clearable @clear="handleDeleteBranchs" @focus="handleDialog('myBrandDialog')" placeholder="请选择"></el-input>
+                    <el-button @click="handleDialog('myBrandDialog')" type="primary cinemaSel-btn" plain>选择</el-button>
+                  </div>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="8">
+                <el-form-item label="基本单位" prop="unitUid" :rules="[{ required: true, message: '基本单位不能为空',trigger: 'change' }]">
+                  <el-select v-model="queryData.unitUid" placeholder="请选择" class="basic-input" @change="basicUnitEvent()" @focus="focusBasicUnitEvent()" v-if="routeQuery.type != 3">
+                    <el-option v-for="item in basicUnitArr" :key="item.value" :label="item.label" :value="item.value"></el-option>
+                  </el-select>
+                  <span v-if="routeQuery.type == 3">{{queryData.unitName}}</span>
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="产地">
+                  <el-radio-group v-model="queryData.placeOrigin" v-if="routeQuery.type != 3">
+                    <el-radio :label="0">国产</el-radio>
+                    <el-radio :label="1">进口</el-radio>
+                  </el-radio-group>
+                  <span v-if="routeQuery.type == 3">{{queryData.placeOriginName}}</span>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row v-if="this.skuData.length == 0">
+              <el-col :span="8">
+                <el-form-item label="包装条码" prop="skuVoList.barCode" :rules="[
+                      { required: false,trigger: 'change' },
+                      { pattern: /^([6][9][0-9]{11})$/, message: '请输入69开头的13位数字',trigger: 'change' }
+                    ]">
+                  <el-input placeholder="输入69开头13位数" class="basic-input" v-if="routeQuery.type != 3" v-model="queryData.skuVoList.barCode"></el-input>
+                  <span v-if="routeQuery.type == 3">{{queryData.skuVoList.barCode}}</span>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="8">
+                <el-form-item label="商品描述" prop="remark">
+                  <el-input class="basic-input" style="vertical-align: text-top;" type="textarea" :rows="4" v-model="queryData.remark" v-if="routeQuery.type != 3"></el-input>
+                  <span v-if="routeQuery.type == 3">{{queryData.remark}}</span>
+                </el-form-item>
+              </el-col>
+              <el-col :span="8" class="good-img-col">
+                <el-form-item prop="imgUrl" label="商品图片" class="good-img-form-item">
+                  <img class="upload-img" v-if="routeQuery.type==3" :src="queryData.imgUrl" alt>
+                  <img-upload v-else :url="queryData.imgUrl" @on-success="successAvatarUpload"></img-upload>
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </div>
+        </el-collapse-item>
+        <!-- 基础信息 end-->
+        <!-- 采购信息 start-->
+        <el-collapse-item title="采购信息" name="2">
+          <div>
+            <el-row>
+              <el-col :span="8">
+                <el-form-item label="进货税率" prop="taxRate" :rules="[
+                      { required: false,trigger: 'change' },
+                      { pattern: /^([1-9][0-9]?)$|^([0]\.[0-9]{1,2})$|^([1-9][0-9]?\.[0-9]{1,2})$|^([0])$|^\\./, message: '请输入最多2位数字和2位小数',trigger: 'change' }
+                    ]">
+                  <el-input placeholder="例:22.22" class="basic-input200 widthInput100" v-model="queryData.taxRate" v-if="routeQuery.type != 3"></el-input>
+                  <span v-if="routeQuery.type == 3">{{queryData.taxRate}}</span>
+                  <span>%</span>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <div>采购单位</div>
+            <div>
+              <el-table :data="basicUnitData" stripe v-if="routeQuery.type != 3">
+                <el-table-column v-for="item in basicUnitColumn" :key="item.key" :prop="item.key" :label="item.label" :width="item.width" :formatter="item.formatter">
+                  <template slot-scope="{row,$index}">
+                    <div v-if="$index == 0">
+                      <span>{{row[item.key]}}</span>
+                    </div>
+                    <template v-if="$index != 0">
+                      <div v-if="item.edit">
+                        <el-input size="small" v-model="row[item.key]" @change="changeUnitEvent(row[item.key],$index)" placeholder></el-input>
+                      </div>
+                      <div v-else-if="item.selectUnit" class="selectUnit">
+                        <el-form-item label="">
+                          <el-select v-model="row[item.key]" @change="changeUnitEvent0(row[item.key],$index,)" @focus="focusUnitEvent()" placeholder="请选择" class="basic-input">
+                            <el-option v-for="item in buyUnitArr" :key="item.value" :label="item.label" :value="item.value"></el-option>
+                          </el-select>
+                        </el-form-item>
+                      </div>
+                      <div v-else>
+                        <span>{{row[item.key]}}</span>
+                      </div>
+                    </template>
+                  </template>
+                </el-table-column>
+                <el-table-column label="操作">
+                  <template slot-scope="{row,$index}">
+                    <el-button v-if="$index != 0" type="text" size="small" @click.stop="unitHandleDlete(row, $index)">删除</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+              <el-table :data="basicUnitData" stripe v-if="routeQuery.type == 3">
+                <el-table-column v-for="item in basicUnitColumn" :key="item.key" :prop="item.key" :label="item.label" :width="item.width" :formatter="item.formatter">
+                  <template slot-scope="{row}">
+                    <template>
+                      <div>
+                        <span>{{row[item.key]}}</span>
+                      </div>
+                    </template>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
+            <diV>
+              <el-button icon="el-icon-circle-plus-outline" @click="addUnitEvent()" type="text" v-if="routeQuery.type != 3">
+                添加采购单位</el-button>
+            </diV>
+          </div>
+        </el-collapse-item>
+        <!-- 采购信息 end-->
+        <!-- 销售信息 start-->
+        <el-collapse-item title="销售信息" name="3">
+          <div>
+            <div class="sku" v-if="routeQuery.type != 3">如需添加商品的SKU商品请点击<el-button @click="addSkuEvent()" plain>添加SKU商品</el-button>
+            </div>
+            <template v-model="skuData" v-if="this.skuData.length == 0">
+              <el-row>
+                <el-col :span="10">
+                  <el-form-item label="SKU编码">
+                    <span>{{this.queryData.skuVoList.code}}</span>
+                  </el-form-item>
+                </el-col>
+              </el-row>
+              <el-row>
+                <el-col :span="10">
+                  <el-form-item label="售价" prop="skuVoList.price" :rules="[{ required: true, message: '售价不能为空',trigger: 'change' },{ validator: priceValidator, trigger:'change'}]">
+                    <el-input placeholder class="basic-input200 widthInput100" type="number" v-if="routeQuery.type != 3" :value="queryData.skuVoList.price" @input="priceInputEvent($event)"></el-input>
+                    <span v-if="routeQuery.type == 3">{{queryData.skuVoList.price}}</span>元
+                  </el-form-item>
+                </el-col>
+                <el-col :span="10">
+                  <el-form-item label="销售状态">
+                    <el-radio-group v-model="queryData.canSale" v-if="routeQuery.type != 3">
+                      <el-radio :label="1">允许销售</el-radio>
+                      <el-radio :label="0">禁止销售</el-radio>
+                    </el-radio-group>
+                    <span v-if="routeQuery.type == 3">{{queryData.canSale == 1 ? "允许销售":"禁止销售"}}</span>
+                  </el-form-item>
+                </el-col>
+              </el-row>
+            </template>
+            <template v-if="this.skuData.length >= 1 && routeQuery.type !=3">
+              <div class="sku-table">
+                <div class="del-btn">
+                  <i class="el-icon-close" @click="skuDelTableEvent()"></i>
+                </div>
+                <el-table :data="skuData" stripe>
+                  <el-table-column v-for="item in skuColumn" :key="item.key" :prop="item.key" :label="item.label" :width="item.width" :formatter="item.formatter">
+                    <template slot-scope="{row}">
+                      <div v-if="item.bedit">
+                        <span class="colred" style="margin-right:4px;">*</span>
+                        <el-input size="small" v-model="row[item.key]" placeholder style="width:80%"></el-input>
+                      </div>
+                      <div v-else-if="item.edit">
+                        <el-input size="small" v-model="row[item.key]" placeholder></el-input>
+                      </div>
+                      <div v-else>
+                        <span>{{row[item.key]}}</span>
+                      </div>
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="操作">
+                    <template slot-scope="{row,$index}">
+                      <el-button type="text" size="small" @click.stop="stopskuHandleDlete(row, $index)">{{row.status == 1 ? '禁止销售':'允许销售'}}</el-button>
+                      <el-button type="text" size="small" @click.stop="skuHandleDlete(row, $index)">删除</el-button>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </div>
+            </template>
+            <template v-if="this.skuData.length >= 1 && routeQuery.type == 3">
+              <div class="sku-table">
+                <divdel-btn class="del-btn" v-if="routeQuery.type != 3">
+                  <i class="el-icon-close" @click="skuDelTableEvent()"></i>
+                </divdel-btn>
+                <el-table :data="skuData" stripe>
+                  <el-table-column v-for="item in routeQuery.type == 3 ? skuColumn1 : skuColumn" :key="item.key" :prop="item.key" :label="item.label" :width="item.width" :formatter="item.formatter">
+                    <template slot-scope="{row}">
+                      <div>
+                        <span>{{row[item.key]}}</span>
+                      </div>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </div>
+            </template>
+            <el-row class="putaway-timer">
+              <el-col :span="10">
+                <el-form-item label="上架时间">
+                  <el-date-picker class="date-picker widthInput100" v-model="queryData.upTime" type="datetime" format="yyyy-MM-dd HH:mm" value-format="yyyy-MM-dd HH:mm" placeholder="选择日期" v-if="routeQuery.type != 3"></el-date-picker>
+                  <span v-if="routeQuery.type == 3">{{queryData.upTime}}</span>
+                </el-form-item>
+              </el-col>
+              <el-col :span="10">
+                <el-form-item prop="downTime" label="下架时间">
+                  <span v-if="routeQuery.type==3">{{queryData.downTime == null || queryData.downTime == "" ? '不限制' : queryData.downTime}}</span>
+                  <div v-else>
+                    <el-select v-model="queryData.downTimeType" placeholder="请选择" class="apply-select" @change="downTimeEvent()">
+                      <el-option key="0" label="不限制" value="0"></el-option>
+                      <el-option key="1" label="指定时间" value="1"></el-option>
+                    </el-select>
+                    <el-date-picker v-if="queryData.downTimeType==1" format="yyyy-MM-dd HH:mm" value-format="yyyy-MM-dd HH:mm" class="date-picker widthInput100" v-model="queryData.downTime" type="datetime" placeholder="选择日期"></el-date-picker>
+                  </div>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="10">
+                <el-form-item label="适用门店">
+                  <!-- <span v-if="routeQuery.type==3">{{selectedStoreName}}</span> -->
+                  <template v-if="routeQuery.type==3 && this.queryData.saleCinema === 0">
+                    <div class="see-style">
+                      <span class="c-type" @click="cinemaClick()">{{selectedStoreName}}</span>
+                      <span class="c-type" @click="cinemaClick()">...共{{this.seecinemalArr == null || this.seecinemalArr == "" ? 0:this.seecinemalArr.length}}家</span>
+                    </div>
+                  </template>
+                  <template v-else-if="routeQuery.type==3 && this.queryData.saleCinema === 1">
+                    <span>全部门店</span>
+                  </template>
+                  <div v-else>
+                    <el-select v-model="queryData.saleCinema" placeholder="请选择" class="apply-select" @change="saleCinemaEvent()">
+                      <el-option v-for="item in applyStoresRadios" :key="item.type" :label="item.label" :value="item.type"></el-option>
+                    </el-select>
+                    <span class="select-input" v-if="queryData.saleCinema!='1'">
+                      <!-- <span class="select-btn" v-if="!selectedStoreName">
+                          <el-button type="primary" plain @click="handleDialog('myCinemalDialog')">选择</el-button>
+                       </span> -->
+                      <span>
+                        <el-input class="input apply-stores-input" placeholder="请选择" v-model="selectedStoreName" clearable @focus="handleDialog('myCinemalDialog')" @clear="handleDeleteCinemas">
+                        </el-input>
+                        <el-button @click.stop="handleDialog('myCinemalDialog')" type="primary cinemaSel-btn" plain>选择</el-button>
+                      </span>
+                    </span>
+                  </div>
+                </el-form-item>
+              </el-col>
+              <el-col :span="10">
+                <el-form-item label="适用渠道">
+                  <!-- <span v-if="routeQuery.type==3">{{queryData.saleChannel==1?"全部渠道": selectedChannelName}}</span> -->
+                  <template v-if="routeQuery.type==3 && this.queryData.saleChannel === 0">
+                    <div class="see-style">
+                      <span class="c-type" @click="channelClick()">{{selectedChannelName}}</span>
+                      <span class="c-type" @click="channelClick()">...共{{this.seechannelArr == null || this.seechannelArr == "" ? 0:this.seechannelArr.length}}家</span>
+                    </div>
+                  </template>
+                  <template v-else-if="routeQuery.type==3 && this.queryData.saleChannel === 1">
+                    <span>全部渠道</span>
+                  </template>
+                  <div v-else>
+                    <el-select v-model="queryData.saleChannel" placeholder="请选择" class="apply-select" @change="saleChannelEvent()">
+                      <el-option v-for="item in applyChannelRadios" :key="item.type" :label="item.label" :value="item.type"></el-option>
+                    </el-select>
+                    <span class="select-input" v-if="queryData.saleChannel!='1'">
+                      <!-- <span class="select-btn" v-if="!selectedChannelName">
+                        <el-button type="primary" plain @click="handleDialog('myChannelDialog')">选择</el-button>
+                      </span> -->
+                      <span>
+                        <el-input class="input apply-stores-input" placeholder="请选择" v-model="selectedChannelName" clearable @focus="handleDialog('myChannelDialog')" @clear="handleDeleteChanne">
+                        </el-input>
+                        <el-button @click.stop="handleDialog('myChannelDialog')" type="primary cinemaSel-btn" plain>选择</el-button>
+                      </span>
+                    </span>
+                  </div>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <!-- <el-row>
+            <el-col :span="10">
+              <el-form-item label-width="160px" label="是否只允许套餐内售卖">
+                <el-radio-group v-model="queryData.onlyAllowSetmeal" v-if="routeQuery.type != 3">
+                  <el-radio :label="1">是</el-radio>
+                  <el-radio :label="0">否</el-radio>
+                </el-radio-group>
+                <span v-if="routeQuery.type == 3">{{queryData.onlyAllowSetmeal == 0 ? "是":"否"}}</span>
+              </el-form-item>
+            </el-col>
+          </el-row> -->
+            <el-row>
+              <el-col :span="10">
+                <el-form-item label="安全库存" prop="storeUpLimit">
+                  <span style="color: #666;">上限：</span>
+                  <el-input placeholder class="basic-input200 widthInput100" v-model="queryData.storeUpLimit" v-if="routeQuery.type != 3"></el-input>
+                  <span v-if="routeQuery.type == 3">{{queryData.storeUpLimit}}</span>
+                </el-form-item>
+              </el-col>
+              <el-col :span="10">
+                <el-form-item label="下限" prop="storeDownLimit">
+                  <el-input placeholder class="basic-input200 widthInput100" v-model="queryData.storeDownLimit" v-if="routeQuery.type != 3"></el-input>
+                  <span v-if="routeQuery.type == 3">{{queryData.storeDownLimit}}</span>
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </div>
+        </el-collapse-item>
+      </el-collapse>
+      <!-- 销售信息 end-->
+      <div class="submit-box">
+        <el-button type="primary" @click="comSingleSubmit()" v-if="routeQuery.type != 3">保 存</el-button>
+        <el-button @click="handleCancel">{{routeQuery.type !=3 ? "取消":"关闭"}}</el-button>
+      </div>
+    </el-form>
+    <!-- 添加sku -->
+    <el-dialog title="选择销售属性" :visible.sync="skudialog" width="440px" :before-close="skuhandleClose">
+      <div class="sku-box">
+        <template v-for="(skuitem,index) in skuAttribute">
+          <div class="sku-select-group" :key="index">
+            <div class="name">{{skuitem.name}}</div>
+            <el-checkbox-group v-model="skuAttrcheckList[index]" :max="skumax" @change="skuSelectEvent(skuAttrcheckList[index])">
+              <el-checkbox :label="selSkuItem.uid" v-for="(selSkuItem) in skuitem.Suboptions" :key="selSkuItem.uid" :disabled="selSkuItem.checked">{{selSkuItem.attrValue}}</el-checkbox>
+            </el-checkbox-group>
+            <div class="line"></div>
+          </div>
+        </template>
+        <div>
+          选择销售属性可生成多个SKU商品，每种销售属性最多只可选择3个属性值
+        </div>
+        <div v-if="this.skuAttribute.length == 0" style="text-align: center;margin-top:10px;">数据为空</div>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="skuDetermineBtn()">确 定</el-button>
+        <el-button @click="skuhandleClose()">取 消</el-button>
+      </span>
+    </el-dialog>
+    <!-- 选择影院弹窗 -->
+    <cinemal-dialog ref="myCinemalDialog" @onSumit="onCinemalSumit" multiple :title="'选择适用门店'" :dialogFeedbackData="queryData.saleCinemaList"></cinemal-dialog>
+    <!-- 选择渠道弹窗 -->
+    <channel-dialog ref="myChannelDialog" @onSumit="onChanneSumit" multiple :title="'选择适用渠道'" :dialogFeedbackData="queryData.saleChannelList"></channel-dialog>
+    <sel-brand ref="brand" :brandQueryData="brandQueryData"></sel-brand>
+    <!-- 选择品牌弹窗 -->
+    <brand-dialog ref="myBrandDialog" @onSumit="onBrandSumit" :catUid="queryData.catUid" :dialogFeedbackData="[{brandUid:queryData.brandUid,name:selectedBranchName}]"></brand-dialog>
+    <seecinemal-dialog :dialogVisible.sync="dialogVisibleseecinema" :needData="JSON.stringify(this.seecinemalArr)">
+    </seecinemal-dialog>
+    <seechannel-dialog :dialogVisible.sync="dialogVisibleseechannel" :needData="JSON.stringify(this.seechannelArr)">
+    </seechannel-dialog>
+    <!-- <fixStepTool :stepData="this.stepData.stepList"></fixStepTool> -->
+  </div>
+</template>
+
+<script>
+import qs from 'qs';
+import moment from 'moment';
+import mixin from 'cimSrc/mixins/cim/paginationConfig.js';
+// import httpConfig from 'cimSrc/http/config.js';
+import applyStores from 'cimSrc/components/applyStores/applyStores.vue';
+import applyChannel from 'cimSrc/components/applyChannel/applyChannel.vue';
+import SelBrand from 'cimSrc/components/selBrand/common.vue';
+import cinemalDialog from 'cimSrc/components/cinemalDialog/cinemaDialog.vue';
+import channelDialog from 'cimSrc/components/channelDialog/channelDialog.vue';
+import imgUpload from 'cimSrc/components/imgUpload/imgUpload.vue';
+import brandDialog from 'cimSrc/components/brandDialog/brandDialog.vue';
+import seecinemalDialog from 'cimSrc/components/seeCinemalDialog/seeCinemalDialog.vue';
+import seechannelDialog from 'cimSrc/components/seeChannelDialog/seeCinemalDialog.vue';
+// import FixStepTool from "ctm/components/fix-step-tool/fix-step-tool";
+
+// import FixStepTool from "ctm/components/fix-step-tool/fix-step-tool"
+// import fixStepMixin from "ctm/mixins/fixStepTool"
+export default {
+  mixins: [mixin],
+  data () {
+    // var checkstoreDownLimit = (rule, value, callback) => {
+    //   let check = /^\-*[1-9]*[0-9]*$/
+    //   alert(check.test(value))
+    //   alert(value < this.queryData.storeUpLimit)
+    //   if(!check.test(value) && value < this.queryData.storeUpLimit){
+    //      callback(new Error('请输入少于上限的整数'));
+    //   }
+    // };
+    //  var checkstoreUpLimit = (rule, value, callback) => {
+    //   // let check = /^\-*[1-9]*[0-9]*$/
+    //   if(!check.test(value) && value>=this.queryData.storeDownLimit){
+    //      callback(new Error('请输入大于等于下限的整数'));
+    //   }
+    // };
+    // var checktaxRate = (rule, value, callback) => {
+    //   let check = /^([1-9][0-9]?)$|^([0]\.[0-9]{1,2})$|^([1-9][0-9]?\.[0-9]{1,2})$|^\\.|^(0\b)$|^()$/
+    //   if(!check.test(value)){
+    //      callback(new Error('请输入2位整数或带最多2位小数'));
+    //   }
+    // };
+    return {
+      linshiCode: '',
+      stepData: {
+        stepEl: '.el-collapse-item',
+        stepList: [
+          {
+            name: '基础信息',
+            isactive: false
+          },
+          {
+            name: '采购信息',
+            isactive: false
+          },
+          {
+            name: '销售信息',
+            isactive: false
+          }
+        ]
+      },
+      A1skuActive: -1,
+      seecinemalArr: [],
+      seechannelArr: [],
+      // 查看影院
+      dialogVisibleseecinema: false,
+      dialogVisibleseechannel: false,
+      // 选择sku属性多少
+      skumax: 3,
+      // sku属性已选
+      attrUidList: [],
+      // sku商品属性是否可选
+      arrDisabled: false,
+      // 查看存放的sku属性
+      linshiskuAttrcheckList: [],
+      linshiSkuData: [],
+      uploadPaream: {
+        module: 'goods'
+      },
+      // 品牌弹窗
+      brandQueryData: {
+        list: {
+          id: ''
+        }
+      },
+      activeNames: ['1', '2', '3'],
+      skuStart: false,
+      ruter: '',
+      aaa: {},
+      skuAttr: [],
+      AttributeSkudata: [],
+      // 页面数据
+      queryData: {
+        placeOrigin: '',
+        brandName: '',
+        catName: '',
+        catUid: '',
+        proCode: '',
+        // 商品类型 1-单品
+        merType: 1,
+        // 商品编码
+        code: '',
+        // 商品分类
+        classUid: '',
+        // 速记代码
+        shorthandCode: '',
+        // 商品名称
+        name: '',
+        // 销售别名
+        aliasName: '',
+        // 商品规格
+        spec: '',
+        // 品牌
+        brandUid: '',
+        // 基本单位
+        unitUid: '',
+        // 产地  0国产,1进口
+        placeOrigin: 0,
+        // 商品图片
+        imgUrl: '',
+        // 商品描述
+        remark: '',
+        // 进货税率
+        taxRate: '',
+        saleChannel: 1,
+        saleCinema: 1,
+        // 采购单位对象集合
+        purUnitList: {
+          // 单位名称
+          unitUid: '',
+          // 采购转换系数
+          purUnitRatio: ''
+        },
+        // sku对象集合
+        skuVoList: {
+          uid: '',
+          // 包装条码
+          barCode: '',
+          // sku编码
+          code: '',
+          // 价格
+          price: '',
+          // 属性集合
+          skuAttr: [],
+          status: 1
+        },
+        // 销售状态 0不允许,1允许
+        canSale: 1,
+        // 上架时间
+        upTime: moment().format('YYYY-MM-DD HH:mm'),
+        // 下架时间类型
+        downTimeType: '0',
+        // 下架时间
+        downTime: moment().format('YYYY-MM-DD HH:mm'),
+        // 是否只允许套餐内售卖 0否,1是
+        onlyAllowSetmeal: 0,
+        // 库存下限
+        storeDownLimit: '',
+        // 库存上限
+        storeUpLimit: '',
+        // 商品指定影院
+        saleCinemaList: [],
+        // 商品指定渠道
+        saleChannelList: []
+      },
+      checkList: [],
+      skuAttrcheckList: [],
+      // 添加sku数据格式
+      // modelValue skuAttribute
+      skuAttribute: [],
+      skudialog: false,
+      filterText: '',
+      startTime: moment().format('YYYY-MM-DD HH:mm'),
+      endTimeRadio: '0',
+      endTime: '',
+      options: [
+        {
+          value: '个',
+          label: '个'
+        },
+        {
+          value: '箱',
+          label: '箱'
+        },
+        {
+          value: '瓶',
+          label: '瓶'
+        }
+      ],
+      brandOptions: [], // 品牌
+      selectedBranchName: '',
+      // 基本单位显示
+      basicUnitvalue: '',
+      // 基本单位选择框
+      basicUnitArr: [],
+      // 基本单位选择框
+      buyUnitArr: [],
+      // 采购单位表头数组
+      basicUnitColumn: [
+        {
+          label: '单位名称',
+          key: 'name',
+          selectUnit: true
+        },
+        {
+          label: '转换系数',
+          key: 'purUnitRatio',
+          edit: true
+        },
+        {
+          label: '转换公式',
+          key: 'fun'
+        }
+      ],
+      // sku属性表头
+      skuColumn: [
+        {
+          label: 'SKU编码',
+          key: 'code'
+        },
+        {
+          label: '售价（元）',
+          key: 'price',
+          edit: true
+        },
+        {
+          label: '包装条码',
+          key: 'barCode',
+          edit: true
+        },
+        {
+          label: '销售状态',
+          key: 'active'
+        }
+      ], // sku属性表头
+      skuColumn1: [
+        {
+          label: 'SKU编码',
+          key: 'code'
+        },
+        {
+          label: '售价（元）',
+          key: 'price'
+        },
+        {
+          label: '包装条码',
+          key: 'barCode'
+        },
+        {
+          label: '销售状态',
+          key: 'active'
+        }
+      ],
+      // 采购单位表格数组
+      basicUnitData: [],
+      // 创建sku数组
+      skuData: [],
+      linshiskuData: [
+        {
+          code: '123',
+          color: '黄色',
+          kouwei: '苹果味',
+          shoujia: '',
+          tiaoma: '',
+          active: '允许'
+        },
+        {
+          code: '128',
+          color: '绿色',
+          kouwei: '橙味',
+          shoujia: '',
+          tiaoma: '',
+          active: '允许'
+        }
+      ],
+      value: '',
+      addRawMaterialDialog: false, // 添加原材料弹窗
+      defaultProps: {
+        children: 'children',
+        label: 'label'
+      },
+      recipeGroupList: [
+        {
+          attrValue: '',
+          id: Math.random(),
+          delFlag: 0,
+          name: '标准配方',
+          tableData: []
+        }
+      ],
+      cinemaOptions: [],
+      // 修改终端数据
+      changeData: {
+        tername: '',
+        status: '',
+        rackCode: '',
+        placeUid: '',
+        salePlaceEntity: { uid: '' }
+      },
+      tableColumn: [
+        {
+          label: '商品名称',
+          key: 'address'
+        },
+        {
+          label: '商品编码',
+          key: 'tername'
+        },
+        {
+          label: 'SKU编码',
+          key: 'sku'
+        },
+        {
+          label: '速记代码',
+          key: 'code'
+        },
+        {
+          label: '商品规格',
+          key: 'mac'
+        },
+        {
+          label: '基本单位',
+          key: 'mac1'
+        }
+      ],
+      recipeTableColumn: [
+        {
+          label: '商品名称',
+          key: 'address'
+        },
+        {
+          label: '商品编码',
+          key: 'tername'
+        },
+        {
+          label: '速记代码',
+          key: 'code'
+        },
+        {
+          label: '标准用量',
+          key: 'mac',
+          edit: true,
+          required: true,
+          renderHeader: (h, { column, $index }) => {
+            return h('div', {
+              attrs: {
+                class: 'cell' // ele原来样式
+              },
+              domProps: {
+                innerHTML: '<span class="red">* </span>' + column.label
+              }
+            });
+          }
+        },
+        {
+          label: '建议用量',
+          key: 'dosage',
+          bothEdit: true,
+          width: 250
+        },
+        {
+          label: '基本单位',
+          key: 'mac2'
+        },
+        {
+          label: '零售额分配比率（%）',
+          key: 'mac3',
+          edit: true,
+          required: true,
+          width: 170,
+          renderHeader: (h, { column, $index }) => {
+            return h('div', {
+              attrs: {
+                class: 'cell' // ele原来样式
+              },
+              domProps: {
+                innerHTML: '<span class="red">* </span>' + column.label
+              }
+            });
+          }
+        }
+      ],
+      tableData: [
+        {
+          address: '奶粉',
+          tername: 'YCL001',
+          code: '124547',
+          mac: '',
+          dosage: { min: '', max: '' },
+          mac2: 'g'
+        },
+        {
+          address: '汤',
+          tername: 'YCL002',
+          code: '124547',
+          mac: '',
+          dosage: { min: '', max: '' },
+          mac2: 'g'
+        },
+        {
+          address: '中杯',
+          tername: 'YCL003',
+          code: '124547e',
+          mac: '',
+          dosage: { min: '', max: '' },
+          mac2: '个'
+        }
+      ],
+      storageRacks: [], // 仓库,货架
+      salePlaces: [], // 销售地址
+      tableLoding: false,
+      total: 0,
+      terminalStatusDialog: false,
+      dataListLoading: false,
+      applyStoresRadios: [
+        {
+          label: '全部门店',
+          type: 1
+        },
+        {
+          label: '指定门店',
+          type: 0
+        }
+        // {
+        //   label: "排除门店",
+        //   type: 2
+        // }
+      ],
+      selectedStoreName: '',
+      selectedChannelName: '',
+      applyChannelRadios: [
+        {
+          label: '全部渠道',
+          type: 1
+        },
+        {
+          label: '指定渠道',
+          type: 0
+        }
+      ],
+      changeRules: {
+        // storeDownLimit: [{validator:checkstoreDownLimit,trigger: 'blur' }],
+        // storeUpLimit: [{validator:checkstoreUpLimit,trigger: 'blur' }],
+        // taxRate: [{validator:checktaxRate,trigger: 'blur' }]
+        // {pattern: /^[1-9]*[0-9]{0,20}$/, message: '请输入数字',trigger: 'change'},
+        // code: [{ required: true, message: "请输入仓库编码", trigger: "blur" }],
+        // storeDownLimit: [{ required: true, message: "请输入仓库名称", trigger: "blur" }]
+      }
+    };
+  },
+  mounted () {
+    this.init();
+    console.log(this.$route.query.data);
+  },
+  created () { },
+  methods: {
+    init () {
+      this.setCheckedKys(this.applyStoresRadios);
+      this.setCheckedKys(this.applyChannelRadios);
+      if (this.$route.query.type == 3) {
+        this.seesingleProductGet(JSON.parse(this.$route.query.data));
+      } else if (this.$route.query.type == 2) {
+        this.seesingleProductGet(JSON.parse(this.$route.query.data));
+        // this.queryData.skuVoList.code = this.queryData.proCode+Math.ceil(Math.random() * 99)
+        // this.linshiCode = this.queryData.skuVoList.code
+      } else if (this.$route.query.type == 1) {
+        this.resetForm('ruleForm');
+        this.queryData.catName = JSON.parse(this.$route.query.data).uidname;
+        this.queryData.catUid = JSON.parse(this.$route.query.data).uid;
+        this.queryData.proCode = JSON.parse(this.$route.query.data).proCode;
+        this.queryData.skuVoList.code = this.queryData.proCode + Math.ceil((Math.random() * 89) + 10);
+        this.linshiCode = this.queryData.skuVoList.code;
+      }
+    },
+    // 查看影院
+    cinemaClick () {
+      this.dialogVisibleseecinema = true;
+    },
+    channelClick () {
+      this.dialogVisibleseechannel = true;
+    },
+    // 品牌选择
+    brandSel () {
+      // 打开弹窗
+      this.$refs.brand.brandhandleClose(true);
+      // 调用子组件请求
+      this.$refs.brand.init();
+    },
+    // 查看原材料
+    seesingleProductGet (val) {
+      let value = {
+        uid: val
+      };
+      this.$cimList.headquartersGoods.singleProductGet(value).then(res => {
+        if (res.code === 200) {
+          // debugger
+          if (res.data.saleCinemaList != null) {
+            let cinemaString = [];
+            res.data.saleCinemaList.forEach((val, index, arr) => {
+              cinemaString.push(val.cinemaName);
+            });
+            this.selectedStoreName = cinemaString.join(',');
+          }
+          if (res.data.saleChannelList != null) {
+            let channelString = [];
+            res.data.saleChannelList.forEach((val, index, arr) => {
+              channelString.push(val.channelName);
+            });
+            this.selectedChannelName = channelString.join(',');
+          }
+
+          this.queryData.saleChannel = res.data.saleChannel;
+          this.queryData.saleCinema = res.data.saleCinema;
+          if (this.queryData.saleChannel === 1) {
+            this.queryData.saleChannelList = [];
+          } else {
+            let newsaleChannel = [];
+            let resdatasaleChannelList = res.data.saleChannelList == null ? [] : res.data.saleChannelList;
+            resdatasaleChannelList.forEach((val) => {
+              let newObj = {};
+              newObj.channelUid = val.channelUid;
+              newObj.name = val.channelName;
+              newsaleChannel.push(newObj);
+            });
+            this.queryData.saleChannelList = newsaleChannel;
+          }
+          if (this.queryData.saleCinema === 1) {
+            this.queryData.saleCinemaList = [];
+          } else {
+            let newsaleCinemaList = [];
+            let resdatasaleCinemaList = res.data.saleCinemaList == null ? [] : res.data.saleCinemaList;
+            resdatasaleCinemaList.forEach((val) => {
+              let newCinema = {};
+              newCinema.cinemaUid = val.cinemaUid;
+              newCinema.name = val.cinemaName;
+              newsaleCinemaList.push(newCinema);
+            });
+            this.queryData.saleCinemaList = newsaleCinemaList;
+          }
+          this.seecinemalArr = res.data.saleCinemaList == null ? [] : res.data.saleCinemaList;
+          this.seechannelArr = res.data.saleChannelList;
+          this.attrUidList = res.data.attrUidList;
+          this.skuAttrcheckList = res.data.attrValues == null ? [] : res.data.attrValues;
+          this.linshiskuAttrcheckList = JSON.parse(JSON.stringify(res.data.attrValues));
+          this.queryData.unitUid = res.data.unitName;
+          this.brandQueryData.list.name = res.data.brandName;
+          this.queryData.brandName = res.data.brandName;
+          this.selectedBranchName = res.data.brandName;
+          this.brandQueryData.list.uid = res.data.brandUid;
+          this.brandQueryData.list.id = res.data.brandId;
+          this.queryData.catName = res.data.catName;
+          this.queryData.proCode = res.data.code;
+          this.queryData.uid = res.data.classUid;
+          this.queryData.catUid = res.data.catUid;
+          this.queryData.cuid = res.data.uid;
+          this.queryData.cunitUid = res.data.unitUid;
+          this.queryData.cinemaName = res.data.cinemaName;
+          this.queryData.channelName = res.data.channelName;
+          this.queryData.unitName = res.data.unitName;
+          this.queryData.uidname = res.data.className;
+          this.queryData.shorthandCode = res.data.shorthandCode;
+          this.queryData.name = res.data.name;
+          this.queryData.aliasName = res.data.aliasName;
+          this.queryData.spec = res.data.spec;
+          this.queryData.brandUid = res.data.brandUid;
+          this.queryData.onlyAllowSetmeal = res.data.isSaleAsSetMeal;
+          if (res.data.skuVoList[0].skuAttr.length == 0) {
+            this.queryData.skuVoList.barCode = res.data.skuVoList[0].barCode;
+            this.queryData.skuVoList.code = res.data.skuVoList[0].code;
+            this.linshiCode = res.data.skuVoList[0].code;
+            this.queryData.skuVoList.price = res.data.skuVoList[0].price;
+            this.queryData.skuVoList.skuAttr = res.data.skuVoList[0].skuAttr;
+            this.queryData.skuVoList.uid = res.data.skuVoList[0].uid;
+            this.A1skuActive = 0;
+          } else {
+            this.queryData.skuVoList.code = this.queryData.proCode + Math.ceil(Math.random() * 99);
+            this.linshiCode = this.queryData.skuVoList.code;
+            this.A1skuActive = 1;
+          }
+          if (res.data.skuVoList[0].skuAttr.length >= 1) {
+            this.skuColumnEvent1(res.data.skuVoList);
+          }
+          if (res.data.skuVoList[0].skuAttr.length >= 1) {
+            this.skuColumnEvent2(res.data.skuVoList);
+          }
+          this.queryData.placeOrigin = res.data.placeOrigin;
+          this.queryData.placeOriginName = res.data.placeOrigin == 1 ? '进口' : '国产';
+          this.queryData.remark = res.data.remark;
+          // let imgReg = /\/\//g
+          this.queryData.imgUrl = res.data.imgUrl;
+          this.queryData.taxRate = res.data.taxRate;
+
+          this.queryData.canSale = res.data.canSale;
+          this.queryData.downTime = res.data.downTime;
+          this.queryData.upTime = res.data.upTime;
+          this.queryData.downTimeType = res.data.downTime == null || res.data.downTime == '' ? '0' : '1';
+          this.queryData.storeUpLimit = res.data.stockUpper;
+          this.queryData.storeDownLimit = res.data.stockLower;
+          if (this.$route.query.type == 3) {
+            res.data.purUnitVoList.forEach((val, index, arr) => {
+              let basicUnitDataOBj = {};
+              basicUnitDataOBj.name = val.name;
+              basicUnitDataOBj.purUnitRatio = val.purUnitRatio;
+              basicUnitDataOBj.uid = val.uid;
+              basicUnitDataOBj.unitUid = val.unitUid;
+              basicUnitDataOBj.unitEntityUid = val.unitEntityUid;
+              basicUnitDataOBj.fun = '1' + val.name + '=' + val.purUnitRatio + res.data.unitName;
+              this.basicUnitData.push(basicUnitDataOBj);
+            });
+          } else if (this.$route.query.type == 2) {
+            res.data.purUnitVoList.forEach((val, index, arr) => {
+              let basicUnitDataOBj = {};
+              basicUnitDataOBj.name = val.name;
+              basicUnitDataOBj.purUnitRatio = val.purUnitRatio;
+              basicUnitDataOBj.uid = val.uid;
+              basicUnitDataOBj.unitUid = val.unitUid;
+              basicUnitDataOBj.unitEntityUid = val.unitEntityUid;
+              basicUnitDataOBj.fun = '1' + val.name + '=' + val.purUnitRatio + res.data.unitName;
+              this.basicUnitData.push(basicUnitDataOBj);
+              console.log(this.basicUnitData);
+            });
+          }
+        } else {
+          this.error(res.msg);
+        }
+      }).catch(err => {
+        console.log(err);
+      });
+    },
+    // 选择基本单位
+    basicUnitEvent () {
+      this.basicUnitData = [];
+      let selectedWorkName = {};
+      selectedWorkName = this.basicUnitArr.find((item) => {
+        return item.uid === this.queryData.unitUid;
+      });
+      console.log(selectedWorkName);
+
+      let basicUnitFirstValue = {
+        name: selectedWorkName.label,
+        purUnitRatio: '1',
+        fun: '1' + selectedWorkName.label + '=1' + selectedWorkName.label,
+        unitUid: this.queryData.unitUid
+      };
+
+      this.basicUnitData.splice(0, 1, basicUnitFirstValue);
+    },
+    // 添加采购单位
+    addUnitEvent () {
+      console.log(this.queryData.unitUid);
+      if (this.queryData.unitUid == '') {
+        this.$message('请选择基本单位');
+      } else {
+        if (this.basicUnitData.length > 5) {
+          this.$message('采购单位最多只能选择5个');
+        } else {
+          let basicUnitFirstValue = {
+            unitUid: '',
+            name: '',
+            purUnitRatio: '',
+            fun: ''
+          };
+          this.basicUnitData.push(basicUnitFirstValue);
+        }
+      }
+    },
+    // 图片上传成功回调
+    successAvatarUpload (response) {
+      this.queryData.imgUrl = response;
+    },
+    // 系数转换
+    changeUnitEvent (value, index) {
+      let newExp = /^([1-9]\d*)$/;
+      if (!newExp.test(value)) {
+        this.$message('系数转换请输入数字');
+        this.basicUnitData.forEach((val, newindex, arr) => {
+          arr[index].purUnitRatio = '';
+        });
+      } else {
+        let purUnitRatio = this.basicUnitData[0].purUnitRatio;
+        let name = this.basicUnitData[0].name;
+        let newFun = purUnitRatio + this.basicUnitData[index].name + '=' + this.basicUnitData[index].purUnitRatio + name;
+        this.basicUnitData[index].fun = newFun;
+        this.buyUnitArr.forEach((val) => {
+          if (val.label == this.basicUnitData[index].name) {
+            this.basicUnitData[index].unitUid = val.uid;
+          }
+        });
+      }
+    },
+    // 系数转换
+    changeUnitEvent0 (value, index) {
+      let currentUid = '';
+      let currentIndex = 0;
+      let purUnitRatio = this.basicUnitData[0].purUnitRatio;
+      let name = this.basicUnitData[0].name;
+      let newFun = purUnitRatio + this.basicUnitData[index].name + '=' + this.basicUnitData[index].purUnitRatio + name;
+      this.basicUnitData[index].fun = newFun;
+      this.buyUnitArr.forEach((val) => {
+        if (val.label == this.basicUnitData[index].name) {
+          this.basicUnitData[index].unitUid = val.uid;
+          currentUid = val.uid;
+        }
+      });
+      this.basicUnitData.some((baval, baindex, baarr) => {
+        currentIndex++;
+        return baval.unitUid === currentUid;
+      });
+      if (this.basicUnitData.length != currentIndex) {
+        this.basicUnitData.splice(index, 1);
+        this.$message('不能选择相同的采购单位,请重新选择。');
+      }
+    },
+    // 点击采购单位事件
+    focusUnitEvent (value, index) {
+      this.resBuyUnit();
+    },
+    // 删除采购单位
+    unitHandleDlete (row, index) {
+      this.basicUnitData.splice(index, 1);
+    },
+    resetForm (formName) {
+      this.$nextTick(() => {
+        if (this.$refs[formName] !== undefined) {
+          this.$refs[formName].resetFields();
+        }
+      });
+    },
+    // 添加SKU商品
+    addSkuEvent () {
+      this.skudialog = true;
+      this.resQueryAttribute();
+    },
+    // 品牌
+    onBrandSumit (data = []) {
+      this.queryData.brandUid = data[0].brandUid || data[0].uid;
+      this.selectedBranchName = data[0].name;
+      console.log('品牌数据', data);
+    },
+    // 删除品牌
+    handleDeleteBranchs () {
+      this.onBrandSumit([{ uid: '', name: '' }]);
+    },
+    // 选择sku属性
+    skuSelectEvent (value) {
+      console.log(value);
+    },
+    priceValidator (rule, value, callback) {
+      if (value < 0 || value >= 1000) {
+        return callback(new Error('售价0<n<1000'));
+      } else {
+        callback();
+      }
+    },
+    priceInputEvent (value) {
+      this.queryData.skuVoList.price = value.replace(/^(.*\..{2}).*$/, '$1');
+    },
+    // sku弹窗确定按钮
+    skuDetermineBtn () {
+      if (this.skuAttribute.length > 0) {
+        // 判断选择了几个sku属性
+        if (this.$route.query.type == 2 && this.skuData.length > 0) {
+          let lengthSku = 0;
+          this.skuAttrcheckList.forEach((val, index, arr) => {
+            if (val.length != 0) {
+              lengthSku++;
+            }
+          });
+          this.attrUidList == null ? [] : this.attrUidList;
+          if (this.attrUidList.length == lengthSku) {
+            this.resCreateSku();
+          } else {
+            this.$message('请选择每项sku属性一个');
+          }
+        } else {
+          this.resCreateSku();
+        }
+      } else {
+        this.skuhandleClose();
+      }
+    },
+    // sku弹窗关闭事件
+    skuhandleClose () {
+      this.skudialog = false;
+    },
+    // sku属性表格关闭事件
+    skuDelTableEvent () {
+      this.skuAttrcheckList.forEach((val, index, arr) => {
+        arr[index] = [];
+      });
+      this.skuData = [];
+      this.queryData.skuVoList.code = this.linshiCode;
+    },
+    // 删除sku属性当前行事件
+    skuHandleDlete (row, index) {
+      this.skuData.splice(index, 1);
+      if (this.skuData.length == 0) {
+        this.skuAttrcheckList.forEach((val, index, arr) => {
+          arr[index] = [];
+        });
+      }
+    },
+    // 基本单位获取焦点事件
+    focusBasicUnitEvent () {
+      this.resBasicUnit();
+    },
+    comSingleSubmit () {
+      this.$refs['ruleForm'].validate(valid => {
+        if (valid) {
+          let newAvtive = {};
+          let dqActive = '';
+          this.skuData.some((val, newindex, arr) => {
+            if (val.price == '' || val.price == null) {
+              return newAvtive = { a1: true, a2: val };
+            }
+          });
+          if (newAvtive.a1 === true) {
+            this.$message(newAvtive.a2.code + ':售价不能为空');
+          } else {
+            this.basicUnitData.some((val, newindex, arr) => {
+              if (val.purUnitRatio == '' || val.purUnitRatio == null) {
+                return newAvtive = { a1: true, a2: val };
+              }
+            });
+            if (newAvtive.a1 === true) {
+              this.$message(newAvtive.a2.name + ':转换系数不能为空');
+            } else {
+              if (this.$route.query.type == 1) {
+                this.resSingleProductSave();
+              } else if (this.$route.query.type == 2) {
+                this.ressingleProductUpdate();
+              }
+            }
+          }
+        } else {
+          this.$message('信息填写有误，请按照红色提示修改');
+          return false;
+        }
+      });
+    },
+    // sku属性停用按钮
+    stopskuHandleDlete (row, index) {
+      if (row.status == 1) {
+        row.status = 0;
+        row.active = row.status == 1 ? '允许销售' : '禁止销售';
+      } else {
+        row.status = 1;
+        row.active = row.status == 1 ? '允许销售' : '禁止销售';
+      }
+    },
+    // 基本单位请求
+    resBasicUnit () {
+      let value = {
+        // 商品分类
+        catUid: this.queryData.catUid,
+        // 0基本单位
+        flag: 0
+      };
+      console.log(value);
+      this.$cimList.headquartersGoods.merUnitList(value).then(res => {
+        if (res.code === 200) {
+          let linsbasicUnitArr = [];
+          let linsObj = {};
+          res.data.forEach((val, index, arr) => {
+            linsObj.uid = val.uid;
+            linsObj.label = val.unitName;
+            linsObj.value = val.uid;
+            linsbasicUnitArr.push(linsObj);
+            linsObj = {};
+          });
+          this.basicUnitArr = linsbasicUnitArr;
+        } else {
+          this.error(res.msg);
+        }
+      }).catch(err => {
+
+      });
+    },
+    // 采购单位请求
+    resBuyUnit () {
+      this.buyUnitArr = [];
+      let value = {
+        // 商品分类
+        catUid: this.queryData.catUid,
+        // 0基本单位
+        flag: 1
+      };
+      console.log(value);
+      this.$cimList.headquartersGoods.merUnitList(value).then(res => {
+        if (res.code === 200) {
+          let linsbasicUnitArr = [];
+          let linsObj = {};
+          res.data.forEach((val, index, arr) => {
+            linsObj.uid = val.uid;
+            linsObj.label = val.unitName;
+            linsObj.value = val.unitName;
+            linsbasicUnitArr.push(linsObj);
+            linsObj = {};
+          });
+          this.buyUnitArr = linsbasicUnitArr;
+        } else {
+          this.error(res.msg);
+        }
+      }).catch(err => {
+
+      });
+    },
+    downTimeEvent () {
+      if (this.queryData.downTimeType == '0') {
+        this.queryData.downTime = '';
+      }
+    },
+    // 创建sku请求
+    resCreateSku () {
+      let skuAttr = [];
+      this.skuAttrcheckList.forEach((val1, index, arr) => {
+        val1.forEach((val2, index, arr) => {
+          this.skuAttribute.forEach((skuval, index, arr) => {
+            skuval.Suboptions.forEach((Subval, index, arr) => {
+              if (val2 == Subval.uid) {
+                let resval = {};
+                resval.attrCode = skuval.code;
+                resval.attrName = skuval.name;
+                resval.attrType = skuval.attrType;
+                resval.attrUid = skuval.attrUid;
+                resval.attrValue = Subval.attrValue;
+                resval.itemCode = Subval.itemCode;
+                resval.itemUid = Subval.uid;
+                skuAttr.push(resval);
+                resval = {};
+              }
+            });
+          });
+        });
+      });
+      //  获取sku编码最大的编号
+      let skvalArr = this.skuData.map((skval, skindex, skarr) => {
+        return skval.code.substring(18);
+      });
+      let maxVal = Math.max.apply(null, skvalArr);
+      let resValue = {
+        merCode: this.queryData.proCode,
+        skuAttr: skuAttr,
+        spuUid: this.$route.query.type == 1 ? null : this.queryData.cuid,
+        max: maxVal,
+        skuVoList: this.$route.query.type == 1 ? null : this.skuData
+      };
+      this.$cimList.headquartersGoods.singleProductCreateSku(resValue).then(res => {
+        if (res.code === 200) {
+          this.skuColumnEvent(res.data);
+          this.skudialog = false;
+        } else {
+          this.$message(res.msg);
+        }
+      }).catch(err => {
+        this.$message(res.msg);
+      });
+    },
+    // 查看销售属性请求
+    resQueryAttribute () {
+      let resValue = {
+        catUid: this.queryData.catUid
+      };
+      console.log(resValue);
+      this.$cimList.headquartersGoods.singleProductQueryAttribute(resValue).then(res => {
+        if (res.code === 200) {
+          this.skuAttribute = res.data;
+          for (let key in this.skuAttribute) {
+            if (this.$route.query.type == 1) {
+              this.$set(this.skuAttrcheckList, key, []);
+            } else if (this.$route.query.type == 2) {
+              if (this.A1skuActive == 0) {
+                this.$set(this.skuAttrcheckList, key, []);
+              } else if (this.A1skuActive == 1) {
+                console.log(this.skuAttribute);
+                this.$set(this.skuAttrcheckList, key, []);
+                this.skumax = 1;
+                // 获取sku属性的attrUid
+                let skunewARR = this.skuAttribute.map((skuVal) => {
+                  return skuVal.attrUid;
+                });
+                // this.attrUidList 已选sku属性的attrUid
+                // 对比两个数组获取要禁用的sku属性的attrUid 取差集
+                Array.prototype.diff = function (a) {
+                  return this.filter(function (i) { return a.indexOf(i) < 0; });
+                };
+                let duoArr = skunewARR.diff(this.attrUidList);
+                // 差值与返回属性接口attrUid比较相同的按钮灰掉
+                duoArr.forEach((itemd) => {
+                  this.skuAttribute.forEach((skuVal, skuIndex, skuArr) => {
+                    if (itemd == skuVal.attrUid) {
+                      skuVal.Suboptions.forEach((subVal, subIndex, subArr) => {
+                        this.$set(subArr[subIndex], 'checked', true);
+                      });
+                    }
+                  });
+                });
+              }
+            }
+          }
+        } else {
+          this.$message(res.msg);
+        }
+      }).catch(err => {
+
+      });
+    },
+    resQueryAttribute1 () {
+      let resValue = {
+        catUid: this.queryData.catUid
+      };
+      this.$cimList.headquartersGoods.singleProductQueryAttribute(resValue).then(res => {
+        if (res.code === 200) {
+          this.skuAttribute = res.data;
+        } else {
+          this.$message(res.msg);
+        }
+      }).catch(err => {
+
+      });
+    },
+    // 新增单品
+    resSingleProductSave () {
+      let app = [];
+      app.push(this.queryData.skuVoList);
+      let resValue = {
+        upTime: this.queryData.upTime,
+        downTime: this.queryData.downTimeType == '0' ? '' : this.queryData.downTime,
+        mer: {
+          aliasName: this.queryData.aliasName,
+          canSale: this.queryData.canSale,
+          catUid: this.queryData.catUid,
+          imgUrl: this.queryData.imgUrl,
+          merType: this.queryData.merType,
+          remark: this.queryData.remark,
+          onlyAllowSetmeal: this.queryData.onlyAllowSetmeal,
+          saleChannel: this.queryData.saleChannel,
+          saleCinema: this.queryData.saleCinema,
+          shorthandCode: this.queryData.shorthandCode,
+          storeDownLimit: this.queryData.storeDownLimit,
+          storeUpLimit: this.queryData.storeUpLimit,
+          taxRate: this.queryData.taxRate
+        },
+        purUnitList: this.basicUnitData,
+        saleChannelList: this.queryData.saleChannelList,
+        saleCinemaList: this.queryData.saleCinemaList,
+        skuVoList: this.skuData.length == 0 ? app : this.skuData,
+        spu: {
+          brandUid: this.queryData.brandUid,
+          code: this.queryData.proCode,
+          merSpec: this.queryData.spec,
+          name: this.queryData.name,
+          placeOrigin: this.queryData.placeOrigin,
+          unitUid: this.queryData.unitUid
+        },
+        spuAttributeList: []
+      };
+
+      if (this.queryData.saleChannel === 0 && this.queryData.saleChannelList.length === 0) {
+        this.$message('请选择指定销售渠道');
+      } else if (this.queryData.saleCinema === 0 && this.queryData.saleCinemaList.length === 0) {
+        this.$message('请选择指定影院');
+      } else {
+        console.log(resValue);
+        this.$cimList.headquartersGoods.singleProductSave(resValue).then(res => {
+          if (res.code === 200) {
+            this.AttributeSkudata = res.data;
+            this.handleCancel();
+            this.$message('新增成功');
+          } else {
+            this.$message(res.msg);
+          }
+        });
+      }
+    },
+    // 修改单品
+    ressingleProductUpdate () {
+      let app = [];
+      app.push(this.queryData.skuVoList);
+      let resValue = {
+        downTime: this.queryData.downTimeType == '0' ? '' : this.queryData.downTime,
+        upTime: this.queryData.upTime,
+        mer: {
+          aliasName: this.queryData.aliasName,
+          canSale: this.queryData.canSale,
+          catUid: this.queryData.catUid,
+          imgUrl: this.queryData.imgUrl,
+          merType: this.queryData.merType,
+          remark: this.queryData.remark,
+          onlyAllowSetmeal: this.queryData.onlyAllowSetmeal,
+          saleChannel: this.queryData.saleChannel,
+          saleCinema: this.queryData.saleCinema,
+          shorthandCode: this.queryData.shorthandCode,
+          storeDownLimit: this.queryData.storeDownLimit,
+          storeUpLimit: this.queryData.storeUpLimit,
+          taxRate: this.queryData.taxRate
+        },
+        purUnitList: this.basicUnitData,
+        saleChannelList: this.queryData.saleChannelList,
+        saleCinemaList: this.queryData.saleCinemaList,
+        skuVoList: this.skuData.length == 0 ? app : this.skuData,
+
+        spu: {
+          brandUid: this.queryData.brandUid,
+          code: this.queryData.proCode,
+          merSpec: this.queryData.spec,
+          name: this.queryData.name,
+          placeOrigin: this.queryData.placeOrigin,
+          unitUid: this.basicUnitData[0].unitUid,
+          uid: this.queryData.cuid
+        },
+        spuAttributeList: []
+      };
+      if (this.queryData.saleChannel === 0 && this.queryData.saleChannelList.length === 0 || this.queryData.saleChannel === 0 && this.queryData.saleChannelList === null) {
+        this.$message('请选择指定销售渠道');
+      } else if (this.queryData.saleCinema === 0 && this.queryData.saleCinemaList.length === 0 || this.queryData.saleCinema === 0 && this.queryData.saleCinemaList === null) {
+        this.$message('请选择指定影院');
+      } else if (this.queryData.downTimeType === '1' && this.queryData.downTime === '' || this.queryData.downTimeType === '1' && this.queryData.downTime === null) {
+        this.$message('选择了指定下架时间,请选择时间');
+      } else {
+        console.log(resValue);
+        this.$cimList.headquartersGoods.singleProductUpdate(resValue).then(res => {
+          if (res.code === 200) {
+            this.AttributeSkudata = res.data;
+            this.handleCancel();
+            this.$message('修改成功');
+          } else {
+            this.$message(res.msg);
+          }
+        }).catch(err => {
+
+        });
+      }
+    },
+
+    chuliAttributeSkudata () {
+      let newSkudata = [];
+      let newobj = {};
+      this.AttributeSkudata.forEach((val, index, arr) => {
+
+      });
+    },
+    // 多个sku数据处理
+    skuColumnEvent (valskuData) {
+      let skuData = [];
+      valskuData.forEach((val, index, arr) => {
+        let valObj = {};
+        valObj.code = val.code;
+        valObj.price = val.price;
+        valObj.barCode = val.barCode;
+        valObj.uid = val.uid;
+        valObj.status = val.status;
+        valObj.active = val.status == 1 ? '允许销售' : '禁止销售';
+        valObj.skuAttr = [];
+        val.skuAttr.forEach((skuval, skuindex, skuarr) => {
+          let sttrObj = {};
+          let gg = 'attrName' + skuindex;
+          valObj[gg] = skuval.attrValue;
+          sttrObj.attrValue = skuval.attrValue;
+          sttrObj.attrCode = skuval.attrCode;
+          sttrObj.attrName = skuval.attrName;
+          sttrObj.attrType = skuval.attrType;
+          sttrObj.attrUid = skuval.attrUid;
+          sttrObj.attrValue = skuval.attrValue;
+          sttrObj.itemCode = skuval.itemCode;
+          sttrObj.itemUid = skuval.itemUid;
+          valObj.skuAttr.push(sttrObj);
+        });
+        skuData.push(valObj);
+        if (this.$route.query.type == 2) {
+          this.skuData.push(valObj);
+          var obj = {};
+          this.skuData = this.skuData.reduce(function (item, next) {
+            obj[next.code] ? '' : obj[next.code] = true && item.push(next);
+            return item;
+          }, []);
+        }
+      });
+      if (this.$route.query.type == 1) {
+        this.skuData = skuData;
+      }
+      this.skuColumn = [
+        {
+          label: 'SKU编码',
+          key: 'code'
+        },
+        {
+          label: '售价（元）',
+          key: 'price',
+          bedit: true
+        },
+        {
+          label: '包装条码',
+          key: 'barCode',
+          edit: true
+        },
+        {
+          label: '销售状态',
+          key: 'active'
+        }
+      ];
+      valskuData[0].skuAttr.forEach((skuval, skuindex, skuarr) => {
+        let skuColomOBj = {};
+        skuColomOBj.label = skuval.attrName;
+        skuColomOBj.key = 'attrName' + skuindex;
+        this.skuColumn.splice(1, 0, skuColomOBj);
+      });
+    },
+    skuColumnEvent1 (valskuData) {
+      let skuData = [];
+      valskuData.forEach((val, index, arr) => {
+        let valObj = {};
+        valObj.code = val.code;
+        valObj.price = val.price;
+        valObj.uid = val.uid;
+        valObj.barCode = val.barCode;
+        valObj.status = val.status;
+        valObj.active = val.status == 1 ? '允许销售' : '禁止销售';
+        valObj.skuAttr = [];
+        val.skuAttr.forEach((skuval, skuindex, skuarr) => {
+          let sttrObj = {};
+          let gg = 'attrName' + skuindex;
+          valObj[gg] = skuval.attrValue;
+          sttrObj.attrValue = skuval.attrValue;
+          sttrObj.attrCode = skuval.attrCode;
+          sttrObj.attrName = skuval.attrName;
+          sttrObj.attrType = skuval.attrType;
+          sttrObj.attrUid = skuval.attrUid;
+          sttrObj.attrValue = skuval.attrValue;
+          sttrObj.itemCode = skuval.itemCode;
+          sttrObj.itemUid = skuval.itemUid;
+          valObj.skuAttr.push(sttrObj);
+        });
+        this.skuData.push(valObj);
+      });
+      this.skuColumn1 = [
+        {
+          label: 'SKU编码',
+          key: 'code'
+        },
+        {
+          label: '售价（元）',
+          key: 'price'
+        },
+        {
+          label: '包装条码',
+          key: 'barCode'
+        },
+        {
+          label: '销售状态',
+          key: 'active'
+        }
+      ];
+      valskuData[0].skuAttr.forEach((skuval, skuindex, skuarr) => {
+        let skuColomOBj = {};
+        skuColomOBj.label = skuval.attrName;
+        skuColomOBj.key = 'attrName' + skuindex;
+        this.skuColumn1.splice(1, 0, skuColomOBj);
+      });
+    },
+    skuColumnEvent2 (valskuData) {
+      let skuData = [];
+      // 销售属性回显数组
+      let attrData = [];
+      // 销售属性值
+      let attrValue = '';
+
+      valskuData.forEach((val, index, arr) => {
+        let valObj = {};
+        valObj.code = val.code;
+        valObj.price = val.price;
+        valObj.uid = val.uid;
+        valObj.barCode = val.barCode;
+        valObj.status = val.status;
+        valObj.active = val.status == 1 ? '允许销售' : '禁止销售';
+        valObj.skuAttr = [];
+        val.skuAttr.forEach((skuval, skuindex, skuarr) => {
+          let sttrObj = {};
+          let gg = 'attrName' + skuindex;
+          valObj[gg] = skuval.attrValue;
+          sttrObj.attrValue = skuval.attrValue;
+          sttrObj.attrCode = skuval.attrCode;
+          sttrObj.attrName = skuval.attrName;
+          sttrObj.attrType = skuval.attrType;
+          sttrObj.attrUid = skuval.attrUid;
+          sttrObj.attrValue = skuval.attrValue;
+          sttrObj.itemCode = skuval.itemCode;
+          sttrObj.itemUid = skuval.itemUid;
+          valObj.skuAttr.push(sttrObj);
+        });
+        skuData.push(valObj);
+      });
+      this.skuData = skuData;
+      valskuData[0].skuAttr.forEach((skuval, skuindex, skuarr) => {
+        let skuColomOBj = {};
+        skuColomOBj.label = skuval.attrName;
+        skuColomOBj.key = 'attrName' + skuindex;
+        this.skuColumn.splice(1, 0, skuColomOBj);
+      });
+    },
+
+    renderHeader (h, { column, $index }) {
+      return h('div', {
+        attrs: {
+          class: 'cell' // ele原来样式
+        },
+        domProps: {
+          innerHTML: '<span class="red">* </span>' + column.label
+        }
+      });
+    },
+    setCheckedKys (radios) {
+      radios.forEach(item => {
+        if (item.value) {
+          item.checkedKys = item.value.map(valueItem => {
+            return valueItem.id;
+          });
+        }
+      });
+    },
+    handleCancel () {
+      this.$store.commit('tagNav/removeTagNav', {
+        name: this.$route.name,
+        path: this.$route.path,
+        title: this.$route.meta.title,
+        query: this.$route.query
+      });
+      this.$router.push({
+        path: '/retail/commodityInformation/list'
+      });
+    },
+    saleCinemaEvent () {
+      console.log(this.queryData.saleCinema);
+      if (this.queryData.saleCinema === 1) {
+        this.queryData.saleCinemaList = [];
+        this.handleDeleteCinemas();
+      }
+    },
+    saleChannelEvent () {
+      if (this.queryData.saleChannel === 1) {
+        this.queryData.saleChannelList = [];
+        this.handleDeleteChanne();
+      }
+    },
+    handleDialog (name) {
+      this.$refs[name].handleDialog(true);
+    },
+    // 门店
+    onCinemalSumit (data = []) {
+      this.selectedStoreName = data
+        .map(item => {
+          return item.cinemaName || item.name;
+        })
+        .join(',');
+      console.log('门店数据', data);
+      let newArr = [];
+      data.forEach((val, index, arr) => {
+        let newObj = {};
+        newObj.cinemaUid = val.cinemaUid || val.uid;
+        newObj.name = val.cinemaName || val.name;
+        newArr.push(newObj);
+      });
+      this.queryData.saleCinemaList = newArr;
+    },
+    // 渠道
+    onChanneSumit (data = []) {
+      this.selectedChannelName = data
+        .map(item => {
+          return item.name || item.channelName;
+        })
+        .join(',');
+      console.log('渠道数据', data);
+      let newArr = [];
+      data.forEach((val, index, arr) => {
+        let newObj = {};
+        newObj.channelUid = val.channelUid || val.uid;
+        newObj.name = val.channelName || val.name;
+        newArr.push(newObj);
+      });
+      this.queryData.saleChannelList = newArr;
+    },
+    // 删除门店
+    handleDeleteCinemas () {
+      this.onCinemalSumit([]);
+    },
+    // 删除渠道
+    handleDeleteChanne () {
+      this.onChanneSumit([]);
+    }
+  },
+  computed: {
+    routeQuery () {
+      return this.$route.query;
+    },
+    typeText () {
+      // 1新建，2修改，3查看
+      switch (this.routeQuery.type) {
+        // 单品
+        case '1':
+          return '新建';
+          break;
+        // 原材料
+        case '2':
+          return '修改';
+          break;
+        // 合成品
+        case '3':
+          return '查看';
+          break;
+      }
+    }
+  },
+  components: {
+    applyStores,
+    applyChannel,
+    SelBrand,
+    cinemalDialog,
+    channelDialog,
+    imgUpload,
+    brandDialog,
+    seecinemalDialog,
+    seechannelDialog
+    // FixStepTool
+  }
+};
+</script>
+
+
+<style lang="scss">
+@import "../../../../../assets/css/element-common.scss";
+@import "../../../../../assets/css/common.scss";
+.single-goods {
+  .recipe-box {
+    margin: 30px 0;
+  }
+  .recipe-tittle-box {
+    margin: 10px 0;
+  }
+  .recipe-tittle {
+    line-height: 40px;
+    text-align: center;
+    font-size: 20px;
+  }
+  .change-dialog {
+    .el-form-item__content {
+      width: 60%;
+    }
+  }
+  .el-date-editor.el-input,
+  .el-date-editor.el-input__inner {
+    width: 180px;
+  }
+  .delete-recipe-group {
+    font-size: 20px;
+  }
+  .recipe-name-inp {
+    width: 200px;
+  }
+  .price-inp {
+    width: 100px;
+  }
+  .content {
+    padding: 20px;
+  }
+  .tittle {
+    font-weight: 900;
+    font-size: 18px;
+  }
+  .sub-tittle {
+    height: 40px;
+    line-height: 40px;
+    width: 100%;
+    background: #f5f5f5;
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+  .sku-table {
+    background: #f5f5f5;
+    border-radius: 4px;
+    border-radius: 4px;
+    padding: 17px 53px 17px 17px;
+    box-sizing: border-box;
+    position: relative;
+    .del-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      i {
+        cursor: pointer;
+      }
+    }
+  }
+  .submit-box {
+    margin-top: 50px;
+    text-align: center;
+  }
+  .table-box {
+    margin-top: 10px;
+  }
+  .both-edit-inp {
+    width: 60px;
+  }
+  .text-right {
+    text-align: right;
+  }
+  .endTime-input {
+    width: 110px;
+  }
+  .sku {
+    button {
+      margin-left: 20px;
+    }
+  }
+  .selectUnit {
+    .el-form-item {
+      margin-bottom: 0;
+    }
+  }
+  .sku-box {
+    .sku-select-group {
+      .line {
+        height: 1px;
+        width: 100%;
+        background: #e5e5e5;
+        margin-bottom: 16px;
+      }
+      .name {
+        font-size: 12px;
+        color: #666666;
+        letter-spacing: 0;
+        margin-bottom: 16px;
+      }
+      .el-checkbox {
+        margin-bottom: 16px;
+      }
+    }
+    .tips {
+      font-size: 12px;
+      color: #999999;
+      letter-spacing: 0;
+    }
+  }
+  .el-form .el-form-item {
+    margin-bottom: 14px;
+  }
+}
+</style>

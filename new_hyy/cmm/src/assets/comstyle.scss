@@ -1,0 +1,195 @@
+/deep/.movie-plan_default {
+    .input-activity-name {
+        width: 360px;
+        border-radius: 4px;
+    }
+    .timeRange_bg {
+        background: #f5f5f5;
+        width: 70%;
+        padding: 20px 0 1px 20px;
+        margin-left: 120px;
+        .el-form-item__content {
+            margin-left: 0 !important;
+        }
+    }
+    .bottomBtn span {
+        text-align: center;
+    }
+    .bottom-control-group {
+        margin-bottom: 0;
+    }
+    .buttonGroup {
+        position: fixed;
+        bottom: 0px;
+        height: 56px;
+        width: 90%;
+        background: #ffffff;
+    }
+    .bottomBtn,
+    .windowBtn {
+        margin-left: 32px;
+        width: 80px;
+        padding-left: 0;
+        padding-right: 0;
+        height: 32px;
+        font-size: 12px;
+    }
+    .primary {
+        color: #409EFF;
+    }
+    .success {
+        color: #67C23A;
+    }
+    .danger {
+        color: #F56C6C;
+    }
+    .warning {
+        color: #FEC107;
+    }
+    .windowBtn {
+        margin-left: 4px;
+        position: relative;
+        top: 1px;
+    }
+    .detailReturnBtn {
+        position: fixed;
+        bottom: 0px;
+        height: 56px;
+        width: 90%;
+        background: #ffffff;
+    }
+    .returnBtn {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+    .tradingMerchantInput {
+        .el-form-item__content {
+            margin-left: 0 !important;
+        }
+    }
+    //修改element-ui默认样式
+    .el-collapse {
+        padding-bottom: 40px;
+    }
+    .el-collapse-item__wrap {
+        padding-top: 10px;
+    }
+    .el-collapse-item__content {
+        padding: 0 0 0 42px
+    }
+    .el-collapse-item__header::after {
+        height: 0;
+        width: 0;
+    }
+    .el-collapse-item__header {
+        padding-left: 50px !important;
+        width: 968px;
+        border-bottom: 1px solid #ebeef5;
+        .el-collapse-item__arrow {
+            margin-left: -104px;
+        }
+    }
+    .is-active {
+        border-bottom: 0 none;
+        border-bottom-color: transparent !important;
+    }
+    .el-select {
+        width: 166px;
+    }
+    .el-input {
+        font-size: 12px;
+    }
+    .chooseWidth1 {
+        width: 166px;
+    }
+    .el-select {
+        margin-right: 8px;
+    }
+    .el-row {
+        // line-height: 40px;
+    }
+    .el-input__inner {
+        height: 32px !important;
+        color: #666666;
+    }
+    .el-input {
+        .el-input__inner {
+            padding-right: 25px;
+        }
+    }
+    .el-radio {
+        margin-right: 6px;
+        color: #666666;
+    }
+    .el-radio__label {
+        font-size: 12px;
+        padding-left: 4px;
+    }
+    .el-form-item__label {
+        text-align: left;
+        color: #666666;
+        padding-left: 9px;
+    }
+    .el-form-item__label:before {
+        margin-right: -6px !important;
+        position: relative;
+        left: -8px;
+    }
+    .br-row {
+        .el-form-item__label {
+            line-height: 20px;
+        }
+    }
+    .el-textarea__inner {
+        width: 360px;
+        height: 152px;
+        border: none;
+        border: 1px solid #BCBCBC;
+    }
+    .el-range-separator {
+        width: 50px;
+        font-size: 12px;
+        color: #666666;
+    }
+    .el-date-editor {
+        width: 360px;
+        .el-range__icon,
+        .el-range-separator,
+        .el-range__close-icon {
+            line-height: 24px !important;
+        }
+    }
+    .el-checkbox__label,
+    .el-range-input,
+    .addDate,
+    .el-textarea,
+    .el-form-item__content {
+        font-size: 12px !important;
+        color: #666666;
+    }
+    .addDate {
+        width: 68px;
+        cursor: pointer;
+        color: #3B74FF;
+    }
+    .close-btn {
+        position: absolute;
+        top: 13px;
+        right: 96px;
+        font-size: 16px!important;
+        font-weight: bolder;
+        color: #3B74FF;
+        cursor: pointer;
+    }
+    .input-dialog {
+        /deep/ .el-input__inner {
+            background: #f5f5f5;
+        }
+    }
+}
+
+.el-select-dropdown__item {
+    font-size: 12px !important;
+}

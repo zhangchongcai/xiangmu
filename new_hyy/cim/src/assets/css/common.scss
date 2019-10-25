@@ -1,0 +1,213 @@
+$primary-blue-color:  #3b74ff;
+$primary-red-color: #F33430;
+.retail-style{
+  // 页面公用样式
+  .common-header {
+    padding: 24px;
+    margin-bottom: 10px;
+    background: #f5f5f5;
+    box-sizing: border-box;
+    position: relative;
+    .el-form-item{
+      margin-bottom:0;
+    }
+    .select-input .el-input{
+      width: 192px;
+    }
+    .el-input{
+      width: 192px;
+    }
+    .query-btn{
+      padding-left: 20px;
+      padding-right: 20px;
+      width: 80px;
+      margin-top: 5px;
+      height: 32px;
+      //margin-left: 20px;
+      //float: right;
+    }
+    .el-form-item{
+      margin-right: 32px;
+    }
+    .el-form-item__label{
+      padding-right: 12px;
+    }
+  }
+  .fix-content-width{
+    //width: 82%;
+  }
+  .form-item-box{
+    width: 600px;
+  }
+  .select-btn{
+    .el-button{
+      width: 192px;
+    }
+  }
+  .page-wrap{
+    padding: 0;
+    padding-top: 24px;
+  }
+  .recipe-box{
+    padding: 10px;
+    margin: 10px 0;
+    background-color: #f5f5f5;
+  }
+  .remark-input{
+    margin-top: 12px;
+    width: 400px;
+  }
+
+  .select-input {
+    cursor: pointer;
+    .el-input{
+      width: 212px;
+      text-overflow: ellipsis;
+
+    }
+    .el-input__inner{
+      padding-right: 15px;
+      text-overflow: ellipsis;
+      background: #F5F5F5;
+      border: 1px solid #BCBCBC;
+    }
+    .el-button {
+      margin-top: 5px;
+      margin-left: 8px;
+      width: 80px;
+      height: 32px;
+      float: right;
+    }
+
+  }
+
+  .common-new-built {
+    padding:  10px 24px;
+    padding-top: 0;
+    padding-left: 0;
+    padding-right: 0;
+    text-align: right;
+    .el-button {
+      padding: 8px 15px;
+      width: 88px;
+      height: 32px;
+    }
+  }
+  .basic-input {
+    .el-input__inner,.el-textarea__inner{
+      width: 192px;
+    }
+  }
+  .common-basic-input {
+    .el-input__inner,.el-textarea__inner{
+      width: 300px;
+    }
+  }
+  .apply-select{
+    .el-input__inner{
+      width: 192px;
+    }
+  }
+  .el-dialog__body{
+    padding-top: 5px;
+    padding-bottom: 5px;
+    .query-btn{
+      //margin-left: 20px;
+      //float: right;
+    }
+  }
+  .query-btn-box {
+    margin-left: 30px;
+  }
+  .red{
+    color: $primary-red-color;
+  }
+  .left{
+    float: left;
+  }
+  .right{
+    float: right;
+  }
+  .upload-img{
+    width: 100px;
+    height: 100px;
+  }
+  .apply-select {
+    //width: 124px;
+  }
+  .submit-box{
+    text-align: center;
+  }
+  .examine{
+    color: $primary-blue-color;
+    cursor: pointer;
+    span{
+      //display: inline-block;
+    }
+    .examine-tit{
+      float: left;
+      width: 150px;
+    }
+  }
+  /*去掉谷歌，火狐下的type="number"中的右边箭头*/
+  input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{
+    -webkit-appearance: none !important;
+  }
+  input[type="number"]{-moz-appearance:textfield;}
+  //超过一行省略号
+  .incise{
+    overflow: hidden;/*超出部分隐藏*/
+    white-space: nowrap;/*不换行*/
+    text-overflow:ellipsis;/*超出部分文字以...显示*/
+  }
+  // 选择影院按钮
+  .cinemaSel-btn{
+    width: 80px;
+    height: 32px;
+  }
+  .newcommon-header{
+    margin-bottom: 0;
+  }
+  .col666{
+    color: #666;
+  }
+  .colred{
+    color: red;
+  }
+  .fontbold{
+    font-weight: bold;
+  }
+  // 单品页面
+  .basic-input200{
+    width: 200px;
+  }
+  .basic-input .el-input__inner{
+    width: 300px;
+  }
+  .basic-input .el-textarea__inner{
+    width: 300px;
+  }
+  .widthInput100 .el-input__inner{
+    width: 192px;
+  }
+  .wid100{
+    display: inline-block;
+    width: 100px;
+    padding-right: 5px;
+    text-align: right;
+  }
+  .c-type{
+    display: inline-block;
+    max-width: 200px;
+    height: 40px;
+    overflow: hidden;
+    color: #3b74ff; 
+    cursor: pointer;
+  }
+  .see-style{
+    height:40px;
+  }
+  .mgr22{
+    margin-right: 22px;
+  }
+}

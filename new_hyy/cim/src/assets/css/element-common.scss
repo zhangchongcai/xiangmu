@@ -1,0 +1,231 @@
+@import "./common.scss";
+.retail-style {
+  .el-radio__label{
+    font-size: 12px;
+  }
+  .el-radio{
+    color: #666;
+  }
+  .el-dialog__close{
+    font-size: 22px;
+  }
+  .el-button {
+    padding: 8px 20px;
+  }
+  .el-table {
+    border-left: none;
+    th:first-of-type,td:first-of-type{
+      //border-left: 1px solid #e5e5e5;
+    }
+    .el-button--text{
+      padding:0;
+    }
+  }
+  .el-form-item.is-success .el-input__inner{
+    border-color: #bcbcbc!important;
+  }
+  .el-tree {
+    padding: 10px 0;
+    background: #f5f5f5;
+    .el-tree-node{
+      background: #f5f5f5;
+    }
+    .el-tree-node__label {
+      color: #666;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .el-checkbox{
+      margin-right: 5px;
+    }
+  }
+  .el-collapse-item__content{
+    padding-bottom: 0;
+  }
+  .el-tree-node__label{
+    font-size: 12px;
+  }
+  .el-tree-node__content{
+    font-size: 12px;
+  }
+  .el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content {
+    color: $primary-blue-color;
+    .el-tree-node__label {
+      color: $primary-blue-color;
+    }
+  }
+  .el-form-item{
+    margin-bottom:20px;
+  }
+  .el-form-item__content{
+    font-size: 12px;
+  }
+  .el-form-item__label {
+    padding-right: 5px;
+    font-size: 12px;
+    color: #666;
+    text-align: right;
+  }
+  .el-date-editor--datetimerange.el-input__inner{
+    width: 345px;
+  }
+  .el-collapse-item__header{
+    padding: 0;
+    border: 0;
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+  }
+  .el-collapse-item__arrow{
+    margin-left: 0;
+  }
+  .el-collapse-item__header::after {
+    display: none;
+  }
+  .el-collapse-item__wrap{
+    padding: 0;
+  }
+ .breadcrumb{
+   padding: 10px 0;
+   .el-breadcrumb__inner.is-link {
+     font-weight: normal;
+   }
+   .el-breadcrumb__item:last-of-type{
+     .el-breadcrumb__inner{
+       color: $primary-blue-color;
+     }
+   }
+ }
+
+  .el-date-editor.el-input{
+    width: 192px;
+  }
+  .down-time{
+    .el-date-editor.el-input{
+      width: 212px;
+    }
+  }
+
+  .el-input__inner {
+    color: #666;
+    // font-size: 12px;
+  }
+  .el-table{
+    .el-table__body{
+      .el-input__inner{
+        width: 100%;
+      }
+    }
+  }
+
+
+  .el-message-box__message{
+    .el-icon-circle-close{
+      color: $primary-red-color;
+      font-size: 16px;
+      margin-right: 8px;
+    }
+  }
+  .el-pagination {
+    .el-select .el-input .el-input__inner{
+      line-height: normal;
+    }
+    .el-pager{
+      .number{
+        font-weight: normal;
+        line-height: 30px;
+      }
+    }
+    .el-pagination__total{
+      line-height: 30px;
+    }
+  }
+  .el-select .el-input .el-select__caret{
+    //margin-top: 2px;
+  }
+
+
+  .el-dialog__title {
+    width: 100%;
+    display: inline-block;
+    border-bottom: 1px solid #E5E5E5;
+    padding-bottom: 10px;
+  }
+.avatar-uploader .el-upload {
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.avatar-uploader .el-upload:hover {
+  border-color:$primary-blue-color;
+}
+
+.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 100px;
+  height: 100px;
+  line-height: 100px;
+  text-align: center;
+}
+
+.avatar {
+  width: 100px;
+  height: 100px;
+  display: block;
+}
+
+.el-range-editor.el-input__inner {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+// 校验选中的颜色
+.el-form-item.is-success .el-input__inner, .el-form-item.is-success .el-input__inner:focus, .el-form-item.is-success .el-textarea__inner, .el-form-item.is-success .el-textarea__inner:focus{
+  border-color: #3b74ff;
+}
+// 弹窗头部字体颜色
+.el-dialog__title{
+  color: #333333;
+}
+// 弹窗确定取消按钮样式
+.dialog-common-style{
+  .el-button{
+    width: 80px;
+    height: 32px;
+    text-align: center;
+  }
+  // 弹窗头部样式
+  .el-dialog__header{
+    padding-top: 16px;
+  }
+}
+}
+
+.retail-style.el-message-box {
+  width: 400px;
+  .el-message-box__btns {
+    padding-top: 30px;
+    position: relative;
+  }
+  .el-message-box__close{
+    font-size: 20px;
+  }
+  .el-message-box__btns button:nth-child(1) {
+    position: absolute;
+    right: 100px;
+    left: auto;
+    bottom: -14px;
+  }
+
+  .el-message-box__btns button:nth-child(2) {
+    position: absolute;
+    left: 100px;
+    right: 0;
+    bottom: -14px;
+  }
+}

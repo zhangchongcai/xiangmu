@@ -1,0 +1,17 @@
+/*
+* Description: element全局样式覆盖文件
+* Author:詹陈龙
+* Update:
+*/
+
+/* element全局样式覆盖文件 */
+// 编辑页 首行collapse到顶部距离全局修复
+.el-collapse{
+  .el-collapse-item.first-item{
+    .el-collapse-item__header{
+      line-height: 16px;
+      height: 23px;
+      padding-top: 0;
+    }
+  }
+}

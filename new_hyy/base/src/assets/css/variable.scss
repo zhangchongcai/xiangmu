@@ -1,0 +1,47 @@
+/*
+* Description:样式变量定义文件
+* Author:詹陈龙
+* Update:
+*/
+
+//标题字体
+$m_fontsize:14px !default;
+//正文字体
+$s_fontsize:12px !default;
+
+// $fontfamily:'微软雅黑' !default;
+// $baseFontSize: 12px;
+// $baseFontColor: #333333;
+
+$rem: 1px;
+//主色
+$color-primary: #3B74FF;
+//高亮主色
+$color-light-primary: #3B74FF;
+//成功
+$color-success: #2DBC2D;
+//警告
+$color-warning: #FF8900;
+//危险
+$color-danger: #F33430;
+//信息
+$color-info: #909399;
+// $color-gray: #5a5a5a;
+//白色
+$color-white: white;
+//黑色
+$color-black: black;
+//辅助提示文字颜色
+$color-tip:#999999;
+
+// $bg0: mix($color-black, $color-primary, 80%);
+//灰色背景
+$bg-gray: #F5F5F5;
+
+//面板背景色 搜索面板 分类面板等
+$bg-panel:#F5F5F5;
+//边框线颜色
+$border-color: #dfdfdf;
+
+// $--border-color-base: #dcdfe6;
+// $--color-text-placeholder: #c0c4cc;

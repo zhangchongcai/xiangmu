@@ -1,0 +1,262 @@
+@charset"utf-8";
+/*以下的写法是去取浏览器默认样式,目的是为了使用大多数浏览器显示的样式效果保持一致性.(特殊的浏览器有渲染内核的除外---UC要针对该浏览器去论坛找问题.)*/    
+a,body,img{-webkit-touch-callout:none}/*禁止选择文本*/
+body,html{height:100%}
+/*-webkit-tap-highlight-color:background:rgba(0,0,0,0):一般情况是去取点击时所产生的系统默认样式*/
+html{font-size:62.5%;
+/*关闭字体大小自动调整功能*/
+-webkit-text-size-adjust:100%;
+-webkit-tap-highlight-color:background:rgba(0,0,0,0)}
+body{
+    /*允许独立的滚动区域和触摸回弹*/
+    -webkit-overflow-scrolling:touch;
+    /*禁止系统默认菜单*/
+    -webkit-touch-callout:none;
+}
+
+article,aside,audio,blockquote,body,button,canvas,dd,details,div,dl,dt,fieldset,figcaption,figure,footer,form,h1,h2,h3,h4,h5,h6,header,li,nav,ol,p,progress,section,td,textarea,th,ul,video{margin:0;padding:0;-webkit-box-sizing:border-box;box-sizing:border-box;vertical-align:baseline}}
+button,select{text-transform:none}
+/*字体粗细*/
+h1,h2,h3{font-weight:500}
+strong{font-weight:700}
+/*浏览器默认focus时的样式*/
+a:focus{outline:thin dotted}
+/*去掉输入框聚焦时候的高亮边框*/
+a:focus,select:focus,input:focus,textarea:focus{-webkit-tap-highlight-color:rgba(0,0,0,0);-webkit-user-modify:read-write-plaintext-only}
+/*去取a标签的下划线*/
+a,a:active,a:hover{text-decoration:none}
+a{outline:none;background:rgba(0,0,0,0)}/*透明值*/
+/*去取默认边框*/
+fieldset,img{border:0}
+/*设置默认最大宽度*/
+img,video{max-width:100%}
+em,i{font-style:normal}
+table{border-collapse:collapse;border-spacing:0}
+audio,canvas,progress,video{display:inline-block}
+audio:not([controls]){display:none;height:0}
+del{text-decoration:line-through}
+hr{height:0;-webkit-box-sizing:content-box;box-sizing:content-box}
+ol,ul{list-style:none}/*去取默认样式*/
+
+/*轻量级自适应框架*/
+.grid,.grid:after,.grid:before,.wrap,.wrap:after,.wrap:before{-webkit-box-sizing:border-box;box-sizing:border-box}
+.grid:after,.grid:before{display:table;content:"";line-height:0}
+.grid:after{clear:both}
+.grid{margin:0;padding:0;list-style-type:none}
+.grid>.grid{float:left;clear:none;margin:0!important}
+/*box-sizing:border-box和box-sizing:content-box的简单区别:
+ * box-sizing:border-box是内扩;
+ * box-sizing:content-box是外扩.
+*/
+/*用法是:
+ * <div class="wrap grid"></div>利用class类组合形式,设置当前div为100%宽度
+ * 已经清除浮动,所以div里面进行浮动是不会影响到下一个同级div
+*/
+sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}
+sup{top:-.5em}
+sub{bottom:-.25em}
+svg:not(:root){overflow:hidden}
+a{text-decoration:none;color:#000}
+a:active{color:#000}
+/*特意设置ul和ol不同的样式*/
+/*1,我们平常不需要考虑有序还是无序列表,都会常用ul ol的li来写列表*/
+/*ul li 默认为块级元素*/
+ol li{display:inline-block}/*特意设置为行内元素*/
+/*特意设置ul和ol不同的样式*/
+
+textarea{overflow:auto;vertical-align:top}
+input[type="button"],
+input[type="reset"],
+input[type="submit"],
+input[type=button],input[type=reset],input[type=submit],a:active,a:focus,a:hover,{outline:none}
+input[type=button],input[type=reset],input[type=submit]{cursor:pointer;-webkit-appearance:button}
+/*-webkit-appearance:none---去取默认样式*/
+input[type=search]::-webkit-search-cancel-button,input[type=search]::-webkit-search-decoration{-webkit-appearance:none}
+input,input[type=checkbox],input[type=radio]{margin:0;padding:0;-webkit-box-sizing:border-box;box-sizing:border-box;vertical-align:baseline}
+input[type=search]{-webkit-box-sizing:content-box;box-sizing:content-box;-webkit-appearance:textfield}
+
+input::-ms-clear{display:none}
+textarea{resize:none}
+textarea{overflow:auto;vertical-align:top}
+input[type=text],input[type=email],input[type=url],input[type=tel],input[type=color],input[type=search],input[type=password],input[type=datetime],input[type=datetime-local],input[type=date],input[type=month],input[type=time],input[type=week],input[type=number],input[type=checkbox],input[type=radio],select,textarea{-webkit-user-select:text;-webkit-appearance:none}
+/*-webkit-user-select:text:用户可以选择元素的文本*/
+/*ios上使用transform的时候的闪屏问题可以尝试使用*/
+.iosTransform{-webkit-transform-style:preserve-3d;-webkit-backface-visibility:hidden}
+/*Andriod上去掉语音输入按钮*/
+input::-webkit-input-speech-button{display:none}
+/*针对number做的去取原生*/
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;appearance:none;margin:0}
+/*input和textarea的placeholder字体颜色和大小的设置,还有点击焦点时的样式*/
+input::-webkit-input-placeholder{color:#FFA500}
+textarea::-webkit-input-placeholder{color:#FFA500}
+input:focus,textarea:focus{border:1px solid #f60;outline:none}
+/*1rem=10px*/
+/*字体自适应*/
+/*比如说你在320px分辨率时,设置字体大小为1.2rem时,现在在不同宽度都可以看上去一样大小实现自适应.*/
+/*16px=100%,字体在移动端时默认设置是62.5%--(6.25%=1px)*/
+body{font-family:"Helvetica Neue",Helvetica,STHeiTi,sans-serif}/*定义全局字体,IOS和安卓*/
+/*字体自适应:以1.2rem为最小字体大小*/
+h1{font-size:2.125rem}
+h2{font-size:1.875rem}
+h3{font-size:1.75rem}
+h4{font-size:1.625rem}
+h5{font-size:1.5rem}
+h6{font-size:1.375rem}
+article,button,input,p,select,span,textarea,h1,h2,h3,h4,h5,h6{line-height:20px}
+/*分情况来做,不是所有页面都需要字体随着屏幕大小改变而改变的.*/
+/*三星大屏幕机最低宽度:note2-note3,S2-S4*/
+@media only screen and (min-width:360px) and (max-width:384px){
+    html{font-size:64% !important}
+}
+/*Iphone6,Iphone6plus*/
+@media only screen and (min-width:385px) and (max-width:435px) {
+    html{font-size:80% !important}
+    article,button,input,p,select,span,textarea,h1,h2,h3,h4,h5,h6{line-height:22px}
+}
+/*这里@media属性出来可以做自适应页面宽度外,还可以做字体自适应效果,但要根据相关的视觉效果来设置不同的font-size百分比*/
+/* 目前来看有7个不同的屏幕大小要进行适配:
+大部分手机的屏幕大小都是320px,360px,以下是一些比较特殊的屏幕大小:360px或以上的屏幕会越来越多.
+谷歌的N4:384px;N6:412px;
+魅族的MX3和小米的NOTE:393px; 
+iphone6:375px;iphone6 plus:414px;
+*/
+/*部分机型存在type为search的input，自带close按钮样式修改方法*/
+#search::-webkit-search-cancel-button{display:none}
+/*单行文本控制换行*/
+.outL{white-space:normal;word-break:break-all;width:100px}
+/*单行文本控制溢出(显示....):注意设置宽度值*/
+.outH{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:50%}
+/*多行文本溢出显示省略号(...)的方法------webkit-line-clamp:2;这里的数字代表多少行*/
+.ellipsis{overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+/*最外层容器*/
+.wrapper{position:absolute;top:0;right:0;bottom:0;left:0;padding-bottom:60px;overflow:auto;-webkit-overflow-scrolling:touch}
+/*头尾----如果引入框架的话,就具体再分析使用.
+.header,.footer{position:fixed;right:0;left:0;z-index:1}
+.header{top:0;height:44px}
+.footer{bottom:0}
+*/
+/*注意:fixed有个bug;在移动端上会出现快速滑动时,出现卡顿情况----可以试试下面的方法:*/
+#fixed{position:fixed;width:100%;left:0;top:0;z-index:9994;height:80px;transform:translateZ(0);-webkit-transform:translateZ(0)}
+
+/*设置简单易用,常用的class类*/
+.hide{display:none}
+.block,.show{display:block}
+.fl,.fr{display:inline}
+.fl{float:left}
+.fr{float:right}
+.tac{text-align:center}
+.tal,caption,th{text-align:left}
+.tar{text-align:right}
+.inline{display:inline-block}
+.vab{vertical-align:bottom}
+.vas{vertical-align:sub}
+.vam{vertical-align:middle}
+.vat{vertical-align:top}
+/*宽度*/
+.wrap{float:left}
+.wrap,.w100p{width:100%}
+.w20p{width:20%}
+.w30p{width:30%}
+.w40p{width:40%}
+.w50p{width:50%}
+.w60p{width:60%}
+.w70p{width:70%}
+.w80p{width:80%}
+.w90p{width:90%}
+/*边距*/
+.m5{margin:5px}
+.p5{padding:5px}
+.p10{padding:10px}
+/*flex布局:目前在移动端4.0-4.4之间最好只选择使用横向或竖向的属性;4.4的系统才全面的支持大多数属性.*/
+.flex{display:-webkit-flex;display:flex;display:-webkit-box;-webkit-flex:1;flex:1;-webkit-box-flex:1}
+/*垂直方向*/
+.col{display:-webkit-box;display:flex;display:-webkit-flex;height:100%;-webkit-box-orient:vertical;flex-direction:column}
+/*水平方向*/
+.row{display:-webkit-flex;display:flex;display:-webkit-box;margin:auto;width:100%;height:auto;-webkit-flex-wrap:wrap;flex-wrap:wrap;flex-direction:wrap;-webkit-box-orient:horizontal;-webkit-box-lines:multiple}
+.flex1{-webkit-box-flex:1;-webkit-flex:1;flex:1}
+.flex2{-webkit-box-flex:2;-webkit-flex:2;flex:2}
+.flex3{-webkit-box-flex:3;-webkit-flex:3;flex:3}
+.box{height:100%;text-align:center}
+/*页面背景图,需要注意问题:
+1,该图片看设计师做的图片大小,不然做手机的怎么可能会在PC上浏览清晰呢? 
+2,利用好background-size:100% 100%;就可以让整个背景图都正确的展示到页面上.
+*/
+/*body{background:url('../img/back.jpg') no-repeat;background-size:100% 100%;background:#d9ffd9;}
+页面背景图 */
+
+/*手机断点 */
+/*min-device-width或max-device-width指的是设备整个渲染区宽度(设备的实际最大或最小宽度),
+用了它可能在某些安卓机无法调用到下面的样式,因为某部分安卓机的屏幕大小不一致.*/
+/*iphone4等屏幕高度480px的解决方案*/
+@media only screen and (max-device-height:480px) {
+    
+}
+/*iphone5以上的屏幕高度解决方案*/
+@media only screen and (min-height:481px) {
+    
+}
+/*三星大屏幕机最低宽度:note2-note3,S2-S4*/
+@media only screen and (min-width:360px) and (max-width:374px){
+
+}
+/*Iphone6 plus,红米等大屏幕手机*/
+@media only screen and (min-width:375px) and (max-width:435px) {
+    
+}
+
+/*手机横屏:orientation:landscape*/
+@media only screen and (min-width:480px) and (max-width:569px){
+/*小米1,1s,iphone4,4s,5,5s等屏幕横屏宽度断点*/
+}
+@media only screen and (min-width:570px) and (max-width:640px) and (orientation:landscape){
+/*三星,红米等手机屏幕横屏宽度断点*/
+}
+@media only screen and (min-width:641px) and (max-width:667px) and (orientation:landscape) {
+/*Iphone6横屏宽度断点*/
+}
+@media only screen and (min-width:736px) and (max-width:767px) and (orientation:landscape){
+/*Iphone6 plus横屏宽度断点*/
+}
+
+/*这里是指所有屏幕横屏时*/
+/*@media all and (orientation:landscape) {  
+}  
+*/
+
+/*平板和电脑:最低宽度768px*/
+@media only screen and (min-width:768px) and (max-width: 959px) {
+
+}
+@media only screen and (min-width:960px) and (max-width:1024px) {
+
+}
+@media only screen and (min-width:1025px)and (max-width:1536px) {
+
+}
+
+/*这里是写给所有x2的分辨率屏幕:比如说iphone5,5s*/
+@media only screen and (-webkit-min-device-pixel-ratio:2){
+    
+}
+/*这里是写给所有x3的分辨率屏幕:比如说iphone6,6+*/
+@media only screen and (-webkit-min-device-pixel-ratio:3){
+    
+}
+
+/* windowsphone*/
+@media screen and (-ms-view-state:filled) {
+
+}
+/*对齐视图*/
+@media screen and (-ms-view-state: snapped) {
+
+}
+/*全屏幕横向*/
+@media screen and (-ms-view-state: fullscreen-landscape) {
+
+}
+/*全屏幕纵向*/
+@media screen and (-ms-view-state: fullscreen-portrait) {
+
+}

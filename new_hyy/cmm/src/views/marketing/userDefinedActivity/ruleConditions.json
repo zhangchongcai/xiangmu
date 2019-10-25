@@ -1,0 +1,558 @@
+{
+    "首次购票": {
+        "category": "SaleInfo",
+        "groupId": 96,
+        "key": "firstBuyTicket",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "交易客商": {
+        "category": "SaleInfo",
+        "groupId": 14,
+        "key": "businessCode",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "交易影院": {
+        "category": "SaleInfo",
+        "groupId": 19,
+        "key": "cinemaCode",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "交易影院行政区域": {
+        "category": "SaleInfo",
+        "groupId": 25,
+        "key": "cinemaAreaId",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "交易渠道": {
+        "category": "SaleInfo",
+        "groupId": 32,
+        "key": "consumeWayCode",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "交易类型": {
+        "category": "SaleInfo",
+        "groupId": 33,
+        "key": "tradeType",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "会员等级": {
+        "category": "SaleInfo",
+        "groupId": 101,
+        "key": "customerLevelCode",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "会员卡政策": {
+        "category": "SaleInfo",
+        "groupId": 100,
+        "key": "cardRightCode",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "会员卡类型": {
+        "category": "MemberInfo",
+        "groupId": 10,
+        "key": "cardTypeKey",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "单次消费金额": {
+        "category": "SaleInfo",
+        "groupId": 2,
+        "key": "sumPrice",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "卖品单价": {
+        "category": "MerchandiseInfo",
+        "groupId": 93,
+        "key": "merPrice",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "卖品总金额": {
+        "category": "SaleInfo",
+        "groupId": 91,
+        "key": "merSumPrice",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "同品牌商品累计购买数量": {
+        "key": "buyNumByBrand",
+        "hasSon": true,
+        "商品品牌": {
+            "category": "SaleItemStatis",
+            "groupId": 29,
+            "key": "brandId",
+            "opUniqueName": "normalIn",
+            "text": "",
+            "value": ""
+        },
+        "累计购买数量": {
+            "category": "SaleItemStatis",
+            "groupId": 29,
+            "key": "sumAmount",
+            "opUniqueName": "",
+            "text": "",
+            "value": ""
+        }
+    },
+    "同类商品累计购买数量": {
+        "key": "buyNumByType",
+        "hasSon": true,
+        "商品类别": {
+            "category": "SaleItemStatis",
+            "groupId": 28,
+            "key": "classCode",
+            "opUniqueName": "normalIn",
+            "text": "",
+            "value": ""
+        },
+        "累计购买数量": {
+            "category": "SaleItemStatis",
+            "groupId": 28,
+            "key": "sumAmount",
+            "opUniqueName": "",
+            "text": "",
+            "value": ""
+        }
+    },
+    "品牌": {
+        "category": "MerchandiseInfo",
+        "groupId": 40,
+        "key": "brandId",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "商品单价": {
+        "category": "SaleItemInfo",
+        "groupId": 31,
+        "key": "price",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "商品类型": {
+        "category": "MemberStatisInfo",
+        "groupId": 100,
+        "key": "saleItemType",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "商品名称": {
+        "category": "MerchandiseInfo",
+        "groupId": 46,
+        "key": "merKey",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "国际条码": {
+        "category": "MerchandiseInfo",
+        "groupId": 43,
+        "key": "merBarCode",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "年龄": {
+        "category": "MemberInfo",
+        "groupId": 9,
+        "key": "age",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "店内码": {
+        "category": "MerchandiseInfo",
+        "groupId": 42,
+        "key": "merCode",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "座位等级": {
+        "category": "FilmTicketInfo",
+        "groupId": 89,
+        "key": "seatGrade",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "开卡年限": {
+        "category": "MemberInfo",
+        "groupId": 11,
+        "key": "openYears",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "开卡日期": {
+        "category": "MemberInfo",
+        "groupId": 12,
+        "key": "openDate",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "开卡月限": {
+        "category": "MemberInfo",
+        "groupId": 87,
+        "key": "openMonths",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "影厅类型": {
+        "category": "FilmTicketInfo",
+        "groupId": 36,
+        "key": "hallTypeKey",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "影片": {
+        "category": "FilmTicketInfo",
+        "groupId": 79,
+        "key": "uniformCode",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "影片类型": {
+        "category": "FilmTicketInfo",
+        "groupId": 34,
+        "key": "filmTypeKey",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "影票单价": {
+        "category": "FilmTicketInfo",
+        "groupId": 92,
+        "key": "filmPrice",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "影票商品数量": {
+        "category": "SaleInfo",
+        "groupId": 80,
+        "key": "filmTicketAmount",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "影票总金额": {
+        "category": "SaleInfo",
+        "groupId": 90,
+        "key": "filmSumPrice",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "性别": {
+        "category": "MemberInfo",
+        "groupId": 8,
+        "key": "sex",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "指定商品购买数量": {
+        "key": "buyNum",
+        "hasSon": true,
+        "商品名称": {
+            "category": "MerchandiseInfo",
+            "groupId": 21,
+            "key": "merKey",
+            "opUniqueName": "normalIn",
+            "text": "",
+            "value": ""
+        },
+        "数量": {
+            "category": "MerchandiseInfo",
+            "groupId": 21,
+            "key": "amount",
+            "opUniqueName": "",
+            "text": "",
+            "value": ""
+        }
+    },
+    "支付方式(柜台用)": {
+        "category": "SaleInfo",
+        "groupId": 86,
+        "key": "payTypeCode",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "放映前N天": {
+        "category": "FilmTicketInfo",
+        "groupId": 94,
+        "key": "filmStartDayBefore",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "放映前N小时": {
+        "category": "FilmTicketInfo",
+        "groupId": 95,
+        "key": "filmStartHourBefore",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "放映厅座位数": {
+        "category": "FilmTicketInfo",
+        "groupId": 37,
+        "key": "hallSeatAmout",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "放映排除日期": {
+        "category": "FilmTicketInfo",
+        "groupId": 82,
+        "key": "filmPlanInvalidTime",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "放映效果": {
+        "category": "FilmTicketInfo",
+        "groupId": 35,
+        "key": "showEffect",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "放映时段范围": {
+        "category": "FilmTicketInfo",
+        "groupId": 84,
+        "key": "filmPlanTimeRange",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "放映星期范围": {
+        "category": "FilmTicketInfo",
+        "groupId": 83,
+        "key": "filmPlanWeekRange",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "放映有效期": {
+        "category": "FilmTicketInfo",
+        "groupId": 81,
+        "key": "planStartTime",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "整单交易金额": {
+        "category": "SaleInfo",
+        "groupId": 26,
+        "key": "sumPrice",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "最低发行价": {
+        "category": "FilmTicketInfo",
+        "groupId": 38,
+        "key": "lowestPrice",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "注册影院": {
+        "category": "MemberInfo",
+        "groupId": 13,
+        "key": "registerBusinessCode",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "消费者身份": {
+        "category": "SaleInfo",
+        "groupId": 27,
+        "key": "consumerTypeKey",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "生日": {
+        "category": "MemberInfo",
+        "groupId": 7,
+        "key": "birthday",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "积分余额": {
+        "category": "MemberInfo",
+        "groupId": 4,
+        "key": "integral",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "类别": {
+        "category": "MerchandiseInfo",
+        "groupId": 41,
+        "key": "classCode",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "累计消费金额": {
+        "category": "MemberInfo",
+        "groupId": 6,
+        "key": "consumeSum",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "首充金额": {
+        "category": "MemberInfo",
+        "groupId": 98,
+        "key": "firstRecharge",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "单次充值金额": {
+        "category": "SaleInfo",
+        "groupId": 1,
+        "key": "sumPrice",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "累计充值金额": {
+        "category": "MemberInfo",
+        "groupId": 50,
+        "key": "chargeSum",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "动态周期消费次数": {
+        "key": "consumeNum",
+        "hasSon": true,
+        "动态周期": {
+            "category": "MemberStatisInfo",
+            "groupId": 15,
+            "key": "dynamicPeriod",
+            "opUniqueName": "",
+            "text": "",
+            "value": ""
+        },
+        "指定周期": {
+            "category": "MemberStatisInfo",
+            "groupId": 15,
+            "key": "appointPeriod",
+            "opUniqueName": "",
+            "text": "",
+            "value": ""
+        },
+        "交易渠道": {
+            "category": "MemberStatisInfo",
+            "groupId": 15,
+            "key": "consumeWayCode",
+            "opUniqueName": "",
+            "text": "",
+            "value": ""
+        },
+        "消费次数": {
+            "category": "MemberStatisInfo",
+            "groupId": 15,
+            "key": "dynamicConsumeCount",
+            "opUniqueName": "",
+            "text": "",
+            "value": ""
+        }
+    },
+    "动态周期消费额": {
+        "key": "cycleConsumeNum",
+        "hasSon": true,
+        "动态周期": {
+            "category": "MemberStatisInfo",
+            "groupId": 17,
+            "key": "dynamicPeriod",
+            "opUniqueName": "",
+            "text": "",
+            "value": ""
+        },
+        "指定周期": {
+            "category": "MemberStatisInfo",
+            "groupId": 17,
+            "key": "appointPeriod",
+            "opUniqueName": "",
+            "text": "",
+            "value": ""
+        },
+        "交易渠道": {
+            "category": "MemberStatisInfo",
+            "groupId": 17,
+            "key": "consumeWayCode",
+            "opUniqueName": "",
+            "text": "",
+            "value": ""
+        },
+        "商品类型": {
+            "category": "MemberStatisInfo",
+            "groupId": 17,
+            "key": "saleItemType",
+            "opUniqueName": "",
+            "text": "",
+            "value": ""
+        },
+        "动态周期消费额": {
+            "category": "MemberStatisInfo",
+            "groupId": 17,
+            "key": "dynamicConsumeSum",
+            "opUniqueName": "",
+            "text": "",
+            "value": ""
+        }
+    },
+    "累计积分": {
+        "category": "MemberInfo",
+        "groupId": 52,
+        "key": "integralTotall",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    },
+    "账户余额": {
+        "category": "MemberInfo",
+        "groupId": 3,
+        "key": "balance",
+        "opUniqueName": "",
+        "text": "",
+        "value": ""
+    }
+}

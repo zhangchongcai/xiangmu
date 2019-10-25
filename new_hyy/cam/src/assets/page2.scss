@@ -1,0 +1,172 @@
+
+
+// 卖品分析页面/进销存分析页面
+.sale-content-wrap {
+    font-family: 'MicrosoftYaHei';
+    box-sizing: border-box;
+    // padding-top: 100px;
+    font-size:12px;
+    background-color: #fff;
+    box-sizing:border-box;
+    .header-fixed {
+        
+    }
+    .current-time{
+        font-size:14px;
+    }
+    .text-gray {
+        color: #999;
+    }
+    .time-wrap {
+        border: 1px solid #e6e5e5;
+        border-radius: 4px;
+        padding: 8px 0 16px 0;
+        font-size: 12px;
+    }
+    .time-item {
+        display: inline-block;
+        padding-left: 32px;
+        margin-top: 8px;
+        color: #666;
+        font-size: 12px;
+          .label-title {
+              padding-right: 16px;
+          }
+     }
+    .buhuo{
+        border:solid 3px greenyellow !important;
+    }
+    .zhixiao{
+        border:solid 3px red !important;
+     }
+    .ring{
+        display: inline-block;
+        width:10px;
+        height:10px;
+        border:solid 3px #fff;
+        border-radius: 50%; 
+        vertical-align: middle;
+        margin-right:4px;
+    
+    }
+    .section {
+        padding-top: 12px;
+        .unit {
+            padding: 0 4px;
+            font-size: 12px;
+            color: #999;
+            white-space:nowrap;
+        }
+
+        .iconfont {
+            padding: 0 4px;
+            font-size: 14px;
+        }
+
+        .section-title {
+            line-height: 50px;
+            font-size: 14px;
+            color:#333;
+            .icon {
+                padding-right: 4px;
+            }
+        }
+
+        .section-content {
+            width: 100%;
+            box-sizing: border;
+            .target-flex {
+                display: -webkit-flex;
+                display: flex;
+                flex-wrap: nowrap;
+                // justify-content:space-around;
+                overflow:auto;
+            }
+            .target-block {
+                box-sizing: border-box;
+                min-width:170px;
+                max-width:280px;
+                flex-basis: 170px;
+                flex-grow: 1;
+                text-align: center;
+                box-sizing: border-box;
+                padding: 12px;
+                margin-right: 12px;
+                margin-bottom: 12px;
+                border: 1px solid #e6e5e5;
+                color: #666;
+                &:last-of-type{
+                    margin-right: 0;
+                }
+                .target-title {
+                    text-align: left;
+                    font-size: 12px;
+                }
+                .money {
+                    display: flex;
+                    flex-wrap: nowrap;
+                    justify-content: center;
+                    align-items: baseline;
+                    line-height:60px;
+                    height:60px;
+                    .money-num {
+                        color: #333;
+                        font-size: 40px;
+                        font-family: "BebasNeueCyrillic";
+                    }
+                }
+                .ratio {
+                    text-align: center;
+                    font-size: 12px;
+                }
+            }
+        }
+    }
+    //票劵分析
+     .search-wrap {
+         background: #f5f5f5;
+         padding: 20px;
+         color: #666;
+         font-size:12px;
+         .search-item{
+              display: inline-block;
+              padding-left: 32px;
+              margin-top: 8px;
+              color: #666;
+              font-size: 12px;
+              .label {
+                padding-right: 16px;
+              }
+         }
+         .margin_b0 {
+            margin-bottom: 0;
+         }
+         .tickets-date {
+             width: 280px;
+
+             .el-range-separator,
+             .el-input__icon {
+                 line-height: 26px;
+             }
+         }
+     }
+
+}
+// 票劵分析
+.cam-tickets-wrap{
+    .search-wrap{
+        background:#f5f5f5;
+        padding:20px;
+        color:#666; 
+        .margin_b0 {
+            margin-bottom: 0;
+        }
+        .tickets-date {
+            width: 280px;
+            .el-range-separator, .el-input__icon {
+                line-height: 26px;
+            }
+        } 
+    } 
+}
+

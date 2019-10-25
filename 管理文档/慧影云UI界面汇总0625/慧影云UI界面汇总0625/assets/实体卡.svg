@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="109px" height="80px" viewBox="0 0 109 80" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 53.2 (72643) - https://sketchapp.com -->
+    <title>实体卡</title>
+    <desc>Created with Sketch.</desc>
+    <g id="完整版-调间距" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="10-4会员/为空" transform="translate(-734.000000, -396.000000)" fill="#BCBCBC" fill-rule="nonzero">
+            <g id="实体卡" transform="translate(734.000000, 396.000000)">
+                <g id="qia01" transform="translate(54.500000, 40.000000) scale(1, -1) translate(-54.500000, -40.000000) ">
+                    <path d="M6,17 L103,17 L103,12 C103,8.6862915 100.313708,6 97,6 L12,6 C8.6862915,6 6,8.6862915 6,12 L6,17 Z M103,29 L6,29 L6,68 C6,71.3137085 8.6862915,74 12,74 L97,74 C100.313708,74 103,71.3137085 103,68 L103,29 Z M12,0 L97,0 C103.627417,-1.21743675e-15 109,5.372583 109,12 L109,68 C109,74.627417 103.627417,80 97,80 L12,80 C5.372583,80 8.11624501e-16,74.627417 0,68 L0,12 C-8.11624501e-16,5.372583 5.372583,1.21743675e-15 12,0 Z M70.3669434,68 L77,54 L100,54 L93,68 L70.3669434,68 Z" id="合并形状"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

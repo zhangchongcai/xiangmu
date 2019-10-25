@@ -1,0 +1,36 @@
+[submodule "base"]
+	path = base
+	url = http://git.tech.nanhaicorp.com.cn/hyy_group/base.git
+[submodule "parent"]
+	path = parent
+	url = http://git.tech.nanhaicorp.com.cn/hyy_group/parent.git
+[submodule "ctm"]
+	path = ctm
+	url = http://git.tech.nanhaicorp.com.cn/hyy_group/ctm.git
+[submodule "cam"]
+	path = cam
+	url = http://git.tech.nanhaicorp.com.cn/hyy_group/cam.git
+[submodule "ccm"]
+	path = ccm
+	url = http://git.tech.nanhaicorp.com.cn/hyy_group/ccm.git
+[submodule "cim"]
+	path = cim
+	url = http://git.tech.nanhaicorp.com.cn/hyy_group/cim.git
+[submodule "cmm"]
+	path = cmm
+	url = http://git.tech.nanhaicorp.com.cn/hyy_group/cmm.git
+[submodule "crm"]
+	path = crm
+	url = http://git.tech.nanhaicorp.com.cn/hyy_group/crm.git
+[submodule "csm"]
+	path = csm
+	url = http://git.tech.nanhaicorp.com.cn/hyy_group/csm.git
+[submodule "cwf"]
+	path = cwf
+	url = http://git.tech.nanhaicorp.com.cn/hyy_group/cwf.git
+[submodule "rpt"]
+	path = rpt
+	url = http://git.tech.nanhaicorp.com.cn/hyy_group/rpt.git
+[submodule "main"]
+	path = main
+	url = http://git.tech.nanhaicorp.com.cn/hyy_group/main.git
