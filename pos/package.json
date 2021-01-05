@@ -16,7 +16,7 @@
   "dependencies": {
     "@tinymce/tinymce-vue": "^1.0.8",
     "autoprefixer": "^9.5.1",
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "babel-preset-vue-app": "^2.0.0",
     "better-scroll": "^1.15.2",
     "element-ui": "^2.4.6",
